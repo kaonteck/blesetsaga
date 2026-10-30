@@ -1674,6 +1674,19 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .vil-say b{font-size:12.5px;color:var(--gold-hi)}.vil-say p{margin:4px 0 0;font-size:13.5px;color:var(--text);line-height:1.6}
 .chip.merc{background:rgba(120,140,170,.18);color:#aebbd0;border-color:rgba(150,170,200,.35)}
 .mc-list{display:flex;flex-direction:column;gap:8px}.mc-row{display:flex;gap:10px;align-items:flex-start}.mc-r{flex:none;width:42px;font-size:12.5px;font-weight:600;padding-top:6px}.mc-js{display:flex;flex-wrap:wrap;gap:6px}.mc-js .btn{display:inline-flex;align-items:center;gap:6px}.sigil.xs{width:20px;height:20px;font-size:11px;border-radius:3px}
+.bl-wrap{text-align:center}.bl-t{font-family:var(--f-display);font-size:20px;color:var(--silver);margin:6px 0 4px}.bl-s{font-size:12.5px;margin:0 auto 14px;max-width:420px}
+.bl-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;perspective:900px}
+.bl-card{appearance:none;border:0;background:none;padding:0;cursor:pointer;aspect-ratio:2/3;font:inherit;color:inherit}
+.bl-card:disabled{cursor:default}
+.bl-in{position:relative;display:block;width:100%;height:100%;transition:transform .6s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.bl-card.flip .bl-in{transform:rotateY(180deg)}
+.bl-back,.bl-front{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px}
+.bl-back{background:repeating-linear-gradient(45deg,#2a2418 0 6px,#211c13 6px 12px);border:1px solid rgba(214,190,130,.55);color:#d8bf84;font-size:22px;box-shadow:inset 0 0 0 3px rgba(0,0,0,.35)}
+.bl-card:not(:disabled):hover .bl-back{border-color:#e6cf92;transform:translateY(-3px)}
+.bl-front{transform:rotateY(180deg);background:linear-gradient(180deg,#26221a,#17150f);border:1px solid rgba(214,190,130,.35);opacity:.55}
+.bl-card.mine .bl-front,.bl-card.flip:not(.mine) .bl-front{opacity:.55}.bl-card.mine .bl-front{opacity:1;border-color:#e6cf92;box-shadow:0 0 18px rgba(230,207,146,.35)}
+.bl-front{word-break:keep-all;text-align:center}.bl-front b{font-size:20px;color:#e6cf92}.bl-front em{font-style:normal;font-size:12px;font-weight:600;color:var(--silver)}.bl-front small{font-size:10.5px;color:var(--muted);line-height:1.35}
+@media (max-width:520px){.bl-cards{grid-template-columns:repeat(5,1fr);gap:5px}.bl-front em{font-size:10.5px}.bl-front small{font-size:9px}.bl-front b{font-size:16px}}
 .vil-got{display:inline-block;margin-top:6px;font-size:12px;color:#9fd3a8}
 .vil-say.theft{border-left-color:#d66a60;background:rgba(60,22,22,.45)}.vil-say.theft p{color:#e7a39b;font-weight:600}.vil-lost{display:inline-block;margin-top:6px;font-size:12px;color:#e07b70}
 .vil-hint{font-size:12.5px;margin-top:8px}
@@ -1973,7 +1986,7 @@ GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},ar
   const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
     knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{atk:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
     gun:{atk:A,luk:Math.round(1+L*0.1)},dgun:{atk:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{atk:Math.round(A*0.7),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{atk:Math.round(A*0.8),luk:Math.round(3+L*0.25)}};
-  (L<30?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
+  (L<20?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
     ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
   ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25)},desc,price};
@@ -2197,7 +2210,7 @@ function checkAct(b,p,a,hasItem,primary){
 function resolveTurn(b,rng,hooks){
   hooks=hooks||{};
   const m=b.mon,T=b.turn,log=(t,text)=>b.log.push({t,text}),P=id=>b.players.find(p=>p.id===id);
-  const heal=(src,t,amt,label)=>{if(t.dead)return 0;const miss=t.maxHp-t.hp;const h=Math.min(amt,miss);t.hp+=h;if(src&&src.id)src.healed=(src.healed||0)+h;
+  const heal=(src,t,amt,label)=>{if(t.dead)return 0;if(b.healMult&&src&&src.id)amt=Math.round(amt*b.healMult);const miss=t.maxHp-t.hp;const h=Math.min(amt,miss);t.hp+=h;if(src&&src.id)src.healed=(src.healed||0)+h;
     if(amt>miss&&supActive(b)){b.sup.overheal++;}
     log('heal',`${src.name} · ${label} → ${t.name} ${h} 회복${amt>miss?' (오버 힐)':''}`);return h;};
   const spend=(p,k)=>{if(SKILLS[k].uses)p.uses[k]=(p.uses[k]||0)+1;};
@@ -2297,7 +2310,7 @@ function resolveTurn(b,rng,hooks){
   const tel=b.tel;
   const hitP=(p,mult)=>{
     if(p.protect||b.sanct)return {d:0,note:'보호'};
-    const roll=rollD(m.atk,rng);let d=Math.round(roll*mult);if(p.defending)d=Math.round(d*0.5);
+    const roll=rollD(m.atk,rng);let d=Math.round(roll*mult);if(b.dmgTakenMult)d=Math.round(d*b.dmgTakenMult);if(p.defending)d=Math.round(d*0.5);
     d-=p.def+p.reduce+b.shield+b.bind+(m.weaken>0?10:0);d=Math.max(0,d);
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
   };
@@ -2608,11 +2621,11 @@ const DEFAULT_NOTICES=[
   {id:'n3',cat:'update',date:'10.24',title:'봉인 수호자 공략 안내',text:'LV15 이상, 6인 이상. 탱커 1 · 딜러 3 · 힐러 2가 필요합니다.'}
 ];
 const DEFAULT_BANNER={eyebrow:'백야의 신전 소식',title:'잠든 혼돈이 봉인을 두드린다',text:'백야의 신전 봉인 수호자가 깨어났습니다. LV15 이상의 블레서 여섯 명이 모이면 공략에 나설 수 있습니다.',linkLabel:'봉인 수호자 보기',link:'monster:guardian'};
-const DEFAULT_CONFIG={levelCap:99,turnSeconds:45,acceptSeconds:30,expBase:100,expStep:50,expQuad:2,jobAdvanceLevel:30};
+const DEFAULT_CONFIG={levelCap:99,turnSeconds:45,acceptSeconds:30,expBase:100,expStep:50,expQuad:2,jobAdvanceLevel:20};
 const BOTS=[['아르덴','knight',16],['세린','demigod',15],['카이로','destroyer',17],['미라엘','priest',9],['하윤','shooter',4],['도겸','defender',9],['루시안','salamander',15],['엘라','priest',3],['테오','defender',4],['비안카','mage',8],['노아','warrior',18],['리엔','summoner',17],['소하','infighter',6],['이안','defender',7],['레아','priest',5],['진후','mystic',16],['다온','demigod',12],['유키','dualist',15],['벨라','warrior',13]];
 const PARTY_NAMES=['새벽 토벌대','은빛 순례단','백야 원정대','라니아케아 수호대','안개 추적단','첫 별 탐사대','회색 늑대단','검은 결정 조사대','잿빛 등불단','북쪽 경계 정찰대','푸른 불꽃 결사','고목 벌채단'];
 function partyName(){const used=new Set(S.recruits.map(r=>r.name));return pick(PARTY_NAMES.filter(n=>!used.has(n)))||'임시 탐사대';}
-const LOBBY_LINES=['오늘 파수꾼 3인 가실 분 있나요?','백야의 신전 공지 보셨어요? 수호자는 6인부터래요','정화의 성수는 상점에서 40골드예요','탐사대 퀘스트는 정찰병 경로가 회복약을 줘요','광역 예고 뜨면 방어 꼭 누르세요','힐러 구해요! 추적자 4인','방금 장궁 나왔어요','블라스페미아 지도 조각은 LV7부터 받을 수 있어요','라니아케아의 축복이 함께하길','일일 의뢰 오전 5시에 초기화돼요','졸트 다음에 러시 쓰면 연계 대미지 붙어요','제압은 딜러 대미지가 두 배 넘으면 풀려요','LV30 되면 전직할 수 있어요','랜덤 매칭 돌리는 중입니다','서머너 비호 두 번이면 광역 버틸 만해요'];
+const LOBBY_LINES=['오늘 파수꾼 3인 가실 분 있나요?','백야의 신전 공지 보셨어요? 수호자는 6인부터래요','정화의 성수는 상점에서 40골드예요','탐사대 퀘스트는 정찰병 경로가 회복약을 줘요','광역 예고 뜨면 방어 꼭 누르세요','힐러 구해요! 추적자 4인','방금 장궁 나왔어요','블라스페미아 지도 조각은 LV7부터 받을 수 있어요','라니아케아의 축복이 함께하길','일일 의뢰 오전 5시에 초기화돼요','졸트 다음에 러시 쓰면 연계 대미지 붙어요','제압은 딜러 대미지가 두 배 넘으면 풀려요','LV20 되면 시작의 마을에서 전직 퀘스트 받을 수 있어요','랜덤 매칭 돌리는 중입니다','서머너 비호 두 번이면 광역 버틸 만해요'];
 const PARTY_LINES=['준비 완료했습니다','제압 먼저 걸게요','광역 예고 보이면 성역 쓸게요','힐 필요하면 말해주세요','졸트 다음 연계 들어갑니다','좋아요 가시죠','잘 부탁드려요','체력 낮으면 방어 눌러주세요'];
 const WHISPER_LINES=['안녕하세요!','지금 퀘스트 중이에요, 끝나고 같이 가요','좋아요, 파티 만들면 초대해 주세요','ㅎㅎ 고마워요','저는 지금 레벨 올리는 중이에요','수호자 갈 때 불러주세요','오늘 일일 의뢰 다 하셨어요?'];
 
@@ -3026,6 +3039,16 @@ function massAddBot(M,m){
 }
 function massEnd(text,kind){const M=S.mass;if(!M)return;S.events=(S.events||[]).filter(e=>e.id!==M.evId);
   M.roster.forEach(x=>{const b=bot(x.name);if(b&&b.status==='recruit')b.status='lobby';});S.mass=null;refreshTicker();if(text)notify(text,kind||'');save();}
+/* 만신전 가호: 첫 페이즈 전 무작위 1명이 뒤집힌 카드 5장 중 1장을 고른다 */
+const BLESS={gold:['황금의 가호','골드 획득량 +10%','✦','황금','골드 +10%'],exp:['지혜의 가호','경험치 획득량 +10%','✧','지혜','EXP +10%'],atk:['전쟁의 가호','공격력 +5%','⚔','전쟁','공격력 +5%'],heal:['생명의 가호','회복력 +5%','✚','생명','회복력 +5%'],guard:['수호의 가호','보스에게 받는 대미지 -5%','⛨','수호','받는 피해 -5%']};
+function applyBless(b,k){if(!b.bless||b.bless.pick)return;b.bless.pick=k;
+  if(k==='atk')b.players.forEach(p=>p.atk=Math.round(p.atk*1.05));if(k==='heal')b.healMult=1.05;if(k==='guard')b.dmgTakenMult=0.95;
+  b.log.push({t:'sys',text:`✦ 가호 · ${b.bless.by}님이 「${BLESS[k][0]}」을(를) 골랐습니다 · ${BLESS[k][1]}`});}
+function blessDlg(){const b=S.battle;if(!b||!b.bless)return '';const P=b.bless.pick;const open=S.sel.blessOpen;
+  return `<div class="bl-wrap"><div class="md-lbl" style="justify-content:center"><i class="lbl-d" aria-hidden="true">◆</i>만신전 · 신들의 가호</div><h3 class="bl-t">${P?`「${esc(BLESS[P][0])}」`:'카드 한 장을 고르세요'}</h3>
+    <p class="faint bl-s">${P?esc(BLESS[P][1])+' · 이번 만신전 동안 원정대 전원에게 적용됩니다.':'원정대를 대표해 당신이 선택되었습니다. 뒤집힌 카드 중 하나를 고르면 원정대 전원이 그 가호를 받습니다.'}</p>
+    <div class="bl-cards">${b.bless.cards.map((k,i)=>{const shown=P!=null;const mine=open===i;return `<button class="bl-card ${shown?'flip':''} ${mine?'mine':''}" data-act="bless-pick" data-i="${i}" ${P?'disabled':''} aria-label="${shown?esc(BLESS[k][0]):`${i+1}번 카드`}"><span class="bl-in"><span class="bl-back">✦</span><span class="bl-front"><b>${BLESS[k][2]}</b><em>${esc(BLESS[k][3])}</em><small>${esc(BLESS[k][4])}</small></span></span></button>`;}).join('')}</div>
+    ${P?'<div class="row" style="justify-content:center;margin-top:14px"><button class="btn btn-primary btn-sm" data-act="closemodal">전투 시작</button></div>':''}</div>`;}
 function massStart(){
   const M=S.mass;if(!M||M.phase!=='gather')return;const m=monster(M.monsterId);if(!m){massEnd();return;}
   const meIn=M.roster.some(x=>x.isMe);
@@ -3040,9 +3063,12 @@ function massStart(){
   {const ev=(S.events||[]).find(x=>x.id===M.evId);const land=ev&&ev.land;if(land&&isSnow(landW(land))){b.snow=true;b.log.push({t:'warn',text:`❄ 눈보라 · ${LANDS[land]} · 이동 범위 보너스 무효(3×3 고정), 이동 시 25% 확률로 발이 묶임`});}}
   startTurn(b,Math.random);
   b.ctx={type:'mass',ev:M.evId};b.endsAt=now()+C.battleMinutes*60000;b.rules.exp=0;b.rules.gold=0;b.rules.drops=[];
-  b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);
+  {const by=pick(M.roster);const ks=Object.keys(BLESS);for(let i=ks.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ks[i],ks[j]]=[ks[j],ks[i]];}b.bless={by:by.isMe?S.me.name:by.name,me:!!by.isMe,cards:ks,pick:null};S.sel.blessOpen=null;
+    if(!by.isMe){const bid=b.id;later(rnd(2500,5000),()=>{const B=S.battle;if(B&&B.id===bid&&B.bless&&!B.bless.pick){applyBless(B,pick(B.bless.cards));save();if(S.route==='battle')render();toast(`${B.bless.by}님이 「${BLESS[B.bless.pick][0]}」을(를) 골랐습니다.`,'good');}});}}
+  b.deadline=now()+b.rules.turnSeconds*1000+(b.bless.me?20000:0);planBots(b);
   M.phase='battle';S.battle=b;resetAct();S.sel.gmode='fight';S.sel.gcell=null;S.sel.gitem=null;
   S.route='battle';save();render();notify(`${m.name} 만신전 시작 · ${n}인`,'good');
+  if(b.bless.me){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');}
 }
 function massTick(t){
   const M=S.mass;if(!M||M.phase!=='gather')return;
@@ -3404,6 +3430,7 @@ function rewardHTML(r){return `<div class="reward"><span>EXP <b class="num">${r.
 function claimKey(q,qp){return q.repeat?`${q.id}:${qp.cycle}`:q.id;}
 function questStatus(q){
   let qp=S.qp[q.id];const me=S.me;
+  if(q.job){const c=CLASSES[me.job];if((c.base||me.job)!==q.job)return 'hidden';if(c.tier===2&&!qp)return 'hidden';}
   if(qp&&qp.status==='active'&&!q.steps[qp.step]){delete S.qp[q.id];qp=null;}
   if(qp&&qp.status==='active'){const st=q.steps[qp.step];return st&&st.end?'claim':'active';}
   if(q.repeat&&!dailyPicks().includes(q.id))return 'hidden';
@@ -4340,7 +4367,7 @@ function invDetail(inv,eqIds){
     <small class="faint">${eq?SLOT[it.slot]+(enhOf(k)?` · 강화 +${enhOf(k)}`:''):typeLabel(it)}</small>
     ${eq?`<span class="bpill eqb sm" style="align-self:flex-start">${statText(itemStats(k,enhOf(k)))}</span>`:''}
     <p>${esc(it.desc)}</p>${it.type==='deco'&&decoSrcText(k)?`<small class="sh-src">${esc(decoSrcText(k))}</small>`:''}${reqText(it)?`<small class="${itemBlock(k)?'reason':'faint'}">${esc(reqText(it))}</small>`:''}
-    <div class="row">${eq?`<button class="btn btn-sm ${on?'':'btn-primary'}" data-act="${on?'unequip':'equip'}" data-id="${k}" data-slot="${it.slot}">${on?'해제':'착용'}</button><button class="btn btn-sm" data-act="enh-open" data-id="${k}">강화</button>`:((it.buff||it.letter)?`<button class="btn btn-sm btn-primary" data-act="inv-use" data-id="${k}">${it.letter?'편지 읽기':'사용'}</button>`:it.type==='deco'?(n-shelfCount(k)>0?`<button class="btn btn-sm btn-primary" data-act="shelf-put" data-id="${k}">장식장에 올리기</button>`:'')+(shelfCount(k)?`<button class="btn btn-sm" data-act="shelf-off" data-id="${k}">장식장에서 내리기</button>`:''):'')}<button class="btn btn-sm btn-ghost" data-act="inv-sel" data-id="">닫기</button></div></div></div>`;
+    <div class="row">${eq?`<button class="btn btn-sm ${on?'':'btn-primary'}" data-act="${on?'unequip':'equip'}" data-id="${k}" data-slot="${it.slot}">${on?'해제':'착용'}</button><button class="btn btn-sm" data-act="enh-open" data-id="${k}">강화</button>`:((it.buff||it.letter||it.readText)?`<button class="btn btn-sm btn-primary" data-act="inv-use" data-id="${k}">${it.letter||it.readText?'읽기':'사용'}</button>`:it.type==='deco'?(n-shelfCount(k)>0?`<button class="btn btn-sm btn-primary" data-act="shelf-put" data-id="${k}">장식장에 올리기</button>`:'')+(shelfCount(k)?`<button class="btn btn-sm" data-act="shelf-off" data-id="${k}">장식장에서 내리기</button>`:''):'')}<button class="btn btn-sm btn-ghost" data-act="inv-sel" data-id="">닫기</button></div></div></div>`;
 }
 function eqBreak(k){const L=Object.entries(S.me.equip||{}).map(([sl,id])=>{const v=itemStats(id,enhOf(id))[k];return v?`${itemName(id)} (${SLOT[sl]}) ${v>0?'+':''}${v}`:null;}).filter(Boolean);return L.length?L.join('\n'):'이 능력치를 올려 주는 장비가 없습니다';}
 function ibBreak(k){const t=now();return ((S.me.itemBuffs)||[]).filter(b=>b.until>t&&b.stat===k).map(b=>`${ITEMS[b.src]?ITEMS[b.src].name:'아이템'} +${b.val} · ${Math.ceil((b.until-t)/60000)}분 남음`).join('\n');}
@@ -4623,7 +4650,8 @@ function gItemAct(b,me){const g=S.sel.gitem;if(!g||!g.item||!(S.me.inv[g.item]>0
 function planBots(b){b.players.forEach(p=>{if(!p.isMe&&!p.dead)p.planAt=now()+rnd(1500,7000);});b.allAt=null;}
 const hooks={hasItem:(pid,k)=>pid==='me'?(S.me.inv[k]||0)>0&&!itemBlock(k):false,useItem:(pid,k)=>{if(pid==='me'&&S.me.inv[k]>0)S.me.inv[k]--;}};
 function doResolve(){
-  const b=S.battle;if(b.grid)gridPre(b,Math.random,hooks);resolveTurn(b,Math.random,hooks);
+  const b=S.battle;if(b.bless&&!b.bless.pick)applyBless(b,pick(b.bless.cards));if(b.grid)gridPre(b,Math.random,hooks);resolveTurn(b,Math.random,hooks);
+  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&!b.over&&Math.random()<0.4)b.log.push({t:'warn',text:`${b.mon.name} · “${pick(H.say)}”`});}
   if(b.over)finishBattle(b);
   else{b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);resetAct();
     if(Math.random()<(b.grid?0.3:0.25)){const bm=b.players.filter(p=>!p.isMe&&!p.dead);if(bm.length)later(rnd(800,2500),()=>botSay(b.grid?'raid':'party',pick(bm).name,pick(b.grid?MASS_LINES:PARTY_LINES)));}}
@@ -4645,7 +4673,7 @@ function finishBattle(b){
   if(ctx.type==='mass'){const C={reward:b.reward||massCfg().reward},w=b.over==='win';r.eligible=me.direct>=1;r.mass=true;
     if(r.eligible){r.exp=C.reward.join.exp+(w?C.reward.kill.exp:0);r.gold=C.reward.join.gold+(w?C.reward.kill.gold:0);const it={...(C.reward.join.items||{})};
       if(w){for(const k in (C.reward.kill.items||{}))it[k]=(it[k]||0)+C.reward.kill.items[k];const pk=(C.reward.kill.pick||[]).filter(k=>ITEMS[k]);if(pk.length){const k=pick(pk);it[k]=(it[k]||0)+1;}}
-      r.items=it;r.ups=grant({exp:r.exp,gold:r.gold,items:r.items},'mass',{battleId:b.id,label:b.mon.name+' 만신전'});}
+      r.items=it;if(b.bless&&b.bless.pick==='exp')r.exp=Math.round(r.exp*1.1);if(b.bless&&b.bless.pick==='gold')r.gold=Math.round(r.gold*1.1);r.ups=grant({exp:r.exp,gold:r.gold,items:r.items},'mass',{battleId:b.id,label:b.mon.name+' 만신전'});}
     massEnd(w?`${b.mon.name} 만신전 성공!`:`${b.mon.name} 만신전 실패 · 이벤트가 종료되었습니다.`,w?'good':'warn');
   }else if(r.eligible){
     r.exp=b.rules.exp;r.gold=b.rules.gold;b.rules.drops.forEach(([k,c])=>{if(Math.random()<c)r.items[k]=(r.items[k]||0)+1;});
@@ -4653,6 +4681,7 @@ function finishBattle(b){
   }
   if(me.direct>=1){bump('damage',me.dealt||0);bump('crits',me.crits||0);bump('healing',me.healed||0);bump('revives',me.revives||0);
     if(b.over==='win'){bump('raidsWon');const k=S.stats.kills=S.stats.kills||{};k[b.monsterId]=(k[b.monsterId]||0)+1;if(b.eventBonus)bump('bossWins');if(me.dead)bump('fallenWins');}else bump('raidsLost');}
+  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);}}
   b.result=r;
   if(ctx.drun)drunAfter(b,me);
   sysParty(b.over==='win'?'승리! 보상은 각자 지급됩니다.':'전투가 끝났습니다.');
@@ -5274,10 +5303,12 @@ const THEFT_QUEST={id:'D_THEFT',cat:'repeat',title:'잃어버린 골드를 찾�
     {label:'골드를 돌려받고 용서해 준다',result:'꼬마가 고개를 푹 숙이고 골드를 돌려준다. "다시는 안 그럴게요." 골목 끝에서 누군가 박수를 친다.',next:'end',flag:'theft_back'},
     {label:'경비대에 넘긴다',result:'경비대가 꼬마를 데려가며 되찾은 골드를 건넨다. "협조에 감사드립니다, 블레서님."',next:'end',flag:'theft_back'}]},
   end:{end:true,text:'잃어버린 골드를 되찾음',reward:{exp:0,gold:10,items:{}}}}};
+function doAdvance(job){const me=S.me;const from=me.job;if(CLASSES[from].tier!==1||!CLASSES[from].adv.includes(job))return;me.job=job;setTimeout(checkTitles,0);me.advancedAt=now();S.sel.advPick=null;logChange('전직',[{field:me.name,before:CLASSES[from].name,after:CLASSES[job].name}]);
+    S.chat.lobby.push({id:uid('m'),sys:true,text:`${me.name}님이 ★ ${CLASSES[job].name}(으)로 전직했습니다.`,ts:now()});save();render();toast(`★ ${CLASSES[job].name}(으)로 전직했습니다. 새 스킬을 확인하세요.`,'good');}
 const RELEVEL={forest:[5,5],tracker:[15,5],ev_rift:[20,6],ev_crown:[40,6],guardian:[90,10]};
 const LVMAP_V=2,GROUP_GEAR={forest:1,tracker:2,ev_rift:3,ev_crown:5,guardian:8};
 function ensureRelevel(){
-  if(S.data&&S.data.config&&!S.data.advLv30){if(S.data.config.jobAdvanceLevel===10)S.data.config.jobAdvanceLevel=30;S.data.advLv30=1;save();}
+  if(S.data&&S.data.config&&!S.data.advLv20){if([10,30].includes(S.data.config.jobAdvanceLevel))S.data.config.jobAdvanceLevel=20;S.data.advLv20=1;save();}
   if(!S.data||!S.data.monsters||(S.data.lvMap||0)>=LVMAP_V)return;
   const fresh=Object.fromEntries(EXTRA_MONSTERS.filter(m=>m.kind==='field'||m.kind==='dungeon').map(m=>[m.id,m]));
   S.data.monsters=S.data.monsters.map(m=>{
@@ -5288,9 +5319,72 @@ function ensureRelevel(){
     return {...m,level:L,hp:Math.round(m.hp*hr),atk:Math.round(m.atk*ar),dotDmg:Math.round((m.dotDmg||0)*ar),exp:Math.round(fieldExp(L)*R[1]),gold:Math.round(fieldGold(L)*R[1])};});
   Object.keys(AREA_MON).forEach(k=>delete AREA_MON[k]);S.data.lvMap=LVMAP_V;save();
 }
-function qReward(q,r){if(!r||!q||!q.repeat||!S.me)return r;const L=S.me.level;if(L<=q.level+2)return r;
+function qReward(q,r){if(r&&r.gearTier&&S.me){const T=r.gearTier;const w=gearOfTier(T).find(k=>ITEMS[k].wtype&&classAllowed(ITEMS[k],S.me.job));const k=w||`g${T}_armor`;r={...r,items:{...(r.items||{}),[k]:1}};delete r.gearTier;}
+  if(!r||!q||!q.repeat||!S.me)return r;const L=S.me.level;if(L<=q.level+2)return r;
   return {...r,exp:Math.max(r.exp||0,Math.round(needOf(L)*0.1)),gold:Math.max(r.gold||0,Math.round((r.gold||0)*(1+(L-q.level)/10)))};}
-function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST])if(!S.data.quests.some(q=>q.id===Q.id)){S.data.quests.push(clone(Q));ch=true;}if(ch)save();}
+
+/* ───────── 메인 스토리 · 서장과 1장 (2054 재오픈) ───────── */
+Object.assign(ITEMS,{
+  q_return:{name:'라니아케아로의 귀환',type:'mat',tag:'???',desc:'이 세계에 머무르시겠습니까? ▒▒▒ 귀환 대상: [데이터 없음] · 사용 기한: 영원 · 이 아이템은 버릴 수 없습▒',price:0},
+  j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',readText:'2052.09.14 — 타임어택 접수 완료. 컨빨이랑 템빨이 한 공대라니 웃기다.\n2052.09.14 — 로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.\n2052.09.21 — 일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.\n2052.10.03 — 지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.\n(마지막 장은 찢겨 있다.)',desc:'풀숲에서 주운 가죽 표지의 일지. 방패 두 개가 겹친 길드 문장이 찍혀 있다. 사용하면 읽는다.',price:0}});
+const STORY_MONS=[soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35})];
+const STORY_QUESTS=[
+ {id:'E0',cat:'epic',title:'블레스 링크',published:true,level:1,prereq:null,repeat:null,cond:{},
+  desc:'2054년, <Bleset Saga>가 다시 문을 열었다. 블레스 링크를 쓰고 처음으로 접속한다.',start:'s1',steps:{
+  s1:{text:'블레스 링크가 정맥과 홍채를 읽어 들인다. "생체 정보 동기화 100%." 눈을 뜨자 풀 냄새가 지나치게 진하다. 바람이 뺨을 스치는 감각까지 그대로다.',choices:[
+    {label:'손등을 꼬집어 본다',result:'아프다. 분명히 게임인데.',next:'s2'},
+    {label:'주변을 둘러본다',result:'황혼녘 강가, 아움타주 신전 앞. 강가의 사람들이 일제히 고개를 돌려 당신을 본다.',next:'s2'}]},
+  s2:{text:'흰 옷을 입은 사제가 다가와 고개를 숙인다. "어서 오세요, 이방인. 저는 이레나예요. 기다리고 있었어요. …아주 오래."',choices:[
+    {label:'인사를 건넨다',result:'이레나가 웃는다. 웃음이 1초쯤 너무 길다. "여기서는 원하는 만큼 계셔도 돼요."',next:'end',flag:'e0_link'},
+    {label:'로그아웃 버튼을 확인한다',result:'메뉴 구석의 로그아웃 버튼은 잘 보인다. 이레나가 그 쪽을 힐끗 본 것 같다.',next:'end',flag:'e0_link'}]},
+  end:{end:true,text:'첫 접속',reward:{exp:60,gold:30,items:{potion:1}}}}},
+ {id:'E4',cat:'epic',title:'비명 지르는 풀숲',published:true,level:7,prereq:'E3',repeat:null,cond:{},
+  desc:'황혼녘 강가 마을에서 또 사람이 사라졌다. 밤마다 풀숲에서 비명 같은 노래가 들린다고 한다. [1장 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'이레나가 다급하게 당신을 붙잡는다. "강가 마을에서 또 사라졌어요. 이번엔 아이예요. 풀숲에서 노래가 들렸대요." 사라진 탐사대의 흔적도 그 풀숲으로 이어진다.',choices:[
+    {label:'곧장 풀숲으로 향한다',result:'풀숲 입구, 풀잎들이 바람도 없이 한쪽으로 눕는다.',next:'s2'}]},
+  s2:{text:'덤불 아래에서 가죽 표지의 낡은 일지를 주웠다. 표지에는 방패 두 개가 겹친 길드 문장과 "2052"라는 숫자가 찍혀 있다. 지금은 2054년인데.',choices:[
+    {label:'일지를 챙기고 노래를 따라간다',result:'노래가 가까워진다. 가사가 들린다. "여기 있어, 여기 있어, 영원히."',next:'s3',flag:'e4_journal'}]},
+  s3:{text:'풀숲 한가운데, 머리카락이 덩굴처럼 자란 여자가 노래를 멈춘다. "…또 왔구나. 나도 처음엔 너처럼 웃으면서 들어왔어."',battle:'st_witch',next:'s4',winText:'마녀가 무너지며 속삭인다. "소원을… 빌지 마…" 덩굴이 시들고, 잠들어 있던 아이가 깨어난다.'},
+  s4:{text:'아이를 데려가며 이레나가 보상 꾸러미를 건넨다. "정말 잘하셨어요. 이제 여기가 당신 집이에요." 꾸러미 안에 처음 보는 물건이 섞여 있다.',choices:[
+    {label:'꾸러미를 연다',result:'"라니아케아로의 귀환"이라는 이름의 은빛 표. 설명이 깨져 있다. 이레나는 아무렇지 않게 웃고 있다.',next:'end',flag:'ch1_clear'}]},
+  end:{end:true,text:'1장 「사라진 탐사대」 완료',reward:{exp:900,gold:250,items:{q_return:1,j2052:1},gearTier:1}}}}];
+/* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
+const HERO_LINES={
+  st_witch:{say:['꺼내 줘… 여기서 꺼내 줘.','나도 너처럼 골랐어. 남겠다고.','노래를 멈추면 그들이 화를 내.'],last:'소원을 빌지 마.'},
+  d_grass:{say:['꺼내 줘… 여기서 꺼내 줘.','나도 너처럼 웃으면서 들어왔어.','이 노래, 내 목소리가 아니야.'],last:'소원을 빌지 마.'},
+  d_cave:{say:['수련을 끝내면 나갈 수 있다고 했는데.','몇 년째인지 이제 세지도 않아.','너도 결국 여기 앉게 될 거야.'],last:'로그아웃… 버튼…'},
+  d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
+  d_siren:{say:['돌아오지 마, 돌아오지 마.','이 노래는 경고야. 아무도 듣질 않지.','바다 밑에 우리 이름이 잠겨 있어.'],last:'노래를… 들어 줘서 고마워.'},
+  d_mirror:{say:['거울을 봐. 그게 진짜 너야.','NPC들 얼굴, 자세히 본 적 있어?','나는 가장 오래 남은 사람이야.'],last:'다음은… 너야.'},
+  guardian:{say:['신전 문을 열지 마.','우리는 이겼어. 그리고 졌지.','소원은 하나뿐이야. 잘 골라.'],last:'2052… 9월… 14일…'}};
+/* 마을 글리치 대사 */
+const VIL_GLITCH=['여기 계속 계셔도 돼요.','돌아갈 데가 있긴 하세요?','{N}님, 오늘도 오셨네요. …아, 아니, 이름을 잘못 불렀네요.','여기 계속 계셔도 돼요. 여기 계속 계셔도 돼요.','어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','당신도 곧 익숙해질 거예요. 다들 그랬거든요.','…로그아웃? 그게 뭐죠?'];
+const GLITCH_NAMES=['진','하루','템빨대장','컨트롤장인','유니','크로노'];
+
+/* ───────── 전직 퀘스트 (LV20 · 각 클래스의 시작의 마을) ───────── */
+const ADV_ORIGIN={
+  defender:{land:'meadow',god:'아움타주',godDesc:'장악의 신',place:'황혼녘 강가의 아움타주 신전',npc:'신전 기사 단장 오렌',mon:['st_tr_def','아움타주의 그림자 기사','golem']},
+  infighter:{land:'rock',god:'발레티',godDesc:'무술의 신',place:'바위 산맥의 발레티 신전',npc:'수련장 사범 카이',mon:['st_tr_inf','발레티의 석상 무인','golem']},
+  shooter:{land:'ember',god:'셀로나',godDesc:'문명의 신',place:'오아시스 마을의 셀로나 신전',npc:'신전 기술사 미라',mon:['st_tr_sho','셀로나의 태엽 사수','golem']},
+  mage:{land:'ember',god:'아발라가',godDesc:'불의 신',place:'붉은 모래사막의 아발라가 신전',npc:'불의 무녀 세라',mon:['st_tr_mag','아발라가의 불꽃 환영','spirit']},
+  priest:{land:'frost',god:'고대 신들',godDesc:'적막의 숲 제단',place:'적막의 숲, 신들의 제단',npc:'제단지기 노파 오웬',mon:['st_tr_pri','침묵하는 제단의 수호령','spirit']}};
+Object.assign(ITEMS,{q_trial:{name:'시련의 증표',type:'mat',tag:'퀘스트 아이템',desc:'신전에서 받은 은빛 증표. 쥐고 있으면 손바닥이 따뜻해진다.'}});
+const ADV_MONS=Object.entries(ADV_ORIGIN).map(([job,o])=>soloMon({id:o.mon[0],name:o.mon[1],art:o.mon[2],kind:'story',region:o.place,level:20,statLevel:20,tier:'story',desc:`${o.god}이(가) 블레서를 시험하기 위해 내려보낸 환영.`,singleName:'시련의 일격',aoeName:'신의 압박',dotName:'시련의 낙인',dotChance:0.25}));
+function advQuest(job){const o=ADV_ORIGIN[job];const advs=CLASSES[job].adv;
+  return {id:'J_'+job,cat:'sub',title:`[전직] ${o.god}의 시련`,published:true,level:20,prereq:null,repeat:null,job,cond:{},
+    desc:`${o.godDesc} ${o.god}이(가) 당신을 부른다. ${villageName(o.land)}로 가서 상위 클래스로 나아갈 시련을 받자.`,start:'s1',steps:{
+    s1:{text:`꿈에서 낯선 목소리를 들었다. "${CLASSES[job].name}의 아이야, 이제 때가 되었다." ${o.place}로 가서 시련의 증표를 받아야 한다. (탐색 › ${LANDS[o.land]} › 마을 › 광장)`,
+      give:{land:o.land,spot:'plaza',item:'q_trial',n:1,npc:o.npc,text:`기다리고 있었습니다. ${o.god}께서 당신을 지켜보고 계셨어요. 이 증표를 쥐고 신전 깊은 곳으로 들어가세요.`},
+      choices:[{label:'증표를 쥐고 신전 깊은 곳으로 들어간다',req:{item:'q_trial'},result:'증표가 빛나며 신전 바닥의 문양이 열린다.',next:'s2'},{label:'아직 신전에 가지 못했다',result:`${villageName(o.land)}의 광장에서 ${o.npc}을(를) 찾아야 한다.`,next:'s1'}]},
+    s2:{text:`문양 너머, ${o.mon[1]}이(가) 무기를 든다. "증명하라. 네가 나아갈 자격이 있는지."`,battle:o.mon[0],next:'s3',winText:'환영이 무릎을 꿇고 빛으로 흩어진다.'},
+    s3:{text:`빛 속에서 ${o.god}의 목소리가 들린다. "…마음에 드는구나. 아주, 마음에 들어." 웃음소리가 조금 길다. 두 갈래의 길이 눈앞에 펼쳐진다.`,
+      choices:advs.map(a=>({label:`★ ${CLASSES[a].name}의 길을 택한다`,result:`${CLASSES[a].name}(으)로서의 힘이 몸에 스며든다.`,next:'end',advTo:a}))},
+    end:{end:true,text:'전직 완료',reward:{exp:500,gold:300,items:{}}}}};}
+const ADV_QUESTS=Object.keys(ADV_ORIGIN).map(advQuest);
+function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):Q.id==='E4'?QS.findIndex(q=>q.id==='E3')+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+  for(const M of [...STORY_MONS,...ADV_MONS])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
+  const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
+  if(ch)save();}
 function theftActive(){return !!(S.theft&&S.theft.cycle===kstCycle());}
 function vilGive(land,spot){/* 퀘스트 단계의 give:{land,spot,item,n,text} 훅 */
   for(const q of (S.data.quests||[])){const qp=S.qp&&S.qp[q.id];if(!qp||questStatus(q)!=='active')continue;const st=q.steps&&q.steps[qp.step];const g=st&&st.give;
@@ -5308,7 +5402,8 @@ function vilVisit(land,spot){
     if(!done){S.theft={cycle:kstCycle(),land};if(S.qp.D_THEFT)delete S.qp.D_THEFT;setTimeout(()=>notify('데일리 퀘스트 「잃어버린 골드를 찾아서」가 생겼습니다.'),600);}}
   else if(n>10){npc='';text=pick(VIL_AVOID[spot]);}
   else {const r=Math.random();const ex=EXPLORE.find(x=>x.id===land);
-    if(r<0.015){const g=3+Math.floor(Math.random()*10);S.me.gold+=g;got=`${g}골드`;d.vil++;}
+    if(Math.random()<0.015){text=pick(VIL_GLITCH).replace('{N}',pick(GLITCH_NAMES));}
+    else if(r<0.015){const g=3+Math.floor(Math.random()*10);S.me.gold+=g;got=`${g}골드`;d.vil++;}
     else if(r<0.028&&ex){const k=(FOOD_BY_LAND[land]&&Math.random()<0.5)?FOOD_BY_LAND[land]:ex.mat;addItem(k,1);got=`${ITEMS[k].name} ×1`;d.vil++;}}
   S.sel.vil={land,spot,npc,text,got,lost,ts:now()};save();
 }
@@ -6031,8 +6126,9 @@ const ACTS={
   'note-edit':d=>{S.sel.noteEdit=d.name;showOnline();const i=document.querySelector('.note-in');if(i){i.focus();i.select();}},
   'rn-start':()=>{if(busyReason()){toast(busyReason()+' · 끝난 뒤 이름을 바꿀 수 있습니다.','warn');return;}S.sel.nameEdit=true;render();const i=$('#rn-name');if(i){i.focus();i.select();}},
   'rn-cancel':()=>{S.sel.nameEdit=false;render();},
-  'adv-open':()=>{S.sel.advPick=null;modal(`<div class="row" style="justify-content:space-between"><h3>전직</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>${advPanel()}`);const mm=$('.modal');if(mm)mm.classList.add('wide');},
-  'inv-use':d=>{const it=ITEMS[d.id];if(it&&it.letter){if(!(S.me.inv[d.id]>0))return;S.me.inv[d.id]--;if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();modal(`<div class="letter"><div class="lt-paper"><small>병 속의 편지</small><p>${esc(pick(BOTTLE_LINES))}</p></div><p class="faint" style="font-size:12px;text-align:center">편지를 읽자 종이가 바스러져 바람에 흩어졌다.</p><div class="row" style="justify-content:center"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);const mm=$('.modal');if(mm)mm.classList.add('narrow2');setTimeout(()=>{const p=$('.lt-paper');if(p)p.classList.add('fade');},4500);setTimeout(()=>{if($('.lt-paper'))modal('');},6000);return;}if(!it||!it.buff||!(S.me.inv[d.id]>0))return;{const bl=itemBlock(d.id);if(bl){toast(bl,'warn');return;}}S.me.inv[d.id]--;const b=it.buff;S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.until>now()&&x.src!==d.id);
+  'adv-open':()=>{const c=CLASSES[S.me.job];if(c.tier===1){const id='J_'+S.me.job;const q=quest(id);if(q){if(questStatus(q)==='available'){S.qp[id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();toast(`퀘스트 수락 · ${q.title}`);}go('quest',{quest:id,qtab:q.cat});return;}}S.sel.advPick=null;modal(`<div class="row" style="justify-content:space-between"><h3>전직</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>${advPanel()}`);const mm=$('.modal');if(mm)mm.classList.add('wide');},
+  'bless-pick':d=>{const b=S.battle;if(!b||!b.bless||b.bless.pick||!b.bless.me)return;S.sel.blessOpen=+d.i;applyBless(b,b.bless.cards[+d.i]);save();render();modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);},
+  'inv-use':d=>{const it=ITEMS[d.id];if(it&&it.readText){modal(`<div class="letter"><div class="lt-paper"><small>${esc(it.name)}</small><p style="white-space:pre-line">${esc(it.readText)}</p></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);return;}if(it&&it.letter){if(!(S.me.inv[d.id]>0))return;S.me.inv[d.id]--;if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();modal(`<div class="letter"><div class="lt-paper"><small>병 속의 편지</small><p>${esc(pick(BOTTLE_LINES))}</p></div><p class="faint" style="font-size:12px;text-align:center">편지를 읽자 종이가 바스러져 바람에 흩어졌다.</p><div class="row" style="justify-content:center"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);const mm=$('.modal');if(mm)mm.classList.add('narrow2');setTimeout(()=>{const p=$('.lt-paper');if(p)p.classList.add('fade');},4500);setTimeout(()=>{if($('.lt-paper'))modal('');},6000);return;}if(!it||!it.buff||!(S.me.inv[d.id]>0))return;{const bl=itemBlock(d.id);if(bl){toast(bl,'warn');return;}}S.me.inv[d.id]--;const b=it.buff;S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.until>now()&&x.src!==d.id);
     S.me.itemBuffs.push({src:d.id,stat:b.stat,val:b.val,until:now()+b.min*60000});if(it.buff2)S.me.itemBuffs.push({src:d.id,stat:it.buff2.stat,val:it.buff2.val,until:now()+it.buff2.min*60000});if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();toast(`${it.name} 사용 · ${b.min}분 동안 ${STATK[b.stat]} +${b.val}${it.buff2?` · ${STATK[it.buff2.stat]} +${it.buff2.val}`:''}`,'good');},
   'sk-sel':d=>{S.sel.skSel=S.sel.skSel===d.id?null:d.id;render();},
   'inv-cat':d=>{S.sel.invCat=d.cat;S.sel.invSel=null;render();},
@@ -6263,7 +6359,7 @@ const ACTS={
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},
   chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;qp.pending=+d.i;save();render();},
   nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];
-    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}
+    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.advTo)doAdvance(c.advTo);
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}
@@ -6355,8 +6451,7 @@ const ACTS={
   'adv-open2':()=>{const pk=S.sel.advPick;modal(`<div class="row" style="justify-content:space-between"><h3>전직</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>${advPanel()}`);S.sel.advPick=pk;const mm=$('.modal');if(mm)mm.classList.add('wide');},
   advcancel:()=>{S.sel.advPick=null;if($('.modal'))ACTS['adv-open2']();else render();},
   advconfirm:d=>{const me=S.me,c=CLASSES[me.job];if(c.tier!==1||!c.adv.includes(d.job)||me.level<cfg().jobAdvanceLevel||busyReason())return;
-    modal('');const from=me.job;me.job=d.job;setTimeout(checkTitles,0);me.advancedAt=now();S.sel.advPick=null;logChange('전직',[{field:me.name,before:CLASSES[from].name,after:CLASSES[d.job].name}]);
-    S.chat.lobby.push({id:uid('m'),sys:true,text:`${me.name}님이 ★ ${CLASSES[d.job].name}(으)로 전직했습니다.`,ts:now()});save();render();toast(`★ ${CLASSES[d.job].name}(으)로 전직했습니다. 새 스킬을 확인하세요.`,'good');},
+    modal('');doAdvance(d.job);},
   'portrait-open':()=>openCrop(),
   'crop-cancel':()=>{crop=null;modal('');},
   'crop-apply':()=>applyCrop(),
