@@ -5861,7 +5861,7 @@ document.addEventListener('submit',e=>{if(!S)return;
   if(k==='create'){const name=$('#new-name').value.trim();
     if(name.length<2){toast('이름은 2자 이상이어야 합니다.','warn');return;}
     if(S.bots.some(b=>b.name===name)){toast('이미 쓰이는 이름입니다. 다른 이름을 입력하세요.','warn');return;}
-    S.me={name,job:CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender',level:1,exp:0,gold:100,inv:{potion:2},equip:{},admin:true,viewAsUser:false,createdAt:now()};
+    S.me={name,job:CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender',level:1,exp:0,gold:100,inv:{potion:2},equip:{},admin:SB_UID?SB_ADMIN:true,viewAsUser:false,createdAt:now()};
     S.chat.lobby.push({id:uid('m'),sys:true,text:`${name}님이 라니아케아에 도착했습니다.`,ts:now()});
     save();go('main');toast('탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good');later(4000,()=>botSay('lobby','노아',`${name}님 환영해요!`));return;}
   if(k==='notice-edit'){if(!isAdmin())return;const t=$('#ne-title').value.trim(),x=$('#ne-text').value.trim(),cat=$('#ne-cat').value;if(!t){toast('제목을 입력하세요.','warn');return;}
@@ -6418,7 +6418,7 @@ function boot(data){
 const SB_URL='https://ktuhkiihrnawcpwpqwdl.supabase.co',SB_KEY='sb_publishable_ITKnRBBzkYweQl1htyVoWQ_0w-P4H7o';
 const SB_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
 const ONLINE=/(^|\.)vercel\.app$|^localhost$|^127\.0\.0\.1$/.test(location.hostname)||/[?&]server\b/.test(location.search);
-let SB=null,SB_UID=null,cloudT=null,cloudBusy=false,cloudAgain=false,cloudFailN=0;
+let SB=null,SB_UID=null,SB_ADMIN=false,cloudT=null,cloudBusy=false,cloudAgain=false,cloudFailN=0;
 function cloudSave(now){if(now){clearTimeout(cloudT);cloudT=null;return cloudPush();}if(cloudT)return;cloudT=setTimeout(()=>{cloudT=null;cloudPush();},4000);}
 async function cloudPush(){
   if(!SB||!SB_UID||!S)return;if(cloudBusy){cloudAgain=true;return;}cloudBusy=true;
@@ -6468,7 +6468,9 @@ function newPwView(){$('#top').innerHTML='';$('#view').innerHTML=`<div class="wr
   $('#np-form').onsubmit=async e=>{e.preventDefault();const {data,error}=await SB.auth.updateUser({password:$('#np-pw').value});if(error){toast(authErr(error),'bad');return;}sbEnter(data.user);};}
 let sbEntered=false;
 async function sbEnter(user){
-  if(sbEntered)return;sbEntered=true;SB_UID=user.id;SAVE=SAVE0+':'+user.id;
+  if(sbEntered)return;sbEntered=true;
+  try{const r=await SB.auth.getUser();if(r.data&&r.data.user)user=r.data.user;}catch(e){}
+  SB_UID=user.id;SAVE=SAVE0+':'+user.id;SB_ADMIN=!!(user.app_metadata&&user.app_metadata.role==='admin');
   $('#view').innerHTML='<div class="wrap"><p class="faint" style="text-align:center;padding:60px 0">진행 기록을 불러오는 중…</p></div>';
   if(/access_token|type=/.test(location.hash))history.replaceState(null,'',location.pathname);
   const {data,error}=await SB.from('saves').select('data').eq('user_id',user.id).maybeSingle();
@@ -6477,7 +6479,7 @@ async function sbEnter(user){
   if(cloud&&local)st=(local.savedAt||0)>(cloud.savedAt||0)?local:cloud;else st=cloud||local;
   if(!st){let legacy=null;try{if(localStorage.getItem(SAVE0+':claimed')==null)legacy=migrateRaw(localStorage.getItem(SAVE0));}catch(e){}
     if(legacy&&legacy.me){st=legacy;imported=true;try{localStorage.setItem(SAVE0+':claimed',user.id);}catch(e){}}}
-  if(st)st.loggedOut=false;
+  if(st){st.loggedOut=false;if(st.me){st.me.admin=SB_ADMIN;if(!SB_ADMIN)st.me.viewAsUser=false;}if(!SB_ADMIN&&st.route==='admin')st.route='main';}
   boot(st?{state:st}:{});
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
