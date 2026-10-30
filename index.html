@@ -1953,6 +1953,35 @@ const ITEMS={
   crest:{name:'봉인 수호자의 문장',type:'equip',slot:'acc',stats:{atk:6,def:3,maxHp:40,luk:2},desc:'봉인 수호자를 쓰러뜨린 증표'}
 };
 const SLOT={weapon:'무기',armor:'방어구',acc:'장신구'};
+/* ───────── 장비 단계 (지역 8단계 · 역할별 무기) ───────── */
+const WTYPE={gsword:'대검',axe:'도끼',sws:'장검·방패',knuckle:'너클',dagger:'단도',staff:'지팡이',gun:'건',dgun:'듀얼건',scepter:'홀',orb:'오브'};
+const CLASS_WEAPON={defender:['gsword'],warrior:['axe','gsword'],knight:['sws'],infighter:['knuckle','dagger'],mystic:['dagger'],destroyer:['knuckle'],
+  mage:['staff'],salamander:['staff'],shooter:['gun'],dualist:['dgun'],priest:['scepter'],demigod:['scepter'],summoner:['orb']};
+const BASE_WT=['gsword','knuckle','dagger','staff','gun','scepter'];
+const GEAR_TIER=[ // [단계 이름, 지역, 착용 레벨, 방어구 이름, 장신구 이름, 설명]
+ ['들바람','meadow',5,'가죽 조끼','방울 팔찌','초원의 바람을 머금은 견습 블레서의 장비.'],
+ ['청석','rock',10,'경갑','수련자의 염주','바위 산맥 수련자들이 푸른 돌을 벼려 만든 장비.'],
+ ['독안개','swamp',20,'로브','해독 부적','늪의 독안개를 견디도록 약초 기름을 먹인 장비.'],
+ ['백염','salt',30,'흉갑','소금 결정 귀걸이','소금 사막의 흰 결정으로 단단하게 다진 장비.'],
+ ['심해','sea',40,'비늘 갑옷','진주 목걸이','깊은 바다의 비늘과 진주로 장식한 장비.'],
+ ['열사','ember',50,'화염 갑주','불씨 반지','작열의 땅 용암에 담금질한 장비.'],
+ ['빙결','frost',65,'서리 판금','빙정 브로치','녹지 않는 얼음으로 감싼 혹한의 장비.'],
+ ['백야','chaos',80,'성휘 갑주','백야의 성표','블라스파미아의 어둠 속에서도 빛을 잃지 않는 최후의 장비.']];
+const GEAR_IDS=[];
+GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},armor:'g'+T+'_armor',acc:'g'+T+'_acc'};
+  const A=Math.round(4+L*1.0),price=Math.round(40+L*14);
+  const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
+    knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{atk:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
+    gun:{atk:A,luk:Math.round(1+L*0.1)},dgun:{atk:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{atk:Math.round(A*0.7),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{atk:Math.round(A*0.8),luk:Math.round(3+L*0.25)}};
+  (T===1?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
+    ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
+  ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
+  ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25)},desc,price};
+  GEAR_IDS.push(ids.armor,ids.acc);});
+function lootText(m){const L=m.loot||[];const t=ITEMS[L[0]];if(t&&t.tier)return `${GEAR_TIER[t.tier-1][0]} 장비(LV${GEAR_TIER[t.tier-1][2]}+ 무기·방어구·장신구)`;return L.map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ');}
+const gearOfTier=T=>GEAR_IDS.filter(id=>ITEMS[id].tier===T);
+function pickLoot(m){const L=m.loot||[];if(!L.length)return 'potion';const me=S&&S.me;
+  if(me&&Math.random()<0.7){const mine=L.filter(k=>{const it=ITEMS[k];return it&&(!it.wtype||(CLASS_WEAPON[me.job]||[]).includes(it.wtype));});if(mine.length)return pick(mine);}return pick(L);}
 const STATK={maxHp:'HP',atk:'공격력',def:'방어력',luk:'행운',mov:'이동 범위'};
 const ART={
 forest:String.raw`    \ | /   \ | /
@@ -2627,14 +2656,14 @@ const FIELD_DEF=[
  ['chaos','블라스파미아',80,'chaos',[['f_chaos1','녹물 망령','spirit',{singleName:'녹물 손톱',dotName:'부식',dotChance:0.45}],['f_chaos2','혼돈 추적견','beast',{singleName:'그림자 송곳니',singleMult:1.1,dotName:'저주 출혈',dotChance:0.3}]]]
 ];
 const DUNGEON_DEF=[
- ['d_pilgrim','순례자의 길','시련의 석상',12,'golem',['sword','leather','potion']],
- ['d_cave','무너진 바위 동굴','동굴의 은둔 무승',18,'golem',['shield','staff','holywater']],
- ['d_grass','비명 지르는 풀숲','저주받은 풀숲의 마녀',8,'spirit',['bow','cloak']],
- ['d_lake','갈증의 호수','염수의 군주',36,'spirit',['cloak','amulet']],
- ['d_altar','황금 뿌리 제단','황금 뿌리 수호자',60,'golem',['amulet','crest']],
- ['d_serpent','바다뱀의 고리','고대 바다뱀',27,'beast',['crest','amulet','cloak']],
- ['d_siren','인어의 속삭임','심해의 세이렌',46,'spirit',['crest','amulet','cloak']],
- ['d_mirror','거울 감옥','거울 속 죄수',75,'spirit',['crest','amulet','cloak']]
+ ['d_pilgrim','순례자의 길','시련의 석상',12,'golem',gearOfTier(2)],
+ ['d_cave','무너진 바위 동굴','동굴의 은둔 무승',18,'golem',gearOfTier(2)],
+ ['d_grass','비명 지르는 풀숲','저주받은 풀숲의 마녀',8,'spirit',gearOfTier(1)],
+ ['d_lake','갈증의 호수','염수의 군주',36,'spirit',gearOfTier(4)],
+ ['d_altar','황금 뿌리 제단','황금 뿌리 수호자',60,'golem',gearOfTier(6)],
+ ['d_serpent','바다뱀의 고리','고대 바다뱀',27,'beast',gearOfTier(3)],
+ ['d_siren','인어의 속삭임','심해의 세이렌',46,'spirit',gearOfTier(5)],
+ ['d_mirror','거울 감옥','거울 속 죄수',75,'spirit',gearOfTier(7)]
 ];
 const EXTRA_MONSTERS=[
  ...FIELD_DEF.flatMap(([rid,region,lv0,mat,ms])=>ms.map(([id,name,art,o],fi)=>{const lv=fieldLv(rid,fi);return soloMon({id,name,art,kind:'field',region,level:lv,statLevel:lv+1,tier:'field',desc:`${region}에 나타나는 필드 몬스터.`,
@@ -2762,7 +2791,7 @@ function condReason(q){const c=q.cond;if(!c)return '';const r=[];
 function hasBattle(q){return Object.values(q.steps||{}).some(s=>s.battle);}
 function dtg(id){return (S.sel.dtargets||{})[id]||S.sel.dtarget||'exp';}
 function dungeonReward(m,target){const L=m.level,exp=Math.round(fieldExp(L)*4),gold=Math.round(fieldGold(L)*4);
-  return target==='item'?{exp:Math.round(exp*0.3),gold,drops:[[pick(m.loot||['potion']),1]]}:{exp,gold,drops:[]};}
+  return target==='item'?{exp:Math.round(exp*0.3),gold,drops:[[pickLoot(m),1]]}:{exp,gold,drops:(m.loot||[]).length?[[pickLoot(m),0.35]]:[]};}
 function startSolo(m,ctx){
   const me={id:'me',name:S.me.name,job:S.me.job,level:S.me.level,equip:effEquip(),isMe:true,enh:S.me.enh};
   const b=createBattle(m,[me],Math.random,cfg());
@@ -2937,7 +2966,7 @@ function mapDlg(land,focus,page){
     let act='';
     if(id==='temple'){const g=S.data.monsters.find(x=>mkind(x)==='weekly');act=g?`<div class="row md-btns"><button class="btn btn-primary" data-act="map-goto" data-link="monster:${g.id}">토벌전 · ${esc(g.name)}</button></div><p class="faint" style="font-size:12px">현재 시제품에서는 봉인 수호자 토벌전(LV${g.level}+ · ${g.min}~${g.max}인)으로 열려 있습니다.</p>`:'';}
     else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,tg);
-      act=`<p class="faint" style="font-size:12px">보스 · ${esc(m.name)} · HP ${m.hp} · 공격력 ${m.atk} · ${tg==='exp'?`EXP ${R.exp} · ${R.gold}골드`:`아이템 1개 확정 (${(m.loot||[]).map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ')})`}</p>
+      act=`<p class="faint" style="font-size:12px">보스 · ${esc(m.name)} · HP ${m.hp} · 공격력 ${m.atk} · ${tg==='exp'?`EXP ${R.exp} · ${R.gold}골드`:`아이템 1개 확정 (${lootText(m)})`}</p>
         <div class="row md-btns">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':`<button class="btn btn-primary" data-act="dfight" data-id="${m.id}" ${lr||busy?'disabled':''}>${lr?esc(`LV${m.level} 이상 필요`):'개인 레이드 도전'}</button>`}</div>`;}
     dg+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${I.label||'인스턴스 던전'}</div><h3 class="md-title">${esc(n)}</h3>${img?`<img class="md-img" src="${img}" alt="">`:''}
       ${I.quote?`<p class="md-quote">“${esc(I.quote)}”</p>`:''}<div class="md-meta">최소 레벨 : <b>${I.lv||(m?m.level:'-')}</b></div><div class="md-meta">인원 제한 : <b>${I.ppl||'1–4인'}</b></div><p class="md-text">${esc(I.text||'')}</p>${act}`);});
@@ -4960,10 +4989,10 @@ function mkAdmin(){
 /* ───────── 아이템 관리 ───────── */
 const ITEM_DEFAULTS=JSON.parse(JSON.stringify(ITEMS));
 function loadItems(){S.data.items=S.data.items||{};for(const id in S.data.items)ITEMS[id]=S.data.items[id];(S.data.itemsDeleted||[]).forEach(id=>{if(!S.data.items[id])delete ITEMS[id];});}
-function classAllowed(it,job){if(!it.classReq||!it.classReq.length)return true;const c=CLASSES[job];return it.classReq.includes(job)||(c.base&&it.classReq.includes(c.base));}
-function itemBlock(k){const it=ITEMS[k];if(!it)return '알 수 없는 아이템';if(it.levelReq&&S.me.level<it.levelReq)return `LV${it.levelReq} 이상 사용 가능`;if(!classAllowed(it,S.me.job))return `${it.classReq.map(c=>CLASSES[c].name).join('·')} 전용`;return null;}
+function classAllowed(it,job){if(it.wtype)return (CLASS_WEAPON[job]||[]).includes(it.wtype);if(!it.classReq||!it.classReq.length)return true;const c=CLASSES[job];return it.classReq.includes(job)||(c.base&&it.classReq.includes(c.base));}
+function itemBlock(k){const it=ITEMS[k];if(!it)return '알 수 없는 아이템';if(it.levelReq&&S.me.level<it.levelReq)return `LV${it.levelReq} 이상 사용 가능`;if(!classAllowed(it,S.me.job))return it.wtype?`${CLASSES[S.me.job].name}의 무기가 아닙니다 · ${WTYPE[it.wtype]}`:`${it.classReq.map(c=>CLASSES[c].name).join('·')} 전용`;return null;}
 function typeLabel(it){return it.type==='equip'?SLOT[it.slot]:it.type==='mat'?'재료':it.type==='deco'?'장식품':'소모품';}
-function reqText(it){const r=[];if(it.levelReq)r.push(`LV${it.levelReq}+`);if(it.classReq&&it.classReq.length)r.push(it.classReq.map(c=>CLASSES[c].name).join('·')+' 전용');if(it.maxOwn)r.push(`1인 최대 ${it.maxOwn}개`);return r.join(' · ');}
+function reqText(it){const r=[];if(it.levelReq)r.push(`LV${it.levelReq}+`);if(it.wtype)r.push(`${WTYPE[it.wtype]} · ${Object.keys(CLASS_WEAPON).filter(c=>CLASS_WEAPON[c].includes(it.wtype)).map(c=>CLASSES[c].name).join('·')}`);if(it.classReq&&it.classReq.length)r.push(it.classReq.map(c=>CLASSES[c].name).join('·')+' 전용');if(it.maxOwn)r.push(`1인 최대 ${it.maxOwn}개`);return r.join(' · ');}
 function addItem(k,n){const it=ITEMS[k];if(!it)return 0;const have=S.me.inv[k]||0;const room=it.maxOwn?Math.max(0,it.maxOwn-have):n;const add=Math.min(n,room);if(add>0)S.me.inv[k]=have+add;if(add<n)toast(`${it.name}은(는) 1인 최대 ${it.maxOwn}개까지 가질 수 있어 ${n-add}개는 받지 못했습니다.`,'warn');return add;}
 function adminItems(){
   const ids=Object.keys(ITEMS);const id=S.sel.ai&&ITEMS[S.sel.ai]?S.sel.ai:ids[0];S.sel.ai=id;const it=ITEMS[id];const st=it.stats||{};const bf=it.buff||{};
@@ -5085,7 +5114,7 @@ function rankName(kind){const p=prof(kind);return p.rank?PROF[kind].ranks[5-p.ra
 function rankShort(kind){const p=prof(kind);return p.rank?PROF[kind].short[5-p.rank]:'';}
 function cjobs(){return S.me.cjobs=S.me.cjobs||{};}
 function dura(id){const d=(S.me.dura||{})[id];return d==null?10:d;}
-function effEquip(){const e={};for(const sl in (S.me.equip||{})){const id=S.me.equip[sl];if(id&&dura(id)>0)e[sl]=id;}return e;}
+function effEquip(){const e={};for(const sl in (S.me.equip||{})){const id=S.me.equip[sl];const it=ITEMS[id];if(id&&dura(id)>0&&!(it&&it.wtype&&!classAllowed(it,S.me.job)))e[sl]=id;}return e;}
 function itemLv(id){const it=ITEMS[id];return it.levelReq||Math.max(1,Math.round((it.price||150)/30));}
 function repairRate(id){return 5+itemLv(id)*3;}
 function ensureCraft(){const me=S.me;if(!me||me.craftSeed)return;me.craftSeed=1;
@@ -5246,15 +5275,17 @@ const THEFT_QUEST={id:'D_THEFT',cat:'repeat',title:'잃어버린 골드를 찾�
     {label:'경비대에 넘긴다',result:'경비대가 꼬마를 데려가며 되찾은 골드를 건넨다. "협조에 감사드립니다, 블레서님."',next:'end',flag:'theft_back'}]},
   end:{end:true,text:'잃어버린 골드를 되찾음',reward:{exp:0,gold:10,items:{}}}}};
 const RELEVEL={forest:[5,5],tracker:[15,5],ev_rift:[20,6],ev_crown:[40,6],guardian:[90,10]};
+const LVMAP_V=2,GROUP_GEAR={forest:1,tracker:2,ev_rift:3,ev_crown:5,guardian:8};
 function ensureRelevel(){
-  if(!S.data||!S.data.monsters||S.data.lvMap===1)return;
+  if(!S.data||!S.data.monsters||(S.data.lvMap||0)>=LVMAP_V)return;
   const fresh=Object.fromEntries(EXTRA_MONSTERS.filter(m=>m.kind==='field'||m.kind==='dungeon').map(m=>[m.id,m]));
   S.data.monsters=S.data.monsters.map(m=>{
     if(fresh[m.id])return {...clone(fresh[m.id]),published:m.published!==false};
+    const G=GROUP_GEAR[m.id];if(G){const have=new Set((m.drops||[]).map(d=>d[0]));m={...m,drops:[...(m.drops||[]),...gearOfTier(G).filter(k=>!have.has(k)&&!ITEMS[k].wtype).map(k=>[k,0.15]),...gearOfTier(G).filter(k=>!have.has(k)&&ITEMS[k].wtype).map(k=>[k,0.03])]};}
     const R=RELEVEL[m.id];if(!R||m.level===R[0])return m;
     const o=m.level||1,L=R[0],hr=(1+0.09*(L-1))/(1+0.09*(o-1)),ar=(1+0.07*(L-1))/(1+0.07*(o-1));
     return {...m,level:L,hp:Math.round(m.hp*hr),atk:Math.round(m.atk*ar),dotDmg:Math.round((m.dotDmg||0)*ar),exp:Math.round(fieldExp(L)*R[1]),gold:Math.round(fieldGold(L)*R[1])};});
-  Object.keys(AREA_MON).forEach(k=>delete AREA_MON[k]);S.data.lvMap=1;save();
+  Object.keys(AREA_MON).forEach(k=>delete AREA_MON[k]);S.data.lvMap=LVMAP_V;save();
 }
 function qReward(q,r){if(!r||!q||!q.repeat||!S.me)return r;const L=S.me.level;if(L<=q.level+2)return r;
   return {...r,exp:Math.max(r.exp||0,Math.round(needOf(L)*0.1)),gold:Math.max(r.gold||0,Math.round((r.gold||0)*(1+(L-q.level)/10)))};}
@@ -5310,7 +5341,7 @@ function dungeonTab(){
       let act='';
       if(id==='temple'){act=`<div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="rtab" data-tab="weekly">토벌전으로</button></div>`;}
       else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,dtg(m.id));
-        act=`<div class="dun-rw">보상 · <b>EXP ${R.exp}</b> · <b>${R.gold}골드</b>${(m.loot||[]).length?` · 보물상자에서 ${(m.loot||[]).map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ')}`:''}</div><div class="row cj-act">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':lr?`<button class="btn btn-sm" disabled>${esc(`LV${m.level} 이상 필요`)}</button>`:`<button class="btn btn-sm btn-primary" data-act="dfight" data-id="${m.id}" ${busy?'disabled':''}>개인 입장</button><button class="btn btn-sm" data-act="dparty" data-id="${m.id}" ${busy?'disabled':''}>파티 입장 (최대 4인)</button>${busy?`<span class="faint" style="font-size:12px;align-self:center">${esc(busy)}</span>`:''}`}</div>`;}
+        act=`<div class="dun-rw">보상 · <b>EXP ${R.exp}</b> · <b>${R.gold}골드</b>${(m.loot||[]).length?` · 보물상자에서 ${lootText(m)}`:''}</div><div class="row cj-act">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':lr?`<button class="btn btn-sm" disabled>${esc(`LV${m.level} 이상 필요`)}</button>`:`<button class="btn btn-sm btn-primary" data-act="dfight" data-id="${m.id}" ${busy?'disabled':''}>개인 입장</button><button class="btn btn-sm" data-act="dparty" data-id="${m.id}" ${busy?'disabled':''}>파티 입장 (최대 4인)</button>${busy?`<span class="faint" style="font-size:12px;align-self:center">${esc(busy)}</span>`:''}`}</div>`;}
       return `<article class="dun-card ${S.sel.dfocus===id?'focus':''}" id="dun-${id}"><div class="dun-t"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${esc(I.label||'인스턴스 던전')}</div><h3>${esc(n)}</h3>
         ${I.quote?`<p class="dun-q">“${esc(I.quote)}”</p>`:''}<div class="dun-meta">최소 레벨 <b>${I.lv||(m?m.level:'-')}</b> · 인원 <b>${esc(I.ppl||'1–4인')}</b></div><p class="dun-x">${esc(I.text||'')}</p>${act}</div></article>`;}).join('')}</div></details>`;}).join('');
   return `${cntRow([['던전 클리어',`${Object.keys(d.dungeon).length}`,'던전별 하루 1회 보상'],['초기화','05:00','매일']])}<div class="dun-wrap">${secs}</div>`;
@@ -5341,7 +5372,7 @@ function drunAfter(b,me){const R=S.drun;if(!R)return;
 function drunEvent(){
   const R=S.drun;const boss=monster(R.mid);const L=boss.level;const k=R.phases[R.idx];let text='';
   if(k==='chest'){const g=Math.round(20+L*3+Math.random()*L*2);const it={};let line=`${g}골드`;
-    if(Math.random()<0.4&&(boss.loot||[]).length){const x=pick(boss.loot);it[x]=1;line+=` · ${ITEMS[x]?ITEMS[x].name:x}`;}else if(Math.random()<0.5){it.potion=1;line+=' · 회복약';}
+    if(Math.random()<0.4&&(boss.loot||[]).length){const x=pickLoot(boss);it[x]=1;line+=` · ${ITEMS[x]?ITEMS[x].name:x}`;}else if(Math.random()<0.5){it.potion=1;line+=' · 회복약';}
     grant({exp:0,gold:g,items:it},'dungeon',{label:boss.region+' 보물상자',region:boss.region});text=`낡은 보물상자를 열었다 · ${line}`;}
   else if(k==='trap'){const dmg=0.15+Math.random()*0.15;const before=R.hp;R.hp=Math.max(0.1,R.hp-dmg);text=`함정이 발동했다! HP ${Math.round((before-R.hp)*100)}% 감소`;}
   else {const heal=Math.random()<0.5;if(heal){R.hp=Math.min(1,R.hp+0.1);text='고요한 방이다. 잠시 숨을 고르며 HP 10%를 회복했다.';}else text='아무 일도 일어나지 않았다.';}
