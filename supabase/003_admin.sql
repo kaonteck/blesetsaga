@@ -1,9 +1,9 @@
--- 1) SQL Editor(postgres)에서 만드는 계정은 초대코드 검사를 건너뛴다.
+-- 1) 사이트 가입(Auth 서버) 외의 경로(SQL Editor 등)로 만드는 계정은 초대코드 검사를 건너뛴다.
 create or replace function private.check_invite()
 returns trigger language plpgsql security definer set search_path = '' as $$
 declare c text := upper(trim(coalesce(new.raw_user_meta_data->>'invite', '')));
 begin
-  if session_user = 'postgres' then return new; end if;
+  if session_user <> 'supabase_auth_admin' then return new; end if;  -- 사이트 가입만 검사
   update private.invite_codes set uses = uses + 1
    where code = c and (max_uses is null or uses < max_uses);
   if not found then raise exception 'INVALID_INVITE'; end if;
@@ -33,3 +33,9 @@ end $$;
 -- (참고) 이미 있는 계정을 운영자로 올리기 / 내리기 — 다시 로그인해야 반영
 -- update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' where email = 'kim@blesetsaga.vercel.app';
 -- update auth.users set raw_app_meta_data = raw_app_meta_data - 'role' where email = 'kim@blesetsaga.vercel.app';
+
+-- 3) 권한 정리 (2026-10-31 적용됨)
+revoke execute on function public.rls_auto_enable() from anon, authenticated, public;
+revoke all on public.saves from anon;
+revoke truncate, references, trigger, delete on public.saves from authenticated;
+revoke all on schema private from anon, authenticated;
