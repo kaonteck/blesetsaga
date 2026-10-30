@@ -1673,6 +1673,7 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .vil-say{margin-top:10px;padding:10px 14px;border-left:2px solid rgba(214,203,176,.45);background:rgba(18,19,23,.55)}
 .vil-say b{font-size:12.5px;color:var(--gold-hi)}.vil-say p{margin:4px 0 0;font-size:13.5px;color:var(--text);line-height:1.6}
 .vil-got{display:inline-block;margin-top:6px;font-size:12px;color:#9fd3a8}
+.vil-say.theft{border-left-color:#d66a60;background:rgba(60,22,22,.45)}.vil-say.theft p{color:#e7a39b;font-weight:600}.vil-lost{display:inline-block;margin-top:6px;font-size:12px;color:#e07b70}
 .vil-hint{font-size:12.5px;margin-top:8px}
 @media (max-width:560px){.vil-btns{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .cf-warn{font-size:12px;margin-top:10px;color:#e0a86a!important}
@@ -2738,7 +2739,8 @@ function raidBlock(m){const k=mkind(m);
   if(k==='party'&&daily().raid>=RAID_MAX)return `오늘 파티 레이드 ${RAID_MAX}회를 모두 사용했습니다 (05:00 초기화)`;
   if(k==='event'){const ev=eventFor(m.id);if(!ev)return '지금은 출현하지 않은 보스입니다';if((S.eventDone||{})[ev.id])return '이번 출현의 보상을 이미 받았습니다';}
   return null;}
-function dailyPicks(){const c=kstCycle();const pool=S.data.quests.filter(q=>q.published&&q.repeat);
+function dailyPicks(){const ids=dailyPicks0();return S.theft&&S.theft.cycle===kstCycle()&&S.data.quests.some(q=>q.id==='D_THEFT')?[...ids,'D_THEFT']:ids;}
+function dailyPicks0(){const c=kstCycle();const pool=S.data.quests.filter(q=>q.published&&q.repeat&&!q.trigger);
   if(S.dailyQ&&S.dailyQ.cycle===c&&S.dailyQ.ids.every(id=>pool.some(q=>q.id===id)))return S.dailyQ.ids;
   const rng=seedRnd(c+'|'+(S.me?S.me.name:''));const sh=pool.map(q=>[rng(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
   const lv=S.me?S.me.level:1;const ids=[...sh.filter(q=>q.level<=lv),...sh.filter(q=>q.level>lv)].slice(0,DAILY_Q).map(q=>q.id);
@@ -5206,28 +5208,45 @@ const VIL_QUEST={id:'V1',cat:'sub',title:'치료소에 맡긴 편지',published:
     choices:[{label:'받아 온 편지를 건넨다',req:{item:'q_letter'},result:'하나는 편지의 문장을 보고 얼굴이 굳었다가, 곧 웃으며 고맙다고 했다.',next:'s2'},{label:'아직 받지 못했다고 말한다',result:'하나: "치료소는 광장 옆 골목에 있어요. 천천히 다녀오세요."',next:'s1'}]},
   s2:{text:'하나가 편지를 품에 넣으며 속삭인다. "이건 백야의 신전에서 온 거예요. 아무한테도 말하지 마세요."',choices:[{label:'비밀을 지키겠다고 약속한다',result:'하나가 작은 주머니를 건넨다.',next:'end',flag:'v1_letter'}]},
   end:{end:true,text:'편지 전달',reward:{exp:80,gold:40,items:{potion:1}}}}};
-function ensureVilQuest(){if(S.data&&S.data.quests&&!S.data.quests.some(q=>q.id==='V1')){S.data.quests.push(clone(VIL_QUEST));save();}}
+Object.assign(ITEMS,{q_wallet:{name:'텅 빈 가죽 지갑',type:'mat',tag:'퀘스트 아이템',desc:'뒷골목에서 털린 내 지갑. 동전 한 닢 남김없이 비어 있다.'}});
+const THEFT_GOLD=5,THEFT_RATE=0.03;
+const THEFT_QUEST={id:'D_THEFT',cat:'repeat',title:'잃어버린 골드를 찾아서',published:true,level:1,prereq:null,repeat:'daily',trigger:'theft',cond:{},
+  desc:'뒷골목에서 눈 깜짝할 사이에 지갑을 털렸다. 소매치기의 흔적을 쫓아 도난당한 골드를 되찾자.',start:'s1',steps:{
+  s1:{text:'주머니가 가볍다. 골목 어귀에서 부딪혔던 망토 쓴 꼬마가 떠오른다. 지갑을 털린 마을의 뒷골목으로 돌아가 단서를 찾아보자. (탐색 › 지역 › 마을 › 뒷골목)',
+    give:{land:'@theft',spot:'alley',item:'q_wallet',n:1,npc:'뒷골목의 정보상 녹스',text:'꼬마 소매치기 말이지? 빈 지갑은 저 쓰레기통에 던져 놓고 갔어. 녀석은 지금쯤 광장 분수대 뒤에서 동전을 세고 있을걸.'},
+    choices:[{label:'빈 지갑을 들고 광장 분수대로 간다',req:{item:'q_wallet'},result:'분수대 뒤에서 망토를 쓴 꼬마가 동전을 세다가 당신과 눈이 마주쳤다.',next:'s2'},
+      {label:'아직 단서를 찾지 못했다',result:'뒷골목 사람들이라면 무언가 알고 있을지도 모른다.',next:'s1'}]},
+  s2:{text:'꼬마가 동전을 움켜쥔 채 얼어붙는다. "도, 동생 약값이 필요했어요… 진짜예요."',choices:[
+    {label:'골드를 돌려받고 용서해 준다',result:'꼬마가 고개를 푹 숙이고 골드를 돌려준다. "다시는 안 그럴게요." 골목 끝에서 누군가 박수를 친다.',next:'end',flag:'theft_back'},
+    {label:'경비대에 넘긴다',result:'경비대가 꼬마를 데려가며 되찾은 골드를 건넨다. "협조에 감사드립니다, 블레서님."',next:'end',flag:'theft_back'}]},
+  end:{end:true,text:'잃어버린 골드를 되찾음',reward:{exp:0,gold:10,items:{}}}}};
+function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST])if(!S.data.quests.some(q=>q.id===Q.id)){S.data.quests.push(clone(Q));ch=true;}if(ch)save();}
+function theftActive(){return !!(S.theft&&S.theft.cycle===kstCycle());}
 function vilGive(land,spot){/* 퀘스트 단계의 give:{land,spot,item,n,text} 훅 */
   for(const q of (S.data.quests||[])){const qp=S.qp&&S.qp[q.id];if(!qp||questStatus(q)!=='active')continue;const st=q.steps&&q.steps[qp.step];const g=st&&st.give;
-    if(g&&(!g.land||g.land===land)&&g.spot===spot){qp.given=qp.given||{};const key=qp.step+':'+g.item;if(qp.given[key])continue;qp.given[key]=1;const n=g.n||1;addItem(g.item,n);return {item:g.item,n,text:g.text,npc:g.npc};}}
+    if(g&&(!g.land||(g.land==='@theft'?(S.theft&&S.theft.land):g.land)===land)&&g.spot===spot){qp.given=qp.given||{};const key=qp.step+':'+g.item;if(qp.given[key])continue;qp.given[key]=1;const n=g.n||1;addItem(g.item,n);return {item:g.item,n,text:g.text,npc:g.npc};}}
   return null;
 }
 function vilVisit(land,spot){
   const d=daily();d.vil=d.vil||0;const L=LANDS[land]||'이 땅';const pool=(VIL_LINES[land]&&VIL_LINES[land][spot])||VIL_NPC[spot];let [npc,lines]=pick(pool);let text=pick(lines).replace(/\{L\}/g,L);
-  let got='';const qg=vilGive(land,spot);
+  let got='',lost=0;const qg=vilGive(land,spot);
   d.vilTalk=d.vilTalk||{};const n=d.vilTalk[land]=(d.vilTalk[land]||0)+1;bump('vilTalk');const T=S.me.vilTotal=S.me.vilTotal||{};T[land]=(T[land]||0)+1;if(T[land]>=300)setTimeout(checkTitles,0);
   if(qg){if(qg.npc)npc=qg.npc;text=qg.text||`${npc.split(' ').pop()}이(가) 무언가를 건넨다. "이걸 찾고 있었죠?"`;got=`퀘스트 아이템 · ${ITEMS[qg.item]?ITEMS[qg.item].name:qg.item} ×${qg.n}`;}
+  else if(spot==='alley'&&S.me.gold>=THEFT_GOLD&&Math.random()<THEFT_RATE){
+    S.me.gold-=THEFT_GOLD;npc='';text='눈 깜짝할 사이에 지갑을 털렸다!';lost=THEFT_GOLD;
+    const done=S.claimedQ[`D_THEFT:${kstCycle()}`]||(S.qp.D_THEFT&&S.qp.D_THEFT.status==='active');
+    if(!done){S.theft={cycle:kstCycle(),land};if(S.qp.D_THEFT)delete S.qp.D_THEFT;setTimeout(()=>notify('데일리 퀘스트 「잃어버린 골드를 찾아서」가 생겼습니다.'),600);}}
   else if(n>10){npc='';text=pick(VIL_AVOID[spot]);}
   else {const r=Math.random();const ex=EXPLORE.find(x=>x.id===land);
     if(r<0.015){const g=3+Math.floor(Math.random()*10);S.me.gold+=g;got=`${g}골드`;d.vil++;}
     else if(r<0.028&&ex){const k=(FOOD_BY_LAND[land]&&Math.random()<0.5)?FOOD_BY_LAND[land]:ex.mat;addItem(k,1);got=`${ITEMS[k].name} ×1`;d.vil++;}}
-  S.sel.vil={land,spot,npc,text,got,ts:now()};save();
+  S.sel.vil={land,spot,npc,text,got,lost,ts:now()};save();
 }
 function villageHTML(land){
   const v=S.sel.vil&&S.sel.vil.land===land?S.sel.vil:null;
   return `<section class="md-sec panel vil" id="md-village"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>마을 · <b class="vil-town">${esc(villageFull(land))}</b></div>
     <div class="vil-btns">${VIL_SPOTS.map(([k,l])=>`<button class="vil-b ${v&&v.spot===k?'on':''}" data-act="vil-go" data-land="${land}" data-spot="${k}">${VIL_IC[k]}<span>${l}</span></button>`).join('')}</div>
-    ${v?`<div class="vil-say ${v.got?'got':''} ${v.npc?'':'avoid'}">${v.npc?`<b>${esc(v.npc)}</b><p>“${esc(v.text)}”</p>`:`<p class="faint">${esc(v.text)}</p>`}${v.got?`<span class="vil-got">+ ${esc(v.got)}</span>`:''}</div>`:'<p class="faint vil-hint">장소를 고르면 마을 사람들과 이야기할 수 있습니다. 가끔 작은 선물을 받기도 합니다.</p>'}</section>`;
+    ${v?`<div class="vil-say ${v.got?'got':''} ${v.npc?'':'avoid'} ${v.lost?'theft':''}">${v.npc?`<b>${esc(v.npc)}</b><p>“${esc(v.text)}”</p>`:`<p class="${v.lost?'':'faint'}">${esc(v.text)}</p>`}${v.got?`<span class="vil-got">+ ${esc(v.got)}</span>`:''}${v.lost?`<span class="vil-lost">− ${v.lost}골드</span>`:''}</div>`:'<p class="faint vil-hint">장소를 고르면 마을 사람들과 이야기할 수 있습니다. 가끔 작은 선물을 받기도 합니다.</p>'}</section>`;
 }
 const VIL_IC={plaza:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14h12M3.5 14V8M12.5 14V8M8 14V9M2.5 8h11L8 3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
   grocer:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 5h11l-1 8.5h-9z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 5a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>',
@@ -5706,6 +5725,7 @@ const TITLES=[
   T('t_col','life','수집가','서로 다른 아이템 8종 획득',null,8,{get:()=>((S.stats&&S.stats.itemKinds)||[]).length}),
   T('t_adv','life','새로운 부름','★ 상위 클래스로 전직',null,1,{get:()=>CLASSES[S.me.job].tier===2?1:0}),
   T('t_pt','life','거울 앞의 블레서','캐릭터 이미지 설정','portraitSet',1),
+  T('t_just','life','정의로운','숨겨진 칭호 · 뒷골목에서 도난당한 골드 되찾기',null,1,{hidden:true,get:()=>(S.me&&S.me.justice)||0}),
   T('t_angler','life','강태공','숨겨진 칭호 · 낚시 누적 100시간','fishMin',6000,{hidden:true}),
   ...Object.keys(LANDS).map(l=>T('t_chat_'+l,'life',`${villageName(l)}의 수다쟁이`,`숨겨진 칭호 · ${villageName(l)} 마을 사람들에게 300번 말 걸기`,null,300,{hidden:true,get:()=>((S.me&&S.me.vilTotal||{})[l]||0)})),
   ...['meadow','sea','frost'].map(l=>T('t_fk_'+l,'life',`${villageName(l)}의 낚시왕`,`${LANDS[l]}(${villageName(l)}) 주간 낚시 랭킹 1위`,null,1,{get:()=>S.me&&(S.me.fishKingLand||{})[l]?1:0})),
@@ -6174,7 +6194,7 @@ const ACTS={
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}
-    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.repeat)bump('dailies');grant(step.reward,'quest',{questId:q.id,label:q.title,path:step.text});
+    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');grant(step.reward,'quest',{questId:q.id,label:q.title,path:step.text});
     save();render();toast(`보상 수령 · EXP ${step.reward.exp||0} · ${step.reward.gold||0}골드${itemsText(step.reward.items)?' · '+itemsText(step.reward.items):''}`,'good');},
   abandonq:d=>{const qp=S.qp[d.id];if(!qp)return;(qp.flagsSet||[]).forEach(f=>{const still=Object.entries(S.qp).some(([id,x])=>id!==d.id&&x.status==='done'&&(x.flagsSet||[]).includes(f));if(!still)delete S.flags[f];});delete S.qp[d.id];save();render();toast('퀘스트를 포기했습니다. 다시 수락할 수 있습니다.');},
   backmon:()=>{const m=monster(S.sel.monster);S.sel.monster=null;go('battle',{rtab:m&&mkind(m)==='weekly'?'weekly':m&&mkind(m)==='event'?'event':m&&mkind(m)==='dungeon'?'dungeon':'daily'});},
