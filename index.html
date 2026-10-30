@@ -1672,6 +1672,8 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .vil-b svg{width:15px;height:15px;color:var(--gold)}.vil-b:hover,.vil-b.on{border-color:rgba(214,203,176,.55);background:rgba(184,166,128,.08);color:#fff}
 .vil-say{margin-top:10px;padding:10px 14px;border-left:2px solid rgba(214,203,176,.45);background:rgba(18,19,23,.55)}
 .vil-say b{font-size:12.5px;color:var(--gold-hi)}.vil-say p{margin:4px 0 0;font-size:13.5px;color:var(--text);line-height:1.6}
+.chip.merc{background:rgba(120,140,170,.18);color:#aebbd0;border-color:rgba(150,170,200,.35)}
+.mc-list{display:flex;flex-direction:column;gap:8px}.mc-row{display:flex;gap:10px;align-items:flex-start}.mc-r{flex:none;width:42px;font-size:12.5px;font-weight:600;padding-top:6px}.mc-js{display:flex;flex-wrap:wrap;gap:6px}.mc-js .btn{display:inline-flex;align-items:center;gap:6px}.sigil.xs{width:20px;height:20px;font-size:11px;border-radius:3px}
 .vil-got{display:inline-block;margin-top:6px;font-size:12px;color:#9fd3a8}
 .vil-say.theft{border-left-color:#d66a60;background:rgba(60,22,22,.45)}.vil-say.theft p{color:#e7a39b;font-weight:600}.vil-lost{display:inline-block;margin-top:6px;font-size:12px;color:#e07b70}
 .vil-hint{font-size:12.5px;margin-top:8px}
@@ -3448,6 +3450,22 @@ function partyCheck(p){
 function idleBots(){return S.bots.filter(b=>b.online&&b.status==='lobby');}
 function botMember(b){return {name:b.name,job:b.job,level:b.level,isMe:false,ready:false,readyAt:now()+rnd(900,2600)};}
 function meMember(){return {name:S.me.name,job:S.me.job,level:S.me.level,isMe:true,ready:false};}
+/* 용병: 파티장이 부족한 역할을 봇으로 채운다. 레벨은 실제 유저 평균 */
+const MERC_NAMES=['카스','브란','엘로','미르','하렌','토비','시아','루엔','다온','벨라크','이오','파렌','세드','노엘','라임','오르'];
+function realMembers(p){return p.members.filter(x=>!x.merc);}
+function mercLevel(p){const r=realMembers(p);return r.length?Math.round(r.reduce((a,x)=>a+(x.isMe?S.me.level:x.level),0)/r.length):S.me.level;}
+function mercJobs(lv,role){return Object.keys(CLASSES).filter(k=>CLASSES[k].role===role&&CLASSES[k].tier===(lv>=10?2:1));}
+function syncMercs(p){if(!p)return;const L=mercLevel(p);p.members.forEach(x=>{if(x.merc){x.level=L;x.ready=true;}});}
+function addMerc(p,job){const used=new Set([...p.members.map(x=>x.name),...S.bots.map(b=>b.name)]);const pool=MERC_NAMES.filter(n=>!used.has('용병 '+n));
+  const name='용병 '+(pool.length?pick(pool):MERC_NAMES[0]+p.members.length);p.members.push({name,job,level:mercLevel(p),isMe:false,ready:true,merc:true});return name;}
+function mercPanel(p,m,c){
+  const L=mercLevel(p);const left=p.target-p.members.length;
+  const row=r=>`<div class="mc-row"><span class="mc-r" style="color:var(--${r})">${ROLE[r]}</span><div class="mc-js">${mercJobs(L,r).map(k=>{const why=slotReason(m,p.members,r,p.target);return `<button class="btn btn-sm" data-act="merc-add" data-job="${k}" ${why?`disabled title="${esc(why)}"`:''}>${sigil(k,'xs')}${esc(CLASSES[k].name)}</button>`;}).join('')}</div></div>`;
+  return `<div class="panel"><h3>용병 고용 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">부족한 자리를 봇으로 채웁니다 · LV${L}</span></h3>
+    <p class="faint" style="font-size:12.5px;margin:0 0 10px">${c.rolesOk?`역할 조건은 충족했습니다. 남은 ${left}자리는 원하는 역할로 채울 수 있습니다.`:`필요한 역할 · <b>${esc(missText(c.need))}</b>`} 용병 레벨은 파티에 있는 유저의 평균 레벨을 따릅니다.</p>
+    <div class="mc-list">${['tank','dps','heal'].map(row).join('')}</div>
+    ${c.rolesOk&&c.countOk?'':`<div class="row" style="margin-top:10px"><button class="btn btn-sm btn-primary" data-act="merc-fill">부족한 역할 자동으로 채우기</button></div>`}</div>`;
+}
 function genRecruit(m){
   const pool=shuffle(idleBots().filter(b=>levelOk(m,b.level)));
   if(pool.length<2)return null;
@@ -4021,8 +4039,8 @@ function vMonster(m){
 function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
 
 function vParty(){
-  const p=S.party,c=partyCheck(p),m=c.m;const meLeader=p.leader===S.me.name;const me=p.members.find(x=>x.isMe);
-  const slots=[...p.members.map(x=>`<div class="slot">${sigil(x.job,'sm')}<div class="t"><b>${esc(x.name)}</b>${x.name===p.leader?' <span class="chip dim">파티장</span>':''}<div class="row" style="gap:4px;margin-top:3px">${roleChip(x.job)}<span class="chip num ${levelOk(m,x.level)?'dim':'bad'}">LV${x.level}</span>${x.ready?'<span class="chip ok">준비</span>':'<span class="chip dim">대기</span>'}</div></div>${meLeader&&!x.isMe?`<button class="btn btn-sm btn-ghost" data-act="kick" data-name="${esc(x.name)}" aria-label="${esc(x.name)} 내보내기">내보내기</button>`:''}</div>`)];
+  syncMercs(S.party);const p=S.party,c=partyCheck(p),m=c.m;const meLeader=p.leader===S.me.name;const me=p.members.find(x=>x.isMe);
+  const slots=[...p.members.map(x=>`<div class="slot">${sigil(x.job,'sm')}<div class="t"><b>${esc(x.name)}</b>${x.name===p.leader?' <span class="chip dim">파티장</span>':''}${x.merc?' <span class="chip merc">용병</span>':''}<div class="row" style="gap:4px;margin-top:3px">${roleChip(x.job)}<span class="chip num ${levelOk(m,x.level)?'dim':'bad'}">LV${x.level}</span>${x.ready?'<span class="chip ok">준비</span>':'<span class="chip dim">대기</span>'}</div></div>${meLeader&&!x.isMe?`<button class="btn btn-sm btn-ghost" data-act="kick" data-name="${esc(x.name)}" aria-label="${esc(x.name)} 내보내기">내보내기</button>`:''}</div>`)];
   const left=p.target-p.members.length;
   for(let i=0;i<left;i++)slots.push(`<div class="slot empty-slot"><div class="t">빈 자리${i<sumR(c.need)?` · ${missText(c.need)} 필요`:' · 자유'}</div></div>`);
   const inviteList=meLeader&&left>0?idleBots().filter(b=>!(p.invites||[]).some(x=>x.name===b.name)).sort((a,b)=>(isFriend(b.name)-isFriend(a.name))||b.level-a.level):[];
@@ -4042,6 +4060,7 @@ function vParty(){
         <div class="row" style="margin-top:14px"><button class="btn ${me.ready?'btn-ghost':'btn-primary'}" data-act="ready">${me.ready?'준비 취소':'준비 완료'}</button>
           ${meLeader?`<button class="btn btn-primary" data-act="depart" ${c.ok?'':'disabled'}>출발</button>`:`<span class="muted" style="font-size:13px">${c.ok?'곧 파티장이 출발합니다…':'조건이 갖춰지면 파티장이 출발합니다.'}</span>`}
           ${meLeader?`<div class="seg" style="margin-left:auto">${[['public','공개'],['invite','초대 전용']].map(([k,l])=>`<button data-act="setvis" data-v="${k}" aria-pressed="${p.visibility===k}">${l}</button>`).join('')}</div>`:''}</div></div>
+        ${meLeader&&left>0?mercPanel(p,m,c):''}
         ${meLeader&&left>0?`<div class="panel"><h3>직접 초대 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">로비에 있는 접속자</span></h3>
           ${(p.invites||[]).length?`<p class="muted" style="font-size:13px;margin-bottom:8px">응답 대기: ${p.invites.map(x=>esc(x.name)).join(', ')}</p>`:''}
           <div class="list">${inviteList.slice(0,10).map(b=>{const r=levelReason(m,b.level)||slotReason(m,p.members,roleOf(b.job),p.target);return `<div class="li"><div class="t"><b>${esc(b.name)}</b><small>${JOBS[b.job].name} · LV${b.level}${r?' · '+esc(r):''}</small></div><button class="btn btn-sm" data-act="invite" data-name="${esc(b.name)}" ${r?'disabled':''}>초대</button></div>`;}).join('')||'<p class="empty">초대할 수 있는 접속자가 없습니다.</p>'}</div></div>`:''}
@@ -6214,8 +6233,14 @@ const ACTS={
   'm-accept':()=>acceptMatch(),
   'm-decline':()=>matchFail(true),
   ready:()=>{const me=S.party.members.find(x=>x.isMe);me.ready=!me.ready;sysParty(`${S.me.name}님이 ${me.ready?'준비를 마쳤습니다':'준비를 취소했습니다'}.`);save();render();},
-  depart:()=>{const c=partyCheck(S.party);if(!c.ok||S.party.leader!==S.me.name)return;startBattle();},
+  depart:()=>{syncMercs(S.party);const c=partyCheck(S.party);if(!c.ok||S.party.leader!==S.me.name)return;startBattle();},
   leaveparty:()=>leaveParty(),
+  'merc-add':d=>{const p=S.party;if(!p||p.leader!==S.me.name)return;const m=monster(p.monsterId);const why=slotReason(m,p.members,roleOf(d.job),p.target);if(why){toast(why,'warn');return;}
+    const n=addMerc(p,d.job);sysParty(`${n}(${CLASSES[d.job].name})이(가) 용병으로 합류했습니다.`);save();render();},
+  'merc-fill':()=>{const p=S.party;if(!p||p.leader!==S.me.name)return;const m=monster(p.monsterId);const L=mercLevel(p);let added=0;
+    for(let g=0;g<20&&p.members.length<p.target;g++){const c=partyCheck(p);let r=['tank','heal','dps'].find(k=>c.need[k]>0);if(!r){if(p.members.length>=m.min)break;r='dps';}
+      if(slotReason(m,p.members,r,p.target))break;addMerc(p,pick(mercJobs(L,r)));added++;}
+    if(added){sysParty(`용병 ${added}명이 합류했습니다.`);save();render();}else toast('더 채울 자리가 없습니다.','warn');},
   kick:d=>{const p=S.party;p.members=p.members.filter(x=>x.name!==d.name);const b=bot(d.name);if(b)b.status='lobby';sysParty(`${d.name}님을 파티에서 내보냈습니다.`);save();render();},
   setvis:d=>{S.party.visibility=d.v;sysParty(`파티 공개 범위를 ${d.v==='public'?'공개 모집':'초대 전용'}으로 바꿨습니다.`);save();render();},
   invite:d=>{const p=S.party;p.invites=p.invites||[];if(p.invites.some(x=>x.name===d.name))return;p.invites.push({name:d.name,at:now()+rnd(1800,4000)});sysParty(`${d.name}님을 초대했습니다.`);save();render();},
