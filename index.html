@@ -2739,7 +2739,7 @@ function raidBlock(m){const k=mkind(m);
   if(k==='party'&&daily().raid>=RAID_MAX)return `오늘 파티 레이드 ${RAID_MAX}회를 모두 사용했습니다 (05:00 초기화)`;
   if(k==='event'){const ev=eventFor(m.id);if(!ev)return '지금은 출현하지 않은 보스입니다';if((S.eventDone||{})[ev.id])return '이번 출현의 보상을 이미 받았습니다';}
   return null;}
-function dailyPicks(){const ids=dailyPicks0();return S.theft&&S.theft.cycle===kstCycle()&&S.data.quests.some(q=>q.id==='D_THEFT')?[...ids,'D_THEFT']:ids;}
+function dailyPicks(){const ids=dailyPicks0();return S.theft&&S.theft.cycle===kstCycle()&&!(S.me&&S.me.justice)&&S.data.quests.some(q=>q.id==='D_THEFT')?[...ids,'D_THEFT']:ids;}
 function dailyPicks0(){const c=kstCycle();const pool=S.data.quests.filter(q=>q.published&&q.repeat&&!q.trigger);
   if(S.dailyQ&&S.dailyQ.cycle===c&&S.dailyQ.ids.every(id=>pool.some(q=>q.id===id)))return S.dailyQ.ids;
   const rng=seedRnd(c+'|'+(S.me?S.me.name:''));const sh=pool.map(q=>[rng(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
@@ -5234,7 +5234,7 @@ function vilVisit(land,spot){
   if(qg){if(qg.npc)npc=qg.npc;text=qg.text||`${npc.split(' ').pop()}이(가) 무언가를 건넨다. "이걸 찾고 있었죠?"`;got=`퀘스트 아이템 · ${ITEMS[qg.item]?ITEMS[qg.item].name:qg.item} ×${qg.n}`;}
   else if(spot==='alley'&&S.me.gold>=THEFT_GOLD&&Math.random()<THEFT_RATE){
     S.me.gold-=THEFT_GOLD;npc='';text='눈 깜짝할 사이에 지갑을 털렸다!';lost=THEFT_GOLD;
-    const done=S.claimedQ[`D_THEFT:${kstCycle()}`]||(S.qp.D_THEFT&&S.qp.D_THEFT.status==='active');
+    const done=(S.me.justice>0)||S.claimedQ[`D_THEFT:${kstCycle()}`]||(S.qp.D_THEFT&&S.qp.D_THEFT.status==='active');
     if(!done){S.theft={cycle:kstCycle(),land};if(S.qp.D_THEFT)delete S.qp.D_THEFT;setTimeout(()=>notify('데일리 퀘스트 「잃어버린 골드를 찾아서」가 생겼습니다.'),600);}}
   else if(n>10){npc='';text=pick(VIL_AVOID[spot]);}
   else {const r=Math.random();const ex=EXPLORE.find(x=>x.id===land);
