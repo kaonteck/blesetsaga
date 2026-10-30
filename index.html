@@ -3223,7 +3223,7 @@ function validateMassForm(d){const e=[];const s=d.stat;
   Object.keys(d.reward.kill.items).forEach(k=>{if(!ITEMS[k])e.push(`알 수 없는 아이템: ${k}`);});
   return e;}
 
-const SAVE='bleset-saga-v1';
+const SAVE0='bleset-saga-v1';let SAVE=SAVE0;
 const SAVE_V=3;
 let S=null;
 function freshState(){
@@ -3271,7 +3271,7 @@ function load(){
   return freshState();
 }
 let saveT=null;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}},150);}
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{if(!S)return;S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}if(SB_UID)cloudSave();},150);}
 const cfg=()=>S.data.config;
 const AREA_MON={};
 function areaMons(aid){const I=MAP_INFO[aid];const spot=MAP_SPOTS.find(x=>x[0]===aid);if(!I||!spot)return [];const r=EXPLORE.find(x=>x.id===spot[3]);if(!r)return [];
@@ -3738,7 +3738,7 @@ function openUinfo(name,btn){
   closeRmem();S.sel.rmem=key;$('#rmenu').innerHTML=uinfoHTML(name);placeFloat(btn,250);
 }
 function closeRmem(){if(S&&S.sel.rmem){S.sel.rmem=null;const b=$('#rmenu');if(b)b.innerHTML='';$$('.rc-mem').forEach(x=>x.setAttribute('aria-expanded','false'));}}
-window.addEventListener('scroll',closeRmem,{passive:true});window.addEventListener('resize',closeRmem);
+window.addEventListener('scroll',closeRmem,{passive:true});window.addEventListener('resize',()=>{if(S)closeRmem();});
 document.addEventListener('scroll',e=>{if(e.target&&e.target.matches&&e.target.matches('[data-msgs],.pop-body,[data-rslide]'))closeRmem();},{capture:true,passive:true});
 function recruitPanel(){
   const rs=S.recruits.slice(0,6);
@@ -4874,7 +4874,7 @@ function askBody(){
     <div class="stack" style="gap:6px;margin-top:10px;border-top:1px solid var(--rule);padding-top:10px"><span class="faint" style="font-size:12px">내 문의 ${mine.length}건${mine.length>2?' · 최근 2건':''}</span>
     ${mine.slice(0,2).map(q=>`<div class="askitem"><div class="row" style="justify-content:space-between"><span class="chip dim">${esc(q.cat)}</span><span class="chip ${q.answer?'ok':'warn'}">${q.answer?'답변 완료':'답변 대기'}</span></div><p style="font-size:13px;margin-top:6px">${esc(q.text)}</p>${q.answer?`<p class="askans">운영자 · ${esc(q.answer)}</p>`:''}<span class="faint" style="font-size:11.5px">${fmtWhen(q.ts)}</span></div>`).join('')||'<p class="empty">보낸 문의가 없습니다.</p>'}</div>`;
 }
-document.addEventListener('input',e=>{
+document.addEventListener('input',e=>{if(!S)return;
   const k=e.target.dataset&&e.target.dataset.snd;
   if(k){S.settings=S.settings||{};S.settings[k]=+e.target.value;const o=$('#snd-'+k+'-v');if(o)o.textContent=e.target.value;if(k==='bgm'){audio();updateBgm();}save();}
   if(e.target.id==='ask-text'){const n=$('#ask-count');if(n)n.textContent=e.target.value.length+'/500';}
@@ -5833,7 +5833,7 @@ function spawnBoss(m,mins,by){
   (S.events=S.events||[]).push(e);notify(`[보스 출현] ${m.name} · ${e.loc}`,'warn');refreshTicker();save();return e;
 }
 /* ───────── 이벤트 ───────── */
-document.addEventListener('click',e=>{
+document.addEventListener('click',e=>{if(!S)return;
   if(S.sel.rmem&&!e.target.closest('#rmenu')&&!e.target.closest('[data-act="rmem"]')&&!e.target.closest('[data-act="uinfo"]')&&!e.target.closest('[data-act="r-who"]'))closeRmem();
   if(S.sel.pop&&!e.target.closest('#pop')&&!e.target.closest('[data-act="pop"]')&&!e.target.closest('#modal')){S.sel.pop=null;renderPop();renderTop();}
   if(e.target.closest('button,[role="button"],.opt,.choice'))playClick();
@@ -5843,9 +5843,9 @@ document.addEventListener('click',e=>{
   if(el.tagName==='SELECT')return;
   const act=ACTS[a];if(act){act(d,el,e);}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('note-in')){e.preventDefault();e.target.blur();}if(e.key==='Escape'&&e.target.classList.contains('note-in')){e.stopPropagation();S.sel.noteEdit=null;showOnline();return;}if(e.key==='Enter'&&e.target.id==='me-memo'){e.preventDefault();e.target.blur();}if(e.key==='Enter'&&e.target.matches('.mcard')){e.target.click();}if(e.key==='Escape'&&S.sel.pop){S.sel.pop=null;renderPop();renderTop();return;}if(e.key==='Escape'&&!S.match){crop=null;S.sel.titleModal=false;modal('');}});
+document.addEventListener('keydown',e=>{if(!S)return;if(e.key==='Enter'&&e.target.classList.contains('note-in')){e.preventDefault();e.target.blur();}if(e.key==='Escape'&&e.target.classList.contains('note-in')){e.stopPropagation();S.sel.noteEdit=null;showOnline();return;}if(e.key==='Enter'&&e.target.id==='me-memo'){e.preventDefault();e.target.blur();}if(e.key==='Enter'&&e.target.matches('.mcard')){e.target.click();}if(e.key==='Escape'&&S.sel.pop){S.sel.pop=null;renderPop();renderTop();return;}if(e.key==='Escape'&&!S.match){crop=null;S.sel.titleModal=false;modal('');}});
 document.addEventListener('focusout',e=>{if(e.target&&e.target.id==='me-memo'){const el=e.target;const v=el.value.replace(/\s+/g,' ').trim().slice(0,40);if(v!==(S.me.memo||'')){S.me.memo=v;save();toast(v?'한줄메모를 저장했습니다.':'한줄메모를 지웠습니다.');}S.sel.memoEdit=false;setTimeout(()=>$$('.me-memo').forEach(x=>x.outerHTML=memoHTML()),0);}});
-document.addEventListener('change',e=>{
+document.addEventListener('change',e=>{if(!S)return;
   const el=e.target;if(el.classList&&el.classList.contains('wsel')){S.sel.wcat=el.value;}
   if(el.classList&&el.classList.contains('csel')){const pn=el.closest('[data-chatpanel]');const t=(pn&&pn.dataset.lock)||S.sel.chatTab;if(t==='party')S.sel.partyCh=el.value;else S.sel.lobbyCh=el.value;updateChats();}
   if(el.classList&&el.classList.contains('mk-ed')&&isAdmin()){const x=market().find(y=>y.id===el.dataset.id);if(x){const f=el.dataset.f;const v=el.value.trim();x[f]=f==='stock'?(v===''?null:Math.max(0,Math.round(+v))):Math.max(f==='price'?1:0,Math.round(+v||0));save();toast('저장했습니다.');}}
@@ -5855,7 +5855,7 @@ document.addEventListener('change',e=>{
   if(el.dataset.actChange==='cropfile'&&el.files&&el.files[0])cropFile(el.files[0]);
   if(el.dataset.actChange==='fd-img'&&el.files&&el.files[0])fdImg(el.files[0]);
 });
-document.addEventListener('submit',e=>{
+document.addEventListener('submit',e=>{if(!S)return;
   const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();
   const k=f.dataset.form;
   if(k==='create'){const name=$('#new-name').value.trim();
@@ -6021,7 +6021,7 @@ const ACTS={
   'notify-toggle':()=>{S.settings=S.settings||{};S.settings.notify=S.settings.notify===false;save();renderPop();},
   'set-tab':d=>{S.sel.setTab=d.tab;renderPop();},
   'snd-mute':d=>{S.settings=S.settings||{};const cur=Math.round(sndVol(d.k)*100);if(cur){S.settings['_'+d.k]=cur;S.settings[d.k]=0;}else S.settings[d.k]=S.settings['_'+d.k]||DEF_SND[d.k];audio();updateBgm();save();renderPop();},
-  'acc-logout':()=>{S.loggedOut=true;S.sel.pop=null;updateBgm();save();render();},
+  'acc-logout':()=>{if(SB_UID){sbLogout();return;}S.loggedOut=true;S.sel.pop=null;updateBgm();save();render();},
   'acc-login':()=>{S.loggedOut=false;save();go('main');audio();updateBgm();toast(`${S.me.name}님, 다시 오신 것을 환영합니다.`,'good');},
   'acc-del':()=>{S.sel.confirmDel=true;renderPop();},
   'acc-del-no':()=>{S.sel.confirmDel=false;renderPop();},
@@ -6290,7 +6290,7 @@ const ACTS={
   'op-daily':()=>{S.daily=null;S.dailyQ=null;const c=kstCycle();Object.keys(S.claimedQ).forEach(k=>{if(k.endsWith(':'+c))delete S.claimedQ[k];});S.data.quests.filter(q=>q.repeat).forEach(q=>{if(S.qp[q.id]&&S.qp[q.id].status==='done')delete S.qp[q.id];});logChange('테스트 · 일일 주기',[{field:'반복 퀘스트',before:'완료',after:'초기화'}]);save();render();toast('오늘 주기의 반복 퀘스트를 다시 받을 수 있습니다.');},
   'op-reset':()=>{S.sel.confirmReset=true;render();},
   'op-reset-no':()=>{S.sel.confirmReset=false;render();},
-  'op-reset-yes':()=>{timers.forEach(clearTimeout);timers.clear();try{localStorage.removeItem(SAVE);}catch(e){}S=freshState();modal('');render();toast('모든 데이터를 초기화했습니다.');}
+  'op-reset-yes':()=>{timers.forEach(clearTimeout);timers.clear();try{localStorage.removeItem(SAVE);}catch(e){}S=freshState();modal('');save();render();toast('모든 데이터를 초기화했습니다.');}
 };
 
 /* ───────── 캐릭터 이미지 설정 ───────── */
@@ -6414,7 +6414,81 @@ function boot(data){
   render();
   setInterval(tick,250);
 }
+/* ───────── 서버(Supabase) · 로그인과 캐릭터 저장 ───────── */
+const SB_URL='https://ktuhkiihrnawcpwpqwdl.supabase.co',SB_KEY='sb_publishable_ITKnRBBzkYweQl1htyVoWQ_0w-P4H7o';
+const SB_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+const ONLINE=/(^|\.)vercel\.app$|^localhost$|^127\.0\.0\.1$/.test(location.hostname)||/[?&]server\b/.test(location.search);
+let SB=null,SB_UID=null,cloudT=null,cloudBusy=false,cloudAgain=false,cloudFailN=0;
+function cloudSave(now){if(now){clearTimeout(cloudT);cloudT=null;return cloudPush();}if(cloudT)return;cloudT=setTimeout(()=>{cloudT=null;cloudPush();},4000);}
+async function cloudPush(){
+  if(!SB||!SB_UID||!S)return;if(cloudBusy){cloudAgain=true;return;}cloudBusy=true;
+  try{const {error}=await SB.from('saves').upsert({user_id:SB_UID,data:S,updated_at:new Date().toISOString()});
+    if(error)throw error;if(cloudFailN>=3)toast('서버 저장이 다시 연결되었습니다.','good');cloudFailN=0;}
+  catch(e){cloudFailN++;if(cloudFailN===3)toast('서버에 저장하지 못하고 있습니다. 이 기기에는 저장되어 있으며 계속 다시 시도합니다.','bad');clearTimeout(cloudT);cloudT=setTimeout(()=>{cloudT=null;cloudPush();},Math.min(60000,4000*cloudFailN));}
+  finally{cloudBusy=false;if(cloudAgain){cloudAgain=false;cloudSave();}}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SB_UID&&S){clearTimeout(saveT);S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}cloudSave(true);}});
+async function sbLogout(){S.sel.pop=null;clearTimeout(saveT);try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}await cloudPush();await SB.auth.signOut();location.replace(location.pathname);}
+function loadLib(src){return new Promise((ok,no)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=no;document.head.appendChild(t);});}
+function migrateRaw(raw){try{let s=typeof raw==='string'?JSON.parse(raw):raw;if(s&&s.v===1){s=migrate(s);s.v=2;}if(s&&s.v===2)s=migrate3(s);if(s&&s.v===SAVE_V)return s;}catch(e){}return null;}
+function authView(msg,mode){
+  mode=mode||'login';$('#top').innerHTML='';
+  $('#view').innerHTML=`<div class="wrap"><div class="create auth" style="align-items:center;text-align:center;max-width:400px">
+    <img class="biglogo" src="${LOGO}" alt="BLESET SAGA" style="margin:0 auto"><div class="sub">블레셋 전기</div>
+    <form class="panel stack" id="auth-form" style="text-align:left;gap:10px;width:100%">
+      <div class="seg" style="align-self:flex-start"><button type="button" data-m="login" aria-pressed="${mode==='login'}">로그인</button><button type="button" data-m="signup" aria-pressed="${mode==='signup'}">회원가입</button></div>
+      <label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">이메일</span><input type="email" id="au-email" autocomplete="email" required></label>
+      <label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">비밀번호${mode==='signup'?' (6자 이상)':''}</span><input type="password" id="au-pw" minlength="6" autocomplete="${mode==='signup'?'new-password':'current-password'}" required></label>
+      ${msg?`<p class="${msg.bad?'errs':'faint'}" style="font-size:12.5px;margin:0">${esc(msg.t)}</p>`:''}
+      <button class="btn btn-primary" type="submit" id="au-go">${mode==='signup'?'가입하기':'접속하기'}</button>
+      ${mode==='login'?'<button type="button" class="fd-lnk" id="au-reset" style="align-self:flex-start;font-size:12px">비밀번호를 잊었어요</button>':''}
+    </form><p class="faint" style="font-size:11.5px">진행 기록은 계정에 저장되어 어느 기기에서든 이어서 할 수 있습니다.</p></div></div>`;
+  const f=$('#auth-form');
+  f.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>authView(null,b.dataset.m));
+  const rs=$('#au-reset');if(rs)rs.onclick=async()=>{const em=$('#au-email').value.trim();if(!em)return authView({t:'이메일을 먼저 적어 주세요.',bad:true},'login');
+    const {error}=await SB.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});authView(error?{t:authErr(error),bad:true}:{t:'비밀번호 재설정 메일을 보냈습니다. 링크를 누르면 새 비밀번호를 정할 수 있습니다.'},'login');};
+  f.onsubmit=async e=>{e.preventDefault();const em=$('#au-email').value.trim(),pw=$('#au-pw').value;const go=$('#au-go');go.disabled=true;go.textContent='잠시만요…';
+    if(mode==='signup'){const {data,error}=await SB.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
+      if(error)return authView({t:authErr(error),bad:true},'signup');if(data.session)return sbEnter(data.session.user);
+      return authView({t:'가입 확인 메일을 보냈습니다. 메일의 링크를 누른 뒤 로그인해 주세요.'},'login');}
+    const {data,error}=await SB.auth.signInWithPassword({email:em,password:pw});if(error)return authView({t:authErr(error),bad:true},'login');sbEnter(data.user);};
+}
+function authErr(e){const m=(e&&e.message)||'';
+  if(/Invalid login/i.test(m))return '이메일 또는 비밀번호가 맞지 않습니다.';if(/not confirmed/i.test(m))return '메일 인증이 아직 안 됐습니다. 받은 메일의 링크를 눌러 주세요.';
+  if(/already registered/i.test(m))return '이미 가입된 이메일입니다. 로그인해 주세요.';if(/at least 6/i.test(m))return '비밀번호는 6자 이상이어야 합니다.';
+  if(/rate limit/i.test(m))return '요청이 너무 많습니다. 잠시 뒤 다시 시도해 주세요.';return '문제가 생겼습니다: '+m;}
+function newPwView(){$('#top').innerHTML='';$('#view').innerHTML=`<div class="wrap"><div class="create" style="align-items:center;max-width:400px"><form class="panel stack" id="np-form" style="gap:10px;width:100%"><b>새 비밀번호</b><input type="password" id="np-pw" minlength="6" autocomplete="new-password" required><button class="btn btn-primary" type="submit">저장</button></form></div></div>`;
+  $('#np-form').onsubmit=async e=>{e.preventDefault();const {data,error}=await SB.auth.updateUser({password:$('#np-pw').value});if(error){toast(authErr(error),'bad');return;}sbEnter(data.user);};}
+let sbEntered=false;
+async function sbEnter(user){
+  if(sbEntered)return;sbEntered=true;SB_UID=user.id;SAVE=SAVE0+':'+user.id;
+  $('#view').innerHTML='<div class="wrap"><p class="faint" style="text-align:center;padding:60px 0">진행 기록을 불러오는 중…</p></div>';
+  if(/access_token|type=/.test(location.hash))history.replaceState(null,'',location.pathname);
+  const {data,error}=await SB.from('saves').select('data').eq('user_id',user.id).maybeSingle();
+  if(error){sbEntered=false;SB_UID=null;$('#view').innerHTML=`<div class="wrap"><div class="create" style="align-items:center;text-align:center;max-width:420px"><p class="errs">서버에서 진행 기록을 불러오지 못했습니다.<br><small>${esc(error.message||'')}</small></p><button class="btn btn-primary" onclick="location.reload()">다시 시도</button></div></div>`;return;}
+  const cloud=data&&migrateRaw(data.data);const local=migrateRaw(localStorage.getItem(SAVE));let st=null,imported=false;
+  if(cloud&&local)st=(local.savedAt||0)>(cloud.savedAt||0)?local:cloud;else st=cloud||local;
+  if(!st){let legacy=null;try{if(localStorage.getItem(SAVE0+':claimed')==null)legacy=migrateRaw(localStorage.getItem(SAVE0));}catch(e){}
+    if(legacy&&legacy.me){st=legacy;imported=true;try{localStorage.setItem(SAVE0+':claimed',user.id);}catch(e){}}}
+  if(st)st.loggedOut=false;
+  boot(st?{state:st}:{});
+  if(!st||imported||st!==cloud){save();}
+  if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
+}
+async function sbStart(){
+  $('#view').innerHTML='<div class="wrap"><p class="faint" style="text-align:center;padding:60px 0">접속 중…</p></div>';
+  try{await loadLib(SB_LIB);}catch(e){return authFail();}
+  SB=window.supabase.createClient(SB_URL,SB_KEY);
+  let recovery=/type=recovery/.test(location.hash);
+  SB.auth.onAuthStateChange((ev,ses)=>{if(ev==='PASSWORD_RECOVERY'){recovery=true;newPwView();}});
+  const {data:{session}}=await SB.auth.getSession();
+  if(recovery)return newPwView();
+  if(session)return sbEnter(session.user);
+  authView();
+}
+function authFail(){$('#view').innerHTML='<div class="wrap"><div class="create" style="align-items:center;text-align:center;max-width:420px"><p class="errs">서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.</p><button class="btn btn-primary" onclick="location.reload()">다시 시도</button></div></div>';}
+if(ONLINE)sbStart();else{
 window.claude?.hot?.snapshot?.(()=>({state:S}));
-window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 })();
 </script>
