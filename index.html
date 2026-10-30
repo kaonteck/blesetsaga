@@ -1674,6 +1674,7 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .vil-say b{font-size:12.5px;color:var(--gold-hi)}.vil-say p{margin:4px 0 0;font-size:13.5px;color:var(--text);line-height:1.6}
 .chip.merc{background:rgba(120,140,170,.18);color:#aebbd0;border-color:rgba(150,170,200,.35)}
 .mc-list{display:flex;flex-direction:column;gap:8px}.mc-row{display:flex;gap:10px;align-items:flex-start}.mc-r{flex:none;width:42px;font-size:12.5px;font-weight:600;padding-top:6px}.mc-js{display:flex;flex-wrap:wrap;gap:6px}.mc-js .btn{display:inline-flex;align-items:center;gap:6px}.sigil.xs{width:20px;height:20px;font-size:11px;border-radius:3px}
+.adv-cls{display:flex;flex-direction:column;gap:10px}.adv-c{display:flex;gap:10px;padding:10px;border:1px solid var(--rule-2);border-radius:4px;background:rgba(255,255,255,.02)}.adv-c p{font-size:12.5px;color:var(--muted);margin:2px 0 0}.adv-loc{display:flex;flex-direction:column;gap:2px;margin-top:12px;padding:10px 12px;border-left:2px solid var(--gold,#c9b27a);background:rgba(201,178,122,.06);font-size:13px}.adv-loc small{color:var(--muted)}
 .bl-wrap{text-align:center}.bl-t{font-family:var(--f-display);font-size:20px;color:var(--silver);margin:6px 0 4px}.bl-s{font-size:12.5px;margin:0 auto 14px;max-width:420px}
 .bl-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;perspective:900px}
 .bl-card{appearance:none;border:0;background:none;padding:0;cursor:pointer;aspect-ratio:2/3;font:inherit;color:inherit}
@@ -1874,7 +1875,8 @@ img.px{image-rendering:pixelated}
 .fd-tools{display:flex;align-items:center;gap:8px}.fd-count{margin-left:auto;font-size:12px}
 .fd-tool{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);padding:5px 10px;border:1px solid var(--rule-2);border-radius:999px;cursor:pointer}.fd-tool svg{width:15px;height:15px}.fd-tool:hover{color:#fff;border-color:var(--gold)}
 .fd-prev{position:relative;align-self:flex-start;margin-left:52px}.fd-prev img{max-width:240px;max-height:200px;border-radius:4px;display:block;border:1px solid var(--rule-2)}.fd-prev .ibtn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6)}
-.emo-w{position:relative;display:inline-block}.emo-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule-2);background:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1}.emo-btn:hover{color:#ffd76a;border-color:var(--gold)}
+.emo-w{position:relative;display:inline-block}.emo-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule-2);background:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.emo-w{flex:none}.fd-cform .emo-pop{left:auto;right:0}.emo-pop{width:min(260px,calc(100vw - 48px))!important}.emo-btn:hover{color:#ffd76a;border-color:var(--gold)}
 .emo-pop{position:absolute;z-index:25;bottom:calc(100% + 6px);left:0;width:260px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;padding:6px;background:#1a1b20;border:1px solid var(--rule-2);border-radius:6px;box-shadow:0 10px 26px rgba(0,0,0,.55)}
 .emo-pop button{background:none;border:0;font-size:18px;padding:3px;border-radius:4px;cursor:pointer}.emo-pop button:hover{background:rgba(255,255,255,.08)}
 .fd-list{display:flex;flex-direction:column;gap:14px}
@@ -3045,9 +3047,9 @@ function applyBless(b,k){if(!b.bless||b.bless.pick)return;b.bless.pick=k;
   if(k==='atk')b.players.forEach(p=>p.atk=Math.round(p.atk*1.05));if(k==='heal')b.healMult=1.05;if(k==='guard')b.dmgTakenMult=0.95;
   b.log.push({t:'sys',text:`✦ 가호 · ${b.bless.by}님이 「${BLESS[k][0]}」을(를) 골랐습니다 · ${BLESS[k][1]}`});}
 function blessDlg(){const b=S.battle;if(!b||!b.bless)return '';const P=b.bless.pick;const open=S.sel.blessOpen;
-  return `<div class="bl-wrap"><div class="md-lbl" style="justify-content:center"><i class="lbl-d" aria-hidden="true">◆</i>만신전 · 신들의 가호</div><h3 class="bl-t">${P?`「${esc(BLESS[P][0])}」`:'카드 한 장을 고르세요'}</h3>
-    <p class="faint bl-s">${P?esc(BLESS[P][1])+' · 이번 만신전 동안 원정대 전원에게 적용됩니다.':'원정대를 대표해 당신이 선택되었습니다. 뒤집힌 카드 중 하나를 고르면 원정대 전원이 그 가호를 받습니다.'}</p>
-    <div class="bl-cards">${b.bless.cards.map((k,i)=>{const shown=P!=null;const mine=open===i;return `<button class="bl-card ${shown?'flip':''} ${mine?'mine':''}" data-act="bless-pick" data-i="${i}" ${P?'disabled':''} aria-label="${shown?esc(BLESS[k][0]):`${i+1}번 카드`}"><span class="bl-in"><span class="bl-back">✦</span><span class="bl-front"><b>${BLESS[k][2]}</b><em>${esc(BLESS[k][3])}</em><small>${esc(BLESS[k][4])}</small></span></span></button>`;}).join('')}</div>
+  return `<div class="bl-wrap"><div class="md-lbl" style="justify-content:center"><i class="lbl-d" aria-hidden="true">◆</i>만신전 · 신들의 가호</div><h3 class="bl-t">${P?`「${esc(BLESS[P][0])}」`:b.bless.me?'카드 한 장을 고르세요':'신들의 가호를 고르는 중'}</h3>
+    <p class="faint bl-s">${P?`${esc(b.bless.by)}님의 선택 · ${esc(BLESS[P][1])} · 이번 만신전 동안 원정대 전원에게 적용됩니다.`:b.bless.me?'원정대를 대표해 당신이 선택되었습니다. 뒤집힌 카드 중 하나를 고르면 원정대 전원이 그 가호를 받습니다.':`원정대를 대표해 <b>${esc(b.bless.by)}</b>님이 선택되었습니다. 카드를 고르는 중…`}</p>
+    <div class="bl-cards">${b.bless.cards.map((k,i)=>{const shown=P!=null;const mine=open===i;return `<button class="bl-card ${shown?'flip':''} ${mine?'mine':''}" data-act="bless-pick" data-i="${i}" ${P||!b.bless.me?'disabled':''} aria-label="${shown?esc(BLESS[k][0]):`${i+1}번 카드`}"><span class="bl-in"><span class="bl-back">✦</span><span class="bl-front"><b>${BLESS[k][2]}</b><em>${esc(BLESS[k][3])}</em><small>${esc(BLESS[k][4])}</small></span></span></button>`;}).join('')}</div>
     ${P?'<div class="row" style="justify-content:center;margin-top:14px"><button class="btn btn-primary btn-sm" data-act="closemodal">전투 시작</button></div>':''}</div>`;}
 function massStart(){
   const M=S.mass;if(!M||M.phase!=='gather')return;const m=monster(M.monsterId);if(!m){massEnd();return;}
@@ -3064,12 +3066,13 @@ function massStart(){
   startTurn(b,Math.random);
   b.ctx={type:'mass',ev:M.evId};b.endsAt=now()+C.battleMinutes*60000;b.rules.exp=0;b.rules.gold=0;b.rules.drops=[];
   {const by=pick(M.roster);const ks=Object.keys(BLESS);for(let i=ks.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ks[i],ks[j]]=[ks[j],ks[i]];}b.bless={by:by.isMe?S.me.name:by.name,me:!!by.isMe,cards:ks,pick:null};S.sel.blessOpen=null;
-    if(!by.isMe){const bid=b.id;later(rnd(2500,5000),()=>{const B=S.battle;if(B&&B.id===bid&&B.bless&&!B.bless.pick){applyBless(B,pick(B.bless.cards));save();if(S.route==='battle')render();toast(`${B.bless.by}님이 「${BLESS[B.bless.pick][0]}」을(를) 골랐습니다.`,'good');}});}}
+    if(!by.isMe){const bid=b.id;later(rnd(2500,5000),()=>{const B=S.battle;if(B&&B.id===bid&&B.bless&&!B.bless.pick){const i=Math.floor(Math.random()*B.bless.cards.length);S.sel.blessOpen=i;applyBless(B,B.bless.cards[i]);save();if(S.route==='battle')render();if($('.modal.bless'))showBless(true);else toast(`${B.bless.by}님이 「${BLESS[B.bless.pick][0]}」을(를) 골랐습니다.`,'good');}});}}
   b.deadline=now()+b.rules.turnSeconds*1000+(b.bless.me?20000:0);planBots(b);
   M.phase='battle';S.battle=b;resetAct();S.sel.gmode='fight';S.sel.gcell=null;S.sel.gitem=null;
   S.route='battle';save();render();notify(`${m.name} 만신전 시작 · ${n}인`,'good');
-  if(b.bless.me){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');}
+  showBless(false);
 }
+function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
 function massTick(t){
   const M=S.mass;if(!M||M.phase!=='gather')return;
   const m=monster(M.monsterId);const C=massCfg();
@@ -5381,6 +5384,14 @@ function advQuest(job){const o=ADV_ORIGIN[job];const advs=CLASSES[job].adv;
       choices:advs.map(a=>({label:`★ ${CLASSES[a].name}의 길을 택한다`,result:`${CLASSES[a].name}(으)로서의 힘이 몸에 스며든다.`,next:'end',advTo:a}))},
     end:{end:true,text:'전직 완료',reward:{exp:500,gold:300,items:{}}}}};}
 const ADV_QUESTS=Object.keys(ADV_ORIGIN).map(advQuest);
+function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
+  return `<div class="adv-note"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>시스템</div><h3 class="sh-ttl">전직할 수 있습니다</h3>
+    <p class="faint" style="font-size:13px;margin:0 0 12px">LV${cfg().jobAdvanceLevel}에 도달했습니다. ${esc(c.name)}의 시작의 마을에서 신의 시련을 통과하면 상위 클래스로 전직할 수 있습니다.</p>
+    <div class="adv-cls">${c.adv.map(a=>{const A=CLASSES[a];return `<div class="adv-c">${sigil(a,'sm')}<div><b>★ ${esc(A.name)}</b> <small class="faint">${esc(A.en)}</small><div class="row" style="gap:4px;margin:3px 0"><span class="chip cls ${A.role}">${ROLE[A.role]}</span><span class="chip dim">무기 · ${(CLASS_WEAPON[a]||[]).map(w=>WTYPE[w]).join('/')}</span></div><p>${esc(A.desc||'')}</p></div></div>`;}).join('')}</div>
+    ${o?`<div class="adv-loc"><span class="faint">퀘스트 위치</span><b>${esc(LANDS[o.land])} · ${esc(villageName(o.land))} › 광장</b><small>${esc(o.place)} · ${esc(o.npc)}</small></div>`:''}
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn btn-sm btn-ghost" data-act="closemodal">나중에</button><button class="btn btn-sm btn-primary" data-act="adv-go">전직 퀘스트 받기</button></div></div>`;}
+function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S.route==='battle')return;const c=CLASSES[me.job];if(c.tier!==1||me.level<cfg().jobAdvanceLevel)return;
+  const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):Q.id==='E4'?QS.findIndex(q=>q.id==='E3')+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -6127,7 +6138,8 @@ const ACTS={
   'rn-start':()=>{if(busyReason()){toast(busyReason()+' · 끝난 뒤 이름을 바꿀 수 있습니다.','warn');return;}S.sel.nameEdit=true;render();const i=$('#rn-name');if(i){i.focus();i.select();}},
   'rn-cancel':()=>{S.sel.nameEdit=false;render();},
   'adv-open':()=>{const c=CLASSES[S.me.job];if(c.tier===1){const id='J_'+S.me.job;const q=quest(id);if(q){if(questStatus(q)==='available'){S.qp[id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();toast(`퀘스트 수락 · ${q.title}`);}go('quest',{quest:id,qtab:q.cat});return;}}S.sel.advPick=null;modal(`<div class="row" style="justify-content:space-between"><h3>전직</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>${advPanel()}`);const mm=$('.modal');if(mm)mm.classList.add('wide');},
-  'bless-pick':d=>{const b=S.battle;if(!b||!b.bless||b.bless.pick||!b.bless.me)return;S.sel.blessOpen=+d.i;applyBless(b,b.bless.cards[+d.i]);save();render();modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);},
+  'adv-go':()=>{modal('');ACTS['adv-open']();},
+  'bless-pick':d=>{const b=S.battle;if(!b||!b.bless||b.bless.pick||!b.bless.me)return;S.sel.blessOpen=+d.i;applyBless(b,b.bless.cards[+d.i]);save();render();showBless(true);},
   'inv-use':d=>{const it=ITEMS[d.id];if(it&&it.readText){modal(`<div class="letter"><div class="lt-paper"><small>${esc(it.name)}</small><p style="white-space:pre-line">${esc(it.readText)}</p></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);return;}if(it&&it.letter){if(!(S.me.inv[d.id]>0))return;S.me.inv[d.id]--;if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();modal(`<div class="letter"><div class="lt-paper"><small>병 속의 편지</small><p>${esc(pick(BOTTLE_LINES))}</p></div><p class="faint" style="font-size:12px;text-align:center">편지를 읽자 종이가 바스러져 바람에 흩어졌다.</p><div class="row" style="justify-content:center"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);const mm=$('.modal');if(mm)mm.classList.add('narrow2');setTimeout(()=>{const p=$('.lt-paper');if(p)p.classList.add('fade');},4500);setTimeout(()=>{if($('.lt-paper'))modal('');},6000);return;}if(!it||!it.buff||!(S.me.inv[d.id]>0))return;{const bl=itemBlock(d.id);if(bl){toast(bl,'warn');return;}}S.me.inv[d.id]--;const b=it.buff;S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.until>now()&&x.src!==d.id);
     S.me.itemBuffs.push({src:d.id,stat:b.stat,val:b.val,until:now()+b.min*60000});if(it.buff2)S.me.itemBuffs.push({src:d.id,stat:it.buff2.stat,val:it.buff2.val,until:now()+it.buff2.min*60000});if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();toast(`${it.name} 사용 · ${b.min}분 동안 ${STATK[b.stat]} +${b.val}${it.buff2?` · ${STATK[it.buff2.stat]} +${it.buff2.val}`:''}`,'good');},
   'sk-sel':d=>{S.sel.skSel=S.sel.skSel===d.id?null:d.id;render();},
@@ -6599,11 +6611,11 @@ function viewAsUserBar(){
   if(S.me&&S.me.admin&&S.me.viewAsUser){const v=$('#view');const bar=document.createElement('div');bar.className='wrap';bar.innerHTML=`<div class="row" style="justify-content:flex-end;padding-block:8px 0"><span class="faint" style="font-size:12px">일반 사용자 시점으로 보는 중</span><button class="btn btn-sm btn-ghost" data-act="backadmin">운영자 시점으로</button></div>`;v.prepend(bar);}
 }
 const _render=render;
-render=function(){_render();viewAsUserBar();};
+render=function(){_render();viewAsUserBar();setTimeout(advNoticeCheck,700);};
 function boot(data){
   S=(data&&data.state)||load();
   S.sel=S.sel||{};S.unread=S.unread||{lobby:0,party:0,whisper:{}};S.unread.world=S.unread.world||0;if(!S.mail)S.mail=freshState().mail;S.settings=S.settings||{...DEF_SND};S.inquiries=S.inquiries||[];S.sel.pop=null;S.sel.titleModal=false;if(S.data.config.levelCap===20&&S.data.config.expQuad==null){S.data.config.levelCap=99;S.data.config.expQuad=2;}S.data.config.expQuad=S.data.config.expQuad??2;loadItems();S.stats=S.stats||{};S.titles=S.titles||{owned:{},equip:null};S.bots.forEach(b=>{if(b.goldEarned==null)b.goldEarned=Math.round(b.level*b.level*32+seedRnd('g'+b.name)()*900);});{const dk=kstCycle();const ds=new Set(S.stats.days||[]);ds.add(dk);S.stats.days=[...ds];}setTimeout(checkTitles,1500);if(S.sel.chatTab==='whisper')S.sel.chatTab='lobby';dmState();if(S.route==='friends')S.route='main';S.chat.world=S.chat.world||freshState().chat.world;S.unread.whisper=S.unread.whisper||{};
-  const h=(location.hash||'').slice(1);if(['main','quest','explore','battle','character','lore','market','admin'].includes(h))S.route=h;
+  const h=(location.hash||'').slice(1);if(['main','quest','explore','battle','character','lore','market','admin','community'].includes(h))S.route=h;
   if(S.battle&&!S.battle.over){
     const b=S.battle;
     if(now()-b.deadline>5*60*1000){b.over='abandon';b.log.push({t:'lose',text:'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다.'});S.claimedB[b.id]=true;b.result={eligible:false};}
