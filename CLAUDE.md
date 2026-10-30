@@ -39,7 +39,8 @@
 
 ### 진행 상황
 - [x] 로그인·캐릭터 저장 서버화: vercel.app/localhost(또는 `?server`)에서만 Supabase 사용(`ONLINE`), 그 외(파일로 열기)는 예전처럼 localStorage만.
-  - 이메일+비밀번호 로그인(`authView`), 상태 `S` 통째로 `saves` 테이블 jsonb에 저장(`cloudSave`, 최대 4초 간격 + 탭 숨김 시 즉시).
+  - 초대코드+아이디+비밀번호 가입(`authView`). 아이디는 `<id>@blesetsaga.vercel.app` 형태의 가짜 이메일로 Supabase Auth에 저장(Confirm email 꺼야 함). 초대코드는 `private.invite_codes` + auth.users BEFORE INSERT 트리거가 서버에서 검사(`supabase/002_invites.sql`).
+  - 비밀번호 분실: SQL Editor에서 `update auth.users set encrypted_password = extensions.crypt('새비번', extensions.gen_salt('bf')) where email = '<id>@blesetsaga.vercel.app';`, 상태 `S` 통째로 `saves` 테이블 jsonb에 저장(`cloudSave`, 최대 4초 간격 + 탭 숨김 시 즉시).
   - 로컬 캐시 키는 `bleset-saga-v1:<user_id>`. 클라우드/로컬 중 `savedAt`이 최신인 쪽 사용. 첫 로그인 시 예전 `bleset-saga-v1` 세이브를 1회 가져옴.
   - 테이블 SQL: `supabase/001_saves.sql`.
 - 주의: 아직 클라이언트가 상태 전체를 저장하므로 치트 방지는 안 됨(5단계).

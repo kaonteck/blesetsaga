@@ -6431,32 +6431,39 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 async function sbLogout(){S.sel.pop=null;clearTimeout(saveT);try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}await cloudPush();await SB.auth.signOut();location.replace(location.pathname);}
 function loadLib(src){return new Promise((ok,no)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=no;document.head.appendChild(t);});}
 function migrateRaw(raw){try{let s=typeof raw==='string'?JSON.parse(raw):raw;if(s&&s.v===1){s=migrate(s);s.v=2;}if(s&&s.v===2)s=migrate3(s);if(s&&s.v===SAVE_V)return s;}catch(e){}return null;}
-function authView(msg,mode){
-  mode=mode||'login';$('#top').innerHTML='';
+const ID_DOMAIN='blesetsaga.vercel.app';
+const idMail=id=>id.includes('@')?id:`${id.toLowerCase()}@${ID_DOMAIN}`;
+function authView(msg,mode,keep){
+  mode=mode||'login';keep=keep||{};$('#top').innerHTML='';const su=mode==='signup';
   $('#view').innerHTML=`<div class="wrap"><div class="create auth" style="align-items:center;text-align:center;max-width:400px">
     <img class="biglogo" src="${LOGO}" alt="BLESET SAGA" style="margin:0 auto"><div class="sub">블레셋 전기</div>
-    <form class="panel stack" id="auth-form" style="text-align:left;gap:10px;width:100%">
-      <div class="seg" style="align-self:flex-start"><button type="button" data-m="login" aria-pressed="${mode==='login'}">로그인</button><button type="button" data-m="signup" aria-pressed="${mode==='signup'}">회원가입</button></div>
-      <label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">이메일</span><input type="email" id="au-email" autocomplete="email" required></label>
-      <label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">비밀번호${mode==='signup'?' (6자 이상)':''}</span><input type="password" id="au-pw" minlength="6" autocomplete="${mode==='signup'?'new-password':'current-password'}" required></label>
+    <form class="panel stack" id="auth-form" style="text-align:left;gap:10px;width:100%" novalidate>
+      <div class="seg" style="align-self:flex-start"><button type="button" data-m="login" aria-pressed="${!su}">로그인</button><button type="button" data-m="signup" aria-pressed="${su}">회원가입</button></div>
+      ${su?`<label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">초대코드</span><input type="text" id="au-inv" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(keep.inv||'')}"></label>`:''}
+      <label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">아이디${su?' (영문 소문자·숫자·_ 4–16자)':''}</span><input type="text" id="au-id" autocomplete="username" autocapitalize="none" spellcheck="false" value="${esc(keep.id||'')}"></label>
+      <label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">비밀번호${su?' (6자 이상)':''}</span><input type="password" id="au-pw" autocomplete="${su?'new-password':'current-password'}"></label>
+      ${su?'<label class="stack" style="gap:4px"><span class="faint" style="font-size:12px">비밀번호 확인</span><input type="password" id="au-pw2" autocomplete="new-password"></label>':''}
       ${msg?`<p class="${msg.bad?'errs':'faint'}" style="font-size:12.5px;margin:0">${esc(msg.t)}</p>`:''}
-      <button class="btn btn-primary" type="submit" id="au-go">${mode==='signup'?'가입하기':'접속하기'}</button>
-      ${mode==='login'?'<button type="button" class="fd-lnk" id="au-reset" style="align-self:flex-start;font-size:12px">비밀번호를 잊었어요</button>':''}
-    </form><p class="faint" style="font-size:11.5px">진행 기록은 계정에 저장되어 어느 기기에서든 이어서 할 수 있습니다.</p></div></div>`;
+      <button class="btn btn-primary" type="submit" id="au-go">${su?'가입하기':'접속하기'}</button>
+    </form><p class="faint" style="font-size:11.5px">${su?'초대코드는 운영자에게 받을 수 있습니다. 비밀번호를 잊으면 운영자에게 문의해 주세요.':'진행 기록은 계정에 저장되어 어느 기기에서든 이어서 할 수 있습니다.'}</p></div></div>`;
   const f=$('#auth-form');
-  f.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>authView(null,b.dataset.m));
-  const rs=$('#au-reset');if(rs)rs.onclick=async()=>{const em=$('#au-email').value.trim();if(!em)return authView({t:'이메일을 먼저 적어 주세요.',bad:true},'login');
-    const {error}=await SB.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});authView(error?{t:authErr(error),bad:true}:{t:'비밀번호 재설정 메일을 보냈습니다. 링크를 누르면 새 비밀번호를 정할 수 있습니다.'},'login');};
-  f.onsubmit=async e=>{e.preventDefault();const em=$('#au-email').value.trim(),pw=$('#au-pw').value;const go=$('#au-go');go.disabled=true;go.textContent='잠시만요…';
-    if(mode==='signup'){const {data,error}=await SB.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
-      if(error)return authView({t:authErr(error),bad:true},'signup');if(data.session)return sbEnter(data.session.user);
-      return authView({t:'가입 확인 메일을 보냈습니다. 메일의 링크를 누른 뒤 로그인해 주세요.'},'login');}
-    const {data,error}=await SB.auth.signInWithPassword({email:em,password:pw});if(error)return authView({t:authErr(error),bad:true},'login');sbEnter(data.user);};
+  f.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>authView(null,b.dataset.m,{id:$('#au-id').value}));
+  f.onsubmit=async e=>{e.preventDefault();const id=$('#au-id').value.trim(),pw=$('#au-pw').value;const inv=su?$('#au-inv').value.trim().toUpperCase():'';const k={id,inv};
+    const bad=t=>authView({t,bad:true},mode,k);
+    if(su){if(!inv)return bad('초대코드를 적어 주세요.');if(!/^[a-z0-9_]{4,16}$/.test(id))return bad('아이디는 영문 소문자·숫자·_ 4–16자로 정해 주세요.');
+      if(pw.length<6)return bad('비밀번호는 6자 이상이어야 합니다.');if(pw!==$('#au-pw2').value)return bad('비밀번호 확인이 일치하지 않습니다.');}
+    else if(!id||!pw)return bad('아이디와 비밀번호를 적어 주세요.');
+    const go=$('#au-go');go.disabled=true;go.textContent='잠시만요…';
+    if(su){const {data,error}=await SB.auth.signUp({email:idMail(id),password:pw,options:{data:{username:id,invite:inv}}});
+      if(error)return bad(authErr(error));if(data.session)return sbEnter(data.session.user);
+      return bad('가입은 됐지만 바로 접속하지 못했습니다. 운영자에게 문의해 주세요(이메일 인증 설정).');}
+    const {data,error}=await SB.auth.signInWithPassword({email:idMail(id),password:pw});if(error)return bad(authErr(error));sbEnter(data.user);};
 }
 function authErr(e){const m=(e&&e.message)||'';
-  if(/Invalid login/i.test(m))return '이메일 또는 비밀번호가 맞지 않습니다.';if(/not confirmed/i.test(m))return '메일 인증이 아직 안 됐습니다. 받은 메일의 링크를 눌러 주세요.';
-  if(/already registered/i.test(m))return '이미 가입된 이메일입니다. 로그인해 주세요.';if(/at least 6/i.test(m))return '비밀번호는 6자 이상이어야 합니다.';
-  if(/rate limit/i.test(m))return '요청이 너무 많습니다. 잠시 뒤 다시 시도해 주세요.';return '문제가 생겼습니다: '+m;}
+  if(/Invalid login/i.test(m))return '아이디 또는 비밀번호가 맞지 않습니다.';if(/not confirmed/i.test(m))return '아직 인증되지 않은 계정입니다. 운영자에게 문의해 주세요.';
+  if(/already registered|already exists/i.test(m))return '이미 사용 중인 아이디입니다.';if(/Database error/i.test(m))return '초대코드가 맞지 않거나 이미 다 사용된 코드입니다.';
+  if(/at least 6/i.test(m))return '비밀번호는 6자 이상이어야 합니다.';if(/rate limit/i.test(m))return '요청이 너무 많습니다. 잠시 뒤 다시 시도해 주세요.';
+  if(/signups not allowed/i.test(m))return '지금은 가입을 받지 않습니다.';return '문제가 생겼습니다: '+m;}
 function newPwView(){$('#top').innerHTML='';$('#view').innerHTML=`<div class="wrap"><div class="create" style="align-items:center;max-width:400px"><form class="panel stack" id="np-form" style="gap:10px;width:100%"><b>새 비밀번호</b><input type="password" id="np-pw" minlength="6" autocomplete="new-password" required><button class="btn btn-primary" type="submit">저장</button></form></div></div>`;
   $('#np-form').onsubmit=async e=>{e.preventDefault();const {data,error}=await SB.auth.updateUser({password:$('#np-pw').value});if(error){toast(authErr(error),'bad');return;}sbEnter(data.user);};}
 let sbEntered=false;
