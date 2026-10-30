@@ -1973,7 +1973,7 @@ GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},ar
   const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
     knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{atk:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
     gun:{atk:A,luk:Math.round(1+L*0.1)},dgun:{atk:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{atk:Math.round(A*0.7),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{atk:Math.round(A*0.8),luk:Math.round(3+L*0.25)}};
-  (T===1?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
+  (L<30?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
     ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
   ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25)},desc,price};
@@ -2608,11 +2608,11 @@ const DEFAULT_NOTICES=[
   {id:'n3',cat:'update',date:'10.24',title:'봉인 수호자 공략 안내',text:'LV15 이상, 6인 이상. 탱커 1 · 딜러 3 · 힐러 2가 필요합니다.'}
 ];
 const DEFAULT_BANNER={eyebrow:'백야의 신전 소식',title:'잠든 혼돈이 봉인을 두드린다',text:'백야의 신전 봉인 수호자가 깨어났습니다. LV15 이상의 블레서 여섯 명이 모이면 공략에 나설 수 있습니다.',linkLabel:'봉인 수호자 보기',link:'monster:guardian'};
-const DEFAULT_CONFIG={levelCap:99,turnSeconds:45,acceptSeconds:30,expBase:100,expStep:50,expQuad:2,jobAdvanceLevel:10};
+const DEFAULT_CONFIG={levelCap:99,turnSeconds:45,acceptSeconds:30,expBase:100,expStep:50,expQuad:2,jobAdvanceLevel:30};
 const BOTS=[['아르덴','knight',16],['세린','demigod',15],['카이로','destroyer',17],['미라엘','priest',9],['하윤','shooter',4],['도겸','defender',9],['루시안','salamander',15],['엘라','priest',3],['테오','defender',4],['비안카','mage',8],['노아','warrior',18],['리엔','summoner',17],['소하','infighter',6],['이안','defender',7],['레아','priest',5],['진후','mystic',16],['다온','demigod',12],['유키','dualist',15],['벨라','warrior',13]];
 const PARTY_NAMES=['새벽 토벌대','은빛 순례단','백야 원정대','라니아케아 수호대','안개 추적단','첫 별 탐사대','회색 늑대단','검은 결정 조사대','잿빛 등불단','북쪽 경계 정찰대','푸른 불꽃 결사','고목 벌채단'];
 function partyName(){const used=new Set(S.recruits.map(r=>r.name));return pick(PARTY_NAMES.filter(n=>!used.has(n)))||'임시 탐사대';}
-const LOBBY_LINES=['오늘 파수꾼 3인 가실 분 있나요?','백야의 신전 공지 보셨어요? 수호자는 6인부터래요','정화의 성수는 상점에서 40골드예요','탐사대 퀘스트는 정찰병 경로가 회복약을 줘요','광역 예고 뜨면 방어 꼭 누르세요','힐러 구해요! 추적자 4인','방금 장궁 나왔어요','블라스페미아 지도 조각은 LV7부터 받을 수 있어요','라니아케아의 축복이 함께하길','일일 의뢰 오전 5시에 초기화돼요','졸트 다음에 러시 쓰면 연계 대미지 붙어요','제압은 딜러 대미지가 두 배 넘으면 풀려요','LV10 되면 전직할 수 있어요','랜덤 매칭 돌리는 중입니다','서머너 비호 두 번이면 광역 버틸 만해요'];
+const LOBBY_LINES=['오늘 파수꾼 3인 가실 분 있나요?','백야의 신전 공지 보셨어요? 수호자는 6인부터래요','정화의 성수는 상점에서 40골드예요','탐사대 퀘스트는 정찰병 경로가 회복약을 줘요','광역 예고 뜨면 방어 꼭 누르세요','힐러 구해요! 추적자 4인','방금 장궁 나왔어요','블라스페미아 지도 조각은 LV7부터 받을 수 있어요','라니아케아의 축복이 함께하길','일일 의뢰 오전 5시에 초기화돼요','졸트 다음에 러시 쓰면 연계 대미지 붙어요','제압은 딜러 대미지가 두 배 넘으면 풀려요','LV30 되면 전직할 수 있어요','랜덤 매칭 돌리는 중입니다','서머너 비호 두 번이면 광역 버틸 만해요'];
 const PARTY_LINES=['준비 완료했습니다','제압 먼저 걸게요','광역 예고 보이면 성역 쓸게요','힐 필요하면 말해주세요','졸트 다음 연계 들어갑니다','좋아요 가시죠','잘 부탁드려요','체력 낮으면 방어 눌러주세요'];
 const WHISPER_LINES=['안녕하세요!','지금 퀘스트 중이에요, 끝나고 같이 가요','좋아요, 파티 만들면 초대해 주세요','ㅎㅎ 고마워요','저는 지금 레벨 올리는 중이에요','수호자 갈 때 불러주세요','오늘 일일 의뢰 다 하셨어요?'];
 
@@ -3489,7 +3489,7 @@ function meMember(){return {name:S.me.name,job:S.me.job,level:S.me.level,isMe:tr
 const MERC_NAMES=['카스','브란','엘로','미르','하렌','토비','시아','루엔','다온','벨라크','이오','파렌','세드','노엘','라임','오르'];
 function realMembers(p){return p.members.filter(x=>!x.merc);}
 function mercLevel(p){const r=realMembers(p);return r.length?Math.round(r.reduce((a,x)=>a+(x.isMe?S.me.level:x.level),0)/r.length):S.me.level;}
-function mercJobs(lv,role){return Object.keys(CLASSES).filter(k=>CLASSES[k].role===role&&CLASSES[k].tier===(lv>=10?2:1));}
+function mercJobs(lv,role){return Object.keys(CLASSES).filter(k=>CLASSES[k].role===role&&CLASSES[k].tier===(lv>=cfg().jobAdvanceLevel?2:1));}
 function syncMercs(p){if(!p)return;const L=mercLevel(p);p.members.forEach(x=>{if(x.merc){x.level=L;x.ready=true;}});}
 function addMerc(p,job){const used=new Set([...p.members.map(x=>x.name),...S.bots.map(b=>b.name)]);const pool=MERC_NAMES.filter(n=>!used.has('용병 '+n));
   const name='용병 '+(pool.length?pick(pool):MERC_NAMES[0]+p.members.length);p.members.push({name,job,level:mercLevel(p),isMe:false,ready:true,merc:true});return name;}
@@ -5277,6 +5277,7 @@ const THEFT_QUEST={id:'D_THEFT',cat:'repeat',title:'잃어버린 골드를 찾�
 const RELEVEL={forest:[5,5],tracker:[15,5],ev_rift:[20,6],ev_crown:[40,6],guardian:[90,10]};
 const LVMAP_V=2,GROUP_GEAR={forest:1,tracker:2,ev_rift:3,ev_crown:5,guardian:8};
 function ensureRelevel(){
+  if(S.data&&S.data.config&&!S.data.advLv30){if(S.data.config.jobAdvanceLevel===10)S.data.config.jobAdvanceLevel=30;S.data.advLv30=1;save();}
   if(!S.data||!S.data.monsters||(S.data.lvMap||0)>=LVMAP_V)return;
   const fresh=Object.fromEntries(EXTRA_MONSTERS.filter(m=>m.kind==='field'||m.kind==='dungeon').map(m=>[m.id,m]));
   S.data.monsters=S.data.monsters.map(m=>{
@@ -5517,7 +5518,9 @@ const SNAILS=[['번개','#e9c46a'],['느림보','#7fb38a'],['소금이','#cfd3d8
 const SNAIL_FEE=100,SNAIL_MAX=3,SNAIL_MULT=[2,4,6];
 const LOTTO_PRICE=200,LOTTO_MAX=2,LOTTO_PRIZE={1:10000,2:3000,3:100};
 function snailState(){return S.me.snail||null;}
+const CASINO_LV=10;
 function casinoHTML(){
+  if(S.me.level<CASINO_LV)return `<section class="md-sec panel casino" id="md-casino"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>카지노</div><h3 class="cas-title">골든 오아시스</h3><p class="cas-desc">사막 위에 신기루처럼 서 있는, 금빛으로 장식된 거대한 카지노.</p><p class="reason" style="font-size:12.5px;margin-top:8px">입구의 경비원이 길을 막는다. "애송이는 출입 금지야. LV${CASINO_LV}부터 오라고."</p></section>`;
   const d=daily();const left=SNAIL_MAX-(d.snail||0);const L=lottoInfo();
   return `<section class="md-sec panel casino" id="md-casino"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>카지노</div>
     <h3 class="cas-title">골든 오아시스</h3>
@@ -6524,6 +6527,7 @@ function boot(data){
   render();
   setInterval(tick,250);
 }
+['snail-open','snail-start','lotto-open','lotto-buy','cshop-open','cshop-buy'].forEach(k=>{const f=ACTS[k];if(f)ACTS[k]=(...a)=>{if(S.me.level<CASINO_LV){toast(`카지노는 LV${CASINO_LV}부터 들어갈 수 있습니다.`,'warn');return;}return f(...a);};});
 /* ───────── 서버(Supabase) · 로그인과 캐릭터 저장 ───────── */
 const SB_URL='https://ktuhkiihrnawcpwpqwdl.supabase.co',SB_KEY='sb_publishable_ITKnRBBzkYweQl1htyVoWQ_0w-P4H7o';
 const SB_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
