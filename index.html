@@ -2610,29 +2610,35 @@ const SOLO_TIER={field:[120,27],story:[140,34],dungeon:[150,36]};
 function soloStats(tier,L){const [h,a]=SOLO_TIER[tier];return {hp:Math.round(h*(1+0.09*(L-1))),atk:Math.round(a*(1+0.07*(L-1)))};}
 function soloMon(o){const L=o.statLevel||o.level;const s=soloStats(o.tier,L);const m={art:'beast',published:true,rev:1,maxLevel:null,min:1,max:1,target:1,roles:{tank:0,dps:0,heal:0},hpScale:0,def:0,
   singleName:'할퀴기',singleMult:1,aoeName:'몰아치기',aoeMult:0.6,aoeEvery:3,dotName:'상처',dotChance:0.3,dotDmg:Math.round(s.atk*0.15),exp:0,gold:0,drops:[],...s,...o};delete m.tier;delete m.statLevel;return m;}
+/* 레벨 구간 (상한 99): 지역 8곳이 1–99를 나눠 맡는다 */
+const LAND_BAND={meadow:[1,9],rock:[10,19],swamp:[20,29],salt:[30,39],sea:[40,49],ember:[50,64],frost:[65,79],chaos:[80,99]};
+const needOf=L=>Math.round(100+50*(L-1)+2*(L-1)*(L-1));
+const fieldExp=L=>Math.round(needOf(L)/(4+L*0.12));
+const fieldGold=L=>Math.round(10+L*4);
+const fieldLv=(land,i)=>{const b=LAND_BAND[land];return b?(i===0?b[0]:Math.round((b[0]+b[1])/2)):1;};
 const FIELD_DEF=[
  ['meadow','초원의 땅',1,'herb',[['f_meadow1','들개 무리','beast',{singleName:'물어뜯기',dotName:'출혈',dotChance:0.35}],['f_meadow2','성난 멧돼지','beast',{singleName:'돌진',singleMult:1.1,aoeName:'짓밟기',dotChance:0.15}]]],
- ['rock','바위의 땅',3,'ore',[['f_rock1','바위 도마뱀','beast',{singleName:'꼬리 후려치기',dotName:'석화 침',dotChance:0.3}],['f_rock2','동굴 박쥐 떼','spirit',{aoeName:'초음파',aoeEvery:2,aoeMult:0.5,dotName:'흡혈',dotChance:0.25}]]],
- ['swamp','늪의 땅',6,'venom',[['f_swamp1','독안개 두꺼비','beast',{singleName:'혀 채찍',dotName:'독안개',dotChance:0.5}],['f_swamp2','늪 거머리','beast',{singleName:'달라붙기',dotName:'흡혈',dotChance:0.4}]]],
- ['salt','소금의 땅',9,'salt',[['f_salt1','소금 전갈','beast',{singleName:'집게',dotName:'마비 독침',dotChance:0.45}],['f_salt2','모래 폭풍 정령','spirit',{singleName:'모래 칼날',aoeName:'모래 폭풍',aoeEvery:2,aoeMult:0.5,dotChance:0.2}]]],
- ['ember','작열의 땅',12,'ember',[['f_ember1','화염 도롱뇽','beast',{singleName:'불꽃 혀',dotName:'화상',dotChance:0.45}],['f_ember2','용암 골렘','golem',{singleName:'용암 주먹',singleMult:1.15,aoeName:'분화',dotName:'화상',dotChance:0.15}]]],
- ['frost','혹한의 땅',15,'frost',[['f_frost1','서리 늑대','beast',{singleName:'얼음 송곳니',dotName:'동상',dotChance:0.4}],['f_frost2','얼음 망령','spirit',{singleName:'냉기 손길',aoeName:'서리 폭풍',aoeEvery:2,aoeMult:0.5,dotName:'동상',dotChance:0.2}]]],
- ['sea','바다의 땅',10,'pearl',[['f_sea1','갯바위 집게','beast',{singleName:'집게 찍기',singleMult:1.1,dotName:'찢긴 상처',dotChance:0.25}],['f_sea2','바다 안개 정령','spirit',{singleName:'젖은 손길',aoeName:'해무',aoeEvery:2,aoeMult:0.5,dotName:'익사의 저주',dotChance:0.3}]]],
- ['chaos','블라스파미아',20,'chaos',[['f_chaos1','녹물 망령','spirit',{singleName:'녹물 손톱',dotName:'부식',dotChance:0.45}],['f_chaos2','혼돈 추적견','beast',{singleName:'그림자 송곳니',singleMult:1.1,dotName:'저주 출혈',dotChance:0.3}]]]
+ ['rock','바위의 땅',10,'ore',[['f_rock1','바위 도마뱀','beast',{singleName:'꼬리 후려치기',dotName:'석화 침',dotChance:0.3}],['f_rock2','동굴 박쥐 떼','spirit',{aoeName:'초음파',aoeEvery:2,aoeMult:0.5,dotName:'흡혈',dotChance:0.25}]]],
+ ['swamp','늪의 땅',20,'venom',[['f_swamp1','독안개 두꺼비','beast',{singleName:'혀 채찍',dotName:'독안개',dotChance:0.5}],['f_swamp2','늪 거머리','beast',{singleName:'달라붙기',dotName:'흡혈',dotChance:0.4}]]],
+ ['salt','소금의 땅',30,'salt',[['f_salt1','소금 전갈','beast',{singleName:'집게',dotName:'마비 독침',dotChance:0.45}],['f_salt2','모래 폭풍 정령','spirit',{singleName:'모래 칼날',aoeName:'모래 폭풍',aoeEvery:2,aoeMult:0.5,dotChance:0.2}]]],
+ ['ember','작열의 땅',50,'ember',[['f_ember1','화염 도롱뇽','beast',{singleName:'불꽃 혀',dotName:'화상',dotChance:0.45}],['f_ember2','용암 골렘','golem',{singleName:'용암 주먹',singleMult:1.15,aoeName:'분화',dotName:'화상',dotChance:0.15}]]],
+ ['frost','혹한의 땅',65,'frost',[['f_frost1','서리 늑대','beast',{singleName:'얼음 송곳니',dotName:'동상',dotChance:0.4}],['f_frost2','얼음 망령','spirit',{singleName:'냉기 손길',aoeName:'서리 폭풍',aoeEvery:2,aoeMult:0.5,dotName:'동상',dotChance:0.2}]]],
+ ['sea','바다의 땅',40,'pearl',[['f_sea1','갯바위 집게','beast',{singleName:'집게 찍기',singleMult:1.1,dotName:'찢긴 상처',dotChance:0.25}],['f_sea2','바다 안개 정령','spirit',{singleName:'젖은 손길',aoeName:'해무',aoeEvery:2,aoeMult:0.5,dotName:'익사의 저주',dotChance:0.3}]]],
+ ['chaos','블라스파미아',80,'chaos',[['f_chaos1','녹물 망령','spirit',{singleName:'녹물 손톱',dotName:'부식',dotChance:0.45}],['f_chaos2','혼돈 추적견','beast',{singleName:'그림자 송곳니',singleMult:1.1,dotName:'저주 출혈',dotChance:0.3}]]]
 ];
 const DUNGEON_DEF=[
- ['d_pilgrim','순례자의 길','시련의 석상',10,'golem',['sword','leather','potion']],
- ['d_cave','무너진 바위 동굴','동굴의 은둔 무승',20,'golem',['shield','staff','holywater']],
- ['d_grass','비명 지르는 풀숲','저주받은 풀숲의 마녀',40,'spirit',['bow','cloak']],
- ['d_lake','갈증의 호수','염수의 군주',50,'spirit',['cloak','amulet']],
+ ['d_pilgrim','순례자의 길','시련의 석상',12,'golem',['sword','leather','potion']],
+ ['d_cave','무너진 바위 동굴','동굴의 은둔 무승',18,'golem',['shield','staff','holywater']],
+ ['d_grass','비명 지르는 풀숲','저주받은 풀숲의 마녀',8,'spirit',['bow','cloak']],
+ ['d_lake','갈증의 호수','염수의 군주',36,'spirit',['cloak','amulet']],
  ['d_altar','황금 뿌리 제단','황금 뿌리 수호자',60,'golem',['amulet','crest']],
- ['d_serpent','바다뱀의 고리','고대 바다뱀',70,'beast',['crest','amulet','cloak']],
- ['d_siren','인어의 속삭임','심해의 세이렌',80,'spirit',['crest','amulet','cloak']],
- ['d_mirror','거울 감옥','거울 속 죄수',90,'spirit',['crest','amulet','cloak']]
+ ['d_serpent','바다뱀의 고리','고대 바다뱀',27,'beast',['crest','amulet','cloak']],
+ ['d_siren','인어의 속삭임','심해의 세이렌',46,'spirit',['crest','amulet','cloak']],
+ ['d_mirror','거울 감옥','거울 속 죄수',75,'spirit',['crest','amulet','cloak']]
 ];
 const EXTRA_MONSTERS=[
- ...FIELD_DEF.flatMap(([rid,region,lv,mat,ms])=>ms.map(([id,name,art,o])=>soloMon({id,name,art,kind:'field',region,level:lv,statLevel:lv+1,tier:'field',desc:`${region}에 나타나는 필드 몬스터.`,
-   exp:20+lv*8,gold:10+lv*3,drops:[[mat,0.6],['potion',0.15]],...o}))),
+ ...FIELD_DEF.flatMap(([rid,region,lv0,mat,ms])=>ms.map(([id,name,art,o],fi)=>{const lv=fieldLv(rid,fi);return soloMon({id,name,art,kind:'field',region,level:lv,statLevel:lv+1,tier:'field',desc:`${region}에 나타나는 필드 몬스터.`,
+   exp:fieldExp(lv),gold:fieldGold(lv),drops:[[mat,0.6],['potion',0.15]],...o});})),
  ...DUNGEON_DEF.map(([id,dn,name,lv,art,loot])=>soloMon({id,name,art,kind:'dungeon',region:dn,level:lv,tier:'dungeon',loot,desc:`${dn} 깊은 곳에서 도전자를 기다리는 보스.`,singleName:'시련의 일격',aoeName:'파멸의 파동',dotName:'저주',dotChance:0.3})),
  soloMon({id:'st_hound',name:'안개 들개',art:'beast',kind:'story',region:'북쪽 경계',level:1,tier:'story',desc:'탐사대가 사라진 안개 속에서 튀어나온 들개.',singleName:'물어뜯기',dotName:'출혈',dotChance:0.3}),
  soloMon({id:'st_shade',name:'결정의 그림자',art:'spirit',kind:'story',region:'속삭임의 자리',level:3,tier:'story',desc:'검은 결정 조각이 엉겨 붙어 사람의 형상을 한 그림자.',singleName:'검은 손길',aoeName:'속삭임',dotName:'혼돈 침식',dotChance:0.35}),
@@ -2667,7 +2673,7 @@ const EXPLORE=[
   ['풀숲에 떨어진 낡은 지갑. 주인은 이미 떠난 지 오래인 듯하다.','gold'],
   ['방랑 약사가 남는 회복약을 하나 건넨다. "초행길이죠? 가져가요."','potion'],
   ['강물 소리만 들린다. 오늘은 평화로운 하루다.','none']]},
- {id:'rock',region:'바위의 땅',lv:3,mat:'ore',gate:'바위 산맥',desc:'발레티의 신전이 있는 산맥 지대. 무너진 바위 사이로 길이 이어진다.',scenes:[
+ {id:'rock',region:'바위의 땅',lv:10,mat:'ore',gate:'바위 산맥',desc:'발레티의 신전이 있는 산맥 지대. 무너진 바위 사이로 길이 이어진다.',scenes:[
   ['바위에 새겨진 옛 무술 동작을 따라 해 본다. 몸이 조금 가벼워졌다.','exp'],
   ['산맥 수련자와 짧게 대련했다. 진 것 같지만 얻은 것이 있다.','exp'],
   ['무너진 바위 틈에서 빛나는 원석을 캐냈다.','item'],
@@ -2675,7 +2681,7 @@ const EXPLORE=[
   ['광부들이 버리고 간 곡괭이 자루 속에 동전이 숨겨져 있었다.','gold'],
   ['신전 순례자가 축복받은 회복약을 나눠 준다.','potion'],
   ['메아리만 돌아온다. 오늘 산은 말이 없다.','none']]},
- {id:'swamp',region:'늪의 땅',lv:6,mat:'venom',gate:'독안개 마을',desc:'독안개가 걷히지 않는 늪. 바다뱀의 숨결이 닿는 곳이다.',scenes:[
+ {id:'swamp',region:'늪의 땅',lv:20,mat:'venom',gate:'독안개 마을',desc:'독안개가 걷히지 않는 늪. 바다뱀의 숨결이 닿는 곳이다.',scenes:[
   ['안개 속에서 길을 잃을 뻔했지만 독안개 마을 주민의 표식을 따라 빠져나왔다.','exp'],
   ['늪 바닥에 가라앉은 옛 비석의 글귀를 해독했다.','exp'],
   ['죽은 두꺼비의 독샘을 조심스럽게 떼어 냈다.','item'],
@@ -2683,7 +2689,7 @@ const EXPLORE=[
   ['진흙 속에서 녹슨 상자를 건졌다. 안에 동전이 조금 남아 있다.','gold'],
   ['마을 아이가 해독 약초로 만든 회복약을 쥐여 준다.','potion'],
   ['독안개가 짙어 더 들어가지 못하고 돌아섰다.','none']]},
- {id:'salt',region:'소금의 땅',lv:9,mat:'salt',gate:'소금 사막',desc:'대륙 소금의 대부분이 나는 하얀 사막. 신기루가 자주 보인다.',scenes:[
+ {id:'salt',region:'소금의 땅',lv:30,mat:'salt',gate:'소금 사막',desc:'대륙 소금의 대부분이 나는 하얀 사막. 신기루가 자주 보인다.',scenes:[
   ['신기루를 쫓다 오래된 대상의 길을 발견했다.','exp'],
   ['소금 채굴꾼에게 사막에서 살아남는 법을 배웠다.','exp'],
   ['햇빛에 반짝이는 소금 결정을 모았다.','item'],
@@ -2691,7 +2697,7 @@ const EXPLORE=[
   ['상단이 흘리고 간 은화 주머니를 주웠다.','gold'],
   ['오아시스 상인이 물과 회복약을 바꿔 준다.','potion'],
   ['끝없이 하얀 땅. 오늘은 바람만 지나간다.','none']]},
- {id:'ember',region:'작열의 땅',lv:12,mat:'ember',gate:'붉은 모래사막',desc:'아발라가의 불이 꺼지지 않는 붉은 사막.',scenes:[
+ {id:'ember',region:'작열의 땅',lv:50,mat:'ember',gate:'붉은 모래사막',desc:'아발라가의 불이 꺼지지 않는 붉은 사막.',scenes:[
   ['아발라가 신전의 불 앞에서 잠시 명상했다.','exp'],
   ['모래 언덕 아래 묻힌 옛 화염술사의 비문을 읽었다.','exp'],
   ['식지 않는 불씨 조각을 화로 상자에 담았다.','item'],
@@ -2699,7 +2705,7 @@ const EXPLORE=[
   ['모래 속 보물상자. 대부분 녹았지만 금화는 멀쩡하다.','gold'],
   ['신전 시종이 화상 연고와 회복약을 건넨다.','potion'],
   ['열기에 지쳐 그늘에서 쉬다 돌아왔다.','none']]},
- {id:'frost',region:'혹한의 땅',lv:15,mat:'frost',gate:'얼음 협곡',desc:'얼음 협곡과 적막의 숲이 있는 북쪽 땅.',scenes:[
+ {id:'frost',region:'혹한의 땅',lv:65,mat:'frost',gate:'얼음 협곡',desc:'얼음 협곡과 적막의 숲이 있는 북쪽 땅.',scenes:[
   ['적막의 숲 제단에서 신들의 속삭임을 들은 것 같다.','exp'],
   ['얼음 협곡 마을의 사냥꾼과 함께 눈길을 걸었다.','exp'],
   ['절벽에 맺힌 서리 결정을 떼어 냈다.','item'],
@@ -2707,7 +2713,7 @@ const EXPLORE=[
   ['눈 속에 파묻힌 썰매에서 금화를 찾았다.','gold'],
   ['협곡 마을 사람이 따뜻한 수프와 회복약을 내준다.','potion'],
   ['눈보라가 길을 지웠다. 오늘은 돌아갈 수밖에.','none']]},
- {id:'sea',region:'바다의 땅',lv:10,mat:'pearl',gate:'항구 도시',desc:'항구 도시와 비단길 선착장이 있는 동쪽 해안. 바다 안개 너머에서 기이한 노랫소리가 들린다.',scenes:[
+ {id:'sea',region:'바다의 땅',lv:40,mat:'pearl',gate:'항구 도시',desc:'항구 도시와 비단길 선착장이 있는 동쪽 해안. 바다 안개 너머에서 기이한 노랫소리가 들린다.',scenes:[
   ['항구 장터에서 먼 나라 상인들의 이야기를 들었다. 지도에 없는 바닷길이 있다고 한다.','exp'],
   ['등대지기와 함께 밤새 안개 속 불빛을 지켰다.','exp'],
   ['썰물에 드러난 갯바위 틈에서 은빛 진주를 건졌다.','item'],
@@ -2715,7 +2721,7 @@ const EXPLORE=[
   ['선착장 짐꾼을 도와주고 품삯을 받았다.','gold'],
   ['어부의 아내가 말린 생선과 회복약을 싸 준다.','potion'],
   ['바다 안개가 짙어 배가 뜨지 않는다. 오늘은 부두에서 쉬었다.','none']]},
- {id:'chaos',region:'블라스파미아',lv:20,mat:'chaos',gate:'녹투성이 호수',desc:'신대륙 블라스파미아. 녹물 호수와 독기가 가득하다.',scenes:[
+ {id:'chaos',region:'블라스파미아',lv:80,mat:'chaos',gate:'녹투성이 호수',desc:'신대륙 블라스파미아. 녹물 호수와 독기가 가득하다.',scenes:[
   ['녹투성이 호수의 워프게이트 잔해에서 옛 기록을 찾았다.','exp'],
   ['저주받은 땅의 기운을 버텨 내자 감각이 날카로워졌다.','exp'],
   ['허공에 떠 있는 혼돈의 파편을 붙잡았다.','item'],
@@ -2725,9 +2731,9 @@ const EXPLORE=[
   ['녹물 냄새가 너무 짙다. 오늘은 더 들어가지 않기로 했다.','none']]}
 ];
 function exploreReward(r,type){const L=r.lv,j=0.8+Math.random()*0.4;
-  if(type==='exp')return {exp:Math.round((12+L*5)*j),gold:0,items:{}};
+  if(type==='exp')return {exp:Math.round(fieldExp(L)*0.8*j),gold:0,items:{}};
   if(type==='item'){const it={[r.mat]:Math.random()<0.3?2:1};const f=FOOD_BY_LAND[r.id];if(f&&Math.random()<0.6)it[f]=(it[f]||0)+1;return {exp:0,gold:0,items:it};}
-  if(type==='gold')return {exp:0,gold:Math.round((8+L*3)*j),items:{}};
+  if(type==='gold')return {exp:0,gold:Math.round(fieldGold(L)*0.8*j),items:{}};
   if(type==='potion')return {exp:0,gold:0,items:{potion:1}};
   return {exp:3,gold:0,items:{}};}
 function daily(){const c=kstCycle();if(!S.daily||S.daily.cycle!==c)S.daily={cycle:c,explore:0,raid:0,dungeon:{}};return S.daily;}
@@ -2755,7 +2761,7 @@ function condReason(q){const c=q.cond;if(!c)return '';const r=[];
   return r.join(' · ');}
 function hasBattle(q){return Object.values(q.steps||{}).some(s=>s.battle);}
 function dtg(id){return (S.sel.dtargets||{})[id]||S.sel.dtarget||'exp';}
-function dungeonReward(m,target){const L=m.level,exp=80+L*20,gold=40+L*6;
+function dungeonReward(m,target){const L=m.level,exp=Math.round(fieldExp(L)*4),gold=Math.round(fieldGold(L)*4);
   return target==='item'?{exp:Math.round(exp*0.3),gold,drops:[[pick(m.loot||['potion']),1]]}:{exp,gold,drops:[]};}
 function startSolo(m,ctx){
   const me={id:'me',name:S.me.name,job:S.me.job,level:S.me.level,equip:effEquip(),isMe:true,enh:S.me.enh};
@@ -2826,17 +2832,17 @@ const LANDS={frost:'혹한의 땅',rock:'바위의 땅',salt:'소금의 땅',mea
 const MAP_INFO={
  d_mirror:{quote:'호수는 가장 두려운 것을 비추나니.',ppl:'1–12인',text:'혹한의 땅에 있는 얼어붙은 호수는 마치 거울처럼 모든 것을 비춘다. 아름다운 풍경과 달리 그 아래에는 끔찍한 죄수들이 갇혀있다고 하는데….'},
  d_siren:{quote:'현혹되지 않을 굳은 심지가 필요해요.',ppl:'1–12인',text:'항구로부터 다소 멀리 떨어진 곳. 최근 그곳에서 들리기 시작한 기이한 부름에 이끌려 실종되거나 시체로 돌아오는 사람들이 나오고 있다는데….'},
- temple:{quote:'그 신전의 문을 열면 다시 돌아오지 못하리라.',ppl:'12–22인',lv:100,label:'신규 인스턴스 던전',text:'고대 혼돈의 신이 잠든 관. 어둠의 땅, 블라스파미아에서 유일하게 백색의 빛을 유지하고 있는 지하 신전이다. 종말의 서곡을 멈추기 위해선 신전 안에 잠든 혼돈의 신을 소멸시켜야 한다는데….'},
+ temple:{quote:'그 신전의 문을 열면 다시 돌아오지 못하리라.',ppl:'12–22인',lv:90,label:'신규 인스턴스 던전',text:'고대 혼돈의 신이 잠든 관. 어둠의 땅, 블라스파미아에서 유일하게 백색의 빛을 유지하고 있는 지하 신전이다. 종말의 서곡을 멈추기 위해선 신전 안에 잠든 혼돈의 신을 소멸시켜야 한다는데….'},
  d_cave:{quote:'수련을 원하는 자, 동굴 속에서 쌓아라.',ppl:'1–4인',text:'예로부터 고수들은 바위 산맥에 터를 잡고 자신의 몸을 갈고 닦았다. 그 중 무너진 것처럼 보이는 바위 동굴엔 여러가지 비기가 숨겨져 있다는데….'},
  d_lake:{quote:'아무리 목을 축여도 나아지지 않는 갈증이 그대를 파멸로 이끌리라.',ppl:'1–4인',text:'소금 사막 근처, 호숫가에 이상한 구조물이 생긴 이후로 호수의 염분이 지나치게 높아지기 시작했다.'},
  d_pilgrim:{quote:'신에게 가까이 가기 위해선 최초의 시련을 극복하시오.',ppl:'1–4인',text:'바위의 땅과 소금의 땅 경계, 태초의 신이 걸었다는 길. 영웅이 되려는 블레서들이 반드시 거치는 첫 관문이다.'},
  d_serpent:{quote:'바다뱀은 오랜 세월을 살았던 만큼 굉장히 강하고 포악하다네.',ppl:'1–12인',text:'태초에 대륙이 생겨났을 때 고대 바다뱀이 건너와 똬리를 틀었다는 산에는 다들 다가가지 않으려고 한다. 그러나 최근, 늪의 땅에 몬스터들이 급증하는 이상현상이 발생하여 바다뱀이 곤혹을 겪고 있다고 한다.'},
  d_grass:{quote:'그 풀숲에선 아직도 비명 같은 소리가 들린다오.',ppl:'1–4인',text:'황혼녘 강가 마을에서는 주기적으로 실종되는 사람들이 발생한다. 그는 풀숲에 내린 저주 때문이라는데….'},
  d_altar:{quote:'바위와 자갈사막의 지하에는 보물이 묻힌 고대 문명 도시가 있다던데?',ppl:'1–4인',text:'오아시스 마을 근처엔 황금 도시가 있다는 소문이 돌고 있다. 하지만 그를 찾아 떠난 많은 모험가들이 다시 돌아오지 못하고 있다고 한다.'},
- a_mine:{lv:100,text:'북쪽에 혹한의 신이 내리면서 차갑게 방치된 폐쇄된 광산에는 비밀 통로가 있다고 한다.'},
- a_silk:{lv:90,text:'선착장엔 여러 곳에서 수입해온 진귀한 보물들을 만날 수 있다.'},
- a_desert:{lv:80,text:'영원의 사막에선 모래 속에 파묻힌 보물상자를 찾을 수 있다는데….'},
- a_alarosa:{lv:70,img:'alarosa',text:'작열의 땅에 속해있지만 수풀이 우거진 섬, 알라로사. 신비한 동물들과 고대 문물들이 숨겨져 있다고 한다.'},
+ a_mine:{lv:70,text:'북쪽에 혹한의 신이 내리면서 차갑게 방치된 폐쇄된 광산에는 비밀 통로가 있다고 한다.'},
+ a_silk:{lv:43,text:'선착장엔 여러 곳에서 수입해온 진귀한 보물들을 만날 수 있다.'},
+ a_desert:{lv:58,text:'영원의 사막에선 모래 속에 파묻힌 보물상자를 찾을 수 있다는데….'},
+ a_alarosa:{lv:53,img:'alarosa',text:'작열의 땅에 속해있지만 수풀이 우거진 섬, 알라로사. 신비한 동물들과 고대 문물들이 숨겨져 있다고 한다.'},
  g_ice:{text:'혹한의 땅, 협곡에 위치한 마을. 인구가 적고 다소 폐쇄된 성향을 보인다.'},
  g_silent:{job:'priest',text:'혹한의 땅에 속해있지만 비교적 온난한 침엽수림 숲. 숲의 가운데엔 셀 수 없이 많은 고대 신들을 모시는 신들의 제단이 있으며, <b>프리스트는 이곳에서 신들의 부름을 받는다.</b>'},
  g_rust:{text:'갑자기 나타난 신 대륙 블라스파미아의 워프게이트. 게이트의 바로 앞엔 녹물로 이루어진 호수가 있다. 땅에서 올라온 독기가 공기에 가득하기 때문에 되도록 가지 않는 것이 좋다.'},
@@ -3294,7 +3300,7 @@ const cfg=()=>S.data.config;
 const AREA_MON={};
 function areaMons(aid){const I=MAP_INFO[aid];const spot=MAP_SPOTS.find(x=>x[0]===aid);if(!I||!spot)return [];const r=EXPLORE.find(x=>x.id===spot[3]);if(!r)return [];
   const base=FIELD_DEF.find(f=>f[0]===r.id);if(!base)return [];const lv=I.lv;
-  return base[4].map(([id0,name,art,o],i)=>{const id=`fa_${aid}_${i}`;return AREA_MON[id]=AREA_MON[id]||soloMon({id,name:`${spot[2]}의 ${name}`,art,kind:'field',region:spot[2],level:lv,statLevel:lv+1,tier:'field',desc:`${spot[2]}에 나타나는 강한 필드 몬스터.`,exp:20+lv*8,gold:10+lv*3,drops:[],...o});});}
+  return base[4].map(([id0,name,art,o],i)=>{const id=`fa_${aid}_${i}`;return AREA_MON[id]=AREA_MON[id]||soloMon({id,name:`${spot[2]}의 ${name}`,art,kind:'field',region:spot[2],level:lv,statLevel:lv+1,tier:'field',desc:`${spot[2]}에 나타나는 강한 필드 몬스터.`,exp:Math.round(fieldExp(lv)*1.3),gold:Math.round(fieldGold(lv)*1.2),drops:[],...o});});}
 function monster(id){const m=S.data.monsters.find(x=>x.id===id);if(m)return m;if(AREA_MON[id])return AREA_MON[id];const mm=/^fa_(.+)_(\d+)$/.exec(id||'');if(mm){areaMons(mm[1]);return AREA_MON[id];}return undefined;}
 const quest=id=>S.data.quests.find(q=>q.id===id);
 const bot=name=>S.bots.find(b=>b.name===name);
@@ -3585,7 +3591,7 @@ function render(){
   const v=$('#view');
   if(S.loggedOut){v.innerHTML=vLogin();renderPop();return;}
   if(!S.me){v.innerHTML=vCreate();renderPop();return;}
-  ensureDeco();ensureCraft();ensureVilQuest();ensureFish();ensureDunParty();settleFish();
+  ensureDeco();ensureCraft();ensureRelevel();ensureVilQuest();ensureFish();ensureDunParty();settleFish();
   const r=S.route;
   if(r==='admin'&&!isAdmin()){v.innerHTML=`<div class="wrap page"><div class="panel"><h3>운영</h3><p>운영자 권한이 있는 계정만 열 수 있습니다.</p></div></div>`;return;}
   const fn={community:vCommunity,profile:vProfile,main:vMain,quest:vQuest,explore:vExplore,battle:vBattle,character:vChar,lore:vLore,market:vMarket,admin:vAdmin}[r]||vMain;
@@ -3963,7 +3969,7 @@ function questDetail(q){
   const ends=Object.values(q.steps).filter(s=>s.end);
   if(st==='locked')h+=`<p class="reason">${esc(lockReason(q))}</p>`;
   if(q.cat!=='epic'&&(st==='available'||st==='locked'||st==='done'||st==='doneToday')){
-    h+=`<div><div class="ph">완료 보상${ends.length>1?' · 경로별':''}</div><div class="stack">${ends.map(e=>`<div class="row" style="justify-content:space-between;gap:12px"><span class="muted" style="font-size:13px">${esc(e.text)}</span>${rewardHTML(e.reward)}</div>`).join('')}</div></div>`;
+    h+=`<div><div class="ph">완료 보상${ends.length>1?' · 경로별':''}</div><div class="stack">${ends.map(e=>`<div class="row" style="justify-content:space-between;gap:12px"><span class="muted" style="font-size:13px">${esc(e.text)}</span>${rewardHTML(qReward(q,e.reward))}</div>`).join('')}</div></div>`;
   }
   if(st==='available')h+=`<div class="act-br"><button class="btn btn-primary btn-sm" data-act="acceptq" data-id="${q.id}">수락</button></div>`;
   if(st==='done'||st==='doneToday'){
@@ -3974,7 +3980,7 @@ function questDetail(q){
     if(qp.history.length)h+=`<div class="qhist">${qp.history.map(x=>`<div><p>${esc(x.text)}</p><p style="margin-top:4px"><b>▸ ${esc(x.label)}</b> — ${esc(x.result)}</p></div>`).join('')}</div>`;
     const step=q.steps[qp.step];
     if(step.end){
-      h+=`<div class="result"><div class="ph" style="margin-bottom:6px">완료 · ${esc(step.text)}</div>${rewardHTML(step.reward)}</div>
+      h+=`<div class="result"><div class="ph" style="margin-bottom:6px">완료 · ${esc(step.text)}</div>${rewardHTML(qReward(q,step.reward))}</div>
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="claimq" data-id="${q.id}">보상 수령</button></div>`;
     }else if(qp.pending!=null){
       const c=step.choices[qp.pending];
@@ -5239,6 +5245,19 @@ const THEFT_QUEST={id:'D_THEFT',cat:'repeat',title:'잃어버린 골드를 찾�
     {label:'골드를 돌려받고 용서해 준다',result:'꼬마가 고개를 푹 숙이고 골드를 돌려준다. "다시는 안 그럴게요." 골목 끝에서 누군가 박수를 친다.',next:'end',flag:'theft_back'},
     {label:'경비대에 넘긴다',result:'경비대가 꼬마를 데려가며 되찾은 골드를 건넨다. "협조에 감사드립니다, 블레서님."',next:'end',flag:'theft_back'}]},
   end:{end:true,text:'잃어버린 골드를 되찾음',reward:{exp:0,gold:10,items:{}}}}};
+const RELEVEL={forest:[5,5],tracker:[15,5],ev_rift:[20,6],ev_crown:[40,6],guardian:[90,10]};
+function ensureRelevel(){
+  if(!S.data||!S.data.monsters||S.data.lvMap===1)return;
+  const fresh=Object.fromEntries(EXTRA_MONSTERS.filter(m=>m.kind==='field'||m.kind==='dungeon').map(m=>[m.id,m]));
+  S.data.monsters=S.data.monsters.map(m=>{
+    if(fresh[m.id])return {...clone(fresh[m.id]),published:m.published!==false};
+    const R=RELEVEL[m.id];if(!R||m.level===R[0])return m;
+    const o=m.level||1,L=R[0],hr=(1+0.09*(L-1))/(1+0.09*(o-1)),ar=(1+0.07*(L-1))/(1+0.07*(o-1));
+    return {...m,level:L,hp:Math.round(m.hp*hr),atk:Math.round(m.atk*ar),dotDmg:Math.round((m.dotDmg||0)*ar),exp:Math.round(fieldExp(L)*R[1]),gold:Math.round(fieldGold(L)*R[1])};});
+  Object.keys(AREA_MON).forEach(k=>delete AREA_MON[k]);S.data.lvMap=1;save();
+}
+function qReward(q,r){if(!r||!q||!q.repeat||!S.me)return r;const L=S.me.level;if(L<=q.level+2)return r;
+  return {...r,exp:Math.max(r.exp||0,Math.round(needOf(L)*0.1)),gold:Math.max(r.gold||0,Math.round((r.gold||0)*(1+(L-q.level)/10)))};}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST])if(!S.data.quests.some(q=>q.id===Q.id)){S.data.quests.push(clone(Q));ch=true;}if(ch)save();}
 function theftActive(){return !!(S.theft&&S.theft.cycle===kstCycle());}
 function vilGive(land,spot){/* 퀘스트 단계의 give:{land,spot,item,n,text} 훅 */
@@ -5276,7 +5295,8 @@ const VIL_IC={plaza:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14h
 function landOfSpot(id){const s=MAP_SPOTS.find(x=>x[0]===id);return s&&s[3];}
 function landOrder(){const lv=k=>{const r=EXPLORE.find(x=>x.id===k);return r?r.lv:999;};return Object.keys(LANDS).sort((a,b)=>lv(a)-lv(b));}
 function dungeonsHTML(land){
-  const ds=MAP_SPOTS.filter(x=>x[3]===land&&x[1]==='dungeon');if(!ds.length)return '';
+  const lvOf=id=>{const I=MAP_INFO[id]||{};const m=monster(id);return I.lv||(m?m.level:999);};
+  const ds=MAP_SPOTS.filter(x=>x[3]===land&&x[1]==='dungeon').sort((a,b)=>lvOf(a[0])-lvOf(b[0]));if(!ds.length)return '';
   return `<div class="exr-gates exr-duns">${ds.map(([id,,n])=>{const I=MAP_INFO[id]||{};const m=monster(id);const wk=id==='temple';
     return `<div class="exr-gate exr-dun ${S.sel.exFocus===id?'focus':''}" id="md-${id}"><div class="exr-gh"><span class="exr-gico" aria-hidden="true">${SPOT_ICON.dungeon}</span><span class="md-lbl">${esc(I.label||'인스턴스 던전')}</span><b>${esc(n)}</b><span class="faint num" style="font-size:11.5px">LV${I.lv||(m?m.level:'-')}+ · ${esc(I.ppl||'1–4인')}</span><button class="dun-go" data-act="dun-go" data-id="${id}">[바로가기]</button></div>${I.text?`<p>${esc(I.text)}</p>`:''}</div>`;}).join('')}</div>`;
 }
@@ -6213,8 +6233,8 @@ const ACTS={
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}
-    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');grant(step.reward,'quest',{questId:q.id,label:q.title,path:step.text});
-    save();render();toast(`보상 수령 · EXP ${step.reward.exp||0} · ${step.reward.gold||0}골드${itemsText(step.reward.items)?' · '+itemsText(step.reward.items):''}`,'good');},
+    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');const RW=clone(qReward(q,step.reward));grant(RW,'quest',{questId:q.id,label:q.title,path:step.text});
+    save();render();toast(`보상 수령 · EXP ${RW.exp||0} · ${RW.gold||0}골드${itemsText(RW.items)?' · '+itemsText(RW.items):''}`,'good');},
   abandonq:d=>{const qp=S.qp[d.id];if(!qp)return;(qp.flagsSet||[]).forEach(f=>{const still=Object.entries(S.qp).some(([id,x])=>id!==d.id&&x.status==='done'&&(x.flagsSet||[]).includes(f));if(!still)delete S.flags[f];});delete S.qp[d.id];save();render();toast('퀘스트를 포기했습니다. 다시 수락할 수 있습니다.');},
   backmon:()=>{const m=monster(S.sel.monster);S.sel.monster=null;go('battle',{rtab:m&&mkind(m)==='weekly'?'weekly':m&&mkind(m)==='event'?'event':m&&mkind(m)==='dungeon'?'dungeon':'daily'});},
   mkset:d=>{S.sel.mk=S.sel.mk||{};const ni=$('#mk-name');if(ni)S.sel.mk.name=ni.value;S.sel.mk[d.k]=d.k==='target'?+d.v:d.v;render();},
