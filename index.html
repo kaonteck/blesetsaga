@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e0f12">
 <title>블레셋 전기</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1873,7 +1879,15 @@ img.px{image-rendering:pixelated}
 .fd-replies{margin:6px 0 0 38px;padding-left:10px;border-left:1px solid var(--rule-2);display:flex;flex-direction:column;gap:8px}
 .fd-cform{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--rule)}.fd-cform input{flex:1;min-width:0;font-size:13px;padding:6px 10px}
 .fd-cform.reply{margin:6px 0 0 38px;border-top:0;padding-top:0}
+/* 모바일: 화면 밖으로 넘치는 요소가 레이아웃 폭을 넓히지 않게 */
+html,body{overflow-x:clip;max-width:100%}
+.sky-tip{max-width:calc(100vw - 24px)}
+@media (max-width:760px){.sky-tip{position:fixed;left:12px;right:12px;width:auto;top:auto;margin-top:8px}}
+.toasts{max-width:calc(100% - 32px)}
+.toast{overflow-wrap:anywhere}
 </style>
+</head>
+<body>
 
 <header class="top" id="top"></header>
 <main id="view"></main>
@@ -6501,3 +6515,5 @@ window.claude?.hot?.snapshot?.(()=>({state:S}));
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 })();
 </script>
+</body>
+</html>
