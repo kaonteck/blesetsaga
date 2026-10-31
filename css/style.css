@@ -1907,3 +1907,33 @@ html,body{overflow-x:clip;max-width:100%}
   .qtabs button,.qtabs [role=tab]{font-size:14px!important}
   .qtabs button[aria-selected="true"]::after{left:6px;right:6px}
 }
+
+/* 캐릭터 › 정보: 기본 능력치는 숫자만, 마우스를 올리거나 누르면 '기본 ○○' */
+.ui-stat{grid-template-columns:52px 48px auto auto}
+.ui-stat .ui-base{position:relative;cursor:help;outline:0}
+.ui-stat .ui-base::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);background:var(--slab-3);border:1px solid var(--rule-2);color:var(--silver);font-size:11.5px;padding:4px 8px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:8;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.ui-stat .ui-base:hover::after,.ui-stat .ui-base:focus-visible::after,.ui-stat .ui-base:focus::after{opacity:1}
+
+/* 캐릭터 페이지에서는 왼쪽 캐릭터 카드를 숨김 (정보 탭과 중복) */
+.dock-grid[data-route="character"] .dock-side .me-card{display:none}
+
+/* 모바일 채팅: 하단 버튼 + 시트 */
+#chatfab,#chatbk,.chat-sheethead{display:none}
+@media (max-width:760px){
+  body.has-chat #chatfab{display:inline-flex;align-items:center;gap:7px;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:34;height:46px;padding:0 18px 0 15px;border-radius:999px;border:1px solid var(--gold-lo);background:linear-gradient(180deg,var(--slab-3),var(--slab-2));color:var(--gold-hi);font-family:var(--f-sys);font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);cursor:pointer}
+  #chatfab svg{width:18px;height:18px}
+  #chatfab:active{transform:translateY(1px)}
+  body.chat-open #chatfab{display:none}
+  body.has-chat .toasts{bottom:calc(74px + env(safe-area-inset-bottom,0px))}
+  body.chat-open #view{z-index:auto}
+  body.chat-open #chatbk{display:block;position:fixed;inset:0;z-index:35;background:rgba(6,7,9,.6)}
+  .panel.chat.chat-main{position:fixed;left:0;right:0;bottom:0;z-index:36;height:min(72vh,560px);margin:0;border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);background:var(--slab);transform:translateY(105%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s;box-shadow:0 -12px 32px rgba(0,0,0,.6)}
+  body.chat-open .panel.chat.chat-main{transform:none;visibility:visible;transition:transform .22s ease}
+  .panel.chat.chat-main::before,.panel.chat.chat-main::after{display:none}
+  .chat.chat-main .msgs{flex:1 1 0;height:auto;min-height:0}
+  .chat-sheethead{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 6px 16px;border-bottom:1px solid var(--rule)}
+  .chat-sheethead span{color:var(--silver);font-size:14px;font-weight:600}
+  .chat-sheethead::before{content:"";position:absolute;left:50%;top:5px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--rule-2)}
+  .chat-x{width:36px;height:36px;border:0;background:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;border-radius:50%}
+  .chat-x:hover{color:var(--silver);background:var(--slab-3)}
+}
