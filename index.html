@@ -2858,7 +2858,10 @@ function vBattle(){
     <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-function exCard(r,W){const lr=S.me.level<r.lv?`LV${r.lv} 이상 필요`:'';const d=daily();const busy=busyReason();
+const LAND_STORY={rock:'E4',swamp:'E7'};
+function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
+function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
+function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
   const w=W.find(x=>x.name===r.region);const fm=S.data.monsters.filter(m=>m.published&&mkind(m)==='field'&&m.region===r.region);
   return `<div class="panel excard ${lr?'locked':''}">
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="mname">${esc(r.region)}</div><small class="muted">${esc(r.gate)} · LV${r.lv}+</small></div>
@@ -2969,7 +2972,7 @@ function mapDlg(land,focus,page){
   const ins=MAP_SPOTS.filter(s=>s[3]===land&&s[1]!=='land');
   const sec=(id,html)=>`<section class="md-sec ${page?'panel':''} ${focus===id?'focus':''}" id="md-${id}">${html}</section>`;
   let h=page?'':`<button class="ibtn sm md-x" data-act="closemodal" aria-label="닫기">✕</button><div class="md-land">[ ${esc(LANDS[land])} ]</div>`;
-  if(r){const lr=S.me.level<r.lv?`LV${r.lv} 이상 필요`:'';const w=W.find(x=>x.name===r.region);const fm=S.data.monsters.filter(m=>m.published&&mkind(m)==='field'&&m.region===r.region);const hw=lr||huntBusy()||(!fm.length?'이 지역에 공개된 필드 몬스터가 없습니다':'');
+  if(r){const lr=landLock(r);const w=W.find(x=>x.name===r.region);const fm=S.data.monsters.filter(m=>m.published&&mkind(m)==='field'&&m.region===r.region);const hw=lr||huntBusy()||(!fm.length?'이 지역에 공개된 필드 몬스터가 없습니다':'');
     h+=sec('land',`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>지역 탐색</div><div class="row" style="gap:8px;justify-content:space-between"><span class="md-meta">최소 레벨 <b>${r.lv}</b></span>${w&&!page?`<span class="exw"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[w.w]}</svg>${WNAME[w.w]} ${w.t}°</span>`:''}</div>
       <p class="md-text">${esc(r.desc)}</p>
       <div class="row" style="gap:6px">${fm.map(m=>`<span class="chip" title="${esc(m.dotName)} ${Math.round(m.dotChance*100)}%">${esc(m.name)}</span>`).join('')}<span class="chip warn">${esc(ITEMS[r.mat].name)}</span></div>
@@ -4657,7 +4660,7 @@ function planBots(b){b.players.forEach(p=>{if(!p.isMe&&!p.dead)p.planAt=now()+rn
 const hooks={hasItem:(pid,k)=>pid==='me'?(S.me.inv[k]||0)>0&&!itemBlock(k):false,useItem:(pid,k)=>{if(pid==='me'&&S.me.inv[k]>0)S.me.inv[k]--;}};
 function doResolve(){
   const b=S.battle;if(b.bless&&!b.bless.pick)applyBless(b,pick(b.bless.cards));if(b.grid)gridPre(b,Math.random,hooks);resolveTurn(b,Math.random,hooks);
-  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&!b.over&&Math.random()<0.4)b.log.push({t:'warn',text:`${b.mon.name} · “${pick(H.say)}”`});}
+  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&!b.over&&Math.random()<0.4){const pool=H.say.filter(x=>x!==b.heroLast);const l=pick(pool.length?pool:H.say);b.heroLast=l;b.log.push({t:'warn',text:`${b.mon.name} · “${l}”`});}}
   if(b.over)finishBattle(b);
   else{b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);resetAct();
     if(Math.random()<(b.grid?0.3:0.25)){const bm=b.players.filter(p=>!p.isMe&&!p.dead);if(bm.length)later(rnd(800,2500),()=>botSay(b.grid?'raid':'party',pick(bm).name,pick(b.grid?MASS_LINES:PARTY_LINES)));}}
@@ -5333,7 +5336,8 @@ function qReward(q,r){if(r&&r.gearTier&&S.me){const T=r.gearTier;const w=gearOfT
 Object.assign(ITEMS,{
   q_return:{name:'라니아케아로의 귀환',type:'mat',tag:'???',desc:'이 세계에 머무르시겠습니까? ▒▒▒ 귀환 대상: [데이터 없음] · 사용 기한: 영원 · 이 아이템은 버릴 수 없습▒',price:0},
   j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',readText:'2052.09.14 — 타임어택 접수 완료. 컨빨이랑 템빨이 한 공대라니 웃기다.\n2052.09.14 — 로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.\n2052.09.21 — 일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.\n2052.10.03 — 지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.\n(마지막 장은 찢겨 있다.)',desc:'풀숲에서 주운 가죽 표지의 일지. 방패 두 개가 겹친 길드 문장이 찍혀 있다. 사용하면 읽는다.',price:0}});
-const STORY_MONS=[soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35})];
+Object.assign(ITEMS,{q_pilgrim:{name:'순례자의 표식',type:'mat',tag:'퀘스트 아이템',desc:'에트나 안내인이 건넨 돌 표식. 손때가 묻어 반들반들하다.'},q_cavemap:{name:'동굴 지도',type:'mat',tag:'퀘스트 아이템',desc:'무너진 바위 동굴로 가는 길이 그려진 낡은 지도. 종이만 새것이다.'}});
+const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',kind:'story',region:'순례자의 길',level:11,statLevel:12,tier:'story',desc:'순례자의 길 끝에서 블레서를 시험하는 거대한 석상.',singleName:'바위 주먹',aoeName:'지진',dotName:'균열',dotChance:0.2}),soloMon({id:'st_monk',name:'동굴의 은둔 무승',art:'golem',kind:'story',region:'무너진 바위 동굴',level:17,statLevel:18,tier:'story',desc:'언제부터 동굴에 있었는지 아무도 모르는 무승.',singleName:'발레티 정권',aoeName:'산을 울리는 발경',dotName:'내상',dotChance:0.3}),soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35})];
 const STORY_QUESTS=[
  {id:'E0',cat:'epic',title:'블레스 링크',published:true,level:1,prereq:null,repeat:null,cond:{},
   desc:'2054년, <Bleset Saga>가 다시 문을 열었다. 블레스 링크를 쓰고 처음으로 접속한다.',start:'s1',steps:{
@@ -5353,11 +5357,44 @@ const STORY_QUESTS=[
   s3:{text:'풀숲 한가운데, 머리카락이 덩굴처럼 자란 여자가 노래를 멈추고 고개를 든다. 당신을 한참 바라보더니, 처음 보는 사람이 아닌 것처럼 웃는다.',battle:'st_witch',next:'s4',winText:'마녀가 무너지며 노래가 끊긴다. 덩굴이 시들고, 잠들어 있던 아이가 깨어난다. 아이는 울지 않는다.'},
   s4:{text:'마을로 돌아오자 사람들이 일제히 박수를 친다. 박수 소리가 똑같은 박자로, 조금 너무 오래 이어진다. 이레나가 보상 꾸러미를 건넨다. "정말 잘하셨어요. 모두 당신을 좋아하게 될 거예요."',choices:[
     {label:'꾸러미를 받는다',result:'고개를 들자 박수가 뚝 멈춘다. 사람들은 아무 일 없다는 듯 하던 일로 돌아간다.',next:'end',flag:'ch1_clear'}]},
-  end:{end:true,text:'1장 「사라진 탐사대」 완료',reward:{exp:900,gold:250,items:{potion:2},gearTier:1}}}}];
+  end:{end:true,text:'1장 「사라진 탐사대」 완료',reward:{exp:900,gold:250,items:{potion:2},gearTier:1}}}},
+ {id:'E5',cat:'epic',title:'순례자의 길',published:true,level:10,prereq:'E4',repeat:null,cond:{},
+  desc:'이레나가 바위의 땅으로 가 보라고 권한다. 영웅이 되려는 블레서는 모두 순례자의 길을 지난다고 한다. [2장 「시련의 길」]',start:'s1',steps:{
+  s1:{text:'"바위의 땅 에트나에 가 보세요. 순례자의 길을 걷는 블레서들을 안내하는 분이 계세요." 이레나가 손을 흔든다. 당신이 모퉁이를 돌 때까지, 같은 속도로. (탐색 › 바위의 땅 › 마을 › 광장)',
+    give:{land:'rock',spot:'plaza',item:'q_pilgrim',n:1,npc:'순례자 안내인 테온',text:'순례자의 길은 마을 뒤 산허리부터 시작해요. 이 표식을 들고 가세요. …아, 그리고 길 끝의 석상이 말을 걸어도 대답하지 마세요. 다들 그러라고 하더라고요.'},
+    choices:[{label:'표식을 들고 순례자의 길로 오른다',req:{item:'q_pilgrim'},result:'산허리를 따라 돌계단이 이어진다. 계단마다 누군가의 발자국이 깊게 패어 있다.',next:'s2'},
+      {label:'아직 에트나에 가지 못했다',result:'에트나 광장의 안내인을 찾아야 한다.',next:'s1'}]},
+  s2:{text:'길 중간, 바위에 이름들이 빼곡하게 새겨져 있다. 길을 지난 순례자들이 남긴 것이라고 한다. 이름들 사이로 손바닥만 한 빈자리가 남아 있다.',choices:[
+    {label:'내 이름을 새긴다',result:'돌이 생각보다 쉽게 파인다. 마치 원래 그 자리에 있었던 것처럼.',next:'s3',flag:'e5_name'},
+    {label:'그냥 지나간다',result:'지나치고 한참 뒤에 돌아보니, 빈자리가 조금 더 커져 있는 것 같다.',next:'s3',flag:'e5_pass'}]},
+  s3:{text:'길 끝, 거대한 석상이 고개를 숙인 채 서 있다. 가까이 가자 석상의 목이 천천히, 아주 천천히 당신 쪽으로 돌아간다.',battle:'st_statue',next:'s4',winText:'석상이 무릎을 꿇는다. 갈라진 틈 사이로 따뜻한 바람이 새어 나온다. 석상은 마지막까지 당신 얼굴을 보고 있었다.'},
+  s4:{text:'산을 내려오자 테온이 박수를 친다. "처음 오신 분이 한 번에 넘으신 건 정말 오랜만이에요. 그럼 이제…" 그는 말을 멈추고 잠시 허공을 본다. "…다음 분이 오시겠네요."',choices:[
+    {label:'에트나로 돌아간다',result:'테온은 다음 순례자를 기다리며 같은 자리에 선다.',next:'end',flag:'e5_trial'}]},
+  end:{end:true,text:'순례자의 길 완주',reward:{exp:1400,gold:300,items:{potion:2}}}}},
+ {id:'E6',cat:'epic',title:'발레티의 문하생',published:true,level:13,prereq:'E5',repeat:null,cond:{},
+  desc:'에트나 사람들은 모두 어느 정도 무술을 배운다. 수련장에서 동굴의 은둔 무승 이야기를 듣는다. [2장 「시련의 길」]',start:'s1',steps:{
+  s1:{text:'새벽의 에트나. 광장에 마을 사람들이 줄지어 서서 같은 동작으로 수련하고 있다. 아이도, 노인도, 빵집 주인도. 한 박자도 어긋나지 않는다.',choices:[
+    {label:'수련에 끼어 본다',result:'동작을 따라 하다 한 박자 늦었다. 모두가 동시에 멈추고, 동시에 당신을 본다. 그리고 동시에 다시 움직인다.',next:'s2',flag:'e6_join'},
+    {label:'수련이 끝날 때까지 지켜본다',result:'해가 다 뜨자 사람들이 일제히 흩어진다. 아무도 서로 인사하지 않는다.',next:'s2',flag:'e6_watch'}]},
+  s2:{text:'사범 카이가 다가온다. "무너진 바위 동굴에 은둔하신 스승님이 계세요. 아무도 그분이 언제부터 거기 계셨는지 몰라요. 동굴 가는 길은 뒷골목 정보상이 안다던데요." (탐색 › 바위의 땅 › 마을 › 뒷골목)',
+    give:{land:'rock',spot:'alley',item:'q_cavemap',n:1,npc:'뒷골목의 정보상 녹스',text:'동굴? 지도는 여기 있어. …근데 이상하지 않아? 그 무승, 내가 어릴 때도 똑같은 얼굴이었거든.'},
+    choices:[{label:'지도를 들고 사범에게 돌아간다',req:{item:'q_cavemap'},result:'카이가 지도를 보고 고개를 끄덕인다. "스승님께 안부 전해 주세요. 늘 같은 말만 하시겠지만요."',next:'end',flag:'e6_map'},
+      {label:'아직 정보상을 찾지 못했다',result:'에트나 뒷골목에 정보상이 있다고 했다.',next:'s2'}]},
+  end:{end:true,text:'동굴로 가는 길',reward:{exp:1900,gold:380,items:{}}}}},
+ {id:'E7',cat:'epic',title:'무너진 바위 동굴',published:true,level:16,prereq:'E6',repeat:null,cond:{},
+  desc:'은둔 무승을 찾아 무너진 바위 동굴로 들어간다. [2장 「시련의 길」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'동굴 안은 생각보다 넓다. 벽에는 같은 무술 동작이 수백 번, 수천 번 새겨져 있다. 맨 안쪽, 가부좌를 튼 무승이 눈을 감은 채 말한다. "…늦었구나."',choices:[
+    {label:'"저를 기다리셨어요?"',result:'"아니. 늘 누군가를 기다릴 뿐이다." 무승이 눈을 뜬다. 눈동자가 당신이 아니라 당신 뒤의 허공을 본다.',next:'s2'},
+    {label:'말없이 자세를 잡는다',result:'무승이 처음으로 웃는다. "그래. 말은 필요 없지."',next:'s2'}]},
+  s2:{text:'"수련이 끝나지 않았다. 몇 번째 해가 뜨는지도 잊었다. 네가 나를 넘으면… 그래, 나도 조금은 쉴 수 있겠지."',battle:'st_monk',next:'s3',winText:'무승이 천천히 주저앉는다. "…드디어, 쉴 수 있겠군." 그는 그대로 눈을 감는다. 숨소리가 들리지 않는다.'},
+  s3:{text:'동굴을 나서자 해가 지고 있다. 에트나 쪽에서 수련하는 소리가 들린다. 오늘따라 그 박자가 한 번, 아주 살짝 어긋난다. 그날 밤 꿈속에서 누군가 당신의 클래스 이름을 부른다.',choices:[
+    {label:'꿈에서 깬다',result:'이불이 땀에 젖어 있다. 게임 속인데도.',next:'end',flag:'ch2_clear'}]},
+  end:{end:true,text:'2장 「시련의 길」 완료',reward:{exp:2600,gold:500,items:{potion:2},gearTier:2}}}}];
 /* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
   d_grass:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','너, 어디서 본 것 같은데.'],last:'…이제 좀, 조용하네.'},
+  st_monk:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_cave:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
   d_siren:{say:['돌아오지 마, 돌아오지 마.','이 노래는 경고야. 아무도 듣질 않지.','바다 밑에 우리 이름이 잠겨 있어.'],last:'노래를… 들어 줘서 고마워.'},
@@ -5396,7 +5433,7 @@ function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn btn-sm btn-ghost" data-act="closemodal">나중에</button><button class="btn btn-sm btn-primary" data-act="adv-go">전직 퀘스트 받기</button></div></div>`;}
 function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S.route==='battle')return;const c=CLASSES[me.job];if(c.tier!==1||me.level<cfg().jobAdvanceLevel)return;
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
-function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):Q.id==='E4'?QS.findIndex(q=>q.id==='E3')+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -6272,14 +6309,14 @@ const ACTS={
   dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:1,mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
   'ev-spawn':d=>{if(!isAdmin())return;const m=monster(d.id);if(!m||S.mass)return;spawnMass(m,S.me.name);logChange('만신전',[{field:'출현',before:undefined,after:m.name}]);render();},
   'ex-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const dd=daily();const A=d.area?MAP_INFO[d.area]:null;const an=d.area?(MAP_SPOTS.find(x=>x[0]===d.area)||[])[2]:null;const need=A?A.lv:r.lv;
-    if(S.me.level<need){toast(`LV${need} 이상 필요합니다.`,'warn');return;}if(dd.explore>=EXPLORE_MAX){toast(`오늘 탐색 ${EXPLORE_MAX}회를 모두 사용했습니다.`,'warn');return;}
+    if(S.me.level<need){toast(`LV${need} 이상 필요합니다.`,'warn');return;}{const sl=storyLock(r.id);if(sl){toast(sl,'warn');return;}}if(dd.explore>=EXPLORE_MAX){toast(`오늘 탐색 ${EXPLORE_MAX}회를 모두 사용했습니다.`,'warn');return;}
     dd.explore++;let [text,type]=pick(r.scenes);if(landW(r.id)==='fog'&&Math.random()<FOG_LOST){text=pick(['짙은 안개 속에서 길을 잃고 한참을 헤맸다. 아무것도 찾지 못했다.','안개 때문에 한 치 앞도 보이지 않아 탐색을 포기했다.','안개 너머로 무언가 보였지만, 다가가자 사라졌다.']);type='none';}const rw=exploreReward(A?{...r,lv:A.lv}:r,type);const label=an||r.region;grant(rw,'explore',{label});bump('explores');
     S.me.exLog=[{ts:now(),region:label,land:r.id,text,got:gotText(rw)},...(S.me.exLog||[])].slice(0,12);save();render();if(d.pop)refreshMap();toast(`${label} 탐색${gotText(rw)?' · '+gotText(rw):''}`,'good');},
-  'ex-hunt':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;S.sel.huntArea=d.area||'';const A=d.area?MAP_INFO[d.area]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:'');if(why){toast(why,'warn');return;}
+  'ex-hunt':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;S.sel.huntArea=d.area||'';const A=d.area?MAP_INFO[d.area]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:storyLock(r.id));if(why){toast(why,'warn');return;}
     const fm=huntMons(r);if(!fm.length)return;S.sel.huntMode=S.sel.huntMode||'manual';S.sel.huntDur=S.sel.huntDur||30;modal(huntDlg(r.id));},
   'hunt-mode':d=>{S.sel.huntMode=d.v;modal(huntDlg(d.id));},
   'hunt-dur':d=>{S.sel.huntDur=+d.v;S.sel.huntMode='auto';modal(huntDlg(d.id));},
-  'hunt-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const A=S.sel.huntArea?MAP_INFO[S.sel.huntArea]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:'');if(why){toast(why,'warn');return;}
+  'hunt-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const A=S.sel.huntArea?MAP_INFO[S.sel.huntArea]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:storyLock(r.id));if(why){toast(why,'warn');return;}
     const fm=huntMons(r);if(!fm.length)return;modal('');const rg=A?fm[0].region:r.region;
     if(S.sel.huntMode!=='auto'){startSolo(pick(fm),{type:'field',region:rg});return;}
     const min=AUTO_DUR.includes(S.sel.huntDur)?S.sel.huntDur:30;S.auto={land:r.id,region:rg,mons:fm.map(m=>m.id),start:now(),end:now()+min*60000,min};save();render();toast(`${r.region} 자동 사냥을 시작했습니다 · ${durLabel(min)}`,'good');},
