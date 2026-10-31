@@ -54,7 +54,11 @@
 | `admin_invites()` / `admin_invite_create(code, max_uses, note)` / `admin_invite_delete(code)` | 초대코드 관리. 코드를 비우면 8자리 자동 생성 |
 | `admin_log` 표 | 위 함수들이 한 일 전부 기록 |
 
-## 운영 페이지 계획
+## 운영 페이지 (`admin.html`)
+
+주소: `/admin.html` (게임과 같은 로그인, 운영자 계정만). 게임 코드를 숨은 프레임에서 돌려 기본값을 읽으므로 기본값을 따로 관리할 필요 없음. 테스트: `tests/admin-ui/`.
+
+### 계획(초안)
 
 운영자가 콘텐츠를 바로 고칠 수 있는 화면. 게임 안 "운영" 탭은 메인·프론트 담당 파일(`04-ui.js`, `06-actions.js`)에 있으므로, **별도 페이지 `admin.html`(+ `js/admin/`)을 백엔드가 새로 만든다.** 게임 파일을 건드리지 않아 다른 세션과 겹치지 않는다.
 
