@@ -235,6 +235,7 @@ const ACTS={
     const min=AUTO_DUR.includes(S.sel.huntDur)?S.sel.huntDur:30;S.auto={land:r.id,region:rg,mons:fm.map(m=>m.id),start:now(),end:now()+min*60000,min};save();render();toast(`${r.region} 자동 사냥을 시작했습니다 · ${durLabel(min)}`,'good');},
   'auto-claim':()=>{autoClaim(false);},
   'auto-stop':()=>{autoClaim(true);},
+  'ng-land':d=>{S.sel.exLand=d.land;S.sel.exFocus='';go('explore');},
   'map-open':d=>{if(S.route!=='explore'){openMap(d.land,d.focus);return;}
     const same=S.sel.exLand===d.land;S.sel.exLand=d.land;S.sel.exFocus=d.focus||'';
     if(!same){render();scrollTo({top:0});}else $$('.md-sec.focus').forEach(x=>x.classList.remove('focus'));
