@@ -5365,7 +5365,7 @@ const HERO_LINES={
   guardian:{say:['신전 문을 열지 마.','우리는 이겼어. 그리고 졌지.','소원은 하나뿐이야. 잘 골라.'],last:'2052… 9월… 14일…'}};
 /* 마을 글리치 대사 */
 const VIL_GLITCH_SOFT=['어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','(대답 대신 한참 동안 웃기만 한다.)','오늘도 날씨가 좋네요. 어제도. 내일도.','…방금 저랑 얘기하셨던가요?','(고개를 돌렸다가 다시 보니, 같은 자세로 같은 곳을 보고 있다.)'];
-const VIL_GLITCH=['여기 계속 계셔도 돼요.','돌아갈 데가 있긴 하세요?','{N}님, 오늘도 오셨네요. …아, 아니, 이름을 잘못 불렀네요.','여기 계속 계셔도 돼요. 여기 계속 계셔도 돼요.','어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','당신도 곧 익숙해질 거예요. 다들 그랬거든요.','…로그아웃? 그게 뭐죠?'];
+const VIL_GLITCH=['(메뉴를 여는 당신의 손끝을 보다가, 로그아웃 버튼 쪽을 힐끗 본다.)','여기 계속 계셔도 돼요.','돌아갈 데가 있긴 하세요?','{N}님, 오늘도 오셨네요. …아, 아니, 이름을 잘못 불렀네요.','여기 계속 계셔도 돼요. 여기 계속 계셔도 돼요.','어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','당신도 곧 익숙해질 거예요. 다들 그랬거든요.','…로그아웃? 그게 뭐죠?'];
 const GLITCH_NAMES=['진','하루','템빨대장','컨트롤장인','유니','크로노'];
 
 /* ───────── 전직 퀘스트 (LV20 · 각 클래스의 시작의 마을) ───────── */
@@ -5385,7 +5385,7 @@ function advQuest(job){const o=ADV_ORIGIN[job];const advs=CLASSES[job].adv;
       choices:[{label:'증표를 쥐고 신전 깊은 곳으로 들어간다',req:{item:'q_trial'},result:'증표가 빛나며 신전 바닥의 문양이 열린다.',next:'s2'},{label:'아직 신전에 가지 못했다',result:`${villageName(o.land)}의 광장에서 ${o.npc}을(를) 찾아야 한다.`,next:'s1'}]},
     s2:{text:`문양 너머, ${o.mon[1]}이(가) 무기를 든다. "증명하라. 네가 나아갈 자격이 있는지."`,battle:o.mon[0],next:'s3',winText:'환영이 무릎을 꿇고 빛으로 흩어진다.'},
     s3:{text:`빛 속에서 ${o.god}의 목소리가 들린다. "…마음에 드는구나. 아주, 마음에 들어." 웃음소리가 조금 길다. 두 갈래의 길이 눈앞에 펼쳐진다.`,
-      choices:advs.map(a=>({label:`★ ${CLASSES[a].name}의 길을 택한다`,result:`${CLASSES[a].name}(으)로서의 힘이 몸에 스며든다.`,next:'end',advTo:a}))},
+      choices:advs.map(a=>({label:`★ ${CLASSES[a].name}의 길을 택한다`,result:`${CLASSES[a].name}(으)로서의 힘이 몸에 스며든다. 신전을 나서며 무심코 메뉴를 열자, ${o.npc}의 시선이 로그아웃 버튼 쪽을 힐끗 스친다.`,next:'end',advTo:a}))},
     end:{end:true,text:'전직 완료',reward:{exp:500,gold:300,items:{}}}}};}
 const ADV_QUESTS=Object.keys(ADV_ORIGIN).map(advQuest);
 function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
