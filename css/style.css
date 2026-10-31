@@ -1892,3 +1892,102 @@ html,body{overflow-x:clip;max-width:100%}
 @media (max-width:760px){.sky-tip{position:fixed;left:12px;right:12px;width:auto;top:auto;margin-top:8px}}
 .toasts{max-width:calc(100% - 32px)}
 .toast{overflow-wrap:anywhere}
+
+/* ── frontend/mobile-polish (2026-10-31): phone widths 360–420px ── */
+/* 캐릭터 › 정보: 능력치 줄의 '아이템 보너스' 칩이 카드 밖으로 넘치지 않게 줄바꿈 */
+@media (max-width:560px){
+  .ui-row{grid-template-columns:72px minmax(0,1fr);gap:10px}
+  .ui-stat{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+  .ui-stat b{min-width:34px}
+}
+/* 퀘스트·레이드 탭: 4개가 360px 화면에 다 들어오게 여백 축소 */
+@media (max-width:420px){
+  .qtabs{gap:0}
+  .qtabs button{padding:10px 11px 11px;gap:5px;letter-spacing:0}
+  .qtabs button,.qtabs [role=tab]{font-size:14px!important}
+  .qtabs button[aria-selected="true"]::after{left:6px;right:6px}
+}
+
+/* 캐릭터 › 정보: 기본 능력치는 숫자만, 마우스를 올리거나 누르면 '기본 ○○' */
+.ui-stat{grid-template-columns:52px 48px auto auto}
+.ui-stat .ui-base{position:relative;cursor:help;outline:0}
+.ui-stat .ui-base::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);background:var(--slab-3);border:1px solid var(--rule-2);color:var(--silver);font-size:11.5px;padding:4px 8px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:8;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.ui-stat .ui-base:hover::after,.ui-stat .ui-base:focus-visible::after,.ui-stat .ui-base:focus::after{opacity:1}
+
+/* 캐릭터 페이지에서는 왼쪽 캐릭터 카드를 숨김 (정보 탭과 중복) */
+.dock-grid[data-route="character"] .dock-side .me-card{display:none}
+
+/* 모바일 채팅: 하단 버튼 + 시트 */
+#chatfab,#chatbk,.chat-sheethead{display:none}
+@media (max-width:760px){
+  body.has-chat #chatfab{display:inline-flex;align-items:center;gap:7px;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:34;height:46px;padding:0 18px 0 15px;border-radius:999px;border:1px solid var(--gold-lo);background:linear-gradient(180deg,var(--slab-3),var(--slab-2));color:var(--gold-hi);font-family:var(--f-sys);font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);cursor:pointer}
+  #chatfab svg{width:18px;height:18px}
+  #chatfab:active{transform:translateY(1px)}
+  body.chat-open #chatfab{display:none}
+  body.chat-open #view{z-index:auto}
+  body.chat-open #chatbk{display:block;position:fixed;inset:0;z-index:35;background:rgba(6,7,9,.6)}
+  .panel.chat.chat-main{position:fixed;left:0;right:0;bottom:0;z-index:36;height:min(72vh,560px);margin:0;border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);background:var(--slab);transform:translateY(105%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s;box-shadow:0 -12px 32px rgba(0,0,0,.6)}
+  body.chat-open .panel.chat.chat-main{transform:none;visibility:visible;transition:transform .22s ease}
+  .panel.chat.chat-main::before,.panel.chat.chat-main::after{display:none}
+  .chat.chat-main .msgs{flex:1 1 0;height:auto;min-height:0}
+  .chat-sheethead{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 6px 16px;border-bottom:1px solid var(--rule)}
+  .chat-sheethead span{color:var(--silver);font-size:14px;font-weight:600}
+  .chat-sheethead::before{content:"";position:absolute;left:50%;top:5px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--rule-2)}
+  .chat-x{width:36px;height:36px;border:0;background:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;border-radius:50%}
+  .chat-x:hover{color:var(--silver);background:var(--slab-3)}
+}
+
+/* ── 메인 › 다음 목표 카드 (.ng, 마크업은 05-features.js nextGoalHTML) ──
+   05-features.js가 임시로 주입하는 <style id="ng-style">보다 우선하도록 .ng 아래로 한정 */
+.panel.ng{padding:12px 14px 14px}
+.ng .md-lbl{font-family:var(--f-sys);font-size:11px;letter-spacing:.14em;color:var(--steel);font-weight:600}
+.ng .ng-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px}
+.ng .ng-row{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0;width:100%;margin:0;padding:9px 30px 10px 12px;text-align:left;font:inherit;color:inherit;
+  border:1px solid var(--rule-2);border-left:2px solid var(--gold-lo);border-radius:var(--r);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01))}
+.ng .ng-t{grid-row:auto;align-self:flex-start;font-family:var(--f-sys);font-size:11px;line-height:1.4;letter-spacing:.04em;color:var(--gold);word-break:keep-all}
+.ng .ng-v{font-size:14px;line-height:1.4;color:var(--silver);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ng .ng-s{font-family:var(--f-sys);font-size:11.5px;line-height:1.45;color:var(--muted);word-break:keep-all}
+/* 누를 수 있는 줄: 오른쪽 화살표 + 호버 */
+.ng button.ng-row{cursor:pointer;transition:border-color .12s,background-color .12s}
+.ng button.ng-row::after{content:"›";position:absolute;right:11px;top:50%;transform:translateY(-52%);font-size:18px;line-height:1;color:var(--faint);transition:color .12s,transform .12s}
+.ng button.ng-row:hover{border-color:var(--steel-lo);border-left-color:var(--gold-hi);background:linear-gradient(180deg,rgba(214,203,176,.07),rgba(214,203,176,.02))}
+.ng button.ng-row:hover::after{color:var(--gold-hi);transform:translate(2px,-52%)}
+.ng button.ng-row:focus-visible{outline:1px solid var(--gold-hi);outline-offset:2px}
+/* 아직 열리지 않은 목표 */
+.ng .ng-row.lock{border-style:dashed;border-left:2px solid var(--rule-2);background:none}
+.ng .ng-row.lock .ng-t{color:var(--faint)}
+.ng .ng-row.lock .ng-v{color:var(--muted);font-weight:500}
+@media (max-width:760px){
+  .ng .ng-list{grid-template-columns:1fr;gap:6px}
+  .ng .ng-row{display:grid;grid-template-columns:68px minmax(0,1fr);column-gap:10px;row-gap:1px;align-items:baseline;padding:9px 30px 9px 11px}
+  .ng .ng-t{grid-row:1/3;align-self:center}
+  .ng .ng-s{grid-column:2}
+}
+
+/* ── 모바일 전투: 행동 패널을 화면 아래에 붙이고 한 줄로 압축 (≤760px) ──
+   .cmdbar는 04-ui.js fightMain()의 행동 패널 */
+@media (max-width:760px){
+  .arena > *,#fightmain,#fightmain > .panel{min-width:0}
+  #fightmain > .panel.cmdbar{overflow:hidden;position:sticky;bottom:0;z-index:6;margin-bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--slab);border-radius:12px 12px 0 0;box-shadow:0 -10px 28px rgba(0,0,0,.6)}
+  #fightmain > .panel.cmdbar::before,#fightmain > .panel.cmdbar::after{display:none}
+  .cmdbar .acts{gap:8px}
+  .cmdbar .acttabs button{padding-block:7px}
+  /* 스킬 카드: 가로로 넘기는 한 줄, 설명은 한 줄로 */
+  .cmdbar .opts{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin:0 -12px;padding:0 12px 2px}
+  .cmdbar .opts::-webkit-scrollbar{display:none}
+  .cmdbar .opt{flex:0 0 min(64%,220px);scroll-snap-align:start;min-width:0;padding:8px 10px;gap:2px}
+  .cmdbar .opt small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 대상 줄·안내 칩은 숨기고, 선택 내용만 남김 */
+  .cmdbar .acts > p.muted{display:none}
+  .cmdbar .acts > .row{gap:6px}
+  .cmdbar .acts > .row > .chip{display:none}
+  .cmdbar .acts > .row > .muted{font-size:12px!important}
+  .cmdbar > .row{margin-top:8px!important;padding-top:8px!important}
+  .cmdbar .timer{font-size:18px}
+  /* 하단 패널 위로 채팅 버튼을 띄움 */
+  body[data-route="battle"].has-chat #chatfab{bottom:calc(var(--cmdbar-h,0px) + 12px)}
+  /* 알림(토스트)은 폰에서 화면 위쪽 */
+  .toasts{top:calc(var(--top-h,64px) + 8px);bottom:auto;left:12px;right:12px;max-width:none;align-items:stretch;gap:6px}
+  .toasts > *{font-size:13px;padding:8px 12px}
+}
