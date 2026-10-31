@@ -1892,3 +1892,18 @@ html,body{overflow-x:clip;max-width:100%}
 @media (max-width:760px){.sky-tip{position:fixed;left:12px;right:12px;width:auto;top:auto;margin-top:8px}}
 .toasts{max-width:calc(100% - 32px)}
 .toast{overflow-wrap:anywhere}
+
+/* ── frontend/mobile-polish (2026-10-31): phone widths 360–420px ── */
+/* 캐릭터 › 정보: 능력치 줄의 '아이템 보너스' 칩이 카드 밖으로 넘치지 않게 줄바꿈 */
+@media (max-width:560px){
+  .ui-row{grid-template-columns:72px minmax(0,1fr);gap:10px}
+  .ui-stat{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+  .ui-stat b{min-width:34px}
+}
+/* 퀘스트·레이드 탭: 4개가 360px 화면에 다 들어오게 여백 축소 */
+@media (max-width:420px){
+  .qtabs{gap:0}
+  .qtabs button{padding:10px 11px 11px;gap:5px;letter-spacing:0}
+  .qtabs button,.qtabs [role=tab]{font-size:14px!important}
+  .qtabs button[aria-selected="true"]::after{left:6px;right:6px}
+}
