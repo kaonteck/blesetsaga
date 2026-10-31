@@ -378,6 +378,7 @@ function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
 function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S.route==='battle')return;const c=CLASSES[me.job];if(c.tier!==1||me.level<cfg().jobAdvanceLevel)return;
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
+  if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
   if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
@@ -1033,6 +1034,24 @@ function spawnBoss(m,mins,by){
   const e={id:uid('ev'),kind:'boss',title:m.name,loc:`${loc} 인근`,land:(MAP_SPOTS.find(x=>x[1]==='gate'&&x[2]===loc)||[])[3],reward:'경험치·골드 1.5배',link:'monster:'+m.id,until:now()+mins*60000,by};
   (S.events=S.events||[]).push(e);notify(`[보스 출현] ${m.name} · ${e.loc}`,'warn');refreshTicker();save();return e;
 }
+
+/* ───────── 직업 변경권 (임시 · 테스트용) ───────── */
+Object.assign(ITEMS,{jobticket:{name:'직업 변경권',type:'use',tag:'테스트용',jobChange:true,price:0,desc:'[임시 테스트 아이템] 사용하면 원하는 클래스로 바로 바꾼다. 상위 클래스는 전직 레벨 이상일 때만 고를 수 있다. 레벨·장비·인벤토리는 그대로.'}});
+const JOBTICKET_GIFT=3;
+function jobTicketDlg(){const me=S.me,adv=cfg().jobAdvanceLevel;
+  const btn=k=>{const c=CLASSES[k];const lock=c.tier===2&&me.level<adv;const cur=k===me.job;
+    return `<button class="jc-b ${cur?'cur':''}" data-act="jc-pick" data-job="${k}" ${lock||cur?'disabled':''}>${sigil(k,'sm')}<span><b>${c.tier===2?'★ ':''}${esc(c.name)}</b><small>${ROLE[c.role]} · ${isMagic(k)?'마력':'공격력'}${cur?' · 현재':lock?` · LV${adv}부터`:''}</small></span></button>`;};
+  const T1=Object.keys(CLASSES).filter(k=>CLASSES[k].tier===1);
+  return `<button class="ibtn sm md-x" data-act="closemodal" aria-label="닫기">✕</button><h3 class="sh-ttl">직업 변경권</h3>
+    <p class="faint" style="font-size:12.5px;margin:0 0 12px">바꿀 클래스를 고르세요. 변경권 1장이 사용됩니다. (보유 ${me.inv.jobticket||0}장)</p>
+    <div class="jc-list">${T1.map(k=>`<div class="jc-g">${btn(k)}${CLASSES[k].adv.map(btn).join('')}</div>`).join('')}</div>`;}
+function jobTicketUse(job){const me=S.me;const c=CLASSES[job];if(!c||!(me.inv.jobticket>0)||job===me.job)return;
+  if(c.tier===2&&me.level<cfg().jobAdvanceLevel){toast(`상위 클래스는 LV${cfg().jobAdvanceLevel}부터 고를 수 있습니다.`,'warn');return;}
+  if(S.battle&&!S.battle.over){toast('전투 중에는 바꿀 수 없습니다.','warn');return;}
+  const from=me.job;me.job=job;me.inv.jobticket--;if(!(me.inv.jobticket>0))S.sel.invSel=null;if(c.tier===2)me.advNotice=true;
+  logChange('직업 변경권',[{field:me.name,before:CLASSES[from].name,after:c.name}]);setTimeout(checkTitles,0);
+  modal('');save();render();toast(`${CLASSES[from].name} → ${c.name}(으)로 바꿨습니다. 맞지 않는 무기는 능력치가 적용되지 않습니다.`,'good');}
+if(document.head)document.head.insertAdjacentHTML('beforeend',`<style id="jc-style">.jc-list{display:flex;flex-direction:column;gap:8px}.jc-g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.jc-b{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--rule-2);border-radius:4px;background:rgba(255,255,255,.02);color:inherit;font:inherit;text-align:left;cursor:pointer}.jc-b small{display:block;font-size:11px;color:var(--muted)}.jc-b:disabled{opacity:.45;cursor:default}.jc-b.cur{opacity:1;border-color:var(--warn)}@media(max-width:520px){.jc-g{grid-template-columns:1fr}}</style>`);
 
 /* ───────── 다음 목표 안내 (메인 화면) ───────── */
 function ngStory(){const me=S.me,c=CLASSES[me.job];
