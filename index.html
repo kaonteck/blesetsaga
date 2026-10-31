@@ -1688,6 +1688,7 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .bl-card.mine .bl-front,.bl-card.flip:not(.mine) .bl-front{opacity:.55}.bl-card.mine .bl-front{opacity:1;border-color:#e6cf92;box-shadow:0 0 18px rgba(230,207,146,.35)}
 .bl-front{word-break:keep-all;text-align:center}.bl-front b{font-size:20px;color:#e6cf92}.bl-front em{font-style:normal;font-size:12px;font-weight:600;color:var(--silver)}.bl-front small{font-size:10.5px;color:var(--muted);line-height:1.35}
 @media (max-width:520px){.bl-cards{grid-template-columns:repeat(5,1fr);gap:5px}.bl-front em{font-size:10.5px}.bl-front small{font-size:9px}.bl-front b{font-size:16px}}
+.qroute{display:flex;align-items:center;gap:6px;margin:-4px 0 12px;font-size:12.5px;color:var(--warn);font-family:var(--f-sys)}.qroute svg{width:15px;height:15px;flex:none}
 .vil-got{display:inline-block;margin-top:6px;font-size:12px;color:#9fd3a8}
 .vil-say.theft{border-left-color:#d66a60;background:rgba(60,22,22,.45)}.vil-say.theft p{color:#e7a39b;font-weight:600}.vil-lost{display:inline-block;margin-top:6px;font-size:12px;color:#e07b70}
 .vil-hint{font-size:12.5px;margin-top:8px}
@@ -3450,6 +3451,8 @@ function lockReason(q){
   const c=condReason(q);if(c)r.push(c);
   return r.join(' · ');
 }
+function qTextHTML(t){const m=/\s*\((탐색 › [^)]+)\)\s*$/.exec(t||'');const body=m?t.slice(0,m.index):t;
+  return `<p class="qtext">${esc(body)}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
 const QSTAT={hidden:['오늘 목록 아님','dim'],locked:['잠김','dim'],available:['수락 가능','ok'],active:['진행 중','warn'],claim:['보상 대기','warn'],done:['완료','dim'],doneToday:['오늘 완료','dim']};
 function choiceReason(c){
   const r=c.req;if(!r)return null;
@@ -4043,15 +4046,15 @@ function questDetail(q){
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="claimq" data-id="${q.id}">보상 수령</button></div>`;
     }else if(qp.pending!=null){
       const c=step.choices[qp.pending];
-      h+=`<p class="qtext">${esc(step.text)}</p><div class="result"><div class="ph" style="margin-bottom:6px">선택 · ${esc(c.label)}</div>${esc(c.result||'')}</div>
+      h+=`${qTextHTML(step.text)}<div class="result"><div class="ph" style="margin-bottom:6px">선택 · ${esc(c.label)}</div>${esc(c.result||'')}</div>
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="nextq" data-id="${q.id}">다음 단계</button></div>`;
     }else if(step.battle){
       const m=monster(step.battle);const busy=busyReason();
-      h+=`<p class="qtext">${esc(step.text)}</p><div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted num" style="font-size:12.5px">HP ${m.hp} · 공격력 ${m.atk} · ${esc(m.dotName)} ${Math.round(m.dotChance*100)}%</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
+      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted num" style="font-size:12.5px">HP ${m.hp} · 공격력 ${m.atk} · ${esc(m.dotName)} ${Math.round(m.dotChance*100)}%</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
         ${qp.lost?'<p class="reason">지난 전투에서 쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.</p>':''}
         <div class="row"><button class="btn btn-primary" data-act="qfight" data-id="${q.id}" ${busy||!m?'disabled':''}>${qp.lost?'다시 도전':'전투 시작'}</button>${busy?`<span class="reason">${esc(busy)}</span>`:''}</div>`;
     }else{
-      h+=`<p class="qtext">${esc(step.text)}</p><div class="stack" style="gap:8px">${step.choices.map((c,i)=>{const r=choiceReason(c);return `<button class="choice" data-act="chooseq" data-id="${q.id}" data-i="${i}" ${r?'disabled':''}><span>${esc(c.label)}</span>${r?`<small>${esc(r)}</small>`:''}</button>`;}).join('')}</div>`;
+      h+=`${qTextHTML(step.text)}<div class="stack" style="gap:8px">${step.choices.map((c,i)=>{const r=choiceReason(c);return `<button class="choice" data-act="chooseq" data-id="${q.id}" data-i="${i}" ${r?'disabled':''}><span>${esc(c.label)}</span>${r?`<small>${esc(r)}</small>`:''}</button>`;}).join('')}</div>`;
     }
     if(st==='active')h+=`<div><button class="btn btn-sm btn-ghost" data-act="abandonq" data-id="${q.id}">퀘스트 포기</button></div>`;
   }
@@ -5376,7 +5379,7 @@ const ADV_MONS=Object.entries(ADV_ORIGIN).map(([job,o])=>soloMon({id:o.mon[0],na
 function advQuest(job){const o=ADV_ORIGIN[job];const advs=CLASSES[job].adv;
   return {id:'J_'+job,cat:'sub',title:`[전직] ${o.god}의 시련`,published:true,level:20,prereq:null,repeat:null,job,cond:{},
     desc:`${o.godDesc} ${o.god}이(가) 당신을 부른다. ${villageName(o.land)}로 가서 상위 클래스로 나아갈 시련을 받자.`,start:'s1',steps:{
-    s1:{text:`꿈에서 낯선 목소리를 들었다. "${CLASSES[job].name}의 아이야, 이제 때가 되었다." ${o.place}로 가서 시련의 증표를 받아야 한다. (탐색 › ${LANDS[o.land]} › 마을 › 광장)`,
+    s1:{text:`꿈에서 낯선 목소리를 들었다. "${CLASSES[job].name}의 아이야, 이제 때가 되었다." ${o.place}으로 가서 시련의 증표를 받아야 한다. (탐색 › ${LANDS[o.land]} › 마을 › 광장)`,
       give:{land:o.land,spot:'plaza',item:'q_trial',n:1,npc:o.npc,text:`기다리고 있었습니다. ${o.god}께서 당신을 지켜보고 계셨어요. 이 증표를 쥐고 신전 깊은 곳으로 들어가세요.`},
       choices:[{label:'증표를 쥐고 신전 깊은 곳으로 들어간다',req:{item:'q_trial'},result:'증표가 빛나며 신전 바닥의 문양이 열린다.',next:'s2'},{label:'아직 신전에 가지 못했다',result:`${villageName(o.land)}의 광장에서 ${o.npc}을(를) 찾아야 한다.`,next:'s1'}]},
     s2:{text:`문양 너머, ${o.mon[1]}이(가) 무기를 든다. "증명하라. 네가 나아갈 자격이 있는지."`,battle:o.mon[0],next:'s3',winText:'환영이 무릎을 꿇고 빛으로 흩어진다.'},
@@ -5394,6 +5397,7 @@ function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):Q.id==='E4'?QS.findIndex(q=>q.id==='E3')+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
+  for(const Q of ADV_QUESTS){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
   if(ch)save();}
 function theftActive(){return !!(S.theft&&S.theft.cycle===kstCycle());}
