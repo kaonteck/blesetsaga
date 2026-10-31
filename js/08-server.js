@@ -59,6 +59,7 @@ async function sbEnter(user){
   SB_UID=user.id;SAVE=SAVE0+':'+user.id;SB_ADMIN=!!(user.app_metadata&&user.app_metadata.role==='admin');
   $('#view').innerHTML='<div class="wrap"><p class="faint" style="text-align:center;padding:60px 0">진행 기록을 불러오는 중…</p></div>';
   if(/access_token|type=/.test(location.hash))history.replaceState(null,'',location.pathname);
+  const ctP=ctFetch().catch(e=>{console.warn('운영 콘텐츠를 불러오지 못했습니다',e);return null;});   // 세이브와 동시에 받기
   const {data,error}=await SB.from('saves').select('data').eq('user_id',user.id).maybeSingle();
   if(error){sbEntered=false;SB_UID=null;$('#view').innerHTML=`<div class="wrap"><div class="create" style="align-items:center;text-align:center;max-width:420px"><p class="errs">서버에서 진행 기록을 불러오지 못했습니다.<br><small>${esc(error.message||'')}</small></p><button class="btn btn-primary" onclick="location.reload()">다시 시도</button></div></div>`;return;}
   const cloud=data&&migrateRaw(data.data);const local=migrateRaw(localStorage.getItem(SAVE));let st=null,imported=false;
@@ -69,6 +70,73 @@ async function sbEnter(user){
   boot(st?{state:st}:{});
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
+  ctStart(ctP);
+}
+
+/* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
+   운영 페이지(admin.html)에서 공개한 값이 게임 코드 기본값을 덮는다.
+   - 처음 덮을 때 원래 값을 S.data._srv[kind][id].base 에 남겨 두고,
+     서버에서 지우거나 비공개·기간 종료되면 그 값으로 되돌린다(세이브에 저장되므로 다시 접속해도 유지).
+   - 접속 중 운영자가 바꾸면 실시간으로 다시 받아 적용. 예약 공개·종료는 5분마다·탭을 다시 볼 때 확인.
+   - 이미 시작한 전투는 시작할 때의 값을 그대로 쓴다(전투가 몬스터 정보를 복사해 두므로). */
+const CT_LIST={monster:'monsters',quest:'quests',market:'market',notice:'notices'};
+const CT_SETTINGS=['config','mass','banner'];
+let ctT=null,ctPoll=null;
+async function ctFetch(){
+  const {data,error}=await SB.from('content').select('kind,id,data,published,starts_at,ends_at,rev,sort').order('sort').order('id');
+  if(error)throw error;
+  // 운영자는 비공개·예약 항목도 읽을 수 있으므로, 게임에는 유저와 같은 기준으로 지금 보이는 것만 쓴다
+  const t=Date.now();
+  return (data||[]).filter(r=>r.published&&(!r.starts_at||Date.parse(r.starts_at)<=t)&&(!r.ends_at||Date.parse(r.ends_at)>t));
+}
+function ctApply(rows){
+  if(!S||!S.data||!rows)return false;
+  // 게임이 처음 화면을 그릴 때 하는 1회 보정(레벨 재배치·던전 인원·스토리 퀘스트 추가)을 먼저 끝낸다.
+  // 그래야 서버 값이 그 보정에 다시 바뀌지 않고, '원래 값'도 실제 유저가 갖는 값이 된다.
+  [ensureRelevel,ensureVilQuest,ensureDunParty].forEach(f=>{try{f();}catch(e){}});
+  const D=S.data,M=D._srv=D._srv||{};let changed=false;
+  const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const list=k=>{if(k==='market')market();return D[CT_LIST[k]]=D[CT_LIST[k]]||[];};
+  const get=(k,id)=>CT_LIST[k]?list(k).find(x=>x.id===id):k==='item'?ITEMS[id]:k==='setting'?D[id]:undefined;
+  const put=(k,id,v)=>{
+    if(CT_LIST[k]){const L=list(k),i=L.findIndex(x=>x.id===id);if(v==null){if(i>=0)L.splice(i,1);}else if(i>=0)L[i]=v;else L.push(v);}
+    else if(k==='item'){D.items=D.items||{};if(v==null){delete D.items[id];delete ITEMS[id];}else{D.items[id]=v;ITEMS[id]=v;}}
+    else if(k==='setting'&&v!=null)D[id]=v;};
+  const live={};
+  rows.forEach(r=>{if(r.kind==='event')return;if(!CT_LIST[r.kind]&&r.kind!=='item'&&!(r.kind==='setting'&&CT_SETTINGS.includes(r.id)))return;
+    (live[r.kind]=live[r.kind]||{})[r.id]=r;});
+  // 1) 서버 값 적용
+  for(const k in live)for(const id in live[k]){const r=live[k][id];const m=(M[k]=M[k]||{});
+    const cur=get(k,id);if(!m[id])m[id]={base:cur==null?null:clone(cur)};
+    let v=clone(r.data);
+    if(k==='setting')v={...(m[id].base||{}),...v};          // 설정은 기본값 위에 덮기(새로 생긴 칸 유지)
+    else if(CT_LIST[k])v.id=id;
+    if(k==='monster')v.rev=r.rev;
+    if(!same(cur,v)){put(k,id,v);changed=true;}}
+  // 2) 서버에서 사라진 것(삭제·비공개·기간 종료)은 원래 값으로
+  for(const k in M)for(const id of Object.keys(M[k])){if(live[k]&&live[k][id])continue;
+    const base=M[k][id].base;if(!same(get(k,id),base)){put(k,id,base==null?null:clone(base));changed=true;}delete M[k][id];}
+  // 3) 전광판: 서버 이벤트는 id 앞에 'srv:'를 붙여 따로 관리(게임 안에서 띄운 것은 그대로)
+  const before=JSON.stringify((S.events||[]).filter(e=>String(e.id).startsWith('srv:')));
+  const evs=rows.filter(r=>r.kind==='event').map(r=>({kind:'event',title:'',...clone(r.data),id:'srv:'+r.id,until:r.ends_at?Date.parse(r.ends_at):Date.now()+365*864e5}));
+  if(before!==JSON.stringify(evs)){S.events=[...(S.events||[]).filter(e=>!String(e.id).startsWith('srv:')),...evs];changed=true;}
+  return changed;
+}
+async function ctRefresh(){
+  if(!SB||!SB_UID||!S)return;
+  let rows;try{rows=await ctFetch();}catch(e){console.warn('운영 콘텐츠 갱신 실패',e);return;}
+  if(ctApply(rows)){save();ctRedraw();}
+}
+// 다시 그려도 되는 때만 다시 그린다 (전투 중·글 쓰는 중에는 다음 화면 전환 때 반영)
+function ctRedraw(){const a=document.activeElement;const typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+  if(S.route==='battle'||typing||(S.sel&&S.sel.pop))return;try{render();}catch(e){console.warn(e);}}
+async function ctStart(p){
+  const rows=await p;
+  if(rows&&ctApply(rows)){save();ctRedraw();}
+  try{SB.channel('content-live').on('postgres_changes',{event:'*',schema:'public',table:'content'},()=>{clearTimeout(ctT);ctT=setTimeout(ctRefresh,800);}).subscribe();}
+  catch(e){console.warn('실시간 연결 실패',e);}
+  clearInterval(ctPoll);ctPoll=setInterval(ctRefresh,5*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ctRefresh();});
 }
 async function sbStart(){
   $('#view').innerHTML='<div class="wrap"><p class="faint" style="text-align:center;padding:60px 0">접속 중…</p></div>';
