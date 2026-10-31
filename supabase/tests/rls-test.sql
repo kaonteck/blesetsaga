@@ -96,10 +96,9 @@ select t.ok((select count(*) from mail)=1,'내 우편만 보임');
 select t.ok((select (claim_mail((select id from mail))->>'gold')::int)=500,'첨부 받기');
 select t.fail($$select claim_mail((select id from mail))$$,'같은 첨부 두 번 받기');
 select t.fail($$update mail set claimed_at=null$$,'받음 표시 지우기');
-select t.fail($$insert into mail(recipient,text,items) values ('00000000-0000-0000-0000-000000000002','선물','{"potion":99}')$$,'유저가 우편에 아이템 첨부(복사)');
-select t.fail($$insert into mail(recipient,text,gold) values ('00000000-0000-0000-0000-000000000002','선물',99999)$$,'유저가 우편에 골드 첨부(복사)');
-insert into mail(recipient,sender_name,text) values (:'P2','운영자','안녕');
-select t.as(:'P2'); select t.ok((select sender_name from mail where sender is not null)='아린','유저 우편(글만) 가능 · 보낸 이름은 서버가 채움');
+insert into mail(recipient,sender_name,text,items,gold) values (:'P2','운영자','선물','{"potion":1}',50);
+select t.as(:'P2'); select t.ok((select sender_name from mail where sender is not null)='아린','유저끼리 선물 우편(아이템·골드) · 보낸 이름은 서버가 채움');
+select t.ok((select (claim_mail((select id from mail where sender is not null))->>'gold')::int)=50,'받은 사람이 선물 받기');
 
 -- 정지
 select t.as(:'A',true); select admin_ban(:'P2', now()+interval '1 day','도배');
