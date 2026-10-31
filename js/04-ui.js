@@ -125,6 +125,11 @@ function syncChatFab(){
     b.insertAdjacentHTML('beforeend','<div id="chatbk" data-chatclose></div><button type="button" id="chatfab" aria-label="채팅 열기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 3.2h11.2v7.4H7.2L4 13.2v-2.6H2.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>채팅</span></button>');
   }
   const has=!!$('#view .chat-main');b.classList.toggle('has-chat',has);if(!has)b.classList.remove('chat-open');
+  b.dataset.route=S.route||'';
+  const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(top.getBoundingClientRect().bottom)+'px');
+  /* 모바일 전투: 하단에 붙는 행동 패널(fightMain의 .cmdbar) 높이만큼 채팅 버튼을 띄움 */
+  const bar=$('#fightmain > .cmdbar');
+  b.style.setProperty('--cmdbar-h',bar&&innerWidth<=760?bar.offsetHeight+'px':'0px');
 }
 function setChatOpen(on){
   document.body.classList.toggle('chat-open',on);
@@ -651,7 +656,7 @@ function fightMain(){
       ${sup?`<p class="muted" style="font-size:12.5px">제압 중 · ${esc(sup.name)} (딜러 총 ${dps} / 유지 한도 ${Math.max(1,sup.dealt)*b.sup.mult} · ${b.sup.mult}배)</p>`:''}
     </div></div></div>
     <div class="panel"><h3>파티 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">방어·보호·지원 스킬 먼저, 이후 행운 순</span></h3><div class="fighters">${b.order.map(id=>fighterCard(b,b.players.find(p=>p.id===id))).join('')}</div></div>
-    <div class="panel">${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
+    <div class="panel cmdbar">${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
     <div class="row" style="justify-content:space-between;margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">
       <span class="muted" style="font-size:12.5px">확정 ${living(b).filter(p=>p.confirmed).length}/${living(b).length} · 전원 확정 또는 시간 종료 시 처리</span>
       <span class="timer ${left<=10?'low':''}" data-timer>${left}초</span></div></div>`;
@@ -746,7 +751,7 @@ function outcomeHTML(b){
   return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre>
     <h2>${win?'승리':b.over==='abandon'?'전투 종료':'패배'}</h2>
     <p class="muted">${win?`${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
-    ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상 · 전투 ${esc(b.id)}</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
+    ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
 }
 function dmgRank(b){const L=b.players.slice().sort((x,y)=>y.dealt-x.dealt||x.name.localeCompare(y.name,'ko'));const top=Math.max(1,L[0]?L[0].dealt:1);const tot=L.reduce((a,p)=>a+p.dealt,0);

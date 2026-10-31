@@ -1924,7 +1924,6 @@ html,body{overflow-x:clip;max-width:100%}
   #chatfab svg{width:18px;height:18px}
   #chatfab:active{transform:translateY(1px)}
   body.chat-open #chatfab{display:none}
-  body.has-chat .toasts{bottom:calc(74px + env(safe-area-inset-bottom,0px))}
   body.chat-open #view{z-index:auto}
   body.chat-open #chatbk{display:block;position:fixed;inset:0;z-index:35;background:rgba(6,7,9,.6)}
   .panel.chat.chat-main{position:fixed;left:0;right:0;bottom:0;z-index:36;height:min(72vh,560px);margin:0;border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);background:var(--slab);transform:translateY(105%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s;box-shadow:0 -12px 32px rgba(0,0,0,.6)}
@@ -1963,4 +1962,32 @@ html,body{overflow-x:clip;max-width:100%}
   .ng .ng-row{display:grid;grid-template-columns:68px minmax(0,1fr);column-gap:10px;row-gap:1px;align-items:baseline;padding:9px 30px 9px 11px}
   .ng .ng-t{grid-row:1/3;align-self:center}
   .ng .ng-s{grid-column:2}
+}
+
+/* ── 모바일 전투: 행동 패널을 화면 아래에 붙이고 한 줄로 압축 (≤760px) ──
+   .cmdbar는 04-ui.js fightMain()의 행동 패널 */
+@media (max-width:760px){
+  .arena > *,#fightmain,#fightmain > .panel{min-width:0}
+  #fightmain > .panel.cmdbar{overflow:hidden;position:sticky;bottom:0;z-index:6;margin-bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--slab);border-radius:12px 12px 0 0;box-shadow:0 -10px 28px rgba(0,0,0,.6)}
+  #fightmain > .panel.cmdbar::before,#fightmain > .panel.cmdbar::after{display:none}
+  .cmdbar .acts{gap:8px}
+  .cmdbar .acttabs button{padding-block:7px}
+  /* 스킬 카드: 가로로 넘기는 한 줄, 설명은 한 줄로 */
+  .cmdbar .opts{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin:0 -12px;padding:0 12px 2px}
+  .cmdbar .opts::-webkit-scrollbar{display:none}
+  .cmdbar .opt{flex:0 0 min(64%,220px);scroll-snap-align:start;min-width:0;padding:8px 10px;gap:2px}
+  .cmdbar .opt small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 대상 줄·안내 칩은 숨기고, 선택 내용만 남김 */
+  .cmdbar .acts > p.muted{display:none}
+  .cmdbar .acts > .row{gap:6px}
+  .cmdbar .acts > .row > .chip{display:none}
+  .cmdbar .acts > .row > .muted{font-size:12px!important}
+  .cmdbar > .row{margin-top:8px!important;padding-top:8px!important}
+  .cmdbar .timer{font-size:18px}
+  /* 하단 패널 위로 채팅 버튼을 띄움 */
+  body[data-route="battle"].has-chat #chatfab{bottom:calc(var(--cmdbar-h,0px) + 12px)}
+  /* 알림(토스트)은 폰에서 화면 위쪽 */
+  .toasts{top:calc(var(--top-h,64px) + 8px);bottom:auto;left:12px;right:12px;max-width:none;align-items:stretch;gap:6px}
+  .toasts > *{font-size:13px;padding:8px 12px}
 }
