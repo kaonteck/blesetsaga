@@ -240,7 +240,7 @@ function doAdvance(job){const me=S.me;const from=me.job;if(CLASSES[from].tier!==
     S.chat.lobby.push({id:uid('m'),sys:true,text:`${me.name}님이 ★ ${CLASSES[job].name}(으)로 전직했습니다.`,ts:now()});save();render();toast(`★ ${CLASSES[job].name}(으)로 전직했습니다. 새 스킬을 확인하세요.`,'good');}
 
 /* ───────── 파티 레이드 보스 (지역별 · 용병으로 솔로 가능) ───────── */
-function partyBoss(o){const L=o.level,big=!!o.big,g=1+(L-1)/196,hp=Math.round(380*(1+0.09*(L-1))/1.18*(big?1.8:1)*g),atk=Math.round(60*(1+0.07*(L-1))/1.14*(big?1.15:1)*g);
+function partyBoss(o){const L=o.level,big=!!o.big,g=1+(L-1)/196,hp=Math.round(760*(1+0.09*(L-1))/1.18*(big?1.8:1)*g),atk=Math.round(60*(1+0.07*(L-1))/1.14*(big?1.15:1)*g);
   return {kind:'party',published:true,rev:1,maxLevel:null,min:big?4:3,max:big?5:4,target:big?4:3,roles:big?{tank:1,dps:2,heal:1}:{tank:1,dps:1,heal:1},
     hp,hpScale:0.3,atk,def:0,singleMult:1.0,aoeMult:0.6,aoeEvery:3,dotChance:0.3,dotDmg:Math.round(atk*0.13),
     exp:Math.round(fieldExp(L)*5),gold:Math.round(fieldGold(L)*5),drops:[['potion',0.5]],...o,big:undefined};}
@@ -256,6 +256,7 @@ const RELEVEL={forest:[5,5],tracker:[15,5],ev_rift:[20,6],ev_crown:[40,6],guardi
 const LVMAP_V=2,GROUP_GEAR={forest:1,tracker:2,ev_rift:3,ev_crown:5,guardian:8};
 PARTY_BOSSES.forEach(m=>{const T=PB_GEAR[m.id];m.drops=[...m.drops,...gearOfTier(T).filter(k=>!ITEMS[k].wtype).map(k=>[k,0.15]),...gearOfTier(T).filter(k=>ITEMS[k].wtype).map(k=>[k,0.03])];});
 function ensureRelevel(){
+  if(S.data&&S.data.monsters&&!S.data.hpX2){S.data.monsters.forEach(m=>{if(m.hp)m.hp*=2;});S.data.hpX2=1;Object.keys(AREA_MON).forEach(k=>delete AREA_MON[k]);save();}
   if(S.data&&S.data.config&&!S.data.advLv20){if([10,30].includes(S.data.config.jobAdvanceLevel))S.data.config.jobAdvanceLevel=20;S.data.advLv20=1;save();}
   if(!S.data||!S.data.monsters||(S.data.lvMap||0)>=LVMAP_V)return;
   const fresh=Object.fromEntries(EXTRA_MONSTERS.filter(m=>m.kind==='field'||m.kind==='dungeon').map(m=>[m.id,m]));

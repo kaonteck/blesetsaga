@@ -44,53 +44,55 @@ function portraitHTML(big){
   return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button">이미지 설정</button></div>`;
 }
 const ICON={
+  mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2l1.7 4.1 4.3.4-3.3 2.8 1 4.2L8 10.5l-3.7 2.2 1-4.2L2 5.7l4.3-.4z" fill="currentColor"/></svg>`,
   maxHp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2S1.8 10.4 1.8 6.1A3.3 3.3 0 0 1 8 4.4a3.3 3.3 0 0 1 6.2 1.7c0 4.3-6.2 8.1-6.2 8.1z" fill="currentColor"/></svg>`,
   atk:`<svg viewBox="0 0 16 16" aria-hidden="true"><polygon points="14,2 13.4,5.3 7,11.7 4.3,9 10.7,2.6" fill="currentColor"/><path d="M3.1 8.4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5.2 10.8l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
   def:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l5.6 2v4.2c0 3.4-2.4 5.8-5.6 7-3.2-1.2-5.6-3.6-5.6-7V3.5z" fill="currentColor"/><path d="M8 3.6v9.2" stroke="var(--slab)" stroke-width="1.1" opacity=".55"/></svg>`,
   luk:`<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.8" y="1.8" width="12.4" height="12.4" rx="2.8" fill="currentColor"/><circle cx="5.2" cy="5.2" r="1.25" fill="var(--slab)"/><circle cx="8" cy="8" r="1.25" fill="var(--slab)"/><circle cx="10.8" cy="10.8" r="1.25" fill="var(--slab)"/><circle cx="10.8" cy="5.2" r="1.25" fill="var(--slab)"/><circle cx="5.2" cy="10.8" r="1.25" fill="var(--slab)"/></svg>`
 };
-const STAT_TIP={maxHp:'HP',atk:'공격력',def:'방어력',luk:'행운'};
+const STAT_TIP={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',luk:'행운'};
 function statIcon(k,v,sm){return `<li class="si si-${k}" data-tip="${STAT_TIP[k]}" tabindex="0" aria-label="${STAT_TIP[k]} ${v}">${ICON[k]}<b>${v}</b></li>`;}
-function statLine(st,sm){return `<ul class="statline num ${sm?'sm':''}">${['maxHp','atk','def','luk'].map(k=>statIcon(k,st[k])).join('')}</ul>`;}
+function statLine(st,sm){return `<ul class="statline num ${sm?'sm':''}">${['maxHp',st.pk||'atk','def','luk'].map(k=>statIcon(k,st[k])).join('')}</ul>`;}
 const SKILL_FX={
-  save:[['dn','받는 대미지 −10']],save2:[['dn','받는 대미지 −30']],
-  crimehazard:[['dmg','대미지 +20']],forestaller:[['buff','도발']],
-  execution:[['dmg','추가 대미지 1~18 · 3턴']],
-  roar:[['dmg','대미지 +50 · 2턴'],['dn','시전자 HP −30']],
-  berserker:[['dmg','대미지 ×2 · 2턴'],['dn','최대 HP −30']],
+  save:[['dn','받는 대미지 −10%']],save2:[['dn','받는 대미지 −30%']],
+  crimehazard:[['dmg','대미지 +25%']],forestaller:[['buff','도발']],
+  execution:[['dmg','추가 대미지 0~22% · 3턴']],
+  roar:[['dmg','대미지 +60% · 2턴'],['dn','시전자 HP −10%']],
+  berserker:[['dmg','대미지 ×2 · 2턴'],['dn','최대 HP −10%']],
   attention:[['buff','표적 고정 1턴']],
-  link:[['buff','아군 보호 1턴'],['dn','자신 고정 대미지 30']],
+  link:[['buff','아군 보호 1턴'],['dn','자신 HP −10%']],
   link2:[['buff','자신·아군 보호 1턴']],sanctuary:[['buff','아군 전체 보호 1턴']],
-  takedown:[['dmg','대미지 +20 · 2턴']],battlefield:[['dmg','3×3 범위 대미지']],
-  
-  subterfuge:[['dmg','대미지 +20'],['debuff','중독 10 · 2턴']],
-  
-  carnage:[['dmg','100 이상 시 대미지 ×2 · 3턴']],
-  cinder:[['debuff','의욕감소 −10 · 2턴']],
-  
-  hellfire:[['dmg','고정 대미지 15 · 3턴']],
-  eternalflame:[['dmg','대미지 ×2 / ×3 · 3턴']],
-  poisonshot:[['debuff','중독 10 · 3턴']],
-  smoke:[['dmg','대미지 +20'],['buff','파티원 대미지 +10']],
-  legendary:[['buff','50 이상 시 오버 버닝']],overburning:[['dmg','대미지 ×2']],
+  takedown:[['dmg','대미지 +25% · 2턴']],battlefield:[['dmg','3×3 범위 대미지']],
+  subterfuge:[['dmg','대미지 +25%'],['debuff','중독 12% · 2턴']],
+  carnage:[['dmg','공격력 2배 이상 시 ×2 · 3턴']],
+  cinder:[['debuff','몬스터 공격 −12% · 2턴']],
+  hellfire:[['dmg','마력 18% 고정 대미지 · 3턴']],
+  eternalflame:[['dmg','판정 90%↑ ×2 · 110%↑ ×3 · 3턴']],
+  poisonshot:[['debuff','중독 12% · 3턴']],
+  smoke:[['dmg','대미지 +25%'],['buff','파티원 대미지 +15%']],
+  legendary:[['buff','판정 110%↑ 시 오버 버닝']],overburning:[['dmg','대미지 ×2']],
   fusillade:[['buff','크리티컬 시 2회 행동']],
-  cure:[['heal','회복량 +10']],sinsayer:[['heal','부활 HP 30%'],['debuff','시전자 2턴 행동 불가']],
-  bless:[['heal','HP 5 회복 · 3턴']],fasciation:[['heal','전체 회복량 +15']],
-  pray:[['heal','대상 HP 전부 회복'],['dn','자신 HP −50']],
-  utopia:[['heal','전체 회복량 +50']],
-  vindicate:[['dn','아군 받는 대미지 −20']],
-  blind:[['buff','아군 전체 대미지 +20']],
-  downworld:[['debuff','몬스터 대미지 −30']],
-  dystopia:[['dmg','대미지 ×10'],['dn','아군 전체 HP −5']],
-  backslider:[['buff','대상 대미지 ×3']]
+  shining:[['dmg','대미지 ×1.3'],['dmg','영혼형 ×1.5']],
+  smite:[['dmg','공격'],['heal','준 대미지 30% 흡수 회복']],
+  judgment:[['dmg','대미지 ×1.6']],
+  cure:[['heal','마력 40%×판정 +10%']],sinsayer:[['heal','부활 HP 30%'],['debuff','시전자 2턴 행동 불가']],
+  bless:[['heal','최대 HP 5% · 3턴']],fasciation:[['heal','전체 · 마력 40%×판정 +12%']],
+  pray:[['heal','대상 HP 전부 회복'],['dn','자신 HP −15%']],
+  utopia:[['heal','전체 · 마력 40%×판정 +40%']],
+  vindicate:[['dn','아군 받는 대미지 −20%']],
+  blind:[['buff','아군 전체 대미지 +25%']],
+  downworld:[['debuff','몬스터 대미지 −30%']],
+  dystopia:[['dmg','대미지 ×3'],['dn','아군 전체 HP −3%']],
+  backslider:[['buff','대상 대미지 ×2']]
 };
 function skillBadges(k,p,b){
   const s=SKILLS[k];const out=[];
   if(s.special)out.push('<span class="chip warn">특수</span>');
   if(s.type==='addon')out.push('<span class="chip dim">함께 사용</span>');
   if(s.type==='passive')out.push('<span class="chip dim">패시브</span>');
-  if(s.crit)out.push('<span class="chip dps">크리티컬 판정</span>');
-  if(s.combo)out.push(`<span class="chip ${p&&b&&comboReady(p,k,b.turn)?'ok':'fx-dmg'}">${SKILLS[s.combo.from].name} 연계 +${s.combo.bonus}</span>`);
+  if(s.lv)out.push(`<span class="chip dim">LV${s.lv}</span>`);
+  if(s.crit)out.push('<span class="chip dps">크리티컬 확률 2배</span>');
+  if(s.combo)out.push(`<span class="chip ${p&&b&&comboReady(p,k,b.turn)?'ok':'fx-dmg'}">${SKILLS[s.combo.from].name} 연계 +${s.combo.bonus}%</span>`);
   (SKILL_FX[k]||[]).forEach(([c,t])=>out.push(`<span class="chip fx-${c}">${t}</span>`));
   return out.join('');
 }
@@ -163,7 +165,7 @@ function vCreate(){
       <div class="jobs">${base.map(([k,c])=>{const st=statsFor(k,1,{});return `<button type="button" class="job" data-act="pickjob" data-job="${k}" aria-pressed="${sel===k}">
         <div class="row" style="gap:12px">${sigil(k)}<div class="stack" style="gap:4px">${roleChip(k)}<span class="faint" style="font-size:11.5px;letter-spacing:.08em">${c.en}</span></div></div>
         <p class="muted">${c.desc}</p>
-        <dl class="kv num"><dt>HP</dt><dd>${st.maxHp}</dd><dt>공격력</dt><dd>${st.atk}</dd><dt>방어력</dt><dd>${st.def}</dd><dt>행운</dt><dd>${st.luk}</dd><dt>사거리</dt><dd>${c.range}</dd></dl>
+        <dl class="kv num"><dt>HP</dt><dd>${st.maxHp}</dd><dt>${STATK[st.pk||'atk']}</dt><dd>${st[st.pk||'atk']}</dd><dt>방어력</dt><dd>${st.def}</dd><dt>행운</dt><dd>${st.luk}</dd><dt>사거리</dt><dd>${c.range}</dd></dl>
         <p style="font-size:12.5px">${c.skills.map(x=>SKILLS[x].name).join(' · ')}</p>
         <p class="faint" style="font-size:12px">부름을 받는 곳 · ${ORIGIN[k]}<br>전직 → ${c.adv.map(a=>'★ '+CLASSES[a].name).join(' / ')}</p></button>`;}).join('')}</div>
       <div class="row"><button class="btn btn-primary" type="submit">탐사 시작</button><span class="notice-local">시제품 · 진행 기록은 이 브라우저에만 저장됩니다</span></div>
@@ -697,7 +699,7 @@ function targetPick(b,a,second){
   return `<div><div class="ph">대상 선택${b.grid&&s&&s.type==='heal'?' <span class="faint" style="font-weight:400;font-size:11.5px">회복 사거리 5×5</span>':''}</div><div class="row">${b.players.filter(p=>needDead?p.dead:!p.dead).map(p=>`<button class="btn btn-sm ${a.target===p.id?'btn-primary':''}" data-act="picktarget" data-id="${esc(p.id)}" ${second?'data-second="1"':''} ${far(p)?'disabled title="회복 사거리 밖"':''}>${esc(p.name)} <span class="num" style="opacity:.75">${p.hp}/${p.maxHp}</span></button>`).join('')||'<span class="muted">대상이 없습니다</span>'}</div></div>`;
 }
 function actionPanel(b,me){
-  const sk=CLASSES[me.job].skills;
+  const sk=CLASSES[me.job].skills.filter(k=>!(SKILLS[k].lv&&me.level<SKILLS[k].lv));
   if(me.confirmed){
     return `<div class="row" style="justify-content:space-between"><div><div class="ph" style="margin:0 0 4px">행동 확정</div><p style="color:var(--silver)">${esc(actLabel(b,me.action))}${me.action2?' · 연사 '+esc(actLabel(b,me.action2)):''}</p></div><button class="btn" data-act="editact">행동 수정</button></div>`;
   }
@@ -875,7 +877,7 @@ function vProfile(){
       <div class="panel ctop-info"><dl class="uinfo-list">
         ${row('이름',`<b style="color:var(--silver)">${esc(name)}</b>`)}${row('클래스',roleChip(p.job))}${row('칭호',tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:'<span class="faint">없음</span>')}
         ${row('레벨',`<span class="lv num">LV ${p.level}</span>`)}${row('상태',statusChip(k))}${row('한줄메모',memo?esc(memo):'<span class="faint">없음</span>')}
-        ${['maxHp','atk','def','luk'].map(statRow).join('')}${b?row('나와의 관계',bondChip(name)):''}</dl></div></div>
+        ${['maxHp',st.pk||'atk','def','luk'].map(statRow).join('')}${b?row('나와의 관계',bondChip(name)):''}</dl></div></div>
     <div class="bond-row"><div class="panel"><h3>${hTitle('star','관계')} <span class="faint num" style="letter-spacing:0;font-weight:400">${botBonds(name).length}</span></h3><div class="list">${botBonds(name).map(([n,t,since])=>{const q=n===S.me.name?null:bot(n);return `<div class="brow2 ro">${q?sigil(q.job,'sm'):n===S.me.name?sigil(S.me.job,'sm'):''}<span class="bt"><span class="bchip" style="--bc:${BOND[t].c}">${BOND[t].n}</span><b>${esc(n)}</b>${n===S.me.name?' <span class="chip dim">나</span>':''}</span><span class="faint num" style="margin-left:auto;font-size:11.5px">${bondDate(since)}부터</span></div>`;}).join('')||'<p class="empty">맺은 관계가 없습니다.</p>'}</div></div>
       <div class="panel"><h3>${hTitle('spark','장식장')} <span class="faint num" style="letter-spacing:0;font-weight:400">${decoN}/${SHELF_N}</span></h3><div class="shelf">${sh.map(x=>x?`<div class="sh-slot on" data-tip="${esc(ITEMS[x].name)}" tabindex="0">${ITEMS[x].icon}</div>`:'<div class="sh-slot ro"></div>').join('')}</div></div></div></div>`;
 }
@@ -889,7 +891,7 @@ function userInfo(){
     ${row('클래스',`<span class="row" style="gap:8px">${roleChip(me.job)}${CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel?'<button class="btn btn-sm" data-act="adv-open">전직</button>':''}</span>`)}
     ${row('칭호',titleChip())}
     ${row('레벨',`<div class="ui-lv"><span class="lv num">LV ${me.level}</span><div class="xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`현재 ${me.exp}, 남은 ${left}`}"><div class="bar xp"><i style="width:${p}%"></i></div><div class="tip num" role="tooltip">${cap?'최대 레벨':`${me.exp.toLocaleString('ko-KR')} / 남은 ${left.toLocaleString('ko-KR')}`}</div></div><span class="num" style="font-size:12px;color:var(--xp)">${cap?'MAX':p.toFixed(1)+'%'}</span></div>`)}
-    ${['maxHp','atk','def','luk'].map(statRow).join('')}
+    ${['maxHp',st.pk||'atk','def','luk'].map(statRow).join('')}
     ${row('보유 골드',goldHTML(me.gold))}
   </dl></div>`;
 }
@@ -938,7 +940,7 @@ function vLore(){
       <details class="skilllist"><summary>탐험 지역 <span class="faint">${WORLD.fields.length}곳</span></summary><div class="list">${WORLD.fields.map(([n,lv,d])=>`<div class="li" style="align-items:flex-start"><div class="t"><b>${n}</b> <span class="chip num dim">LV${lv}+</span><small>${d}</small></div></div>`).join('')}</div></details></div></section></div>`:`<div class="lore">
     <section><h3>클래스와 전직</h3><p>블레서는 다섯 기본 클래스 가운데 하나로 여정을 시작하고, LV${cfg().jobAdvanceLevel}에 ★ 상위 클래스로 전직한다. 전직하면 기존 스킬을 이어받고 새 스킬을 얻는다. [특수] 스킬은 레이드마다 사용 횟수가 정해져 있다.</p>
       <div class="tree">${Object.entries(CLASSES).filter(([,c])=>c.tier===1).map(([k,c])=>`<div class="tree-row"><div class="tree-base">${sigil(k,'sm')}<div><b>${c.name}</b><small>${c.en} · ${ROLE[c.role]} · ${c.range}</small></div></div><div class="tree-arrow" aria-hidden="true">→</div><div class="tree-adv">${c.adv.map(a=>`<span class="chip ${c.role}">★ ${CLASSES[a].name} <span class="faint">${CLASSES[a].en}</span></span>`).join('')}</div></div>`).join('')}</div></section>
-    <section><h3>전투 규칙</h3><p>행동할 때마다 공격력 범위 안에서 결과값이 정해지고, 그 값이 기본 대미지가 된다. 스킬의 추가 대미지와 연계 대미지가 더해지며, 연계 대미지는 직전 턴에 연계 대상 스킬을 썼을 때만 붙는다. 크리티컬은 크리티컬 판정이 표시된 스킬에서만 +30으로 반영되며, 확률은 행운 수치를 따른다.</p>
+    <section><h3>전투 규칙</h3><p>공격 대미지는 공격력(디펜더·인파이터 계열) 또는 마력(메이지·슈터·프리스트 계열)에 판정(80~120% 무작위)을 곱한 값이 기본이 된다. 스킬의 추가 대미지와 연계 대미지는 공격력·마력에 대한 비율로 더해지며, 연계 대미지는 직전 턴에 연계 대상 스킬을 썼을 때만 붙는다. 모든 공격 스킬은 크리티컬이 터질 수 있고(확률 5% + 행운×0.5%, 크리티컬 표시 스킬은 2배), 크리티컬이면 대미지 ×1.5. 받는 대미지는 방어력에 따라 줄어든다(방어 ÷ (방어 + 60)). 회복량은 마력 × 판정 × 40%에 스킬별 보너스가 더해진다.</p>
       <p style="margin-top:10px">디펜더 계열의 제압은 몬스터가 자신을 먼저 노리게 만든다. 딜러가 입힌 총 대미지가 제압한 탱커의 총 대미지의 두 배(두 번째 사용은 네 배, 세 번째는 여섯 배)를 넘거나, 오버 힐이 세 번 이상 일어나면 풀린다. 나이트의 시야 강탈은 제압이 유효할 때만 쓸 수 있다.</p></section>
     <section><h3>스킬 목록</h3>${Object.entries(CLASSES).map(([k,c])=>`<details class="skilllist"><summary>${className(k)} <span class="faint">${c.en}</span></summary><div class="list">${c.skills.filter(x=>c.tier===1||!CLASSES[c.base].skills.includes(x)).map(x=>`<div class="li" style="align-items:flex-start"><div class="t"><b>${SKILLS[x].name}</b> <span class="faint" style="font-size:11.5px">${SKILLS[x].en}</span><small>${esc(SKILLS[x].desc)}</small><div class="row" style="gap:4px;margin-top:4px">${skillBadges(x)}</div></div></div>`).join('')}</div></details>`).join('')}</section>
   </div>`}</div></div>`;
@@ -1516,7 +1518,7 @@ function adminItems(){
       <label>기준 가격<input type="number" id="ai-price" min="0" value="${it.price||''}" placeholder="없음"></label>
       </div></div>
       <div class="ai-two"><div class="panel"><h3>장비 능력치</h3><div class="form">
-      ${['maxHp','atk','def','luk'].map(k=>`<label>장비 ${STATK[k]}<input type="number" id="ai-st-${k}" value="${st[k]||''}" placeholder="0"></label>`).join('')}
+      ${['maxHp','atk','mag','def','luk'].map(k=>`<label>장비 ${STATK[k]}<input type="number" id="ai-st-${k}" value="${st[k]||''}" placeholder="0"></label>`).join('')}
       </div></div><div class="panel"><h3>사용 효과 · 소모품</h3><div class="form">
       <label>사용 효과 능력치<select id="ai-bstat"><option value="">없음</option>${['maxHp','atk','def','luk'].map(k=>`<option value="${k}" ${bf.stat===k?'selected':''}>${STATK[k]}</option>`).join('')}</select></label>
       <label>사용 효과 수치<input type="number" id="ai-bval" value="${bf.val||''}" placeholder="0"></label>
