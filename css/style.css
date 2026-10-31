@@ -1937,3 +1937,30 @@ html,body{overflow-x:clip;max-width:100%}
   .chat-x{width:36px;height:36px;border:0;background:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;border-radius:50%}
   .chat-x:hover{color:var(--silver);background:var(--slab-3)}
 }
+
+/* ── 메인 › 다음 목표 카드 (.ng, 마크업은 05-features.js nextGoalHTML) ──
+   05-features.js가 임시로 주입하는 <style id="ng-style">보다 우선하도록 .ng 아래로 한정 */
+.panel.ng{padding:12px 14px 14px}
+.ng .md-lbl{font-family:var(--f-sys);font-size:11px;letter-spacing:.14em;color:var(--steel);font-weight:600}
+.ng .ng-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px}
+.ng .ng-row{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0;width:100%;margin:0;padding:9px 30px 10px 12px;text-align:left;font:inherit;color:inherit;
+  border:1px solid var(--rule-2);border-left:2px solid var(--gold-lo);border-radius:var(--r);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01))}
+.ng .ng-t{grid-row:auto;align-self:flex-start;font-family:var(--f-sys);font-size:11px;line-height:1.4;letter-spacing:.04em;color:var(--gold);word-break:keep-all}
+.ng .ng-v{font-size:14px;line-height:1.4;color:var(--silver);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ng .ng-s{font-family:var(--f-sys);font-size:11.5px;line-height:1.45;color:var(--muted);word-break:keep-all}
+/* 누를 수 있는 줄: 오른쪽 화살표 + 호버 */
+.ng button.ng-row{cursor:pointer;transition:border-color .12s,background-color .12s}
+.ng button.ng-row::after{content:"›";position:absolute;right:11px;top:50%;transform:translateY(-52%);font-size:18px;line-height:1;color:var(--faint);transition:color .12s,transform .12s}
+.ng button.ng-row:hover{border-color:var(--steel-lo);border-left-color:var(--gold-hi);background:linear-gradient(180deg,rgba(214,203,176,.07),rgba(214,203,176,.02))}
+.ng button.ng-row:hover::after{color:var(--gold-hi);transform:translate(2px,-52%)}
+.ng button.ng-row:focus-visible{outline:1px solid var(--gold-hi);outline-offset:2px}
+/* 아직 열리지 않은 목표 */
+.ng .ng-row.lock{border-style:dashed;border-left:2px solid var(--rule-2);background:none}
+.ng .ng-row.lock .ng-t{color:var(--faint)}
+.ng .ng-row.lock .ng-v{color:var(--muted);font-weight:500}
+@media (max-width:760px){
+  .ng .ng-list{grid-template-columns:1fr;gap:6px}
+  .ng .ng-row{display:grid;grid-template-columns:68px minmax(0,1fr);column-gap:10px;row-gap:1px;align-items:baseline;padding:9px 30px 9px 11px}
+  .ng .ng-t{grid-row:1/3;align-self:center}
+  .ng .ng-s{grid-column:2}
+}
