@@ -12,8 +12,11 @@ window.__CT=[
 ];
 window.__SAVES={};window.__CT_CB=null;window.__FETCHES=0;
 class QB{constructor(t){this.t=t;this.op='select';}select(){return this;}order(){return this;}eq(k,v){this.v=v;return this;}maybeSingle(){return this;}
+  neq(){return this;}not(){return this;}or(){return this;}in(){return this;}limit(){return this;}update(){this.op='update';return this;}delete(){this.op='delete';return this;}
   upsert(r){this.op='upsert';this.row=r;return this;}
   then(res,rej){return Promise.resolve().then(()=>{
+    if(this.op==='update'||this.op==='delete')return {data:null,error:null};
+    if(this.t==='profiles'||this.t==='mail')return {data:[],error:null};
     if(this.t==='content'){window.__FETCHES++;return {data:JSON.parse(JSON.stringify(window.__CT)),error:null};}
     if(this.t==='saves'&&this.op==='select'){const d=window.__SAVES[this.v];return {data:d?{data:d}:null,error:null};}
     if(this.t==='saves'&&this.op==='upsert'){window.__SAVES[this.row.user_id]=this.row.data;return {data:null,error:null};}
