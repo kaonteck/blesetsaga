@@ -78,9 +78,16 @@
 |---|---|
 | 001_saves.sql | 적용됨 |
 | 002_invites.sql, 003_admin.sql | 적용됨 |
-| 004_content.sql | |
-| 005_social.sql | |
-| 006_admin_ops.sql | |
+| 004_content.sql | 적용됨 (2026-10-31) |
+| 005_social.sql | 적용됨 (2026-10-31) |
+| 006_admin_ops.sql | 적용됨 (2026-10-31) |
+
+## 보안 점검 결과 (적용 직후)
+- 공개 표는 전부 RLS 켜짐.
+- "로그인 유저가 SECURITY DEFINER 함수 실행 가능" 경고(admin_* 등 12개)는 의도된 것: 운영 함수는 첫 줄에서 운영자가 아니면 `NOT_ADMIN`으로 막고, `claim_mail`은 본인 우편만.
+- `private.invite_codes` "RLS는 켜졌는데 정책 없음"도 의도된 것(앱에서 접근 불가가 목적).
+- 남은 할 일(대시보드): Auth → 유출 비밀번호 차단 켜기.
+- 성능 권고(외래키 인덱스·안 쓰인 인덱스)는 데이터가 쌓인 뒤 다시 본다.
 
 ## 테스트
 
