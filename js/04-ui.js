@@ -728,7 +728,9 @@ function actionPanel(b,me){
   const needT=(x)=>x&&((x.kind==='skill'&&SKILLS[x.skill]&&['ally','dead'].includes(SKILLS[x.skill].target)));
   const valid=!(needT(a)&&!a.target)&&!(S.sel.act2&&needT(S.sel.act2)&&!S.sel.act2.target);
   const aerr=b.grid&&a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].target==='enemy'?checkAct(b,me,a,hooks.hasItem):null;
-  return `<div class="acts"><div class="acttabs">${(b.grid?[['attack','기본 공격'],['skill','스킬']]:[['attack','공격'],['skill','스킬'],['defend','방어']]).map(([k,l])=>`<button class="btn" data-act="acttab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
+  /* 일반 전투의 두 번째 탭은 보조 스킬 + 아이템: 보조 스킬이 없는 클래스는 '아이템', 있으면 '보조·아이템' */
+  const supN=b.grid?0:sk.filter(k=>['support','heal'].includes(SKILLS[k].type)||(SKILLS[k].type==='nodice'&&SKILLS[k].target!=='enemy')).length;
+  return `<div class="acts"><div class="acttabs">${(b.grid?[['attack','기본 공격'],['skill','스킬']]:[['attack','공격'],['skill',supN?'보조·아이템':'아이템'],['defend','방어']]).map(([k,l])=>`<button class="btn" data-act="acttab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
     <div class="opts">${opts}</div>${addonHTML}${targetPick(b,a)}${passive}${second}
     <div class="row">${(()=>{const me2=b.players.find(p=>p.isMe);return me2&&me2.confirmed?'<span class="chip ok">행동 반영됨</span>':'<span class="chip dim">스킬이나 행동을 누르면 바로 반영됩니다</span>';})()}<span class="muted" style="font-size:12.5px">선택: ${esc(actLabel(b,a))}${S.sel.act2?' · 연사 '+esc(actLabel(b,S.sel.act2)):''}</span></div></div>`;
 }
