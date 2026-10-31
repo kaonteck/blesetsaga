@@ -2,8 +2,8 @@
 /* 운영 페이지 · 콘텐츠 탭
    목록 = 게임 코드 기본값 ∪ 서버(content) ∪ 초안(content_drafts).
    서버에 있는 값이 코드 기본값을 덮는다. 서버에서 지우면 코드 기본값으로 돌아간다. */
-// 게임이 아직 서버 콘텐츠를 읽지 않는 동안 true → 안내 문구를 띄운다 (08-server.js 연결 후 false로)
-const GAME_NOT_CONNECTED=true;
+// 게임이 서버 콘텐츠를 읽는지 (08-server.js 연결 완료 → false). true면 "연결 준비 중" 안내를 띄운다
+const GAME_NOT_CONNECTED=false;
 
 A.content={};A.drafts={};
 const C={kind:'monster',id:null,search:'',filter:'all',pane:'kind'};   // 화면 선택 상태

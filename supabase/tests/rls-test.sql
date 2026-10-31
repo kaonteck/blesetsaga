@@ -96,8 +96,34 @@ select t.ok((select count(*) from mail)=1,'내 우편만 보임');
 select t.ok((select (claim_mail((select id from mail))->>'gold')::int)=500,'첨부 받기');
 select t.fail($$select claim_mail((select id from mail))$$,'같은 첨부 두 번 받기');
 select t.fail($$update mail set claimed_at=null$$,'받음 표시 지우기');
-insert into mail(recipient,sender_name,text,items) values (:'P2','운영자','선물','{"potion":1}');
-select t.as(:'P2'); select t.ok((select sender_name from mail where sender is not null)='아린','유저 우편 보낸 이름은 서버가 채움');
+-- 유저끼리 선물: send_mail 로만, 보내는 사람 세이브에서 차감
+reset role;
+insert into saves(user_id,data) values (:'P1','{"me":{"name":"아린","gold":1000,"inv":{"potion":5,"sword":1},"equip":{"weapon":"sword"}}}');
+set role authenticated; select t.as(:'P1');
+select t.fail($$insert into mail(recipient,text,items) values ('00000000-0000-0000-0000-000000000002','선물','{"potion":99}')$$,'표에 직접 아이템 첨부(차감 없이 복사)');
+select t.fail($$insert into mail(recipient,text,gold) values ('00000000-0000-0000-0000-000000000002','선물',99999)$$,'표에 직접 골드 첨부');
+insert into mail(recipient,text) values (:'P2','글만 보내기');
+select t.ok(true,'표에 직접 글만 보내기는 가능');
+select send_mail(:'P2','선물이에요','{"potion":2}',300);
+reset role;
+select t.ok((select (data->'me'->>'gold')::int=700 and (data->'me'->'inv'->>'potion')::int=3 from saves where user_id=:'P1'),'보낸 만큼 세이브에서 차감 (골드 1000→700, 회복약 5→3)');
+set role authenticated; select t.as(:'P1');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000002','x','{"potion":4}',0)$$,'가진 것보다 많은 아이템');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000002','x','{}',701)$$,'가진 것보다 많은 골드');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000002','x','{"sword":1}',0)$$,'장착 중인 장비(1개뿐)');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000001','x','{"potion":1}',0)$$,'나에게 보내기');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000002','x','{"a":1,"b":1,"c":1,"d":1}',0)$$,'4종류 첨부');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000002','x','{"potion":-5}',0)$$,'음수 개수');
+select t.as(:'P3');
+select t.fail($$select send_mail('00000000-0000-0000-0000-000000000002','x','{"potion":1}',0)$$,'세이브 없는 사람이 선물');
+select t.as(:'P1');
+reset role;
+select t.ok((select (data->'me'->>'gold')::int=700 and (data->'me'->'inv'->>'potion')::int=3 from saves where user_id=:'P1'),'실패한 보내기는 아무것도 빼지 않음');
+set role authenticated;
+select t.as(:'P2'); select t.ok((select sender_name from mail where gold=300)='아린','받은 선물 · 보낸 이름은 서버가 채움');
+select t.ok((select (claim_mail((select id from mail where gold=300))->>'gold')::int)=300,'받은 사람이 선물 받기');
+delete from mail where text='글만 보내기';
+select t.ok(not exists(select 1 from mail where text='글만 보내기'),'받은 우편 지우기');
 
 -- 정지
 select t.as(:'A',true); select admin_ban(:'P2', now()+interval '1 day','도배');
