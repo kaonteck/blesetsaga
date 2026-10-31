@@ -5314,8 +5314,23 @@ const THEFT_QUEST={id:'D_THEFT',cat:'repeat',title:'잃어버린 골드를 찾�
   end:{end:true,text:'잃어버린 골드를 되찾음',reward:{exp:0,gold:10,items:{}}}}};
 function doAdvance(job){const me=S.me;const from=me.job;if(CLASSES[from].tier!==1||!CLASSES[from].adv.includes(job))return;me.job=job;setTimeout(checkTitles,0);me.advancedAt=now();S.sel.advPick=null;logChange('전직',[{field:me.name,before:CLASSES[from].name,after:CLASSES[job].name}]);
     S.chat.lobby.push({id:uid('m'),sys:true,text:`${me.name}님이 ★ ${CLASSES[job].name}(으)로 전직했습니다.`,ts:now()});save();render();toast(`★ ${CLASSES[job].name}(으)로 전직했습니다. 새 스킬을 확인하세요.`,'good');}
+
+/* ───────── 파티 레이드 보스 (지역별 · 용병으로 솔로 가능) ───────── */
+function partyBoss(o){const L=o.level,big=!!o.big,g=1+(L-1)/196,hp=Math.round(380*(1+0.09*(L-1))/1.18*(big?1.8:1)*g),atk=Math.round(60*(1+0.07*(L-1))/1.14*(big?1.15:1)*g);
+  return {kind:'party',published:true,rev:1,maxLevel:null,min:big?4:3,max:big?5:4,target:big?4:3,roles:big?{tank:1,dps:2,heal:1}:{tank:1,dps:1,heal:1},
+    hp,hpScale:0.3,atk,def:0,singleMult:1.0,aoeMult:0.6,aoeEvery:3,dotChance:0.3,dotDmg:Math.round(atk*0.13),
+    exp:Math.round(fieldExp(L)*5),gold:Math.round(fieldGold(L)*5),drops:[['potion',0.5]],...o,big:undefined};}
+const PARTY_BOSSES=[
+  partyBoss({id:'pb_hydra',name:'독안개 히드라',art:'beast',region:'독안개 늪',level:25,desc:'늪 바닥에서 깨어난 머리 셋 달린 뱀. 머리 하나를 베면 독안개가 더 짙어진다.',singleName:'세 갈래 물기',aoeName:'독안개 분출',dotName:'맹독',dotChance:0.4}),
+  partyBoss({id:'pb_merchant',name:'백염의 상인왕',art:'golem',region:'백염 대상로',level:35,big:true,desc:'소금 사막의 대상로를 쥐고 흔드는 상인. 금화로 만든 갑옷을 입고 있다. 사람들은 그가 언제부터 그 자리에 있었는지 기억하지 못한다.',singleName:'금화 세례',aoeName:'계약 집행',dotName:'빚',dotChance:0.3}),
+  partyBoss({id:'pb_captain',name:'유령선의 선장 그레이',art:'spirit',region:'난파선 묘지',level:45,big:true,desc:'출항하지 않는 배의 선장. 밤마다 항구의 등대를 향해 키를 돌린다.',singleName:'녹슨 커틀러스',aoeName:'파도 일제 사격',dotName:'짠물',dotChance:0.3}),
+  partyBoss({id:'pb_ignis',name:'용암 거인 이그니스',art:'golem',region:'분화구 심부',level:57,big:true,desc:'작열의 땅 분화구에서 걸어 나온 거인. 발자국마다 땅이 녹아내린다.',singleName:'용암 주먹',aoeName:'분화',dotName:'화상',dotChance:0.4}),
+  partyBoss({id:'pb_paladin',name:'얼어붙은 성기사',art:'golem',region:'빙결 성채',level:72,big:true,desc:'성채 문 앞에서 얼음에 갇힌 채 서 있는 기사. 누구에게 한 맹세인지 기억하지 못한 채 문을 지킨다.',singleName:'서리 대검',aoeName:'빙결의 맹세',dotName:'동상',dotChance:0.35}),
+  partyBoss({id:'pb_herald',name:'녹슨 나팔의 전령',art:'spirit',region:'녹투성이 호수',level:85,big:true,desc:'블라스파미아 호숫가에서 녹슨 나팔을 든 채 서 있는 전령. 나팔을 불 때마다 하늘이 한 칸씩 어두워진다.',singleName:'녹슨 창',aoeName:'종말의 나팔',dotName:'부식',dotChance:0.4})];
+const PB_GEAR={pb_hydra:3,pb_merchant:4,pb_captain:5,pb_ignis:6,pb_paladin:7,pb_herald:8};
 const RELEVEL={forest:[5,5],tracker:[15,5],ev_rift:[20,6],ev_crown:[40,6],guardian:[90,10]};
 const LVMAP_V=2,GROUP_GEAR={forest:1,tracker:2,ev_rift:3,ev_crown:5,guardian:8};
+PARTY_BOSSES.forEach(m=>{const T=PB_GEAR[m.id];m.drops=[...m.drops,...gearOfTier(T).filter(k=>!ITEMS[k].wtype).map(k=>[k,0.15]),...gearOfTier(T).filter(k=>ITEMS[k].wtype).map(k=>[k,0.03])];});
 function ensureRelevel(){
   if(S.data&&S.data.config&&!S.data.advLv20){if([10,30].includes(S.data.config.jobAdvanceLevel))S.data.config.jobAdvanceLevel=20;S.data.advLv20=1;save();}
   if(!S.data||!S.data.monsters||(S.data.lvMap||0)>=LVMAP_V)return;
@@ -5394,6 +5409,10 @@ const STORY_QUESTS=[
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
   d_grass:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','너, 어디서 본 것 같은데.'],last:'…이제 좀, 조용하네.'},
+  pb_merchant:{say:['얼마면 돼? 얼마면 나를 여기서…','계약서에 서명했지. 너도 곧 하게 될 거야.','금화는 쌓이는데, 돌아갈 수가 없어.'],last:'…영수증은, 챙겨 둬.'},
+  pb_captain:{say:['이 배는 출항하지 않아. 한 번도.','항구 너머 등대가 보이나? 우리 집 쪽이었는데.','선원들은 모두 남겠다고 했지.'],last:'…닻을, 올려.'},
+  pb_paladin:{say:['맹세했다. 이곳을 지키겠다고. 누구에게였더라.','얼음 속에 내 이름이 있어. 읽어 줄래?','추운 게 아니야. 아무것도 느껴지지 않는 거지.'],last:'…따뜻하군.'},
+  pb_herald:{say:['나팔 소리가 들리나? 우리가 불었어.','신전 문은 안에서만 열려.','너도 소원을 빌겠지. 다들 그랬어.'],last:'…일곱 번째… 나팔…'},
   st_monk:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_cave:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
@@ -5434,7 +5453,7 @@ function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
 function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S.route==='battle')return;const c=CLASSES[me.job];if(c.tier!==1||me.level<cfg().jobAdvanceLevel)return;
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
-  for(const M of [...STORY_MONS,...ADV_MONS])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
+  for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
   if(ch)save();}
