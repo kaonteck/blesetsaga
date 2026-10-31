@@ -1,16 +1,45 @@
 # 블레셋 전기 (BLESET SAGA) — 프로젝트 메모
 
-브라우저에서 돌아가는 1인용 웹 RPG 시제품. **파일 하나(`index.html`, 약 1.2MB)**에 HTML·CSS·JS·이미지(base64)가 모두 들어 있다. 빌드 도구 없음 — 브라우저로 `index.html`을 열면 바로 실행된다.
+브라우저 웹 RPG. 빌드 도구 없음 — 정적 파일(`index.html` + `css/` + `js/`)을 Vercel이 그대로 배포한다. `main`에 푸시하면 약 1분 뒤 https://blesetsaga.vercel.app 에 반영.
+
+## 여러 세션 협업 규칙 (꼭 지킬 것)
+역할: **메인**(콘텐츠·게임 로직·밸런스) / **백엔드**(Supabase·로그인·저장·공유 데이터) / **프론트**(CSS·레이아웃·화면 구성) / **최종 체크**(테스트·리뷰, 코드 수정 안 함).
+
+1. **작업 전 `git pull`, 작업 후 바로 커밋·푸시.** 작은 단위로 자주. 오래 붙잡고 있다가 한 번에 올리지 않는다.
+2. **담당 파일만 고친다.** 다른 역할의 파일을 고쳐야 하면 아래 "작업 보드"에 요청을 남기고 담당 세션이 처리한다.
+   | 파일 | 담당 |
+   |---|---|
+   | `css/style.css` | 프론트 |
+   | `js/00-assets.js` (이미지 데이터) | 프론트 |
+   | `js/01-engine.js` (전투 엔진·클래스·스킬·아이템·장비) | 메인 |
+   | `js/02-content.js` (기본 퀘스트·몬스터·설정) | 메인 |
+   | `js/03-world.js` (상태·저장·탐색·월드 맵·만신전·퀘스트·파티) | 메인 |
+   | `js/04-ui.js` (화면 그리기 함수들) | 프론트 (게임 규칙이 바뀌는 부분은 메인과 상의) |
+   | `js/05-features.js` (공방·마을·스토리·전직·던전·낚시·카지노·미션·커뮤니티·칭호·날씨) | 메인 (커뮤니티·채팅의 서버 연결은 백엔드) |
+   | `js/06-actions.js` (클릭·폼 처리 `ACTS`) | 메인 |
+   | `js/07-boot.js` (시작·`boot()`) | 메인 |
+   | `js/08-server.js` (Supabase·로그인·클라우드 저장) | 백엔드 |
+   | `supabase/` (SQL), Supabase 대시보드·DB 변경 | 백엔드만 |
+   | `index.html` (스크립트 순서·head) | 메인 (파일 추가 시 작업 보드에 기록) |
+3. **브랜치:** 메인 세션은 `main`에 직접 푸시해도 된다. 백엔드·프론트는 `backend/…`, `frontend/…` 브랜치에서 작업하고, 최종 체크 세션이 확인한 뒤 `main`에 합친다(충돌은 담당 세션이 해결).
+4. **커밋 전 확인:** 브라우저로 열어 콘솔 오류가 없는지 본다. 다른 역할의 기능을 깨뜨렸으면 되돌린다.
+5. **작업 보드에 기록:** 시작할 때 "진행 중", 끝나면 "완료"로 한 줄. 다른 세션이 겹치는 작업을 피할 수 있게.
+6. 비밀 값(service_role 키, DB 비밀번호, 접근 토큰)은 절대 커밋하지 않는다. 클라이언트에는 publishable(anon) 키만.
+
+### 작업 보드
+- (메인) 2026-10-31 파일 분리 완료. 다음: 메인 화면 "다음 목표" 카드.
 
 ## 구조
-- `<style>` 하나 + `<script>` 하나(IIFE). 뒤쪽에 추가된 CSS가 앞쪽 규칙을 덮어쓰는 구조라, 스타일 수정 시 같은 선택자가 뒤에 또 있는지 확인할 것.
-- 상태 `S`는 `localStorage['bleset-saga-v1']`에 저장(`SAVE_V=3`, `migrate`/`migrate3`). `save()`는 150ms 디바운스.
-- `render()`가 `#view`를 통째로 다시 그림. 라우트: main · quest · explore · battle · character · lore · market · admin · profile(다른 유저 읽기 전용) · community.
-  - quest/explore/character/lore/market/profile/community는 왼쪽에 캐릭터 카드+주간 미션+채팅이 붙는 `dock-grid` 레이아웃.
+- **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
+  - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.
+  - 같은 이름의 `const/let`을 두 파일에서 선언하면 오류. 새 전역 이름은 겹치지 않게.
+  - 새 파일을 만들면 `index.html`에 `<script src>`를 순서에 맞게 추가.
+- CSS는 `css/style.css` 하나. 뒤쪽 규칙이 앞쪽을 덮어쓰므로 같은 선택자가 뒤에 또 있는지 확인.
+- 상태 `S`는 `localStorage['bleset-saga-v1:<user_id>']`(서버 모드) 또는 `bleset-saga-v1`(로컬)에 저장(`SAVE_V=3`). `save()`는 150ms 디바운스, 서버 모드에서는 Supabase `saves` 테이블에도 저장.
+- `render()`가 `#view`를 통째로 다시 그림. 라우트: main · quest · explore · battle · character · lore · market · admin · profile · community.
 - 클릭 처리: `data-act="이름"` → `ACTS[이름](dataset, el, event)`. select 변경은 `data-act-change`.
-- 팝업 `modal(html)`, 떠 있는 메뉴 `#rmenu`, 알림 `toast()/notify()`.
-- 1초 주기 `tick()`이 매칭·자동 사냥·제작·낚시 타이머 표시를 갱신.
-- `/*ENGINE-START*/ ~ /*ENGINE-END*/` 구간은 전투 엔진(노드 시뮬레이션에서도 재사용).
+- 팝업 `modal(html)`, 떠 있는 메뉴 `#rmenu`, 알림 `toast()/notify()`. 1초 주기 `tick()`.
+- `/*ENGINE-START*/ ~ /*ENGINE-END*/` 구간(js/01-engine.js)은 전투 엔진.
 
 ## 주요 시스템 (자세한 규칙은 docs-content-structure.md)
 - 전투: 턴제. 만신전(구 이벤트 레이드)만 10×10 그리드(`b.grid`)·행동 확정 버튼 사용, 나머지 전투는 스킬 클릭 즉시 확정(`autoConfirm`).
@@ -30,13 +59,13 @@
 
 ## 작업 규칙
 - 화면 문구·답변은 한국어. 작은 글씨는 시스템 폰트(`--f-sys`), 큰 제목만 명조(`--f-display`).
-- 수정 후 브라우저로 직접 열어 확인(가능하면 Playwright로 스크린샷). 콘솔 오류가 없어야 함.
+- 수정 후 브라우저로 직접 열어 확인(가능하면 Playwright로 스크린샷). 콘솔 오류가 없어야 함. 로컬 확인은 정적 서버로(`npx serve .` 등) — `file://`로 열면 서버 모드가 꺼진 로컬 모드로 동작.
 - 저장 데이터 구조를 바꿀 때는 기존 저장본이 깨지지 않게 `ensure*()` 류 보정 함수로 기본값을 채울 것.
 
 ## 서버 이전 계획 (진행 예정)
 - 백엔드: Supabase (Personal/Free, Seoul 리전). 보안: Data API 켬, 새 테이블 자동 공개 끔, 자동 RLS 켬.
 - 배포: GitHub → Vercel/Cloudflare Pages.
-- 순서: ① 파일 분리(동작 동일 유지) ② 로그인·캐릭터 저장 서버화 ③ 공유 데이터(피드·채팅·우편·랭킹·로또) ④ 파티·만신전 실시간 ⑤ 서버 검증(골드·보상·추첨, admin 권한 정리).
+- 순서: ① 파일 분리(동작 동일 유지, 완료) ② 로그인·캐릭터 저장 서버화 ③ 공유 데이터(피드·채팅·우편·랭킹·로또) ④ 파티·만신전 실시간 ⑤ 서버 검증(골드·보상·추첨, admin 권한 정리).
 - base64 이미지는 Supabase Storage로 분리. anon key만 클라이언트에, service_role key는 절대 커밋 금지.
 
 ### 진행 상황
