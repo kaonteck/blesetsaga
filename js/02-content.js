@@ -1,7 +1,7 @@
 'use strict';
 /* 기본 콘텐츠 데이터 (퀘스트 · 몬스터 · 설정) · 유틸 */
 /* ───────── 콘텐츠 ───────── */
-const FLAG_NAMES={e1_rescue:'탐사대 증언',e1_seal:'봉인 연구 기록',e1_path:'안전 경로 기록',e2_sealed:'검은 결정 봉인',e2_taken:'검은 결정 보관',e3_scout:'단독 정찰 기록',e3_nest:'추적자 둥지 위치',e3_resonance:'결정의 공명',s1_compass:'멈춘 나침반',s2_charm:'위조 부적',s3_map:'블라스페미아 지도'};
+const FLAG_NAMES={e1_rescue:'탐사대 증언',e1_seal:'봉인 연구 기록',e1_path:'안전 경로 기록',e2_sealed:'검은 결정 봉인',e2_taken:'검은 결정 보관',e3_scout:'단독 정찰 기록',e3_nest:'추적자 둥지 위치',e3_resonance:'결정의 공명',s1_compass:'멈춘 나침반',s2_charm:'위조 부적',s3_map:'블라스파미아 지도'};
 const FLAG_REC={
   e1_rescue:{q:'E1',t:'정찰병은 살았다. 그가 끝내 부르지 못한 동료들의 이름만 안개 속에 남았다.'},
   e1_seal:{q:'E1',t:'부적은 다시 맞춰졌다. 비어 있던 한 조각은 끝내 찾지 못했다.'},
@@ -52,10 +52,10 @@ const DEFAULT_QUESTS=[
   end_take:{end:true,text:'결정 회수 완료',reward:{exp:250,gold:100,items:{leather:1}}}}},
  {id:'E3',cat:'epic',title:'백야로 가는 길',published:true,level:6,prereq:'E2',repeat:null,
   desc:'신전은 백야의 신전으로 향할 선발대를 꾸린다. 당신에게도 동행 요청이 왔다.',start:'s1',steps:{
-  s1:{text:'신전 앞마당에 선발대가 모였다. 지휘관은 블라스페미아를 지나는 길이 위험하다고 경고한다.',choices:[
+  s1:{text:'신전 앞마당에 선발대가 모였다. 지휘관은 블라스파미아를 지나는 길이 위험하다고 경고한다.',choices:[
     {label:'선발대와 함께 출발한다',result:'선발대의 후미를 맡아 경계를 넘었다.',next:'s2'},
     {label:'먼저 혼자 길을 정찰한다',req:{level:7},result:'앞서 나가 안전한 야영지를 확보했다.',next:'s2',flag:'e3_scout'}]},
-  s2:{text:'블라스페미아 경계에서 추적자의 발자국이 보인다. 발자국은 신전 쪽으로 이어진다.',choices:[
+  s2:{text:'블라스파미아 경계에서 추적자의 발자국이 보인다. 발자국은 신전 쪽으로 이어진다.',choices:[
     {label:'발자국을 피해 우회한다',result:'시간은 걸렸지만 무사히 언덕에 올랐다.',next:'g3'},
     {label:'발자국을 따라 둥지를 확인한다',result:'추적자의 둥지를 지도에 표시했다. 공격대에게 쓸모 있는 정보다.',next:'g3',flag:'e3_nest'},
     {label:'검은 결정의 공명을 따라간다',req:{flag:'e2_taken'},result:'결정이 가리키는 방향으로 걷자 지름길이 열렸다.',next:'g3',flag:'e3_resonance'}]},
@@ -77,11 +77,11 @@ const DEFAULT_QUESTS=[
   s1:{text:'후드를 깊게 눌러쓴 상인이 "축복받은 부적"을 싸게 판다. 부적의 문양이 어딘가 어긋나 있다.',choices:[
     {label:'정체를 캐묻는다',result:'상인은 당황해 부적 꾸러미를 떨어뜨리고 달아났다.',next:'s2',flag:'s2_charm'},
     {label:'조용히 신전에 알린다',result:'신전 경비가 시장으로 향했다.',next:'s2'}]},
-  s2:{text:'남겨진 부적을 보니 블라스페미아 쪽 흙이 묻어 있다.',choices:[
+  s2:{text:'남겨진 부적을 보니 블라스파미아 쪽 흙이 묻어 있다.',choices:[
     {label:'부적을 신전에 넘긴다',result:'사제들이 부적을 정화했다. 감사의 표시로 성수를 받았다.',next:'end'}]},
   end:{end:true,text:'잿빛 시장 정리',reward:{exp:220,gold:80,items:{holywater:1}}}}},
- {id:'S3',cat:'sub',title:'블라스페미아 지도 조각',published:true,level:7,prereq:null,repeat:null,cond:{quests:['E2']},
-  desc:'블라스페미아의 옛 지도 조각이 흩어져 있다. 모으면 신전 공략에 도움이 된다.',start:'s1',steps:{
+ {id:'S3',cat:'sub',title:'블라스파미아 지도 조각',published:true,level:7,prereq:null,repeat:null,cond:{quests:['E2']},
+  desc:'블라스파미아의 옛 지도 조각이 흩어져 있다. 모으면 신전 공략에 도움이 된다.',start:'s1',steps:{
   s1:{text:'첫 번째 조각은 무너진 초소의 벽에 걸려 있다. 두 번째 조각은 늪 한가운데 떠 있다.',choices:[
     {label:'초소부터 살핀다',result:'초소에서 조각과 함께 낡은 일지를 찾았다.',next:'s2'},
     {label:'늪으로 들어간다',result:'발이 빠지는 늪을 건너 조각을 건져 냈다.',next:'s2'}]},
@@ -103,7 +103,7 @@ const DEFAULT_QUESTS=[
     {label:'약초를 받는다',result:'약초로 회복약을 만들었다.',next:'end'}]},
   end:{end:true,text:'정화 완료',reward:{exp:120,gold:40,items:{potion:1}}}}},
  {id:'R3',cat:'repeat',title:'추적자 흔적 수집',published:true,level:6,prereq:null,repeat:'daily',
-  desc:'블라스페미아 경계에서 추적자의 흔적을 모은다.',start:'s1',steps:{
+  desc:'블라스파미아 경계에서 추적자의 흔적을 모은다.',start:'s1',steps:{
   s1:{text:'진흙에 찍힌 발자국과 나무에 남은 발톱 자국이 보인다.',choices:[
     {label:'발자국 깊이를 잰다',result:'무게로 보아 성체 두 마리가 지나갔다.',next:'end'},
     {label:'발톱 자국을 탁본한다',result:'탁본을 신전에 넘겼다.',next:'end'}]},
@@ -134,7 +134,7 @@ const DEFAULT_QUESTS=[
     {label:'안개 깊숙이 들어간다',result:'눈이 따가웠지만 큼직한 독샘을 얻었다.',next:'end'}]},
   end:{end:true,text:'독샘 납품',reward:{exp:150,gold:50,items:{venom:1}}}}},
  {id:'R8',cat:'repeat',title:'경계 초소 보급',published:true,level:4,prereq:null,repeat:'daily',
-  desc:'블라스페미아 경계 초소에 보급품을 전달한다.',start:'s1',steps:{
+  desc:'블라스파미아 경계 초소에 보급품을 전달한다.',start:'s1',steps:{
   s1:{text:'짐수레에 물과 회복약이 실려 있다. 초소까지는 반나절 거리다.',choices:[
     {label:'큰길로 간다',result:'무사히 초소에 도착했다. 경비병들이 반긴다.',next:'end'},
     {label:'지름길로 간다',result:'바퀴가 진흙에 빠졌지만 겨우 빼내 시간 안에 닿았다.',next:'end'}]},
@@ -150,7 +150,7 @@ const DEFAULT_CONFIG={levelCap:99,turnSeconds:45,acceptSeconds:30,expBase:100,ex
 const BOTS=[['아르덴','knight',16],['세린','demigod',15],['카이로','destroyer',17],['미라엘','priest',9],['하윤','shooter',4],['도겸','defender',9],['루시안','salamander',15],['엘라','priest',3],['테오','defender',4],['비안카','mage',8],['노아','warrior',18],['리엔','summoner',17],['소하','infighter',6],['이안','defender',7],['레아','priest',5],['진후','mystic',16],['다온','demigod',12],['유키','dualist',15],['벨라','warrior',13]];
 const PARTY_NAMES=['새벽 토벌대','은빛 순례단','백야 원정대','라니아케아 수호대','안개 추적단','첫 별 탐사대','회색 늑대단','검은 결정 조사대','잿빛 등불단','북쪽 경계 정찰대','푸른 불꽃 결사','고목 벌채단'];
 function partyName(){const used=new Set(S.recruits.map(r=>r.name));return pick(PARTY_NAMES.filter(n=>!used.has(n)))||'임시 탐사대';}
-const LOBBY_LINES=['오늘 파수꾼 3인 가실 분 있나요?','백야의 신전 공지 보셨어요? 수호자는 6인부터래요','정화의 성수는 상점에서 40골드예요','탐사대 퀘스트는 정찰병 경로가 회복약을 줘요','광역 예고 뜨면 방어 꼭 누르세요','힐러 구해요! 추적자 4인','방금 장궁 나왔어요','블라스페미아 지도 조각은 LV7부터 받을 수 있어요','라니아케아의 축복이 함께하길','일일 의뢰 오전 5시에 초기화돼요','졸트 다음에 러시 쓰면 연계 대미지 붙어요','제압은 딜러 대미지가 두 배 넘으면 풀려요','LV20 되면 시작의 마을에서 전직 퀘스트 받을 수 있어요','랜덤 매칭 돌리는 중입니다','서머너 비호 두 번이면 광역 버틸 만해요'];
+const LOBBY_LINES=['오늘 파수꾼 3인 가실 분 있나요?','백야의 신전 공지 보셨어요? 수호자는 6인부터래요','정화의 성수는 상점에서 40골드예요','탐사대 퀘스트는 정찰병 경로가 회복약을 줘요','광역 예고 뜨면 방어 꼭 누르세요','힐러 구해요! 추적자 4인','방금 장궁 나왔어요','블라스파미아 지도 조각은 LV7부터 받을 수 있어요','라니아케아의 축복이 함께하길','일일 의뢰 오전 5시에 초기화돼요','졸트 다음에 러시 쓰면 연계 대미지 붙어요','제압은 딜러 대미지가 두 배 넘으면 풀려요','LV20 되면 시작의 마을에서 전직 퀘스트 받을 수 있어요','랜덤 매칭 돌리는 중입니다','서머너 비호 두 번이면 광역 버틸 만해요'];
 const PARTY_LINES=['준비 완료했습니다','제압 먼저 걸게요','광역 예고 보이면 성역 쓸게요','힐 필요하면 말해주세요','졸트 다음 연계 들어갑니다','좋아요 가시죠','잘 부탁드려요','체력 낮으면 방어 눌러주세요'];
 const WHISPER_LINES=['안녕하세요!','지금 퀘스트 중이에요, 끝나고 같이 가요','좋아요, 파티 만들면 초대해 주세요','ㅎㅎ 고마워요','저는 지금 레벨 올리는 중이에요','수호자 갈 때 불러주세요','오늘 일일 의뢰 다 하셨어요?'];
 

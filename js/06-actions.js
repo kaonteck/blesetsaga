@@ -134,7 +134,7 @@ const ACTS={
   'mk-buy':d=>{const x=market().find(y=>y.id===d.id);if(!x||!ITEMS[x.item]||ITEMS[x.item].off)return;if(x.stock===0){toast('품절되었습니다.','warn');return;}if(S.me.gold<x.price){toast('골드가 부족합니다.','warn');return;}
     if(ITEMS[x.item].maxOwn&&(S.me.inv[x.item]||0)>=ITEMS[x.item].maxOwn){toast(`${ITEMS[x.item].name}은(는) 1인 최대 ${ITEMS[x.item].maxOwn}개까지 가질 수 있습니다.`,'warn');return;}S.me.gold-=x.price;if(x.stock!=null)x.stock--;addItem(x.item,1);bump('goldSpent',x.price);bump('purchases');noteItems({[x.item]:1});
     (S.trades=S.trades||[]).unshift({ts:now(),kind:'buy',item:x.item,gold:-x.price});save();render();toast(`${ITEMS[x.item].name} 구매 · ${x.price}골드`,'good');},
-  'mk-sell':d=>{const k=d.id;if(availItem(k)<1){toast('팔 수 있는 수량이 없습니다.','warn');return;}const g=sellPrice(k);S.me.inv[k]--;if(!(S.me.inv[k]>0)&&S.me.enh)delete S.me.enh[k];
+  'mk-sell':d=>{const k=d.id;if(isQuestItem(k)){toast('퀘스트 아이템은 팔 수 없습니다.','warn');return;}if(availItem(k)<1){toast('팔 수 있는 수량이 없습니다.','warn');return;}const g=sellPrice(k);S.me.inv[k]--;if(!(S.me.inv[k]>0)&&S.me.enh)delete S.me.enh[k];
     S.me.gold+=g;bump('goldEarned',g);(S.trades=S.trades||[]).unshift({ts:now(),kind:'sell',item:k,gold:g});save();render();toast(`${ITEMS[k].name} 판매 · +${g}골드`,'good');},
   'mk-del':d=>{S.data.market=market().filter(x=>x.id!==d.id);logChange('거래소',[{field:'내림',before:d.id,after:undefined}]);save();render();},
   'n-open':d=>{const n=S.data.notices.find(x=>x.id===d.id);if(n)noticeView(n);},
@@ -258,10 +258,10 @@ const ACTS={
     if(st[0]==='gather'){if(!hasMats(st[1]))return;for(const m in st[1])takeMat(m,st[1][m]);}else if(st[0]!=='text')return;pqAdvance(k);openCraft(k,'make');render();openCraft(k,'make');},
   'cj-start':d=>{const k=d.kind;const r=recipe(k,d.id);const p=prof(k);if(!r||!p.rank||p.rank>r.grade||cjobs()[k]||!hasMats(r.mats))return;
     for(const m in r.mats)takeMat(m,r.mats[m]);cjobs()[k]={fail:guildRain(k)&&Math.random()<RAIN_FAIL,rid:r.id,out:r.out,n:r.n,label:ITEMS[r.out].name+(r.n>1?' ×'+r.n:''),start:now(),end:now()+r.min*60000};save();render();openCraft(k,'make');toast(`${ITEMS[r.out].name} ${PROF[k].n}을(를) 시작했습니다 · ${durLabel2(r.min)}`);},
-  'cj-repair':d=>{const id=d.id;const miss=10-dura(id);const cost=miss*repairRate(id);if(!miss||cjobs().repair||S.me.gold<cost)return;S.me.gold-=cost;cjobs().repair={repair:id,label:ITEMS[id].name+' 수리',start:now(),end:now()+miss*60000};save();render();openCraft('craft','repair');toast(`${ITEMS[id].name} 수리를 시작했습니다 · ${durLabel2(miss)}`);},
+  'cj-repair':d=>{const id=d.id;const miss=DURA_MAX-dura(id);const cost=repairCost(id,miss);if(!miss||cjobs().repair||S.me.gold<cost)return;S.me.gold-=cost;cjobs().repair={repair:id,label:ITEMS[id].name+' 수리',start:now(),end:now()+miss*60000};save();render();openCraft('craft','repair');toast(`${ITEMS[id].name} 수리를 시작했습니다 · ${durLabel2(miss)}`);},
   'cj-haste':d=>{const j=cjobs()[d.slot];const it=ITEMS[d.id];if(!j||!it||!it.haste||!(S.me.inv[d.id]>0)||now()>=j.end)return;S.me.inv[d.id]--;j.end=Math.max(now(),j.end-it.haste*60000);save();render();openCraft(d.slot==='repair'?'craft':d.slot,d.slot==='repair'?'repair':'make');toast(`${it.name} 사용 · 남은 시간 -${durLabel2(it.haste)}`);},
   'cj-claim':d=>{const J=cjobs();const j=J[d.slot];if(!j||now()<j.end)return;J[d.slot]=null;
-    if(j.repair){S.me.dura=S.me.dura||{};S.me.dura[j.repair]=10;toast(`${ITEMS[j.repair].name} 수리 완료 · 내구도 10/10`,'good');save();render();openCraft('craft','repair');return;}
+    if(j.repair){S.me.dura=S.me.dura||{};S.me.dura[j.repair]=DURA_MAX;toast(`${ITEMS[j.repair].name} 수리 완료 · 내구도 ${DURA_MAX}/${DURA_MAX}`,'good');save();render();openCraft('craft','repair');return;}
     if(j.fail){save();render();openCraft(d.slot,'make');toast(`손이 미끄러져 ${ITEMS[j.out].name} ${PROF[d.slot].n}에 실패했습니다… (비 · 길드 본진 미끄러짐)`,'warn');return;}
     bump('crafts');
     const before=ITEMS[j.out].rod?rods().map(x=>x.uid):null;const got=addItem(j.out,j.n);noteItems({[j.out]:got});if(before){rods().filter(x=>!before.includes(x.uid)).forEach(x=>{x.crafted=true;x.max+=ROD_CRAFT_BONUS;x.dura+=ROD_CRAFT_BONUS;});}const k=d.slot;const p=prof(k);

@@ -132,7 +132,7 @@ function vCreate(){
   const base=Object.entries(CLASSES).filter(([,c])=>c.tier===1);
   return `<div class="wrap"><div class="create">
     <div><img class="biglogo" src="${LOGO}" alt="BLESET SAGA"><div class="sub">블레셋 전기</div></div>
-    <p class="qtext" style="font-size:15px">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스페미아로 떠날 당신의 이름과 클래스를 정하세요.</p>
+    <p class="qtext" style="font-size:15px">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 이름과 클래스를 정하세요.</p>
     <form class="stack" data-form="create">
       <label class="stack" style="gap:6px;max-width:360px"><span class="ph" style="margin:0">블레서 이름</span>
         <input type="text" id="new-name" maxlength="10" placeholder="2~10자" required autocomplete="off"></label>
@@ -778,7 +778,7 @@ function vChar(){
     <div class="stack" style="gap:16px"><div class="bond-row">${bondsPanel()}<div class="stack" style="gap:16px">${shelfPanel()}${aquaPanel()}</div></div><div class="panel fold"><button class="fold-head" data-act="togglerec" aria-expanded="${!!S.sel.recOpen}"><span class="ph" style="margin:0">${hTitle('quill','탐사 기록')} <span class="chip num" style="letter-spacing:0">${flags.length}</span></span><span class="fold-ic" aria-hidden="true"></span></button><div class="fold-body" ${S.sel.recOpen?'':'hidden'}>${flags.length?recordsHTML(flags):'<p class="empty" style="padding:0">아직 남긴 기록이 없습니다.</p>'}</div></div></div>`:`<div class="stack" style="gap:16px"><div class="panel"><h3>${hTitle('swords','장착 중인 장비')}</h3><div class="eqlist">${Object.keys(SLOT).map(sl=>{const id=me.equip[sl];const it=ITEMS[id];
         if(!it)return `<div class="eqrow empty"><span class="eq-sl">${SLOT[sl]}</span><span class="eq-n faint">비어 있음</span></div>`;
         const open=S.sel.eqOpen===sl;
-        return `<div class="eqitem ${open?'open':''}"><button class="eqrow" data-act="eq-toggle" data-slot="${sl}" aria-expanded="${open}"><span class="eq-sl">${SLOT[sl]}</span><span class="eq-n">${itemNameH(id)}<span class="eq-dura ${dura(id)===0?'broken':dura(id)<=3?'low':''}" title="내구도">${dura(id)===0?'파손':'내구도 '+dura(id)+'/10'}</span></span><span class="fold-ic" aria-hidden="true"></span></button>
+        return `<div class="eqitem ${open?'open':''}"><button class="eqrow" data-act="eq-toggle" data-slot="${sl}" aria-expanded="${open}"><span class="eq-sl">${SLOT[sl]}</span><span class="eq-n">${itemNameH(id)}<span class="eq-dura ${dura(id)===0?'broken':dura(id)<=Math.ceil(DURA_MAX*0.2)?'low':''}" title="내구도">${dura(id)===0?'파손':'내구도 '+dura(id)+'/'+DURA_MAX}</span></span><span class="fold-ic" aria-hidden="true"></span></button>
           ${open?`<div class="eqdet"><img src="${ITEM_IMG}" alt=""><div class="invd-t"><span class="bpill eqb sm" style="align-self:flex-start">${statText(itemStats(id,enhOf(id)))}</span><p>${esc(it.desc)}</p><small class="faint">강화 +${enhOf(id)} / ${ENH_MAX}</small>
             <div class="row"><button class="btn btn-sm btn-primary" data-act="enh-open" data-id="${id}">강화</button><button class="btn btn-sm" data-act="unequip" data-slot="${sl}">해제</button></div></div></div>`:''}</div>`;}).join('')}</div></div>
       
@@ -1339,7 +1339,7 @@ function mailList(tab,sort){
   return live;
 }
 function fmtWhen(t){const d=now()-t;if(d<60000)return '방금';if(d<3600000)return Math.floor(d/60000)+'분 전';if(d<86400000)return Math.floor(d/3600000)+'시간 전';return new Date(t+9*3600e3).toISOString().slice(5,10).replace('-','.');}
-function availItem(k){const n=S.me.inv[k]||0;return n-(Object.values(S.me.equip||{}).includes(k)?1:0);}
+function availItem(k){if(isQuestItem(k))return 0;const n=S.me.inv[k]||0;return n-(Object.values(S.me.equip||{}).includes(k)?1:0);}
 function deliverMail(from,text,items,extra){
   S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
   if(S.mail.length>120){const drop=S.mail.filter(m=>!m.archived).sort((a,b)=>a.ts-b.ts)[0];S.mail=S.mail.filter(m=>m!==drop);}

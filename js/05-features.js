@@ -72,10 +72,13 @@ function prof(kind){const me=S.me;me.prof=me.prof||{};return me.prof[kind]=me.pr
 function rankName(kind){const p=prof(kind);return p.rank?PROF[kind].ranks[5-p.rank]:'';}
 function rankShort(kind){const p=prof(kind);return p.rank?PROF[kind].short[5-p.rank]:'';}
 function cjobs(){return S.me.cjobs=S.me.cjobs||{};}
-function dura(id){const d=(S.me.dura||{})[id];return d==null?10:d;}
+const DURA_MAX=35;
+function isQuestItem(k){const it=ITEMS[k];return !!it&&(/^q_/.test(k)||it.tag==='퀘스트 아이템'||it.tag==='이스터에그');}
+function dura(id){const d=(S.me.dura||{})[id];return d==null?DURA_MAX:d;}
 function effEquip(){const e={};for(const sl in (S.me.equip||{})){const id=S.me.equip[sl];const it=ITEMS[id];if(id&&dura(id)>0&&!(it&&it.wtype&&!classAllowed(it,S.me.job)))e[sl]=id;}return e;}
 function itemLv(id){const it=ITEMS[id];return it.levelReq||Math.max(1,Math.round((it.price||150)/30));}
 function repairRate(id){return 5+itemLv(id)*3;}
+function repairCost(id,miss){return Math.ceil(miss*repairRate(id)*10/DURA_MAX);}
 function ensureCraft(){const me=S.me;if(!me||me.craftSeed)return;me.craftSeed=1;
   const g={haste5:3,haste10:2,haste30:1,haste60:1,haste360:1,ore:6,herb:6,grain:5,meat:2,fish:2,salt:1};for(const k in g)me.inv[k]=(me.inv[k]||0)+g[k];save();}
 function wearDown(){const me=S.me;me.dura=me.dura||{};const broke=[];for(const sl in (me.equip||{})){const id=me.equip[sl];if(!id||!ITEMS[id])continue;const d=dura(id);if(d>0){me.dura[id]=d-1;if(d-1===0)broke.push(ITEMS[id].name);}}
@@ -124,9 +127,9 @@ function repairList(){
   const ids=[...new Set([...Object.values(S.me.equip||{}).filter(Boolean),...Object.keys(S.me.inv).filter(k=>ITEMS[k]&&ITEMS[k].type==='equip'&&S.me.inv[k]>0)])].filter(k=>ITEMS[k]);
   const busy=!!cjobs().repair;
   if(!ids.length)return '<p class="empty">수리할 장비가 없습니다.</p>';
-  return ids.map(id=>{const d=dura(id),miss=10-d,cost=miss*repairRate(id),on=Object.values(S.me.equip||{}).includes(id);
+  return ids.map(id=>{const d=dura(id),miss=DURA_MAX-d,cost=repairCost(id,miss),on=Object.values(S.me.equip||{}).includes(id);
     return `<div class="cr"><div class="cr-t"><b>${esc(ITEMS[id].name)}</b>${on?'<span class="chip warn">착용 중</span>':''}<span class="faint">장비 레벨 ${itemLv(id)}</span></div>
-      <div class="dura"><div class="dura-bar ${d===0?'broken':d<=3?'low':''}">${Array.from({length:10},(_,i)=>`<i class="${i<d?'on':''}"></i>`).join('')}</div><span class="num">${d}/10${d===0?' · 파손':''}</span></div>
+      <div class="dura"><div class="dura-bar ${d===0?'broken':d<=Math.ceil(DURA_MAX*0.2)?'low':''}">${Array.from({length:10},(_,i)=>`<i class="${i<Math.ceil(d/DURA_MAX*10)?'on':''}"></i>`).join('')}</div><span class="num">${d}/${DURA_MAX}${d===0?' · 파손 (장착은 되지만 능력치 미적용)':''}</span></div>
       ${miss?`<small class="faint">수리 비용 ${goldHTML(cost)} · 수리 시간 ${durLabel2(miss)}</small>`:'<small class="faint">내구도가 가득 차 있습니다</small>'}
       <div class="row cj-act"><button class="btn btn-sm ${miss&&!busy&&S.me.gold>=cost?'btn-primary':''}" data-act="cj-repair" data-id="${id}" ${!miss||busy||S.me.gold<cost?'disabled':''}>${!miss?'수리 불필요':busy?'수리 중인 장비가 있습니다':S.me.gold<cost?'골드 부족':'수리하기'}</button></div></div>`;}).join('');
 }
@@ -373,7 +376,9 @@ function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
     <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn btn-sm btn-ghost" data-act="closemodal">나중에</button><button class="btn btn-sm btn-primary" data-act="adv-go">전직 퀘스트 받기</button></div></div>`;}
 function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S.route==='battle')return;const c=CLASSES[me.job];if(c.tier!==1||me.level<cfg().jobAdvanceLevel)return;
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
-function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
+  if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
+  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -871,7 +876,7 @@ const TITLES=[
   T('t_w1','combat','첫 승리','레이드 첫 승리','raidsWon',1),
   T('t_w20','combat','노련한 탐사대원','레이드 승리 20회','raidsWon',20),
   T('t_kf','combat','고목 벌채꾼','변이된 숲의 파수꾼 처치 10회',null,10,{get:()=>kills('forest')}),
-  T('t_kt','combat','추적자의 추적자','블라스페미아 추적자 처치 10회',null,10,{get:()=>kills('tracker')}),
+  T('t_kt','combat','추적자의 추적자','블라스파미아 추적자 처치 10회',null,10,{get:()=>kills('tracker')}),
   T('t_kg','combat','봉인의 파수꾼','백야의 신전 봉인 수호자 처치',null,1,{get:()=>kills('guardian')}),
   T('t_cr','combat','치명적인','크리티컬 30회','crits',30),
   T('t_dm','combat','파괴의 화신','누적 대미지 10,000','damage',10000),
@@ -995,7 +1000,7 @@ function wDebuffs(land){const w=landW(land);const L=[];
 function wDebuffHTML(land){const L=wDebuffs(land);return L.length?`<div class="wdb">${L.map(([k,n,t])=>`<span class="wdb-c wdb-${k}"><b>${n}</b> ${t}</span>`).join('')}</div>`:'';}
 function todayWeather(){const k=kstParts().key;return REGIONS.map(r=>{const rn=seedRnd(k+r.name);const [w,lo,hi]=r.w[Math.floor(rn()*r.w.length)];return {name:r.name,w,t:Math.round(lo+rn()*(hi-lo))};});}
 const pad2=n=>String(n).padStart(2,'0');
-const GAME_YEAR_OFFSET=26;
+const GAME_YEAR_OFFSET=28;
 function gameDate(p){const y=p.y+GAME_YEAR_OFFSET;const wd='일월화수목금토'[new Date(Date.UTC(y,p.mo-1,p.d)).getUTCDay()];return `${y}.${pad2(p.mo)}.${pad2(p.d)} (${wd})`;}
 function clockText(){const p=kstParts();return `${pad2(p.h)}:${pad2(p.mi)}:${pad2(p.s)}`;}
 function skyBar(){
