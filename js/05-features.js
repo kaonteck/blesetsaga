@@ -1056,12 +1056,3 @@ function ngGear(){const L=S.me.level;const cur=GEAR_TIER.map((g,i)=>({g,T:i+1}))
 const LV_LEFT=n=>`${Math.max(0,n-S.me.level)}레벨 남음`;
 function nextGoalHTML(){if(!S||!S.me)return '';const rows=[ngStory(),ngHunt(),ngGear()].filter(Boolean);
   return `<div class="panel ng"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>다음 목표</div><div class="ng-list">${rows.map(r=>`<${r.act?'button':'div'} class="ng-row ${r.lock?'lock':''}" ${r.act||''}><span class="ng-t">${esc(r.t)}</span><b class="ng-v">${esc(r.v)}</b><small class="ng-s">${esc(r.s)}</small></${r.act?'button':'div'}>`).join('')}</div></div>`;}
-/* 다음 목표 카드 기본 스타일 (프론트 담당이 css/style.css로 옮겨 다듬을 예정) */
-if(document.head)document.head.insertAdjacentHTML('beforeend',`<style id="ng-style">
-.ng{padding:12px 14px}.ng-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.ng-row{display:grid;grid-template-columns:64px 1fr;column-gap:10px;row-gap:1px;align-items:baseline;text-align:left;width:100%;padding:8px 10px;border:1px solid var(--rule-2);border-radius:4px;background:rgba(255,255,255,.02);font:inherit;color:inherit}
-button.ng-row{cursor:pointer}button.ng-row:hover{border-color:var(--rule-hi,#6b6a72);background:rgba(255,255,255,.04)}
-.ng-t{grid-row:1/3;align-self:center;font-family:var(--f-sys);font-size:11px;color:var(--warn);word-break:keep-all;line-height:1.35}
-.ng-v{font-size:13.5px;color:var(--silver);font-weight:600}.ng-s{grid-column:2;font-family:var(--f-sys);font-size:11.5px;color:var(--muted)}
-.ng-row.lock .ng-t{color:var(--muted)}
-</style>`);
