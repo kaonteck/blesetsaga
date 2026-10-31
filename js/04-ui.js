@@ -108,7 +108,7 @@ function render(){
   if(r==='admin'&&!isAdmin()){v.innerHTML=`<div class="wrap page"><div class="panel"><h3>운영</h3><p>운영자 권한이 있는 계정만 열 수 있습니다.</p></div></div>`;return;}
   const fn={community:vCommunity,profile:vProfile,main:vMain,quest:vQuest,explore:vExplore,battle:vBattle,character:vChar,lore:vLore,market:vMarket,admin:vAdmin}[r]||vMain;
   const dock=['quest','explore','character','lore','market','profile','community'].includes(r);
-  v.innerHTML=dock?`<div class="wrap dock-grid"><aside class="dock-side">${charCard(true)}${chatPanel()}</aside><div class="dock-main">${fn()}</div></div>`:fn();
+  v.innerHTML=dock?`<div class="wrap dock-grid" data-route="${r}"><aside class="dock-side">${charCard(true)}${chatPanel()}</aside><div class="dock-main">${fn()}</div></div>`:fn();
   afterRender();
   renderPop();
 }
@@ -118,9 +118,32 @@ function fitExlog(){
   const h=line.getBoundingClientRect().top-p.getBoundingClientRect().top;p.style.height=Math.max(96,Math.round(h))+'px';
 }
 addEventListener('resize',()=>fitExlog());
+/* 모바일 채팅: 일반 채팅 패널(.chat-main)을 하단 시트로 띄우고, 하단 버튼으로 연다 (≤760px, CSS가 담당) */
+function syncChatFab(){
+  const b=document.body;
+  if(!$('#chatfab')){
+    b.insertAdjacentHTML('beforeend','<div id="chatbk" data-chatclose></div><button type="button" id="chatfab" aria-label="채팅 열기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 3.2h11.2v7.4H7.2L4 13.2v-2.6H2.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>채팅</span></button>');
+  }
+  const has=!!$('#view .chat-main');b.classList.toggle('has-chat',has);if(!has)b.classList.remove('chat-open');
+  b.dataset.route=S.route||'';
+  const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(top.getBoundingClientRect().bottom)+'px');
+  /* 모바일 전투: 하단에 붙는 행동 패널(fightMain의 .cmdbar) 높이만큼 채팅 버튼을 띄움 */
+  const bar=$('#fightmain > .cmdbar');
+  b.style.setProperty('--cmdbar-h',bar&&innerWidth<=760?bar.offsetHeight+'px':'0px');
+}
+function setChatOpen(on){
+  document.body.classList.toggle('chat-open',on);
+  if(on){const m=$('#view .chat-main [data-msgs]');if(m)m.scrollTop=m.scrollHeight;}
+  else{const a=document.activeElement;if(a&&a.closest&&a.closest('.chat-main'))a.blur();}
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#chatfab')){setChatOpen(true);return;}
+  if(e.target.closest('[data-chatclose]'))setChatOpen(false);
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('chat-open'))setChatOpen(false);});
 document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.st-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.wm-dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.wm-dd-i'))d.open=false;});});
 function afterRender(){
-  updateChats();
+  syncChatFab();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
   fitExlog();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
@@ -334,7 +357,7 @@ function noticeEdit(n){
 function refreshNotices(){const el=$('[data-notices]');if(el)el.outerHTML=noticePanel();}
 /* ───────── 채팅 ───────── */
 function chatPanel(opt={}){
-  return `<div class="panel chat" data-chatpanel data-lock="${opt.lock||''}"><div data-chathead></div><div class="msgs ${opt.tall?'tall':''}" data-msgs aria-live="polite"></div>
+  return `<div class="panel chat${opt.lock?'':' chat-main'}" data-chatpanel data-lock="${opt.lock||''}">${opt.lock?'':'<div class="chat-sheethead"><span>채팅</span><button type="button" class="chat-x" data-chatclose aria-label="채팅 닫기">×</button></div>'}<div data-chathead></div><div class="msgs ${opt.tall?'tall':''}" data-msgs aria-live="polite"></div>
     <form data-form="chat"><select class="csel" id="chat-ch-${opt.lock||'all'}" aria-label="보낼 채널" hidden><option value="lobby">전체</option><option value="party">파티</option></select><select class="wsel" id="chat-cat-${opt.lock||'all'}" aria-label="월드 메시지 분류" hidden>${Object.entries(WCAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><input type="text" id="chat-in-${opt.lock||'all'}" maxlength="200" placeholder="메시지 입력" autocomplete="off" aria-label="채팅 입력"><button class="chat-send" type="submit">전송</button></form></div>`;
 }
 function whisperables(){return Object.entries(S.rel).filter(([,v])=>v==='friend').map(([k])=>k);}
@@ -633,7 +656,7 @@ function fightMain(){
       ${sup?`<p class="muted" style="font-size:12.5px">제압 중 · ${esc(sup.name)} (딜러 총 ${dps} / 유지 한도 ${Math.max(1,sup.dealt)*b.sup.mult} · ${b.sup.mult}배)</p>`:''}
     </div></div></div>
     <div class="panel"><h3>파티 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">방어·보호·지원 스킬 먼저, 이후 행운 순</span></h3><div class="fighters">${b.order.map(id=>fighterCard(b,b.players.find(p=>p.id===id))).join('')}</div></div>
-    <div class="panel">${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
+    <div class="panel cmdbar">${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
     <div class="row" style="justify-content:space-between;margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">
       <span class="muted" style="font-size:12.5px">확정 ${living(b).filter(p=>p.confirmed).length}/${living(b).length} · 전원 확정 또는 시간 종료 시 처리</span>
       <span class="timer ${left<=10?'low':''}" data-timer>${left}초</span></div></div>`;
@@ -728,7 +751,7 @@ function outcomeHTML(b){
   return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre>
     <h2>${win?'승리':b.over==='abandon'?'전투 종료':'패배'}</h2>
     <p class="muted">${win?`${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
-    ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상 · 전투 ${esc(b.id)}</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
+    ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
 }
 function dmgRank(b){const L=b.players.slice().sort((x,y)=>y.dealt-x.dealt||x.name.localeCompare(y.name,'ko'));const top=Math.max(1,L[0]?L[0].dealt:1);const tot=L.reduce((a,p)=>a+p.dealt,0);
@@ -860,7 +883,7 @@ function userInfo(){
   const me=S.me,st=myStats(),base=statsFor(me.job,me.level,{});
   const need=expNeed(me.level),cap=me.level>=cfg().levelCap,p=cap?100:pct(me.exp,need),left=Math.max(0,need-me.exp);
   const row=(k,v)=>`<div class="ui-row"><dt>${k}</dt><dd>${v}</dd></div>`;
-  const statRow=k=>{const eq=st[k]-base[k];const ib=itemBonus(k);return `<div class="ui-row"><dt><span class="si si-${k} inl">${ICON[k]}</span> ${STATK[k]}</dt><dd><div class="ui-stat num"><b>${st[k]+ib}</b><span>기본 ${base[k]}</span>${eq?`<span class="bpill eqb" tabindex="0" data-tip="${esc(eqBreak(k))}" aria-label="장비 보너스 ${eq}">${eq>0?'+':''}${eq}</span>`:''}${ib?`<span class="bpill itb" tabindex="0" data-tip="${esc(ibBreak(k))}">아이템 보너스 ${ib>0?'+':''}${ib}</span>`:''}</div>${k==='maxHp'?`<div class="hpgauge" role="img" aria-label="HP ${st.maxHp} / ${st.maxHp}"><i style="width:100%"></i><span class="num">${st.maxHp} / ${st.maxHp}</span></div>`:''}</dd></div>`;};
+  const statRow=k=>{const eq=st[k]-base[k];const ib=itemBonus(k);return `<div class="ui-row"><dt><span class="si si-${k} inl">${ICON[k]}</span> ${STATK[k]}</dt><dd><div class="ui-stat num"><b>${st[k]+ib}</b><span class="ui-base" tabindex="0" data-tip="기본 ${STATK[k]}" aria-label="기본 ${STATK[k]} ${base[k]}">${base[k]}</span>${eq?`<span class="bpill eqb" tabindex="0" data-tip="${esc(eqBreak(k))}" aria-label="장비 보너스 ${eq}">${eq>0?'+':''}${eq}</span>`:''}${ib?`<span class="bpill itb" tabindex="0" data-tip="${esc(ibBreak(k))}" aria-label="아이템 보너스 ${ib}">${ib>0?'+':''}${ib}</span>`:''}</div>${k==='maxHp'?`<div class="hpgauge" role="img" aria-label="HP ${st.maxHp} / ${st.maxHp}"><i style="width:100%"></i><span class="num">${st.maxHp} / ${st.maxHp}</span></div>`:''}</dd></div>`;};
   return `<div class="panel ctop-info"><dl class="uinfo-list">
     ${row('이름',S.sel.nameEdit?`<form class="ui-nameedit" data-form="rename"><input type="text" id="rn-name" maxlength="10" value="${esc(me.name)}" aria-label="새 이름 (2~10자)"><button class="btn btn-sm btn-primary" type="submit">저장</button><button class="btn btn-sm btn-ghost" type="button" data-act="rn-cancel">취소</button></form>`:`<span class="row" style="gap:6px"><b class="ui-name">${esc(me.name)}</b><button class="ibtn sm" data-act="rn-start" data-tip="이름 수정" aria-label="이름 수정">${TICON.pen}</button></span>`)}
     ${row('클래스',`<span class="row" style="gap:8px">${roleChip(me.job)}${CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel?'<button class="btn btn-sm" data-act="adv-open">전직</button>':''}</span>`)}
