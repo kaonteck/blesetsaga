@@ -1,0 +1,141 @@
+\set ON_ERROR_STOP 1
+create schema t; grant usage on schema t to authenticated;
+create function t.fail(q text, label text) returns void language plpgsql as $$
+begin begin execute q; exception when others then raise notice 'OK  (막힘) %: %', label, sqlerrm; return; end;
+raise exception 'FAIL 막혀야 하는데 통과: %', label; end $$;
+create function t.ok(cond bool, label text) returns void language plpgsql as $$
+begin if cond then raise notice 'OK  %', label; else raise exception 'FAIL %', label; end if; end $$;
+grant execute on all functions in schema t to authenticated;
+create function t.as(uid text, admin bool default false) returns void language sql as $$
+  select set_config('request.jwt.claims', json_build_object('sub',uid,'role','authenticated','app_metadata',json_build_object('role',case when admin then 'admin' end))::text, false) $$;
+grant execute on function t.as(text,bool) to authenticated;
+
+insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values
+ ('00000000-0000-0000-0000-00000000000a','admin@x','{"username":"admin"}','{"role":"admin"}'),
+ ('00000000-0000-0000-0000-000000000001','p1@x','{"username":"p1"}','{}'),
+ ('00000000-0000-0000-0000-000000000002','p2@x','{"username":"p2"}','{}'),
+ ('00000000-0000-0000-0000-000000000003','p3@x','{"username":"p3"}','{}');
+select t.ok((select count(*) from profiles)=4,'가입 시 프로필 자동 생성');
+\set A '00000000-0000-0000-0000-00000000000a'
+\set P1 '00000000-0000-0000-0000-000000000001'
+\set P2 '00000000-0000-0000-0000-000000000002'
+\set P3 '00000000-0000-0000-0000-000000000003'
+
+set role authenticated;
+-- 프로필
+select t.as(:'P1'); update profiles set name='아린', level=12 where user_id=:'P1';
+select t.as(:'P2'); update profiles set name='벨라' where user_id=:'P2';
+select t.as(:'P3'); update profiles set name='카이' where user_id=:'P3';
+select t.as(:'P1');
+select t.fail($$update profiles set banned_until=now()+interval '1d' where user_id='00000000-0000-0000-0000-000000000001'$$,'본인이 정지 칸 수정');
+update profiles set name='해킹' where user_id=:'P2';
+select t.ok((select name from profiles where user_id=:'P2')='벨라','남의 프로필 수정 무시');
+select t.fail($$update profiles set name='벨라' where user_id='00000000-0000-0000-0000-000000000001'$$,'이름 중복(대소문자 무시)');
+
+-- 콘텐츠
+select t.as(:'A',true);
+insert into content(kind,id,data) values ('monster','forest','{"name":"숲의 파수꾼","hp":400}');
+insert into content(kind,id,data,published) values ('quest','E9','{"title":"비밀"}',false);
+insert into content(kind,id,data,starts_at) values ('notice','n_future','{"title":"예약"}',now()+interval '1 hour');
+update content set data='{"name":"숲의 파수꾼","hp":500}' where kind='monster' and id='forest';
+update content set data='{"name":"숲의 파수꾼","hp":500}' where kind='monster' and id='forest';
+select t.ok((select rev from content where id='forest')=2,'수정할 때 rev 증가, 같은 내용 재저장은 무시');
+select t.ok((select count(*) from content_history where id='forest')=2,'변경 기록 2건(생성·수정)');
+select admin_restore((select min(hid) from content_history where id='forest'));
+select t.ok((select (data->>'hp')::int from content where id='forest')=400,'기록으로 되돌리기');
+select t.ok((select op from content_history where id='forest' order by hid desc limit 1)='restore','되돌리기도 기록됨');
+insert into content_drafts(kind,id,data) values ('monster','forest','{"name":"숲의 파수꾼","hp":777}');
+select t.as(:'P1');
+select t.ok((select count(*) from content)=1,'유저는 공개·기간 안의 콘텐츠만 봄 (비공개·예약 숨김)');
+select t.ok((select (data->>'hp')::int from content where id='forest')=400,'초안은 공개 전 유저에게 안 보임');
+select t.ok((select count(*) from content_drafts)=0,'유저는 초안 못 봄');
+select t.ok((select count(*) from content_history)=0,'유저는 변경 기록 못 봄');
+select t.fail($$insert into content(kind,id,data) values ('item','x','{}')$$,'유저가 콘텐츠 추가');
+update content set data='{}' where id='forest';
+select t.ok((select (data->>'hp')::int from content where id='forest')=400,'유저의 콘텐츠 수정 무시');
+select t.fail($$select admin_publish('monster','forest')$$,'유저가 공개 함수 호출');
+select t.as(:'A',true); select admin_publish('monster','forest');
+select t.ok((select (data->>'hp')::int from content where id='forest')=777 and not exists(select 1 from content_drafts),'초안 공개 후 초안 삭제');
+select admin_import('[{"kind":"item","id":"potion","data":{"name":"회복약"}},{"kind":"item","id":"monster_x","data":{}}]');
+select t.ok((select count(*) from content where kind='item')=2,'JSON 한꺼번에 넣기');
+
+-- 피드
+select t.as(:'P1'); insert into feed_posts(text) values ('첫 글');
+select t.as(:'P2');
+insert into feed_likes(post_id) select id from feed_posts;
+insert into feed_comments(post_id,text) select id,'반가워요' from feed_posts;
+select t.ok((select likes=1 and comments=1 from feed_posts),'좋아요·댓글 수 자동 계산');
+update feed_posts set text='바꿈';
+select t.ok((select text from feed_posts)='첫 글','남의 글 수정 무시');
+select t.fail($$insert into feed_posts(author,text) values ('00000000-0000-0000-0000-000000000001','사칭')$$,'다른 사람 이름으로 글쓰기');
+select t.fail($$insert into feed_likes(post_id,user_id) select id,'00000000-0000-0000-0000-000000000003' from feed_posts$$,'남 대신 좋아요');
+select t.as(:'P1'); update feed_posts set hidden=true;
+select t.ok((select not hidden from feed_posts),'작성자가 스스로 가림 표시 불가');
+select t.as(:'A',true); update feed_posts set hidden=true;
+select t.as(:'P2'); select t.ok((select count(*) from feed_posts)=0,'운영자가 가린 글은 다른 유저에게 안 보임');
+select t.as(:'P1'); select t.ok((select count(*) from feed_posts)=1,'작성자 본인은 가린 글 봄');
+
+-- 채팅
+select t.as(:'P1'); insert into chat_messages(channel,name,text) values ('lobby','운영자','안녕');
+select t.ok((select name from chat_messages order by id desc limit 1)='아린','보낸 사람 이름은 서버가 채움(사칭 방지)');
+select t.fail($$insert into chat_messages(channel,text) values ('world','공지 사칭')$$,'유저가 월드 공지 채널에 쓰기');
+select t.fail($$insert into chat_messages(channel,text) values ('lobby; drop','x')$$,'잘못된 채널');
+select t.as(:'A',true); insert into chat_messages(channel,name,cat,text) values ('world','운영자','notice','점검 안내');
+select t.ok((select name from chat_messages where channel='world')='운영자','운영자는 이름 지정 가능');
+
+-- 귓속말
+select t.as(:'P1'); insert into direct_messages(recipient,text) values (:'P3','비밀 얘기');
+select t.as(:'P2'); select t.ok((select count(*) from direct_messages)=0,'남의 귓속말 못 봄');
+select t.as(:'P3'); select t.ok((select count(*) from direct_messages)=1,'받은 사람은 봄');
+
+-- 우편
+select t.as(:'P1'); select t.fail($$select admin_send_mail(null,'x')$$,'유저가 전체 우편');
+select t.as(:'A',true); select t.ok(admin_send_mail(null,'점검 보상','{"potion":3}',500)=4,'운영 우편 전체 발송');
+select t.as(:'P1');
+select t.ok((select count(*) from mail)=1,'내 우편만 보임');
+select t.ok((select (claim_mail((select id from mail))->>'gold')::int)=500,'첨부 받기');
+select t.fail($$select claim_mail((select id from mail))$$,'같은 첨부 두 번 받기');
+select t.fail($$update mail set claimed_at=null$$,'받음 표시 지우기');
+insert into mail(recipient,sender_name,text,items) values (:'P2','운영자','선물','{"potion":1}');
+select t.as(:'P2'); select t.ok((select sender_name from mail where sender is not null)='아린','유저 우편 보낸 이름은 서버가 채움');
+
+-- 정지
+select t.as(:'A',true); select admin_ban(:'P2', now()+interval '1 day','도배');
+select t.as(:'P2');
+select t.fail($$insert into chat_messages(channel,text) values ('lobby','도배')$$,'정지 중 채팅');
+select t.fail($$insert into feed_posts(text) values ('도배')$$,'정지 중 글쓰기');
+select t.as(:'A',true); select admin_ban(:'P2', null);
+select t.as(:'P2'); insert into chat_messages(channel,text) values ('lobby','풀렸다');
+select t.ok(true,'해제 후 채팅 가능');
+
+-- 낚시
+select t.as(:'P1'); insert into fish_catches(land,species,size_cm) values ('swamp','메기',41.5),('swamp','메기',55.0);
+select t.as(:'P2'); insert into fish_catches(land,species,size_cm) values ('swamp','잉어',48.2);
+select t.ok((select count(*) from fish_weekly where land='swamp')=2 and (select max(size_cm) from fish_weekly)=55.0,'주간 랭킹: 한 사람당 최고 기록');
+select t.fail($$insert into fish_catches(land,species,size_cm,week) values ('swamp','메기',99,'2020-01-06')$$,'지난 주 기록 끼워넣기');
+
+-- 행운권
+reset role; insert into lotto_draws(draw_key,draw_at,nums,drawn_at) values ('2026-11-06', now()+interval '6 day', null, null), ('2026-10-30', now()-interval '1 day', '{1,2,3,4}', now()-interval '1 day');
+set role authenticated;
+select t.as(:'P1'); insert into lotto_tickets(draw_key,nums) values ('2026-11-06','{1,2,3,4}');
+select t.fail($$insert into lotto_tickets(draw_key,nums) values ('2026-10-30','{1,2,3,4}')$$,'추첨 끝난 회차 구매');
+select t.fail($$insert into lotto_tickets(draw_key,nums) values ('2026-11-06','{1,2,3,12}')$$,'0–9 밖 숫자');
+select t.fail($$update lotto_tickets set rank=1$$,'당첨 등수 직접 수정');
+
+-- 운영 함수 · 문의 · 신고
+select t.fail($$select * from admin_players()$$,'유저가 회원 목록');
+select t.fail($$select admin_invite_create()$$,'유저가 초대코드 생성');
+insert into inquiries(cat,text) values ('버그','장비가 사라졌어요');
+insert into reports(target,kind,snapshot) values (:'P2','chat','도배');
+update inquiries set answer='셀프 답변';
+select t.ok((select answer is null from inquiries),'유저가 문의에 셀프 답변 불가');
+select t.as(:'A',true);
+select t.ok((select count(*) from admin_players())=4,'운영자 회원 목록');
+select t.ok(length(admin_invite_create(null,5,'테스트'))=8,'초대코드 자동 생성');
+update inquiries set answer='복구해 드렸습니다';
+select t.ok((select answered_by is not null from inquiries),'답변자·시각 자동 기록');
+update reports set done=true;
+select t.ok((select handled_at is not null from reports),'신고 처리자·시각 자동 기록');
+select t.ok((select count(*) from admin_log)>=4,'운영 기록(정지·해제·우편·초대코드)');
+reset role;
+select 'ALL TESTS PASSED';
