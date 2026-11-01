@@ -2208,3 +2208,6 @@ html,body{overflow-x:clip;max-width:100%}
 .panel::after,.skybar::after,.skilllist::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:none}
 /* 폰: 도움말 툴팁은 화면 가운데에(아이콘이 화면 아래쪽이면 툴팁이 화면 밖으로 잘리던 것) */
 @media (max-width:760px){.sky-tip{top:50%;bottom:auto;transform:translateY(-50%);margin:0 auto;max-height:80vh;overflow:auto}}
+/* 레이드 목록 화면(던전·파티 레이드·토벌전·만신전 탭)에서만 패널 위 다이아 없음.
+   실제 전투 화면(.arena)·이름표 앞 ◆(.lbl-d)·다른 화면은 그대로 (body[data-route]는 04-ui.js syncChatFab이 붙임) */
+body[data-route="battle"] #view:not(:has(.arena)) .panel::before{content:none}
