@@ -62,7 +62,8 @@
   - **메인·프론트 참고:** 서버 모드에서 `composeHTML`·`readCompose`·`mailDetail`과 `ACTS`의 `mc-send`·`mail-claim`·`mail-open`·`m-readall`·`mail-archive`·`m-del`·`mail-compose`·`mc-gift`를 `08-server.js`가 감싼다. 이 함수들의 이름·HTML 구조(`#mc-to`, `#mc-item`, `data-act="mc-send"`, `data-act="mail-archive"` 버튼)를 바꾸면 백엔드에 알려 주세요.
 - (체크) 2026-11-01 완료: `backend/schema-v1`(서버 콘텐츠 읽기·유저끼리 우편·007) 확인 후 `main`에 병합(충돌 없음). 실제 DB 임시 계정 2개로 선물 차감·한 번만 받기 확인(되돌림), 운영 페이지 46/46, 메인 전투 개편과 겹침 문제 없음, 게임 회귀 통과. 상세: `checks/2026-11-01-backend.md`.
   - ~~**백엔드 요청 (낮음):** 테스트 2개 정리 — `game-content` 23행 HP 438을 숫자 대신 접속 전 값과 비교(전투 개편으로 876), `game-mail` 56행에서 `cloudPush`도 막기(자동 저장 타이밍에 따라 실패).~~ → (백엔드) 둘 다 고침(덮기 전 값과 비교 · 자동 저장도 막음).
-- (백엔드) 2026-11-01 완료(**병합 보류 — 008 적용 대기**): **주간 행운권 서버 연결**(`08-server.js`, `supabase/008_lotto.sql`, 운영 페이지 '행운권' 탭). 구매·추첨·수령을 서버가 처리, 당첨 번호는 금 20:00 이후 서버가 무작위로(기존 `drawNums`는 날짜 공식이라 미래 번호를 미리 계산할 수 있었음). 테스트: SQL(시계 바꿔 끼움) · 브라우저 17개 · 기존 스위트 전부 통과.
+- (백엔드) 2026-11-01 완료(체크 대기): **주간 행운권 서버 연결**(`08-server.js`, `supabase/008_lotto.sql`, 운영 페이지 '행운권' 탭). 구매·추첨·수령을 서버가 처리, 당첨 번호는 금 20:00 이후 서버가 무작위로(기존 `drawNums`는 날짜 공식이라 미래 번호를 미리 계산할 수 있었음). 테스트: SQL(시계 바꿔 끼움) · 브라우저 17개 · 기존 스위트 전부 통과.
+  - **체크 요청:** `supabase/008_lotto.sql` Supabase 적용 완료(2026-11-01, 첫 회차 2026-11-06 금 20:00 KST·판매 마감 19:00 확인) → `backend/schema-v1`을 `main`에 합쳐도 됩니다. 확인 거리: LV10 이상 계정으로 행운권 2장 구매(200G씩 차감, 3장째 막힘). 추첨·수령은 금 20:00 이후에만 확인 가능 — 그 전엔 `supabase/tests/game-lotto/`(시계 바꿔 끼움)로 확인.
   - **메인 참고:** 서버 모드에서 `drawNums`와 `ACTS`의 `lotto-open`·`lotto-buy`·`lotto-claim`을 감싼다(카지노 LV 확인은 07-boot 감싸기를 그대로 거침). 가격·장수·상금(`LOTTO_PRICE`·`LOTTO_MAX`·`LOTTO_PRIZE`)을 바꾸면 `008_lotto.sql`도 바꿔야 하니 백엔드에 알려 주세요.
 
 ## 구조
