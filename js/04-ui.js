@@ -127,6 +127,7 @@ function syncChatFab(){
     b.insertAdjacentHTML('beforeend','<div id="chatbk" data-chatclose></div><button type="button" id="chatfab" aria-label="채팅 열기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 3.2h11.2v7.4H7.2L4 13.2v-2.6H2.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>채팅</span></button>');
   }
   const has=!!$('#view .chat-main');b.classList.toggle('has-chat',has);if(!has)b.classList.remove('chat-open');
+  syncFabBadge();
   b.dataset.route=S.route||'';
   const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(top.getBoundingClientRect().bottom)+'px');
   /* 모바일 전투: 하단에 붙는 행동 패널(fightMain의 .cmdbar) 높이만큼 채팅 버튼을 띄움 */
@@ -135,7 +136,7 @@ function syncChatFab(){
 }
 function setChatOpen(on){
   document.body.classList.toggle('chat-open',on);
-  if(on){const m=$('#view .chat-main [data-msgs]');if(m)m.scrollTop=m.scrollHeight;}
+  if(on){updateChats();renderTop();const m=$('#view .chat-main [data-msgs]');if(m)m.scrollTop=m.scrollHeight;}
   else{const a=document.activeElement;if(a&&a.closest&&a.closest('.chat-main'))a.blur();}
 }
 document.addEventListener('click',e=>{
@@ -461,9 +462,9 @@ function msgHTML(m){
 }
 function updateChats(){
   $$('[data-chatpanel]').forEach(p=>{
-    const lock=p.dataset.lock;const tab=lock||S.sel.chatTab;
-    if(tab==='world')S.unread.world=0;if(tab==='lobby')S.unread.lobby=0;if(tab==='party')S.unread.party=0;
-    if(tab==='dm'&&S.sel.dmWith){const t=dmState().threads[S.sel.dmWith];if(t)t.unread=0;}
+    const lock=p.dataset.lock;const tab=lock||S.sel.chatTab;const shown=chatShown(p);
+    if(shown){if(tab==='world')S.unread.world=0;if(tab==='lobby')S.unread.lobby=0;if(tab==='party')S.unread.party=0;
+    if(tab==='dm'&&S.sel.dmWith){const t=dmState().threads[S.sel.dmWith];if(t)t.unread=0;}}
     p.querySelector('[data-chathead]').innerHTML=chatHead(lock);
     const box=p.querySelector('[data-msgs]');const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
     if(box.dataset.view!==tab+(S.sel.dmWith||'')){box.dataset.view=tab+(S.sel.dmWith||'');box.dataset.init='';}
@@ -483,6 +484,7 @@ function updateChats(){
     inp.placeholder=tab==='raid'?'원정대에게 메시지 입력':tab==='world'?(isAdmin()?'메시지 입력':'월드는 운영자만 작성할 수 있습니다'):tab==='lobby'?((S.sel.lobbyCh==='party')?'파티원에게 메시지 입력':'전체 채팅에 메시지 입력'):tab==='party'?((S.sel.partyCh||'party')==='lobby'?'전체 채팅에 메시지 입력':'파티원에게 메시지 입력'):S.sel.dmWith?`${S.sel.dmWith}에게 1:1 메시지`:'대화할 상대를 먼저 고르세요';
   });
   renderTopBadges();
+  syncFabBadge();
 }
 function renderTopBadges(){const el=$('[data-online]');if(el)el.textContent=onlineCount();}
 let lastSend=0;
@@ -522,7 +524,11 @@ function botSay(ch,name,text){
   else if(ch==='whisper'){(S.chat.whisper[name]=S.chat.whisper[name]||[]).push(msg);if(!(visibleTab('whisper')&&S.sel.whisperTo===name)){S.unread.whisper[name]=(S.unread.whisper[name]||0)+1;toast(`${name}의 귓속말: ${text}`);playAlarm();}}
   updateChats();renderTop();save();
 }
-function visibleTab(t){return $$('[data-chatpanel]').some(p=>(p.dataset.lock||S.sel.chatTab)===t);}
+function chatShown(p){return !(innerWidth<=760&&p.classList&&p.classList.contains('chat-main')&&!document.body.classList.contains('chat-open'));}
+function visibleTab(t){return $$('[data-chatpanel]').some(p=>chatShown(p)&&(p.dataset.lock||S.sel.chatTab)===t);}
+function syncFabBadge(){const f=$('#chatfab');if(!f||!f.querySelector)return;let bd=f.querySelector('.fab-badge');const n=dmUnread();
+  if(!bd){f.insertAdjacentHTML('beforeend','<span class="badge fab-badge" style="position:absolute;top:-6px;right:-4px;margin:0" hidden></span>');bd=f.querySelector('.fab-badge');}
+  if(!bd)return;bd.hidden=!n;bd.textContent=n>99?'99+':String(n);if(f.setAttribute)f.setAttribute('aria-label',n?`채팅 열기 · 읽지 않은 1:1 대화 ${n}개`:'채팅 열기');}
 function sysParty(text){if(S.party){S.party.chat.push({id:uid('m'),sys:true,text,ts:now()});}}
 const timers=new Set();
 function later(ms,fn){const t=setTimeout(()=>{timers.delete(t);fn();},ms);timers.add(t);}
