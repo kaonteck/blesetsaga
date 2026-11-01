@@ -113,6 +113,7 @@ function wearDown(){const me=S.me;me.dura=me.dura||{};const broke=[];for(const s
 /* 버튼이 달린 알림(누르면 해당 동작 후 알림 닫힘). btns: [[라벨, data-act, {data-*}]] */
 function toastAct(text,btns,kind,ms){if(S&&S.settings&&S.settings.notify===false&&kind!=='bad')return;const box=$('#toasts');if(!box||!document.createElement)return;
   const el=document.createElement('div');el.className='toast tact '+(kind||'');const sp=document.createElement('span');sp.textContent=text;el.appendChild(sp);
+  const x=document.createElement('button');x.className='tact-x';x.dataset.act='toast-x';x.setAttribute('aria-label','알림 닫기');x.innerHTML='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';el.appendChild(x);
   const row=document.createElement('div');row.className='tact-b';(btns||[]).forEach(([l,act,data])=>{const b=document.createElement('button');b.className='btn btn-sm';b.textContent=l;b.dataset.act=act;b.dataset.toast='1';for(const k in (data||{}))b.dataset[k]=data[k];row.appendChild(b);});
   el.appendChild(row);box.appendChild(el);setTimeout(()=>el.remove(),ms||8000);}
 /* 보상으로 받은 장비 · [지금 착용] */

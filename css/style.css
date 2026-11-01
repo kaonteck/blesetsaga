@@ -2108,3 +2108,7 @@ html,body{overflow-x:clip;max-width:100%}
 .toast.tact{display:flex;flex-direction:column;gap:8px}
 .tact-b{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .wear-now{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.toast.tact{position:relative;padding-right:34px}
+.tact-x{position:absolute;top:6px;right:6px;width:22px;height:22px;display:grid;place-items:center;padding:0;border:0;border-radius:3px;background:transparent;color:var(--faint);cursor:pointer}
+.tact-x svg{width:12px;height:12px}
+.tact-x:hover,.tact-x:focus-visible{color:var(--silver);background:rgba(255,255,255,.06)}

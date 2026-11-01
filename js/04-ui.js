@@ -4,7 +4,7 @@
 function notify(text,kind){if(S&&S.settings&&S.settings.notify===false)return;toast(text,kind);playAlarm();}
 function toast(text,kind=''){
   const el=document.createElement('div');el.className='toast '+kind;el.textContent=text;$('#toasts').appendChild(el);
-  setTimeout(()=>el.remove(),4200);
+  setTimeout(()=>el.remove(),3000);
 }
 let NAV_OPEN=false;
 function go(route,sel){S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
@@ -130,7 +130,7 @@ function syncChatFab(){
   const has=!!$('#view .chat-main');b.classList.toggle('has-chat',has);if(!has)b.classList.remove('chat-open');
   syncFabBadge();
   b.dataset.route=S.route||'';
-  const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(top.getBoundingClientRect().bottom)+'px');
+  const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(Math.max(top.offsetHeight||0,top.getBoundingClientRect().bottom))+'px');
   /* 모바일 전투: 하단에 붙는 행동 패널(fightMain의 .cmdbar) 높이만큼 채팅 버튼을 띄움 */
   const bar=$('#fightmain > .cmdbar');
   b.style.setProperty('--cmdbar-h',bar&&innerWidth<=760?bar.offsetHeight+'px':'0px');
