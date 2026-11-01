@@ -2211,3 +2211,7 @@ html,body{overflow-x:clip;max-width:100%}
 /* 레이드 목록 화면(던전·파티 레이드·토벌전·만신전 탭)에서만 패널 위 다이아 없음.
    실제 전투 화면(.arena)·이름표 앞 ◆(.lbl-d)·다른 화면은 그대로 (body[data-route]는 04-ui.js syncChatFab이 붙임) */
 body[data-route="battle"] #view:not(:has(.arena)) .panel::before{content:none}
+
+/* 퀘스트 '완료 목록'(서브·데일리) 흐리게 — 마우스 올리거나 포커스하면 조금 진하게 */
+.qgrp:has(>.qgrp-h[data-k^="done_"]){opacity:.5;transition:opacity .15s}
+.qgrp:has(>.qgrp-h[data-k^="done_"]):is(:hover,:focus-within){opacity:.8}
