@@ -2129,3 +2129,6 @@ html,body{overflow-x:clip;max-width:100%}
 .exr-dun .exr-gh{position:relative;padding-right:26px}
 .exr-dun .exr-gh .dun-go{position:absolute;right:0;top:50%;transform:translateY(-50%);margin:0}
 @media (max-width:760px){.exr-dun .exr-gh .dun-go{top:2px;transform:none}}  /* 폰: 줄이 바뀌어도 이름 줄 오른쪽 끝 */
+
+/* 캐릭터 카드: 칭호를 아래로 내려 이름 바로 위에 붙임(이름 위치는 그대로) */
+.me-info > .title-chip{margin:6px 0 -6px;line-height:1.3}
