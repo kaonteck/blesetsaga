@@ -2038,3 +2038,23 @@ html,body{overflow-x:clip;max-width:100%}
 
 /* 마력 능력치 아이콘: 수정 결정, 청록 (HP 빨강 · 공격 금속 · 방어 파랑 · 행운 연보라와 구분) */
 .si-mag{color:var(--mag)}
+
+/* ── 탐색 지도 확대·이동 (04-ui.js initMapZoom) ── */
+.wm-stage{position:absolute;inset:0;z-index:1;transform-origin:0 0;will-change:transform}
+.wm-stage>img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}  /* 원래 .wmap>img 규칙을 감싼 뒤에도 적용 */
+.wm-stage.wm-anim{transition:transform .22s ease}
+.wmap{touch-action:pan-y}               /* 원래 크기: 세로 스와이프는 페이지 스크롤, 두 손가락은 지도 확대 */
+.wmap.zoomed{touch-action:none}         /* 확대 중: 스와이프는 지도 이동 */
+.wmap.zoomed .wm-stage{cursor:grab}
+.wmap.zoomed.dragging .wm-stage{cursor:grabbing}
+.wmap.dragging .mspot{pointer-events:none}
+.wm-zoom{position:absolute;right:3%;bottom:3%;z-index:5;display:flex;flex-direction:column;border:1px solid rgba(203,189,156,.35);border-radius:6px;overflow:hidden;background:rgba(14,15,18,.82);backdrop-filter:blur(4px);box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.wm-zoom button{width:34px;height:34px;display:grid;place-items:center;padding:0;border:0;border-top:1px solid rgba(203,189,156,.18);background:none;color:#d6cbb0;font-size:19px;line-height:1;cursor:pointer;font-family:var(--f-sys)}
+.wm-zoom button:first-child{border-top:0}
+.wm-zoom button svg{width:15px;height:15px}
+.wm-zoom button:hover:not(:disabled){background:rgba(214,203,176,.12);color:#fff}
+.wm-zoom button:disabled{color:rgba(214,203,176,.3);cursor:default}
+.wm-zoom button:focus-visible{outline:1px solid var(--gold-hi);outline-offset:-2px}
+@media (max-width:760px){.wm-zoom{right:auto;left:3%}.wm-zoom button{width:32px;height:32px;font-size:18px}}  /* 폰: 오른쪽 아래 채팅 버튼과 겹치지 않게 왼쪽 */
+@media (prefers-reduced-motion:reduce){.wm-stage.wm-anim{transition:none}}
+.wmap::after{z-index:2}
