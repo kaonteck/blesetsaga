@@ -378,6 +378,7 @@ function advNoticeHTML(){const me=S.me,c=CLASSES[me.job],o=ADV_ORIGIN[me.job];
 function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S.route==='battle')return;const c=CLASSES[me.job];if(c.tier!==1||me.level<cfg().jobAdvanceLevel)return;
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
+  if(S.feed&&!S.feedNoImg){S.feed.forEach(p=>{delete p.img;});if(S.sel)delete S.sel.fdImg;S.feedNoImg=1;ch=true;}
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
   if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
@@ -775,23 +776,20 @@ function postHTML(p){
   const open=S.sel.fdOpen&&S.sel.fdOpen[p.id];const cm=p.comments||[];const shown=open?cm:cm.slice(-2);
   const cnt=cm.reduce((a,c)=>a+1+(c.replies||[]).length,0);
   return `<article class="panel fd-post"><header class="fd-h">${avatar(p.author)}<div class="fd-hb">${nameBtn(p.author)}<small class="faint">${CLASSES[pInfo(p.author).job]?CLASSES[pInfo(p.author).job].name:''} · ${fmtWhen(p.ts)}</small></div>${p.author===S.me.name?`<button class="fd-lnk fd-del" data-act="fd-del" data-id="${p.id}">삭제</button>`:''}</header>
-    ${p.text?`<p class="fd-text">${richText(p.text)}</p>`:''}${p.img?`<img class="fd-img" src="${p.img}" alt="첨부 사진" data-act="fd-zoom" data-id="${p.id}">`:''}
+    ${p.text?`<p class="fd-text">${richText(p.text)}</p>`:''}
     <div class="fd-bar">${likeBtn('p',p.id,p.likes)}<span class="fd-cc"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 3.6c0-.8.6-1.4 1.4-1.4h8.4c.8 0 1.4.6 1.4 1.4v6c0 .8-.6 1.4-1.4 1.4H7l-3.2 2.6V11h-.2c-.8 0-1.4-.6-1.4-1.4z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>${cnt||''}</span>${p.likes.length?`<small class="faint fd-lk">${esc(p.likes.slice(-2).join(', '))}${p.likes.length>2?` 외 ${p.likes.length-2}명`:''}님이 좋아합니다</small>`:''}</div>
     ${cm.length>2&&!open?`<button class="fd-lnk fd-more" data-act="fd-more" data-id="${p.id}">댓글 ${cm.length}개 모두 보기</button>`:''}
     <div class="fd-cs">${shown.map(c=>commentHTML(p,c)).join('')}</div>
     <form class="fd-cform" data-form="fd-comment" data-post="${p.id}">${avatar(S.me.name,'xs')}<input type="text" id="fdc-${p.id}" maxlength="150" placeholder="댓글 달기…" autocomplete="off">${emojiBtn('fdc-'+p.id)}<button class="chat-send" type="submit">등록</button></form></article>`;
 }
 function vCommunity(){
-  const F=feed().slice().sort((a,b)=>b.ts-a.ts);const img=S.sel.fdImg;
+  const F=feed().slice().sort((a,b)=>b.ts-a.ts);
   return `<div class="wrap page"><div class="page-head"><div><h2>커뮤니티<small class="en">Community</small></h2></div></div>
     <form class="panel fd-compose" data-form="fd-post"><div class="fd-cp">${avatar(S.me.name)}<textarea id="fd-text" maxlength="300" rows="3" placeholder="무슨 일이 있었나요? 블레서들과 이야기를 나눠 보세요.">${esc(S.sel.fdDraft||'')}</textarea></div>
-      ${img?`<div class="fd-prev"><img src="${img}" alt=""><button type="button" class="ibtn sm" data-act="fd-img-x" aria-label="사진 빼기">✕</button></div>`:''}
-      <div class="fd-tools"><label class="fd-tool" title="사진 첨부"><input type="file" accept="image/*" data-act-change="fd-img" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.8" y="3" width="12.4" height="10" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="5.6" cy="6.6" r="1.3" fill="currentColor"/><path d="M2.4 12l3.8-3.6 2.6 2.4 2-1.8 3 3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>사진</label>${emojiBtn('fd-text')}<span class="faint num fd-count" id="fd-count">${(S.sel.fdDraft||'').length}/300</span><button class="btn btn-sm btn-primary" type="submit">게시</button></div></form>
+      <div class="fd-tools">${emojiBtn('fd-text')}<span class="faint num fd-count" id="fd-count">${(S.sel.fdDraft||'').length}/300</span><button class="btn btn-sm btn-primary" type="submit">게시</button></div></form>
     <div class="fd-list">${F.map(postHTML).join('')}</div></div>`;
 }
 function fdFind(kind,id){for(const p of feed()){if(kind==='p'&&p.id===id)return p;for(const c of p.comments||[]){if(kind==='c'&&c.id===id)return c;for(const r of c.replies||[])if(kind==='r'&&r.id===id)return r;}}return null;}
-function fdImg(file){const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const W=Math.min(720,im.width);const H=Math.round(im.height*W/im.width);const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);
-  let q=0.82,u=c.toDataURL('image/jpeg',q);while(u.length>260000&&q>0.4){q-=0.1;u=c.toDataURL('image/jpeg',q);}S.sel.fdDraft=($('#fd-text')||{}).value||S.sel.fdDraft||'';S.sel.fdImg=u;render();};im.src=rd.result;};rd.readAsDataURL(file);}
 function fdBotReact(p){const pool=S.bots.filter(b=>b.online&&b.name!==p.author);
   for(let i=0;i<Math.floor(Math.random()*4)+1;i++)later(rnd(2000,9000),()=>{const b=pick(pool);if(b&&!p.likes.includes(b.name)){p.likes.push(b.name);save();if(S.route==='community')render();}});
   if(Math.random()<0.75)later(rnd(5000,14000),()=>{const b=pick(pool);if(!b)return;p.comments.push({id:uid('fc'),author:b.name,text:pick(['오 멋져요! 👍','ㅋㅋㅋㅋ 공감합니다','저도 어제 그랬어요 😂','부럽다… ✨','다음에 같이 가요!','이거 진짜예요?? 🤔','사진 미쳤다 🔥','블레서님 최고 💯']),ts:now(),likes:[],replies:[]});save();if(S.route==='community')render();notify(`${b.name}님이 내 글에 댓글을 남겼습니다.`);});}

@@ -21,7 +21,6 @@ document.addEventListener('change',e=>{if(!S)return;
   if(el.dataset.actChange==='rodsel'){S.me.rodSel=el.value;save();render();}
   if(el.dataset.actChange==='whisperto'){S.sel.whisperTo=el.value;updateChats();save();}
   if(el.dataset.actChange==='cropfile'&&el.files&&el.files[0])cropFile(el.files[0]);
-  if(el.dataset.actChange==='fd-img'&&el.files&&el.files[0])fdImg(el.files[0]);
 });
 document.addEventListener('submit',e=>{if(!S)return;
   const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();
@@ -50,7 +49,7 @@ document.addEventListener('submit',e=>{if(!S)return;
     if(ex){Object.assign(ex,{price,stock:st===''?null:Math.max(0,Math.round(+st))});}else market().push({id:uid('mk'),item,price,stock:st===''?null:Math.max(0,Math.round(+st))});
     logChange('거래소',[{field:ITEMS[item].name,before:ex?'수정':undefined,after:`${price}`}]);save();render();toast('거래소에 등록했습니다.','good');return;}
   if(k==='bond-dday'){const b=bondOf(f.dataset.name);const v=$('#dd-in').value;if(b){if(v)b.dday=v;else delete b.dday;}S.sel.ddEdit=null;save();render();return;}
-  if(k==='fd-post'){const t=($('#fd-text').value||'').trim();if(!t&&!S.sel.fdImg){toast('내용이나 사진을 넣어 주세요.','warn');return;}const p={id:uid('fd'),author:S.me.name,text:t.slice(0,300),img:S.sel.fdImg||null,ts:now(),likes:[],comments:[]};feed().unshift(p);S.feed=S.feed.slice(0,60);S.sel.fdImg=null;S.sel.fdDraft='';S.sel.emoFor=null;bump('posts');save();render();toast('글을 게시했습니다.','good');fdBotReact(p);return;}
+  if(k==='fd-post'){const t=($('#fd-text').value||'').trim();if(!t){toast('내용을 적어 주세요.','warn');return;}const p={id:uid('fd'),author:S.me.name,text:t.slice(0,300),ts:now(),likes:[],comments:[]};feed().unshift(p);S.feed=S.feed.slice(0,60);S.sel.fdDraft='';S.sel.emoFor=null;bump('posts');save();render();toast('글을 게시했습니다.','good');fdBotReact(p);return;}
   if(k==='fd-comment'){const p=fdFind('p',f.dataset.post);const i=$('#fdc-'+f.dataset.post);const t=(i&&i.value||'').trim();if(!p||!t)return;p.comments.push({id:uid('fc'),author:S.me.name,text:t.slice(0,150),ts:now(),likes:[],replies:[]});S.sel.fdOpen=S.sel.fdOpen||{};S.sel.fdOpen[p.id]=true;S.sel.emoFor=null;save();render();return;}
   if(k==='fd-reply'){const c=fdFind('c',f.dataset.cid);const i=$('#fdi-'+f.dataset.cid);const t=(i&&i.value||'').trim();if(!c||!t)return;c.replies=c.replies||[];c.replies.push({id:uid('fr'),author:S.me.name,text:t.slice(0,150),ts:now(),likes:[]});S.sel.fdReply=null;S.sel.emoFor=null;save();render();
     if(c.author!==S.me.name&&bot(c.author))later(rnd(4000,10000),()=>{c.replies.push({id:uid('fr'),author:c.author,text:pick(['ㅋㅋㅋ 그러게요','감사합니다 😊','맞아요 맞아요!','오 그건 몰랐네요 🤔','다음에 같이 해요 👍']),ts:now(),likes:[]});save();if(S.route==='community')render();notify(`${c.author}님이 답글을 남겼습니다.`);});return;}
@@ -316,8 +315,6 @@ const ACTS={
   'fd-reply':d=>{S.sel.fdReply=S.sel.fdReply===d.id?null:d.id;S.sel.emoFor=null;render();const i=$('#fdi-'+d.id);if(i)i.focus();},
   'fd-more':d=>{S.sel.fdOpen=S.sel.fdOpen||{};S.sel.fdOpen[d.id]=true;render();},
   'fd-del':d=>{S.feed=feed().filter(p=>p.id!==d.id);save();render();toast('글을 삭제했습니다.');},
-  'fd-img-x':()=>{S.sel.fdDraft=($('#fd-text')||{}).value||'';S.sel.fdImg=null;render();},
-  'fd-zoom':d=>{const p=fdFind('p',d.id);if(!p||!p.img)return;modal(`<button class="ibtn sm md-x" data-act="closemodal" aria-label="닫기">✕</button><img src="${p.img}" alt="" style="width:100%;border-radius:3px">`);},
   'emo-open':d=>{const ta=$('#'+d.t);if(d.t==='fd-text'&&ta)S.sel.fdDraft=ta.value;const keep={};$$('.fd-cform input').forEach(x=>keep[x.id]=x.value);S.sel.emoFor=S.sel.emoFor===d.t?null:d.t;render();for(const id in keep){const x=$('#'+id);if(x)x.value=keep[id];}},
   'emo-put':d=>{const el=$('#'+d.t);if(!el)return;const foc=document.activeElement===el;const st=foc?el.selectionStart:el.value.length,en=foc?el.selectionEnd:el.value.length;el.value=el.value.slice(0,st)+d.e+el.value.slice(en);el.focus();el.selectionStart=el.selectionEnd=st+d.e.length;if(d.t==='fd-text'){S.sel.fdDraft=el.value;const c=$('#fd-count');if(c)c.textContent=el.value.length+'/300';}},
   ctab:d=>{S.sel.ctab=d.tab;render();},
