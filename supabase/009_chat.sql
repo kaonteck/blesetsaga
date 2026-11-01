@@ -31,6 +31,10 @@ create trigger chat_rate before insert on public.chat_messages for each row exec
 drop trigger if exists dm_rate on public.direct_messages;
 create trigger dm_rate before insert on public.direct_messages for each row execute function private.chat_rate_limit();
 
+-- ── (함께) 프로필 상태에 '식사 중(meal)' 추가 — 게임 STATUS에 새로 생김(메인, 2026-11-01) ──
+alter table public.profiles drop constraint if exists profiles_status_check;
+alter table public.profiles add constraint profiles_status_check check (status in ('online','away','raid','meal','offline'));
+
 -- ── (함께) 행운권 수령 오류 이름 정리 — 체크 요청 ──
 -- 남의 것·없는 행운권을 받으려 할 때 ALREADY_CLAIMED 대신 NOT_FOUND. 동작은 같다.
 create or replace function public.claim_lotto(p_id uuid)

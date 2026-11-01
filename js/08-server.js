@@ -168,7 +168,7 @@ window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?
 let pfLast='',pfAt=0,pfNameWarned=false,pfBusy=false;
 async function pfSync(status){
   if(!SB||!SB_UID||!S||!S.me||pfBusy)return;
-  const st=status||(['online','away','raid','offline'].includes(S.me.status)?S.me.status:'online');
+  const st=status||(['online','away','raid','meal','offline'].includes(S.me.status)?S.me.status:'online');
   const row={name:S.me.name||null,job:S.me.job||null,level:S.me.level||1,title:(S.titles&&S.titles.equip)||null,memo:(S.me.memo||'').slice(0,40)||null,status:st,last_seen:new Date().toISOString()};
   const key=JSON.stringify({...row,last_seen:0});if(!status&&key===pfLast&&Date.now()-pfAt<120000)return;
   pfBusy=true;
