@@ -779,6 +779,7 @@ function grant(reward,source,meta){
   S.rewardLog.unshift({ts:now(),source,...meta,exp:reward.exp||0,gold:reward.gold||0,items:{...(reward.items||{})}});
   S.rewardLog=S.rewardLog.slice(0,200);
   if(ups)toast(`레벨 업! LV${S.me.level}`,'good');
+  if(!(meta&&meta.battleId))wearNowToast(reward.items);
   return ups;
 }
 function itemsText(items){const e=Object.entries(items||{}).filter(([,n])=>n>0);return e.length?e.map(([k,n])=>k==='_gold'?`${n}골드`:`${ITEMS[k]?ITEMS[k].name:k}${n>1?' ×'+n:''}`).join(', '):'';}

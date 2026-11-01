@@ -805,14 +805,14 @@ function outcomeHTML(b){
   const back={quest:'퀘스트로 돌아가기',field:'탐색으로 돌아가기'}[ctx.type]||'레이드로 돌아가기';
   if(ctx.type==='mass')return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre><h2>${win?'만신전 성공':'만신전 실패'}</h2>
     <p class="muted">${win?`${b.players.length}인 원정대가 ${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:`${esc(b.mon.name)}을(를) 쓰러뜨리지 못했습니다. 이번 이벤트는 종료되었습니다.`}</p>
-    ${r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">${win?'참여 + 처치 보상':'참여 보상'}</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}</div>`:'<p class="reason">직접 행동을 제출하지 않아 보상 대상에서 제외되었습니다.</p>'}
+    ${r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">${win?'참여 + 처치 보상':'참여 보상'}</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}${wearNowHTML(r.items)}</div>`:'<p class="reason">직접 행동을 제출하지 않아 보상 대상에서 제외되었습니다.</p>'}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
   if(ctx.type==='quest')return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre><h2>${win?'승리':'패배'}</h2>
     <p class="muted">${win?`${esc(b.mon.name)}을(를) 쓰러뜨렸습니다. 퀘스트로 돌아가 이야기를 이어 가세요.`:'쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.'}</p><button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
   return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre>
     <h2>${win?'승리':b.over==='abandon'?'전투 종료':'패배'}</h2>
     <p class="muted">${win?`${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
-    ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
+    ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}${wearNowHTML(r.items)}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
 }
 function dmgRank(b){const L=b.players.slice().sort((x,y)=>y.dealt-x.dealt||x.name.localeCompare(y.name,'ko'));const top=Math.max(1,L[0]?L[0].dealt:1);const tot=L.reduce((a,p)=>a+p.dealt,0);
@@ -1200,7 +1200,7 @@ function doResolve(){
 function finishBattle(b){
   if(S.claimedB[b.id]){return;}
   S.claimedB[b.id]=true;
-  const me=b.players.find(p=>p.isMe);if(me){wearDown();hpAfter(b,me);}const ctx=b.ctx||{};let blocked='';
+  const me=b.players.find(p=>p.isMe);if(me){if(HP_KEEP.includes((b.ctx||{}).type))wearDown();hpAfter(b,me);}const ctx=b.ctx||{};let blocked='';
   if(b.over==='win'&&ctx.type==='weekly'&&weekly().done[b.monsterId])blocked='이번 주 토벌 보상은 이미 받았습니다. 매주 월요일 05:00에 초기화됩니다.';
   if(b.over==='win'&&ctx.type==='event'&&ctx.ev&&(S.eventDone||{})[ctx.ev])blocked='이번 출현의 보상은 이미 받았습니다.';
   const r={eligible:b.over==='win'&&me.direct>=1&&!blocked&&ctx.type!=='quest',exp:0,gold:0,items:{},blocked};

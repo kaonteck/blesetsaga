@@ -93,23 +93,32 @@ function hpSet(p){const m=S.me;if(!m)return;p=Math.max(0,Math.min(1,p));if(p>=1)
 function hpFull(){hpSet(1);}
 function hpStart(mf){if(mf)mf.hp=Math.max(1,Math.round(mf.maxHp*hpNow()));}
 function hpAfter(b,me){if(!me||!HP_KEEP.includes((b.ctx||{}).type))return;hpSet(me.dead?0:me.hp/me.maxHp);}
-/* 입장 전 경고: 체력 30% 미만(레이드류) · 장착 장비 내구도 0(모든 전투) */
+/* 입장 전 경고(레이드류만): 체력 30% 미만 · 장착 장비 내구도 0 */
 function brokenGear(){return [...new Set(Object.values(S.me.equip||{}))].filter(id=>id&&ITEMS[id]&&dura(id)<=0).map(id=>ITEMS[id].name);}
 let GATE=null;
 function entryGate(k,d,raid){
-  if(d&&d._gate)return false;
+  if(d&&d._gate)return false;if(!raid)return false;
   const warn=[];const hp=hpNow();
   if(raid&&hp<HP_WARN)warn.push(`체력이 30% 미만입니다. <span class="faint num">(현재 ${Math.floor(hp*100)}%)</span>`);
   brokenGear().forEach(n=>warn.push(`${esc(n)}의 내구도가 0입니다.`));
   if(!warn.length)return false;
   GATE={k,d:{...d}};
   modal(`<div class="ndlg gate-dlg"><h3>입장 전 확인</h3><ul class="gate-l">${warn.map(w=>`<li>${w}</li>`).join('')}</ul>
-    <p class="faint" style="font-size:12.5px">${hp<HP_WARN&&raid?'체력은 시간이 지나면 천천히 차오르고, 레벨 업하면 가득 찹니다. ':''}${brokenGear().length?'내구도가 0인 장비는 장착돼 있어도 능력치가 적용되지 않습니다. 대장간에서 수리할 수 있습니다.':''}</p>
-    <div class="row" style="justify-content:flex-end"><button class="btn btn-ghost" data-act="closemodal">취소</button><button class="btn btn-primary" data-act="gate-go">그래도 입장</button></div></div>`);
+    <p class="faint" style="font-size:12.5px">${hp<HP_WARN&&raid?'체력은 시간이 지나면 천천히 차오르고, 레벨 업하면 가득 찹니다. ':''}${brokenGear().length?'내구도가 0인 장비는 장착돼 있어도 능력치가 적용되지 않습니다. 수리는 골드만 내면 바로 끝납니다.':''}</p>
+    <div class="row" style="justify-content:flex-end">${brokenGear().length?'<button class="btn" data-act="repair-open">수리하기</button>':''}<button class="btn btn-ghost" data-act="closemodal">취소</button><button class="btn btn-primary" data-act="gate-go">그래도 입장</button></div></div>`);
   return true;
 }
 function wearDown(){const me=S.me;me.dura=me.dura||{};const broke=[];for(const sl in (me.equip||{})){const id=me.equip[sl];if(!id||!ITEMS[id])continue;const d=dura(id);if(d>0){me.dura[id]=d-1;if(d-1===0)broke.push(ITEMS[id].name);}}
-  if(broke.length)setTimeout(()=>notify(`${broke.join(', ')}의 내구도가 0이 되어 능력치가 적용되지 않습니다. 제작/수리하기에서 수리하세요.`),0);}
+  if(broke.length)setTimeout(()=>{toastAct(`${broke.join(', ')}의 내구도가 0이 되어 능력치가 적용되지 않습니다.`,[['수리하기','repair-open']],'bad',9000);playAlarm();},0);}
+/* 버튼이 달린 알림(누르면 해당 동작 후 알림 닫힘). btns: [[라벨, data-act, {data-*}]] */
+function toastAct(text,btns,kind,ms){if(S&&S.settings&&S.settings.notify===false&&kind!=='bad')return;const box=$('#toasts');if(!box||!document.createElement)return;
+  const el=document.createElement('div');el.className='toast tact '+(kind||'');const sp=document.createElement('span');sp.textContent=text;el.appendChild(sp);
+  const row=document.createElement('div');row.className='tact-b';(btns||[]).forEach(([l,act,data])=>{const b=document.createElement('button');b.className='btn btn-sm';b.textContent=l;b.dataset.act=act;b.dataset.toast='1';for(const k in (data||{}))b.dataset[k]=data[k];row.appendChild(b);});
+  el.appendChild(row);box.appendChild(el);setTimeout(()=>el.remove(),ms||8000);}
+/* 보상으로 받은 장비 · [지금 착용] */
+function wearable(items){return Object.keys(items||{}).filter(k=>{const it=ITEMS[k];return it&&it.type==='equip'&&items[k]>0&&S.me.inv[k]>0&&S.me.equip[it.slot]!==k&&!itemBlock(k);});}
+function wearNowHTML(items){const L=wearable(items);return L.length?`<div class="wear-now">${L.map(k=>`<button class="btn btn-sm btn-primary" data-act="eq-now" data-id="${k}">${esc(ITEMS[k].name)} 지금 착용</button>`).join('')}</div>`:'';}
+function wearNowToast(items){const L=wearable(items).slice(0,2);if(!L.length)return;toastAct(`새 장비 획득 · ${L.map(k=>ITEMS[k].name).join(', ')}`,L.map(k=>[`${ITEMS[k].name} 지금 착용`,'eq-now',{id:k}]),'good',9000);}
 function matLine(mats,mult){return Object.entries(mats).map(([k,n])=>{const have=matCount(k);const need=n*(mult||1);return `<span class="cm ${have>=need?'ok':'no'}">${esc(k==='fish'?'손질한 생선(종류 무관)':ITEMS[k]?ITEMS[k].name:k)} <b class="num">${have}/${need}</b></span>`;}).join('');}
 function filletIds(){return Object.keys(S.me.inv).filter(k=>k.startsWith('fl_')&&S.me.inv[k]>0);}
 function matCount(k){if(k!=='fish')return S.me.inv[k]||0;return (S.me.inv.fish||0)+filletIds().reduce((a,x)=>a+S.me.inv[x],0);}
@@ -152,19 +161,19 @@ function recipeRow(kind,r){
 }
 function repairList(){
   const ids=[...new Set([...Object.values(S.me.equip||{}).filter(Boolean),...Object.keys(S.me.inv).filter(k=>ITEMS[k]&&ITEMS[k].type==='equip'&&S.me.inv[k]>0)])].filter(k=>ITEMS[k]);
-  const busy=!!cjobs().repair;
+  const busy=false;
   if(!ids.length)return '<p class="empty">수리할 장비가 없습니다.</p>';
   return ids.map(id=>{const d=dura(id),miss=DURA_MAX-d,cost=repairCost(id,miss),on=Object.values(S.me.equip||{}).includes(id);
     return `<div class="cr"><div class="cr-t"><b>${esc(ITEMS[id].name)}</b>${on?'<span class="chip warn">착용 중</span>':''}<span class="faint">장비 레벨 ${itemLv(id)}</span></div>
       <div class="dura"><div class="dura-bar ${d===0?'broken':d<=Math.ceil(DURA_MAX*0.2)?'low':''}">${Array.from({length:10},(_,i)=>`<i class="${i<Math.ceil(d/DURA_MAX*10)?'on':''}"></i>`).join('')}</div><span class="num">${d}/${DURA_MAX}${d===0?' · 파손 (장착은 되지만 능력치 미적용)':''}</span></div>
-      ${miss?`<small class="faint">수리 비용 ${goldHTML(cost)} · 수리 시간 ${durLabel2(miss)}</small>`:'<small class="faint">내구도가 가득 차 있습니다</small>'}
+      ${miss?`<small class="faint">수리 비용 ${goldHTML(cost)} · 즉시 완료</small>`:'<small class="faint">내구도가 가득 차 있습니다</small>'}
       <div class="row cj-act"><button class="btn btn-sm ${miss&&!busy&&S.me.gold>=cost?'btn-primary':''}" data-act="cj-repair" data-id="${id}" ${!miss||busy||S.me.gold<cost?'disabled':''}>${!miss?'수리 불필요':busy?'수리 중인 장비가 있습니다':S.me.gold<cost?'골드 부족':'수리하기'}</button></div></div>`;}).join('');
 }
 function craftHTML(kind,tab){
   const P=PROF[kind];const p=prof(kind);tab=kind==='craft'&&tab==='repair'?'repair':'make';
   const head=`<div class="row" style="justify-content:space-between;align-items:center"><h3 class="cf-h">${P.btn}${p.rank?`<span class="rank-chip">${P.job} ${p.rank}급 · ${P.short[5-p.rank]}</span>`:''}</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>`;
   const tabs=kind==='craft'?`<div class="mtabs cf-tabs" role="tablist">${[['make','제작'],['repair','수리']].map(([k,l])=>`<button role="tab" data-act="cf-tab" data-kind="craft" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
-  if(tab==='repair')return `${head}${tabs}<p class="faint cf-note">전투를 한 번 치를 때마다 착용 중인 장비의 내구도가 1씩 줄어듭니다(최대 10). 0이 되면 장비 능력치가 적용되지 않습니다. 수리는 재료 대신 골드가 들고, 장비 레벨이 높을수록 비쌉니다.</p>${jobBox('repair')}<div class="cr-list">${repairList()}</div>`;
+  if(tab==='repair')return `${head}${tabs}<p class="faint cf-note">레이드(던전 · 파티 레이드 · 토벌전 · 만신전) 전투를 한 번 치를 때마다 착용 중인 장비의 내구도가 1씩 줄어듭니다(최대 ${DURA_MAX}). 필드 사냥과 퀘스트 전투에서는 줄지 않습니다. 0이 되면 장비 능력치가 적용되지 않습니다. 수리는 골드만 내면 바로 끝나고, 장비 레벨이 높을수록 비쌉니다.</p>${jobBox('repair')}<div class="cr-list">${repairList()}</div>`;
   const rn=guildRain(kind)?`<p class="wdb-note">☔ ${PROF[kind].job} 길드 본진(${LANDS[GUILD_HQ[kind]]})에 비가 내립니다 · 오늘 ${PROF[kind].n} 실패 확률 +5%</p>`:'';
   return `${head}${tabs}${rn}${profQuestBox(kind)}${jobBox(kind)}<div class="cr-list">${RECIPES[kind].map(r=>recipeRow(kind,recipe(kind,r[0]))).join('')}</div>`;
 }
@@ -407,6 +416,7 @@ function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.feed&&!S.feedNoImg){S.feed.forEach(p=>{delete p.img;});if(S.sel)delete S.sel.fdImg;S.feedNoImg=1;ch=true;}
   if(S.me&&S.me.status==='offline'){S.me.status='meal';ch=true;}
+  if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
   if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
@@ -1086,6 +1096,10 @@ function ngStory(){const me=S.me,c=CLASSES[me.job];
   for(const q of ep){const st=questStatus(q);if(st==='done'||st==='hidden')continue;
     if(st==='locked'){const r=lockReason(q);return {t:'메인 스토리',v:q.title,s:r||'잠김',lock:true,act:`data-act="openquest" data-id="${q.id}"`};}
     return {t:'메인 스토리',v:q.title,s:st==='available'?'수락할 수 있음':st==='claim'?'보상 받기':'진행 중',act:`data-act="openquest" data-id="${q.id}"`};}
+  if(c.tier===1&&me.level<cfg().jobAdvanceLevel){const AL=cfg().jobAdvanceLevel,O=ADV_ORIGIN[me.job];
+    const top=k=>S.data.monsters.filter(m=>m.published&&mkind(m)===k&&!levelReason(m,me.level)).sort((a,b)=>b.level-a.level)[0];
+    const pr=top('party'),dg=top('dungeon');const rec=[pr&&`파티 레이드 ${pr.name}`,dg&&`던전 ${dg.region}`].filter(Boolean).join(' · ');
+    return {t:'전직 준비',v:`LV${AL} 전직 시련${O?` · ${O.place}`:''}`,s:`${LV_LEFT(AL)}${rec?` · 추천 ${rec}`:''}`,act:`data-act="ng-raid" data-tab="${pr?'daily':'dungeon'}"`};}
   return {t:'메인 스토리',v:'다음 이야기를 준비 중입니다',s:'곧 업데이트',lock:true};}
 function ngHunt(){const L=S.me.level;let land=null;
   for(const k of landOrder()){const b=LAND_BAND[k];const r=EXPLORE.find(x=>x.id===k);if(!b||!r)continue;if(L>=b[0]&&!landLock(r))land=k;}
