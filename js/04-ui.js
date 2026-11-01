@@ -944,7 +944,7 @@ function userInfo(){
   const me=S.me,st=myStats(),base=statsFor(me.job,me.level,{});
   const need=expNeed(me.level),cap=me.level>=cfg().levelCap,p=cap?100:pct(me.exp,need),left=Math.max(0,need-me.exp);
   const row=(k,v)=>`<div class="ui-row"><dt>${k}</dt><dd>${v}</dd></div>`;
-  const statRow=k=>{const eq=st[k]-base[k];const ib=itemBonus(k);return `<div class="ui-row"><dt><span class="si si-${k} inl">${ICON[k]}</span> ${STATK[k]}</dt><dd><div class="ui-stat num"><b>${st[k]+ib}</b><span class="ui-base" tabindex="0" data-tip="기본 ${STATK[k]}" aria-label="기본 ${STATK[k]} ${base[k]}">${base[k]}</span>${eq?`<span class="bpill eqb" tabindex="0" data-tip="${esc(eqBreak(k))}" aria-label="장비 보너스 ${eq}">${eq>0?'+':''}${eq}</span>`:''}${ib?`<span class="bpill itb" tabindex="0" data-tip="${esc(ibBreak(k))}" aria-label="아이템 보너스 ${ib}">${ib>0?'+':''}${ib}</span>`:''}</div>${k==='maxHp'?`<div class="hpgauge" role="img" aria-label="HP ${st.maxHp} / ${st.maxHp}"><i style="width:100%"></i><span class="num">${st.maxHp} / ${st.maxHp}</span></div>`:''}</dd></div>`;};
+  const statRow=k=>{const eq=st[k]-base[k];const ib=itemBonus(k);return `<div class="ui-row"><dt><span class="si si-${k} inl">${ICON[k]}</span> ${STATK[k]}</dt><dd><div class="ui-stat num"><b>${st[k]+ib}</b><span class="ui-base" tabindex="0" data-tip="기본 ${STATK[k]}" aria-label="기본 ${STATK[k]} ${base[k]}">${base[k]}</span>${eq?`<span class="bpill eqb" tabindex="0" data-tip="${esc(eqBreak(k))}" aria-label="장비 보너스 ${eq}">${eq>0?'+':''}${eq}</span>`:''}${ib?`<span class="bpill itb" tabindex="0" data-tip="${esc(ibBreak(k))}" aria-label="아이템 보너스 ${ib}">${ib>0?'+':''}${ib}</span>`:''}</div>${k==='maxHp'?(()=>{const mx=st.maxHp+ib,p=hpNow(),cur=Math.round(mx*p);return `<div class="hpgauge ${p<HP_WARN?'low':''}" role="img" aria-label="HP ${cur} / ${mx}"><i style="width:${Math.round(p*100)}%"></i><span class="num">${cur} / ${mx}</span></div>`;})():''}</dd></div>`;};
   return `<div class="panel ctop-info"><dl class="uinfo-list">
     ${row('이름',S.sel.nameEdit?`<form class="ui-nameedit" data-form="rename"><input type="text" id="rn-name" maxlength="10" value="${esc(me.name)}" aria-label="새 이름 (2~10자)"><button class="btn btn-sm btn-primary" type="submit">저장</button><button class="btn btn-sm btn-ghost" type="button" data-act="rn-cancel">취소</button></form>`:`<span class="row" style="gap:6px"><b class="ui-name">${esc(me.name)}</b><button class="ibtn sm" data-act="rn-start" data-tip="이름 수정" aria-label="이름 수정">${TICON.pen}</button></span>`)}
     ${row('클래스',`<span class="row" style="gap:8px">${roleChip(me.job)}${CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel?'<button class="btn btn-sm" data-act="adv-open">전직</button>':''}</span>`)}
@@ -1172,11 +1172,11 @@ function showMatch(){
 /* ───────── 동작 ───────── */
 function startBattle(){
   const p=S.party,m=monster(p.monsterId);
-  if(mkind(m)==='dungeon'){S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:1,mobs:{},log:[],start:now(),party:p.members.map(x=>({name:x.name,job:x.job,level:x.level,isMe:!!x.isMe}))};
+  if(mkind(m)==='dungeon'){S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now(),party:p.members.map(x=>({name:x.name,job:x.job,level:x.level,isMe:!!x.isMe}))};
     p.members.forEach(x=>{const bb=bot(x.name);if(bb)bb.status='battle';});S.party=null;S.sel.monster=null;S.route='battle';save();render();toast(`${m.region} 입장 · 파티 ${S.drun.party.length}인 · 5페이즈 탐사`,'good');return;}
   const members=p.members.map(x=>x.isMe?{id:'me',name:S.me.name,job:S.me.job,level:S.me.level,equip:effEquip(),isMe:true,enh:S.me.enh}:{id:x.name,name:x.name,job:x.job,level:x.level,equip:{}});
   const b=createBattle(m,members,Math.random,cfg());
-  {const mf=b.players.find(x=>x.isMe);if(mf)['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});}
+  {const mf=b.players.find(x=>x.isMe);if(mf)['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});hpStart(mf);}
   b.ctx={type:mkind(m)};if(mkind(m)==='party')daily().raid++;
   const ev=eventFor(m.id);if(ev){b.ctx.ev=ev.id;b.rules.exp=Math.round(b.rules.exp*1.5);b.rules.gold=Math.round(b.rules.gold*1.5);b.eventBonus=ev.title;b.log.push({t:'warn',text:'보스 출현 이벤트 · 경험치와 골드 1.5배'});}
   b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);
@@ -1200,7 +1200,7 @@ function doResolve(){
 function finishBattle(b){
   if(S.claimedB[b.id]){return;}
   S.claimedB[b.id]=true;
-  const me=b.players.find(p=>p.isMe);if(me)wearDown();const ctx=b.ctx||{};let blocked='';
+  const me=b.players.find(p=>p.isMe);if(me){wearDown();hpAfter(b,me);}const ctx=b.ctx||{};let blocked='';
   if(b.over==='win'&&ctx.type==='weekly'&&weekly().done[b.monsterId])blocked='이번 주 토벌 보상은 이미 받았습니다. 매주 월요일 05:00에 초기화됩니다.';
   if(b.over==='win'&&ctx.type==='event'&&ctx.ev&&(S.eventDone||{})[ctx.ev])blocked='이번 출현의 보상은 이미 받았습니다.';
   const r={eligible:b.over==='win'&&me.direct>=1&&!blocked&&ctx.type!=='quest',exp:0,gold:0,items:{},blocked};

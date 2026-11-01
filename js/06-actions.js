@@ -219,7 +219,7 @@ const ACTS={
   qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});},
   rtab:d=>{S.sel.rtab=d.tab;S.sel.monster=null;save();render();},
   dtarget:d=>{S.sel.dtarget=d.v;S.sel.dtargets={};render();},
-  dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:1,mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
+  dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
   'ev-spawn':d=>{if(!isAdmin())return;const m=monster(d.id);if(!m||S.mass)return;spawnMass(m,S.me.name);logChange('만신전',[{field:'출현',before:undefined,after:m.name}]);render();},
   'ex-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const dd=daily();const A=d.area?MAP_INFO[d.area]:null;const an=d.area?(MAP_SPOTS.find(x=>x[0]===d.area)||[])[2]:null;const need=A?A.lv:r.lv;
     if(S.me.level<need){toast(`LV${need} 이상 필요합니다.`,'warn');return;}{const sl=storyLock(r.id);if(sl){toast(sl,'warn');return;}}if(dd.explore>=EXPLORE_MAX){toast(`오늘 탐색 ${EXPLORE_MAX}회를 모두 사용했습니다.`,'warn');return;}
@@ -286,8 +286,8 @@ const ACTS={
     N.splice(i,1);save();render();if(N.length){modal(netListDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');}else modal('');},
   'aq-release':d=>{const A=aqua();const c=A[+d.i];if(!c)return;A.splice(+d.i,1);save();render();toast(`${fishName(c)}을(를) 방생했습니다.`);},
   'drun-next':()=>{const R=S.drun;if(!R||R.done)return;const k=R.phases[R.idx];if(k==='monster'||k==='boss')drunStartBattle();else drunEvent();},
-  'drun-exit':()=>{(S.drun&&S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();go('battle',{rtab:'dungeon'});},
-  'drun-quit':()=>{if(!S.drun)return;(S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();toast('던전 탐사를 포기했습니다.');go('battle',{rtab:'dungeon'});},
+  'drun-exit':()=>{if(S.drun&&S.drun.done!=='win')hpSet(S.drun.hp);(S.drun&&S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();go('battle',{rtab:'dungeon'});},
+  'drun-quit':()=>{if(!S.drun)return;hpSet(S.drun.hp);(S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();toast('던전 탐사를 포기했습니다.');go('battle',{rtab:'dungeon'});},
   'dex-open':()=>{modal(dexDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');},
   dparty:d=>{const m=monster(d.id);if(!m)return;const why=busyReason()||levelReason(m,S.me.level)||raidBlock(m);if(why){toast(why,'warn');return;}S.sel.mk={target:2};S.sel.monster=m.id;save();render();scrollTo({top:0});},
   'snail-open':()=>openSnail(),
@@ -457,7 +457,7 @@ const ACTS={
   'aq-reset':()=>{S.sel.aqText=null;S.sel.aqRes=null;render();},
   'nt-del':d=>{const n=S.data.notices.find(x=>x.id===d.id);S.data.notices=S.data.notices.filter(x=>x.id!==d.id);logChange('공지',[{field:'내림',before:n&&n.title,after:undefined}]);save();render();},
   'rep-done':d=>{const r=S.reports.find(x=>x.id===d.id);if(r){r.done=true;logChange('신고 처리',[{field:r.from,before:'대기',after:'처리됨'}]);}save();render();},
-  'op-level':()=>{const v=Math.round(+$('#op-level').value);if(!(v>=1&&v<=cfg().levelCap)){toast(`1~${cfg().levelCap} 사이로 입력하세요.`,'warn');return;}logChange('테스트 · 레벨',[{field:S.me.name,before:S.me.level,after:v}]);S.me.level=v;S.me.exp=0;if(S.party){const me=S.party.members.find(x=>x.isMe);if(me)me.level=v;}save();render();toast(`LV${v}로 설정했습니다.`,'good');},
+  'op-level':()=>{const v=Math.round(+$('#op-level').value);if(!(v>=1&&v<=cfg().levelCap)){toast(`1~${cfg().levelCap} 사이로 입력하세요.`,'warn');return;}logChange('테스트 · 레벨',[{field:S.me.name,before:S.me.level,after:v}]);S.me.level=v;hpFull();S.me.exp=0;if(S.party){const me=S.party.members.find(x=>x.isMe);if(me)me.level=v;}save();render();toast(`LV${v}로 설정했습니다.`,'good');},
   'op-lv':()=>{const before=S.me.level;S.me.level=Math.min(cfg().levelCap,S.me.level+5);S.me.exp=0;logChange('테스트 · 레벨',[{field:S.me.name,before,after:S.me.level}]);save();render();toast(`LV${S.me.level}`);},
   'op-gold':()=>{S.me.gold+=500;logChange('테스트 · 골드',[{field:S.me.name,before:S.me.gold-500,after:S.me.gold}]);save();render();},
   'op-items':()=>{S.me.inv.potion=(S.me.inv.potion||0)+3;S.me.inv.holywater=(S.me.inv.holywater||0)+3;save();render();toast('회복약과 정화의 성수를 3개씩 추가했습니다.');},

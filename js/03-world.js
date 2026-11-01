@@ -413,7 +413,7 @@ function massStart(){
   const mm={...m,hp:Math.round(m.hp*(1+C.hpPerExtra*Math.max(0,n-C.minPlayers))),hpScale:0,min:n};
   const members=M.roster.map(x=>x.isMe?{id:'me',name:S.me.name,job:S.me.job,level:S.me.level,equip:effEquip(),isMe:true,enh:S.me.enh}:{id:x.name,name:x.name,job:x.job,level:x.level,equip:{}});
   const b=createBattle(mm,members,Math.random,{...cfg(),turnSeconds:C.turnSeconds});
-  {const mf=b.players.find(x=>x.isMe);if(mf)['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});}
+  {const mf=b.players.find(x=>x.isMe);if(mf)['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});hpStart(mf);}
   const MD=massDef(m);b.grid=true;b.pats=MD.patterns;b.massTitle=MD.title;b.reward=MD.reward;b.phases=clone(MD.phases).sort((a,c)=>c.at-a.at);b.phase=0;b.baseAtk=m.atk;b.mon.atk=m.atk;
   gridPlace(b,Math.random);b.turn=0;b.log=b.log.slice(0,1);b.log.push({t:'sys',text:`만신전 · ${n}인 · 10×10 전장 · 제한 ${C.battleMinutes}분 · 한 칸 최대 ${CELL_CAP}명`});
   {const ev=(S.events||[]).find(x=>x.id===M.evId);const land=ev&&ev.land;if(land&&isSnow(landW(land))){b.snow=true;b.log.push({t:'warn',text:`❄ 눈보라 · ${LANDS[land]} · 이동 범위 보너스 무효(3×3 고정), 이동 시 25% 확률로 발이 묶임`});}}
@@ -767,6 +767,7 @@ function busyReason(){if(S.drun&&!S.drun.done)return '던전 탐사 중입니다
 function grantExp(n){
   const me=S.me;let ups=0;me.exp+=n;
   while(me.level<cfg().levelCap&&me.exp>=expNeed(me.level)){me.exp-=expNeed(me.level);me.level++;ups++;}
+  if(ups)hpFull();
   if(me.level>=cfg().levelCap)me.exp=Math.min(me.exp,expNeed(me.level));
   return ups;
 }
