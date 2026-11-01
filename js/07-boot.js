@@ -84,7 +84,7 @@ function startFog(c){
     ctx.clearRect(0,0,W,H);
     for(let i=0;i<3;i++){const x=(W*(.2+i*.33)+Math.sin(t/9000+i)*W*.08),y=H*(.75+i*.06);const g=ctx.createRadialGradient(x,y,0,x,y,W*.35);g.addColorStop(0,'rgba(110,150,200,.07)');g.addColorStop(1,'rgba(110,150,200,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
     for(const p of parts){if(!reduce){p.y-=p.v;p.x+=Math.sin(t/2400+p.p)*.15;if(p.y<-5){p.y=H+5;p.x=Math.random()*W;}}
-      ctx.globalAlpha=p.a*(.6+.4*Math.sin(t/1300+p.p));ctx.fillStyle=(p.r>1.4*devicePixelRatio)?'#d6cbb0':'#dde9f5';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill();}
+      ctx.globalAlpha=p.a*(.6+.4*Math.sin(t/1300+p.p));ctx.fillStyle=(p.r>1.4*devicePixelRatio)?'#e6eff9':'#dde9f5';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill();}
     ctx.globalAlpha=1;
     if(!reduce)fogRAF=requestAnimationFrame(draw);
   };
