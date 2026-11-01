@@ -592,7 +592,7 @@ function questDetail(q){
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="nextq" data-id="${q.id}">다음 단계</button></div>`;
     }else if(step.battle){
       const m=monster(step.battle);const busy=busyReason();
-      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted num" style="font-size:12.5px">HP ${m.hp} · 공격력 ${m.atk} · ${esc(m.dotName)} ${Math.round(m.dotChance*100)}%</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
+      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
         ${qp.lost?'<p class="reason">지난 전투에서 쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.</p>':''}
         <div class="row"><button class="btn btn-primary" data-act="qfight" data-id="${q.id}" ${busy||!m?'disabled':''}>${qp.lost?'다시 도전':'전투 시작'}</button>${busy?`<span class="reason">${esc(busy)}</span>`:''}</div>`;
     }else{
@@ -621,10 +621,9 @@ function vMonster(m){
       <div class="stack" style="gap:16px">
         <div class="panel"><div class="boss"><pre class="ascii big">${esc(ART[m.art]||ART.generic)}</pre>
           <div class="stack"><div class="ph" style="margin:0">${esc(m.region||'')}</div><h2 class="mname" style="font-size:26px">${esc(m.name)}</h2><p class="muted">${esc(m.desc||'')}</p></div></div>
-          <div class="facts" style="margin-top:16px"><div><small>입장 레벨</small><b class="num">LV${m.level}${m.maxLevel?'~'+m.maxLevel:'+'}</b></div><div><small>참가 인원</small><b class="num">${m.min}~${m.max}명</b></div><div><small>HP (${m.min}인 기준) · 공격력</small><b class="num">${m.hp} · ${m.atk}</b></div><div><small>필요 역할</small><b>${['tank','dps','heal'].filter(r=>m.roles[r]).map(r=>ROLE[r].slice(0,1)+m.roles[r]).join(' · ')}</b></div></div>
-          <p class="faint" style="font-size:12px;margin-top:8px">${m.min}명을 넘는 1명마다 몬스터 체력 +${Math.round(m.hpScale*100)}% · 전투 시작 시 확정</p></div>
-        <div class="panel"><h3>주요 패턴</h3><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">${patternLines(m).map(l=>`<li>${esc(l)}</li>`).join('')}</ul></div>
-        <div class="panel"><h3>보상 · 참가자별 개별 지급</h3>${mkind(m)==='dungeon'?(()=>{const R=dungeonReward(m,dtg(m.id));return rewardHTML({exp:R.exp,gold:R.gold});})():rewardHTML({exp:m.exp,gold:m.gold})}<p class="muted" style="margin-top:8px;font-size:13px">개인 확률 획득: ${m.drops.map(([k,c])=>`${ITEMS[k]?ITEMS[k].name:k} ${Math.round(c*100)}%`).join(' · ')}</p>
+          <div class="facts" style="margin-top:16px"><div><small>입장 레벨</small><b class="num">LV${m.level}${m.maxLevel?'~'+m.maxLevel:'+'}</b></div><div><small>참가 인원</small><b class="num">${m.min}~${m.max}명</b></div><div><small>필요 역할</small><b>${['tank','dps','heal'].filter(r=>m.roles[r]).map(r=>ROLE[r].slice(0,1)+m.roles[r]).join(' · ')}</b></div></div>
+</div>
+        <div class="panel"><h3>보상 · 참가자별 개별 지급</h3>${mkind(m)==='dungeon'?(()=>{const R=dungeonReward(m,dtg(m.id));return rewardHTML({exp:R.exp,gold:R.gold});})():rewardHTML({exp:m.exp,gold:m.gold})}${(()=>{const parts=[m.drops.length?rewardItemsHTML(m.drops.map(d=>d[0]),Object.fromEntries(m.drops)):'',mkind(m)==='dungeon'&&(m.loot||[]).length?`보물상자 ${lootText(m)}`:''].filter(Boolean);return parts.length?`<p class="muted" style="margin-top:8px;font-size:13px">획득할 수 있는 아이템: ${parts.join(' · ')}</p>`:'';})()}
           <p class="faint" style="font-size:12px;margin-top:6px">직접 행동을 1회 이상 확정한 참가자만 보상 대상입니다. 패배해도 경험치와 아이템을 잃지 않습니다.${{party:` 데일리 파티 레이드는 출발할 때 하루 ${RAID_MAX}회 중 1회를 씁니다.`,weekly:' 주간 토벌 보상은 매주 월요일 05:00 초기화 · 주 1회입니다.',event:' 이벤트 보스는 출현 중에만 입장할 수 있고, 보상은 출현마다 1회 · 1.5배입니다.'}[mkind(m)]||''}</p></div>
       </div>
       <div class="stack" style="gap:16px">

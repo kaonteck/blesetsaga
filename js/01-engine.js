@@ -76,7 +76,14 @@ GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},ar
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
   ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25),mag:Math.round(L*0.25)},desc,price};
   GEAR_IDS.push(ids.armor,ids.acc);});
-function lootText(m){const L=m.loot||[];const t=ITEMS[L[0]];if(t&&t.tier)return `${GEAR_TIER[t.tier-1][0]} 장비(LV${GEAR_TIER[t.tier-1][2]}+ 무기·방어구·장신구)`;return L.map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ');}
+/* 보상 표시: 단계 장비는 '{단계} 장비' + 도움말(마우스 올리면 장비 이름 목록, 확률 없음). 나머지 아이템은 이름 그대로 */
+const HELP_SVG='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.7c-.5.2-.8.6-.8 1.1v.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".8" fill="currentColor"/></svg>';
+function gearSetHTML(T,ids){const nm=GEAR_TIER[T-1][0];const names=ids.filter(k=>ITEMS[k]).map(k=>ITEMS[k].name);
+  return `<span class="gset">${nm} 장비<span class="sky-help gset-h" tabindex="0" role="button" aria-label="${nm} 장비 목록">${HELP_SVG}<span class="sky-tip gset-tip"><b>${nm} 장비 · LV${GEAR_TIER[T-1][2]}+</b><span>${names.map(n=>n.replace(/&/g,'&amp;').replace(/</g,'&lt;')).join('<br>')}</span></span></span></span>`;}
+/* ids: 아이템 id 목록 · pct(선택): id→확률(장비 아닌 아이템에만 표시) */
+function rewardItemsHTML(ids,pct){const tiers={},rest=[];ids.forEach(k=>{const it=ITEMS[k];if(it&&it.tier&&it.type==='equip')(tiers[it.tier]=tiers[it.tier]||[]).push(k);else rest.push(k);});
+  return [...rest.map(k=>`${(ITEMS[k]?ITEMS[k].name:k).replace(/</g,'&lt;')}${pct&&pct[k]!=null?` ${Math.round(pct[k]*100)}%`:''}`),...Object.keys(tiers).sort((a,b)=>a-b).map(T=>gearSetHTML(+T,tiers[T]))].join(' · ');}
+function lootText(m){return rewardItemsHTML(m.loot||[]);}
 const gearOfTier=T=>GEAR_IDS.filter(id=>ITEMS[id].tier===T);
 function pickLoot(m){const L=m.loot||[];if(!L.length)return 'potion';const me=S&&S.me;
   if(me&&Math.random()<0.7){const mine=L.filter(k=>{const it=ITEMS[k];return it&&(!it.wtype||(CLASS_WEAPON[me.job]||[]).includes(it.wtype));});if(mine.length)return pick(mine);}return pick(L);}

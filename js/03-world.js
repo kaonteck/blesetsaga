@@ -336,7 +336,7 @@ function mapDlg(land,focus,page){
     let act='';
     if(id==='temple'){const g=S.data.monsters.find(x=>mkind(x)==='weekly');act=g?`<div class="row md-btns"><button class="btn btn-primary" data-act="map-goto" data-link="monster:${g.id}">토벌전 · ${esc(g.name)}</button></div><p class="faint" style="font-size:12px">현재 시제품에서는 봉인 수호자 토벌전(LV${g.level}+ · ${g.min}~${g.max}인)으로 열려 있습니다.</p>`:'';}
     else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,tg);
-      act=`<p class="faint" style="font-size:12px">보스 · ${esc(m.name)} · HP ${m.hp} · 공격력 ${m.atk} · ${tg==='exp'?`EXP ${R.exp} · ${R.gold}골드`:`아이템 1개 확정 (${lootText(m)})`}</p>
+      act=`<p class="faint" style="font-size:12px">보스 · ${esc(m.name)} · ${tg==='exp'?`EXP ${R.exp} · ${R.gold}골드`:`아이템 1개 확정 (${lootText(m)})`}</p>
         <div class="row md-btns">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':`<button class="btn btn-primary" data-act="dfight" data-id="${m.id}" ${lr||busy?'disabled':''}>${lr?esc(`LV${m.level} 이상 필요`):'개인 레이드 도전'}</button>`}</div>`;}
     dg+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${I.label||'인스턴스 던전'}</div><h3 class="md-title">${esc(n)}</h3>${img?`<img class="md-img" src="${img}" alt="">`:''}
       ${I.quote?`<p class="md-quote">“${esc(I.quote)}”</p>`:''}<div class="md-meta">최소 레벨 : <b>${I.lv||(m?m.level:'-')}</b></div><div class="md-meta">인원 제한 : <b>${I.ppl||'1–4인'}</b></div><p class="md-text">${esc(I.text||'')}</p>${act}`);});

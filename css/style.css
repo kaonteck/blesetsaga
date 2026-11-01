@@ -2194,3 +2194,9 @@ html,body{overflow-x:clip;max-width:100%}
 .panel::before{background:#d6e6f7;box-shadow:0 0 6px rgba(170,205,240,.95),0 0 14px rgba(140,185,235,.55)}
 .panel>h3,.panel>.ph{border-left-color:rgba(180,212,245,.8);text-shadow:0 0 10px rgba(150,195,240,.25)}
 .logo .lg-en{text-shadow:0 0 12px rgba(160,200,245,.35)}
+
+/* 보상 장비 묶음 표시 + 도움말 */
+.gset{white-space:nowrap}
+.gset-h{margin-left:3px}
+.gset-tip{width:auto;min-width:150px;max-width:240px;white-space:normal}
+.gset-tip span{color:var(--text)}
