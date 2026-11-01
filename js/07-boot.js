@@ -123,5 +123,5 @@ function boot(data){
 }
 ['snail-open','snail-start','lotto-open','lotto-buy','cshop-open','cshop-buy'].forEach(k=>{const f=ACTS[k];if(f)ACTS[k]=(...a)=>{if(S.me.level<CASINO_LV){toast(`카지노는 LV${CASINO_LV}부터 들어갈 수 있습니다.`,'warn');return;}return f(...a);};});
 /* 입장 전 경고(체력 30% 미만 · 내구도 0 장비) — entryGate는 05-features */
-[['dfight',1],['createparty',1],['queue',1],['joinrecruit',1],['mass-join',1],['hunt-go',0],['qfight',0]].forEach(([k,raid])=>{const f=ACTS[k];if(f)ACTS[k]=(d,...a)=>{if(entryGate(k,d,!!raid))return;return f(d,...a);};});
+[['dfight',1],['createparty',1],['queue',1],['joinrecruit',1],['mass-join',1]].forEach(([k,raid])=>{const f=ACTS[k];if(f)ACTS[k]=(d,...a)=>{if(entryGate(k,d,!!raid))return;return f(d,...a);};});
 ACTS['gate-go']=()=>{const g=GATE;GATE=null;modal('');if(g&&ACTS[g.k])ACTS[g.k]({...g.d,_gate:1});};
