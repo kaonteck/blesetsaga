@@ -259,6 +259,7 @@ const ACTS={
   'cj-start':d=>{const k=d.kind;const r=recipe(k,d.id);const p=prof(k);if(!r||!p.rank||p.rank>r.grade||cjobs()[k]||!hasMats(r.mats))return;
     for(const m in r.mats)takeMat(m,r.mats[m]);cjobs()[k]={fail:guildRain(k)&&Math.random()<RAIN_FAIL,rid:r.id,out:r.out,n:r.n,label:ITEMS[r.out].name+(r.n>1?' ×'+r.n:''),start:now(),end:now()+r.min*60000};save();render();openCraft(k,'make');toast(`${ITEMS[r.out].name} ${PROF[k].n}을(를) 시작했습니다 · ${durLabel2(r.min)}`);},
   'cj-repair':d=>{const id=d.id;const miss=DURA_MAX-dura(id);const cost=repairCost(id,miss);if(!miss||S.me.gold<cost)return;S.me.gold-=cost;S.me.dura=S.me.dura||{};S.me.dura[id]=DURA_MAX;save();render();openCraft('craft','repair');toast(`${ITEMS[id].name} 수리 완료 · 내구도 ${DURA_MAX}/${DURA_MAX}`,'good');},
+  'toast-x':(d,el)=>{const t=el&&el.closest&&el.closest('.toast');if(t)t.remove();},
   'repair-open':(d,el)=>{if(el&&el.closest){const t=el.closest('.toast');if(t)t.remove();}openCraft('craft','repair');},
   'eq-now':(d,el)=>{if(el&&el.closest){const t=el.closest('.toast');if(t)t.remove();}ACTS.equip({id:d.id});},
   'ng-raid':d=>go('battle',{rtab:d.tab||'daily',monster:null}),
