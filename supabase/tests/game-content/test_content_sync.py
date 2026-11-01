@@ -9,6 +9,8 @@ with sync_playwright() as p:
     pg.route('**/fonts.g*/**',lambda r:r.abort())
     pg.goto('http://localhost:8765/');pg.wait_for_function('typeof S!=="undefined"&&S&&S.data&&S.data._srv',timeout=20000)
     g=lambda js:pg.evaluate(js)
+    base_hp=g("S.data._srv.monster.forest.base.hp")   # 서버 값을 덮기 전 게임의 값 (게임 밸런스가 바뀌어도 테스트가 맞게)
+    ok(isinstance(base_hp,(int,float)) and base_hp!=777,f'덮기 전 원래 값 보관 (hp {base_hp})')
     ok(g("monster('forest').hp")==777,'공개된 몬스터 값 적용 (hp 777)')
     ok(g("monster('forest').rev")==3,'몬스터 변경 횟수 = 서버 rev')
     ok(g("monster('st_hound').hp")!=1,'비공개 항목은 적용 안 함')
@@ -20,7 +22,7 @@ with sync_playwright() as p:
     # 실시간: forest 삭제, potion 이름 변경
     g("window.__CT=window.__CT.filter(r=>r.id!=='forest');window.__CT.find(r=>r.id==='potion').data.name='바뀐 회복약';window.__CT_CB({eventType:'UPDATE'})")
     pg.wait_for_timeout(1500)
-    ok(g("monster('forest').hp")==438,'서버에서 지우면 원래 값(레벨 재배치 후 hp 438)으로')
+    ok(g("monster('forest').hp")==base_hp,f'서버에서 지우면 원래 값(hp {base_hp})으로')
     ok(g("ITEMS.potion.name")=='바뀐 회복약','실시간 변경 반영')
     ok(not g("!!(S.data._srv.monster||{}).forest"),'지운 항목 표시 정리')
     # 이벤트 기간 종료 → 사라짐

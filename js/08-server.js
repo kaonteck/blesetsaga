@@ -78,7 +78,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);
-  pfSync();mlStart();
+  pfSync();mlStart();ltStart();
 }
 
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
@@ -298,4 +298,79 @@ if(ONLINE){
   ACTS['m-readall']=(d,el,e)=>{const ids=(S.mail||[]).filter(m=>!m.read).map(m=>m.id);A0.readall(d,el,e);upd(ids,{read_at:new Date().toISOString()});};
   ACTS['mail-archive']=(d,el,e)=>{const m=(S.mail||[]).find(x=>x.id===d.id);A0.archive(d,el,e);if(m)upd([m.id],{archived:!!m.archived});};
   ACTS['m-del']=(d,el,e)=>{const ids=(d.ids||'').split(',').map(mlSrvId).filter(Boolean);A0.del(d,el,e);if(ids.length&&SB_UID)SB.from('mail').delete().in('id',ids).then(()=>{},()=>{});};
+}
+
+/* ───────── 주간 행운권 (lotto) ─────────
+   서버 모드에서는 구매·추첨·수령을 서버가 한다(supabase/008_lotto.sql).
+   - 당첨 번호: 추첨 시각(금 20:00) 이후 서버가 무작위로 한 번 뽑는다. 게임의 drawNums()는 서버 번호가 있으면 그것을 돌려준다.
+   - 구매: 세이브를 확실히 올림 → buy_lotto (서버가 판매 시간·주 2장·골드 확인 후 200G 차감) → 성공하면 화면에서도 차감.
+   - 수령: claim_lotto (서버가 등수 확인·한 번만·상금을 세이브에 더함) → 화면에서도 더함.
+   - 서버 행운권은 S.me.lotto 에 'srv:<id>'로 합친다. 서버 이전에 이 기기에서 산 행운권은 예전 방식 그대로.
+   - 카지노 입장 레벨 확인(07-boot의 감싸기)은 그대로 거친다. */
+let LT={draws:{},next:null,busy:false,timer:null};
+const ltSrv=id=>String(id).startsWith('srv:')?String(id).slice(4):null;
+async function ltSync(){
+  if(!SB||!SB_UID||!S||!S.me)return false;
+  const {data,error}=await SB.rpc('lotto_sync');if(error||!data)return false;
+  LT.draws=data.draws||{};LT.next=data.next||null;
+  const t=now(),old=new Map((S.me.lotto||[]).map(x=>[x.id,x]));
+  const srv=(data.tickets||[]).map(r=>{const id='srv:'+r.id,prev=old.get(id)||{};const at=Date.parse(r.at);
+    const drawn=r.rank!=null&&LT.draws[r.draw];
+    // 시각이 지났는데 아직 안 뽑힌 회차는 결과가 나올 때까지 '대기'로 둔다(지난 결과 목록에 빈 번호로 뜨지 않게)
+    return {id,nums:r.nums,draw:r.draw,at:drawn?at:Math.max(at,t+60000),claimed:!!r.claimed,rank:r.rank,ts:Date.parse(r.ts),...(prev.noted?{noted:prev.noted}:{})};});
+  const next=[...(S.me.lotto||[]).filter(x=>!ltSrv(x.id)),...srv];
+  if(JSON.stringify(next)!==JSON.stringify(S.me.lotto)){S.me.lotto=next;save();}
+  // 다음 추첨 직후에 한 번 더 확인
+  clearTimeout(LT.timer);if(LT.next){const ms=Date.parse(LT.next.at)-Date.now()+5000;if(ms>0&&ms<7*864e5)LT.timer=setTimeout(()=>ltSync().then(ltRedraw),ms);}
+  return true;
+}
+const ltOpen=()=>!!$('[data-lt-left]');
+function ltRedraw(){if(ltOpen())openLotto();try{renderTop();}catch(e){}}
+function ltStart(){
+  ltSync();
+  setInterval(()=>ltSync().then(ch=>{if(ch&&ltOpen())openLotto();}),10*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ltSync();});
+}
+const ltErr=e=>{const m=(e&&e.message)||'';
+  if(/SALE_CLOSED/.test(m))return '판매가 마감되었습니다 (금 19:00~20:00).';if(/MAX_TICKETS/.test(m))return `이번 주 ${LOTTO_MAX}장을 모두 샀습니다.`;
+  if(/NOT_ENOUGH_GOLD/.test(m))return '골드가 부족합니다.';if(/BAD_NUMS/.test(m))return '0~9 중 서로 다른 숫자 4개를 고르세요.';
+  if(/NOT_DRAWN/.test(m))return '아직 추첨 전입니다.';if(/ALREADY_CLAIMED/.test(m))return '이미 확인한 행운권입니다.';
+  if(/NO_SAVE/.test(m))return '진행 기록이 아직 서버에 없습니다. 잠시 뒤 다시 시도해 주세요.';if(/NOT_ACTIVE/.test(m))return '이용이 제한된 계정입니다.';
+  return '행운권을 처리하지 못했습니다. 인터넷 연결을 확인해 주세요.';};
+
+if(ONLINE){
+  const _drawNums=drawNums;
+  drawNums=function(key){const w=LT.draws[key];return w?w.slice().sort((a,b)=>a-b):_drawNums(key);};
+  const L0={open:ACTS['lotto-open'],buy:ACTS['lotto-buy'],claim:ACTS['lotto-claim']};
+  ACTS['lotto-open']=(...a)=>{L0.open(...a);if(SB_UID&&ltOpen())ltSync().then(()=>{if(ltOpen())openLotto();});};
+  ACTS['lotto-buy']=async(d,el,e)=>{
+    if(!SB_UID)return L0.buy(d,el,e);
+    if(S.me.level<CASINO_LV)return L0.buy(d,el,e);          // 레벨 안내는 원래 감싸기가 한다
+    const I=lottoInfo();const a=(S.sel.lotPick||[]).slice().sort((x,y)=>x-y);
+    if(LT.busy||a.length!==4||!I.open||I.mine.length>=LOTTO_MAX||S.me.gold<LOTTO_PRICE)return;
+    LT.busy=true;const b=$('[data-act="lotto-buy"]');if(b){b.disabled=true;b.textContent='구매 중…';}
+    try{
+      if(!await cloudFlush())throw new Error('세이브를 서버에 올리지 못했습니다');
+      const {data,error}=await SB.rpc('buy_lotto',{p_nums:a});if(error)throw error;
+      const price=data.price||LOTTO_PRICE;
+      S.me.gold-=price;bump('goldSpent',price);bump('casinoSpent',price);
+      S.me.lotto.push({id:'srv:'+data.id,nums:data.nums,draw:data.draw,at:Date.parse(data.at),claimed:false,rank:null,ts:now()});
+      S.sel.lotPick=[];save();cloudSave(true);render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');
+    }catch(err){console.warn(err);toast(ltErr(err),'bad');ltSync().then(()=>{if(ltOpen())openLotto();});}
+    finally{LT.busy=false;}
+  };
+  ACTS['lotto-claim']=async(d,el,e)=>{
+    const x=(S.me.lotto||[]).find(y=>y.id===d.id);const sid=x&&ltSrv(x.id);
+    if(!sid||!SB_UID)return L0.claim(d,el,e);
+    if(x.claimed||LT.busy)return;LT.busy=true;
+    try{
+      const {data,error}=await SB.rpc('claim_lotto',{p_id:sid});
+      if(error){if(/ALREADY_CLAIMED/.test(error.message||'')){x.claimed=true;save();}throw error;}
+      x.claimed=true;x.rank=data.rank;const g=data.prize||0;
+      if(g){S.me.gold+=g;bump('goldEarned',g);if(data.rank===1)bump('lotto1');toast(`주간 행운권 ${data.rank}등 당첨! ${g.toLocaleString('ko-KR')}골드`,'good');}
+      else toast('아쉽게도 낙첨입니다.');
+      save();cloudSave(true);render();openLotto();
+    }catch(err){console.warn(err);toast(ltErr(err),'bad');if(ltOpen())openLotto();}
+    finally{LT.busy=false;}
+  };
 }

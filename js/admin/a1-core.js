@@ -53,7 +53,7 @@ async function loadNames(){const d=await q(A.sb.from('profiles').select('user_id
 const who=id=>id?esc(A.names[id]||String(id).slice(0,8)):'<span class="faint">시스템</span>';
 
 /* ── 탭 ── */
-const TABS=[['content','콘텐츠'],['players','회원'],['mail','우편 보내기'],['inbox','문의 · 신고'],['invites','초대코드'],['log','운영 기록']];
+const TABS=[['content','콘텐츠'],['players','회원'],['mail','우편 보내기'],['inbox','문의 · 신고'],['invites','초대코드'],['lotto','행운권'],['log','운영 기록']];
 const VIEWS={};   // 탭 id → async render(el)
 function shell(){
   const nick=A.names[A.user.id]||A.user.email.split('@')[0];

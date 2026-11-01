@@ -53,7 +53,7 @@ with sync_playwright() as p:
     a.evaluate("S.sel.pop='mail';ACTS['mail-compose']({})");a.wait_for_timeout(500);a.select_option('#mc-to','@'+B);a.fill('#mc-text','x');a.click('[data-act="mc-gift"]');a.fill('#mc-gold','5000');a.click('[data-act="mc-send"]');a.wait_for_timeout(600)
     ok(a.evaluate("S.me.gold")==700 and a.evaluate("window.__RPC.filter(x=>x==='send_mail').length")==1,'가진 것보다 많은 골드는 보내기 전에 막힘')
     # 서버 기준으로 부족: 로컬에만 있는 물약(서버 세이브보다 많이) — 서버 업로드 실패 상황 흉내
-    a.evaluate("cloudFlush=async()=>true;S.me.inv.potion=50");a.fill('#mc-gold','0');a.select_option('#mc-item','potion');a.fill('#mc-qty','10');a.click('[data-act="mc-add"]');a.click('[data-act="mc-send"]');a.wait_for_timeout(800)
+    a.evaluate("cloudFlush=async()=>true;cloudPush=async()=>true;cloudSave=()=>{};S.me.inv.potion=50")   # 자동 저장도 막아 서버 기록이 3개로 남게;a.fill('#mc-gold','0');a.select_option('#mc-item','potion');a.fill('#mc-qty','10');a.click('[data-act="mc-add"]');a.click('[data-act="mc-send"]');a.wait_for_timeout(800)
     ok(a.evaluate("S.me.inv.potion")==50,'서버 기록보다 많으면 서버가 거절 · 화면 차감 없음')
     # 지우기
     bp.evaluate("S.sel.pop='mail';S.sel.mailView=null;renderPop()");mid=m['id']
