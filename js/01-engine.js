@@ -71,7 +71,7 @@ GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},ar
   const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
     knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{mag:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
     gun:{mag:A,luk:Math.round(1+L*0.1)},dgun:{mag:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{mag:Math.round(A*0.9),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{mag:A,luk:Math.round(3+L*0.25)}};
-  (L<20?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
+  (L<20?[...BASE_WT,...(T===2?['orb']:[])]:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
     ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
   ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25),mag:Math.round(L*0.25)},desc,price};

@@ -448,6 +448,8 @@ const STORY_QUESTS=[
     {label:'"그 이름들, 누구예요?"',result:'토르가 노를 멈춘다. "이름? 그냥 노래야. 아주 오래전부터 다들 이렇게 불렀어." 그리고 처음부터 다시 부르기 시작한다.',next:'end',flag:'s3b_song'},
     {label:'조용히 끝까지 듣는다',result:'노래가 끝나자 토르가 박수를 기다리듯 당신을 본다. 당신이 손뼉을 치자, 그는 만족스럽게 처음부터 다시 부른다.',next:'end',flag:'s3b_song'}]},
   end:{end:true,text:'토르의 노래를 끝까지 들음',reward:{exp:1200,gold:200,items:{}}}}}];
+/* 메인 스토리 챕터 묶음(퀘스트 목록 접기용) */
+const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']]];
 /* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
@@ -497,6 +499,7 @@ function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.feed&&!S.feedNoImg){S.feed.forEach(p=>{delete p.img;});if(S.sel)delete S.sel.fdImg;S.feedNoImg=1;ch=true;}
+  if(S.data&&S.data.monsters&&!S.data.orb2){S.data.monsters.forEach(m=>{if((m.loot||[]).includes('g2_staff')&&!m.loot.includes('g2_orb'))m.loot.push('g2_orb');if((m.drops||[]).some(d=>d[0]==='g2_staff')&&!m.drops.some(d=>d[0]==='g2_orb')){const r=m.drops.find(d=>d[0]==='g2_staff')[1];m.drops.push(['g2_orb',r]);}});S.data.orb2=1;ch=true;}
   if(S.me&&S.me.status==='offline'){S.me.status='meal';ch=true;}
   if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}

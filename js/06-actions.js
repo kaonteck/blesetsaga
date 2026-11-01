@@ -325,6 +325,7 @@ const ACTS={
   'ex-back':()=>{S.sel.exLand=null;S.sel.exFocus='';render();scrollTo({top:0});},
   'map-goto':d=>{modal('');openLink(d.link);},
   'md-target':d=>{const m=monster(d.focus);S.sel.dtargets=S.sel.dtargets||{};S.sel.dtargets[m?m.id:d.focus]=d.v;if($('.modal.mapmodal'))refreshMap();else render();},
+  qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},
   chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;qp.pending=+d.i;save();render();},

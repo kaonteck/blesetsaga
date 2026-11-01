@@ -2132,3 +2132,20 @@ html,body{overflow-x:clip;max-width:100%}
 
 /* 캐릭터 카드: 칭호를 아래로 내려 이름 바로 위에 붙임(이름 위치는 그대로) */
 .me-info > .title-chip{margin:6px 0 -6px;line-height:1.3}
+
+/* 퀘스트 목록 묶음(챕터 · 완료 목록) */
+.qgroups{display:flex;flex-direction:column;gap:6px}
+.qgrp{border:1px solid var(--rule);border-radius:var(--r);background:rgba(255,255,255,.015)}
+.qgrp-h{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;background:none;border:0;color:var(--silver);font:inherit;font-size:13.5px;font-weight:600;text-align:left;cursor:pointer}
+.qgrp-t{flex:1;min-width:0}
+.qgrp-m{font-size:11.5px;font-weight:400;color:var(--muted)}
+.qgrp-c{width:12px;height:12px;color:var(--faint);transition:transform .15s}
+.qgrp.open .qgrp-c{transform:rotate(180deg)}
+.qgrp-h:hover .qgrp-c,.qgrp-h:focus-visible .qgrp-c{color:var(--gold-hi)}
+.qgrp>.list{padding:0 12px 10px}
+.qgroups>.list+.qgrp{margin-top:8px}
+/* 몬스터 대사 말풍선 */
+.mon-art{position:relative;display:flex;flex-direction:column;align-items:center}
+.mon-say{position:relative;max-width:260px;margin-bottom:10px;padding:8px 12px;border:1px solid rgba(184,166,128,.45);border-radius:10px;background:var(--slab-3);color:var(--silver);font-size:12.5px;line-height:1.5;text-align:center;word-break:keep-all;box-shadow:0 6px 18px rgba(0,0,0,.4);animation:tin .25s ease}
+.mon-say::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);background:var(--slab-3);border-right:1px solid rgba(184,166,128,.45);border-bottom:1px solid rgba(184,166,128,.45)}
+.outcome .mon-art{margin-bottom:4px}
