@@ -2074,7 +2074,7 @@ html,body{overflow-x:clip;max-width:100%}
 .ndot{left:auto;right:1px}
 
 /* 모바일 채팅 버튼의 읽지 않은 1:1 표시(04-ui.js syncFabBadge): 금색 점, 버튼 오른쪽 위 */
-.fab-badge{position:absolute;top:1px;right:4px;width:11px;height:11px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px var(--void),0 0 8px rgba(179,162,126,.7);pointer-events:none}
+.fab-badge{position:absolute;top:2px;right:6px;width:8px;height:8px;border-radius:50%;background:#f2c94c;box-shadow:0 0 0 2px var(--void);pointer-events:none}  /* 우편 알림 점(.ndot)과 같은 크기·색 */
 .fab-badge[hidden]{display:none}
 
 /* 폰: 팝업이 열려 있으면 알림(토스트)을 화면 아래쪽으로 → 팝업 제목·닫기 버튼을 가리지 않음 */
