@@ -50,6 +50,8 @@
 - (백엔드) 2026-11-01 완료(체크 대기): **유저끼리 우편 서버 연결 + 공개 프로필 동기화**(`08-server.js`, `supabase/007_mail_send.sql`). 편지 쓰기 받는 사람에 실제 블레서(테스트 봇은 따로 묶음), 선물에 골드 칸, 보내면 보내는 사람 인벤토리·골드에서 차감(서버 세이브 확인), 받는 사람에게 실시간 도착, 선물 받기는 서버가 한 번만. 테스트: 두 플레이어 브라우저 21개 · 권한 SQL 통과.
   - **체크 요청:** `supabase/007_mail_send.sql` Supabase 적용 완료(2026-11-01) → `backend/schema-v1`을 `main`에 합쳐도 됩니다. 확인 거리: 계정 두 개로 선물 보내기(보내는 쪽 인벤토리·골드 차감) → 받는 쪽 도착·받기, 같은 선물 두 번 받기 불가. 테스트: `supabase/tests/game-mail/`.
   - **메인·프론트 참고:** 서버 모드에서 `composeHTML`·`readCompose`·`mailDetail`과 `ACTS`의 `mc-send`·`mail-claim`·`mail-open`·`m-readall`·`mail-archive`·`m-del`·`mail-compose`·`mc-gift`를 `08-server.js`가 감싼다. 이 함수들의 이름·HTML 구조(`#mc-to`, `#mc-item`, `data-act="mc-send"`, `data-act="mail-archive"` 버튼)를 바꾸면 백엔드에 알려 주세요.
+- (백엔드) 2026-11-01 완료(**병합 보류 — 008 적용 대기**): **주간 행운권 서버 연결**(`08-server.js`, `supabase/008_lotto.sql`, 운영 페이지 '행운권' 탭). 구매·추첨·수령을 서버가 처리, 당첨 번호는 금 20:00 이후 서버가 무작위로(기존 `drawNums`는 날짜 공식이라 미래 번호를 미리 계산할 수 있었음). 테스트: SQL(시계 바꿔 끼움) · 브라우저 17개 · 기존 스위트 전부 통과.
+  - **메인 참고:** 서버 모드에서 `drawNums`와 `ACTS`의 `lotto-open`·`lotto-buy`·`lotto-claim`을 감싼다(카지노 LV 확인은 07-boot 감싸기를 그대로 거침). 가격·장수·상금(`LOTTO_PRICE`·`LOTTO_MAX`·`LOTTO_PRIZE`)을 바꾸면 `008_lotto.sql`도 바꿔야 하니 백엔드에 알려 주세요.
 
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.

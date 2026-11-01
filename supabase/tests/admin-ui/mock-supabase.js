@@ -22,6 +22,7 @@ const RPC={
   admin_ban:a=>{const p=DB.profiles.find(x=>x.user_id===a.p_user);p.banned_until=a.p_until;p.ban_reason=a.p_reason;DB.admin_log.unshift({id:Date.now(),admin:ADMIN.id,action:a.p_until?'ban':'unban',target:a.p_user,detail:{until:a.p_until,reason:a.p_reason},created_at:now()});return null;},
   admin_send_mail:a=>{const n=a.p_users?a.p_users.length:DB.profiles.length;DB.admin_log.unshift({id:Date.now(),admin:ADMIN.id,action:'send_mail',target:'all',detail:{text:a.p_text,items:a.p_items,gold:a.p_gold,count:n},created_at:now()});return n;},
   admin_invites:()=>DB.invites,
+  admin_lotto:()=>[{draw_key:'2026-11-13',draw_at:'2026-11-13T11:00:00Z',nums:null,drawn_at:null,tickets:3,players:2,r1:0,r2:0,r3:0,claimed:0,paid:0},{draw_key:'2026-11-06',draw_at:'2026-11-06T11:00:00Z',nums:[1,2,3,9],drawn_at:'2026-11-06T11:00:05Z',tickets:4,players:3,r1:0,r2:1,r3:2,claimed:3,paid:3200}],
   admin_invite_create:a=>{const c=a.p_code||'AUTO1234';DB.invites.unshift({code:c,max_uses:a.p_max_uses,uses:0,note:a.p_note,created_at:now()});DB.admin_log.unshift({id:Date.now(),admin:ADMIN.id,action:'invite_create',target:c,detail:{},created_at:now()});return c;},
   admin_invite_delete:a=>{DB.invites=DB.invites.filter(x=>x.code!==a.p_code);return null;},
   admin_publish:a=>{const d=DB.content_drafts.find(x=>x.kind===a.p_kind&&x.id===a.p_id);if(!d)throw {message:'NO_DRAFT'};DB.content_drafts=DB.content_drafts.filter(x=>x!==d);return upsertContent({kind:d.kind,id:d.id,data:d.data});},

@@ -169,3 +169,19 @@ VIEWS.log=async(el)=>{
     </tbody></table></div></div>`;
   $$('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();const x=items[+a.dataset.go];go('content',{kind:x.link.kind,id:x.link.id});});
 };
+
+/* ── 행운권 (회차별 판매·당첨·지급) ── */
+VIEWS.lotto=async(el)=>{
+  const rows=await q(A.sb.rpc('admin_lotto',{p_weeks:12}));
+  if(!rows){el.innerHTML='<div class="msg bad">행운권 현황을 불러오지 못했습니다.</div>';return;}
+  const won=r=>Number(r.r1)+Number(r.r2)+Number(r.r3);
+  const sold=rows.reduce((s,r)=>s+Number(r.tickets),0),paid=rows.reduce((s,r)=>s+Number(r.paid),0);
+  el.innerHTML=`<div class="panel"><h3><span>주간 행운권 <span class="faint" style="font-weight:400">최근 ${rows.length}회 · 판매 ${sold}장(${(sold*200).toLocaleString('ko-KR')}G) · 지급 ${paid.toLocaleString('ko-KR')}G</span></span></h3>
+    <p class="faint small" style="margin:0 0 10px">매주 금 19:00 판매 마감, 20:00 이후 첫 조회 때 서버가 무작위로 번호를 뽑습니다. 1장 200G · 한 주 2장 · 1등 10,000 / 2등 3,000 / 3등 100G.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>회차</th><th>당첨 번호</th><th class="n">판매</th><th class="n">참여</th><th class="n">1등</th><th class="n">2등</th><th class="n">3등</th><th class="n">확인</th><th class="n">지급</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td><b>${esc(r.draw_key)}</b><div class="faint small">${fmtTime(r.draw_at)}</div></td>
+      <td>${r.nums?`<span style="font-family:var(--f-code);letter-spacing:.15em">${r.nums.map(n=>esc(n)).join(' ')}</span>`:new Date(r.draw_at)>Date.now()?'<span class="chip warn">판매 중</span>':'<span class="chip dim">추첨 대기</span>'}</td>
+      <td class="n">${r.tickets}</td><td class="n">${r.players}</td><td class="n">${r.r1||''}</td><td class="n">${r.r2||''}</td><td class="n">${r.r3||''}</td>
+      <td class="n">${r.nums?`${r.claimed}/${r.tickets}`:''}</td><td class="n">${Number(r.paid)?Number(r.paid).toLocaleString('ko-KR')+'G':''}</td></tr>`).join('')||'<tr><td colspan="9" class="empty">아직 판매된 행운권이 없습니다.</td></tr>'}
+    </tbody></table></div></div>`;
+};

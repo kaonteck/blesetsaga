@@ -140,13 +140,57 @@ select t.as(:'P2'); insert into fish_catches(land,species,size_cm) values ('swam
 select t.ok((select count(*) from fish_weekly where land='swamp')=2 and (select max(size_cm) from fish_weekly)=55.0,'주간 랭킹: 한 사람당 최고 기록');
 select t.fail($$insert into fish_catches(land,species,size_cm,week) values ('swamp','메기',99,'2020-01-06')$$,'지난 주 기록 끼워넣기');
 
--- 행운권
-reset role; insert into lotto_draws(draw_key,draw_at,nums,drawn_at) values ('2026-11-06', now()+interval '6 day', null, null), ('2026-10-30', now()-interval '1 day', '{1,2,3,4}', now()-interval '1 day');
-set role authenticated;
-select t.as(:'P1'); insert into lotto_tickets(draw_key,nums) values ('2026-11-06','{1,2,3,4}');
-select t.fail($$insert into lotto_tickets(draw_key,nums) values ('2026-10-30','{1,2,3,4}')$$,'추첨 끝난 회차 구매');
-select t.fail($$insert into lotto_tickets(draw_key,nums) values ('2026-11-06','{1,2,3,12}')$$,'0–9 밖 숫자');
-select t.fail($$update lotto_tickets set rank=1$$,'당첨 등수 직접 수정');
+-- 행운권 (시계를 바꿔 끼워서 판매·마감·추첨·수령을 차례로 확인)
+reset role;
+create table t.clock(ts timestamptz); insert into t.clock values ('2026-11-04 03:00+00');   -- 수 12:00 KST
+grant select on t.clock to authenticated;
+create or replace function private.lotto_clock() returns timestamptz language sql stable set search_path='' as $$ select ts from t.clock $$;
+insert into saves(user_id,data) values (:'P2','{"me":{"name":"벨라","gold":50,"inv":{}}}') on conflict (user_id) do nothing;
+set role authenticated; select t.as(:'P1');
+select t.fail($$insert into lotto_tickets(draw_key,nums) values ('2026-11-06','{1,2,3,4}')$$,'행운권 표에 직접 넣기(돈 안 내고)');
+select buy_lotto('{3,1,2,4}'); select buy_lotto('{5,6,7,8}');
+reset role;
+select t.ok((select (data->'me'->>'gold')::int from saves where user_id=:'P1')=300,'2장 구매 → 400골드 차감 (700→300)');
+select t.ok((select array_agg(nums::text order by nums::text) from lotto_tickets where user_id=:'P1')='{"{1,2,3,4}","{5,6,7,8}"}','번호는 정렬해서 저장 · 회차 2026-11-06');
+select t.ok((select draw_at from lotto_draws where draw_key='2026-11-06')='2026-11-06 11:00+00','추첨 시각 = 금 20:00 KST');
+set role authenticated; select t.as(:'P1');
+select t.fail($$select buy_lotto('{0,1,2,3}')$$,'한 주 3장째');
+select t.fail($$select buy_lotto('{1,1,2,3}')$$,'같은 숫자 두 번');
+select t.fail($$select buy_lotto('{1,2,3,12}')$$,'0–9 밖 숫자');
+select t.fail($$select buy_lotto('{1,2,3}')$$,'숫자 3개');
+select t.as(:'P2'); select t.fail($$select buy_lotto('{1,2,3,4}')$$,'골드 부족(50G)');
+select t.as(:'P3'); select t.fail($$select buy_lotto('{1,2,3,4}')$$,'세이브 없음');
+select t.as(:'P1');
+select t.ok((select jsonb_array_length(lotto_sync()->'tickets'))=2 and (select lotto_sync()->'draws')='{}','추첨 전: 내 행운권 2장 · 당첨 번호 없음');
+select t.fail($$select claim_lotto((select id from lotto_tickets limit 1))$$,'추첨 전 수령');
+select t.fail($$update lotto_tickets set rank=1$$,'등수 직접 수정');
+reset role; update t.clock set ts='2026-11-06 10:30+00'; set role authenticated;   -- 금 19:30 KST
+select t.as(:'P2'); select t.fail($$select buy_lotto('{1,2,3,4}')$$,'금 19:00 이후 판매 마감');
+select t.as(:'P1');
+select t.ok((select lotto_sync()->'draws')='{}','추첨 시각 전에는 아직 안 뽑음');
+reset role; update t.clock set ts='2026-11-06 11:00:01+00'; set role authenticated;   -- 금 20:00:01 KST
+select t.as(:'P1');
+select lotto_sync();
+select t.ok((select cardinality(nums)=4 and cardinality(array(select distinct unnest(nums)))=4 and nums=(select array_agg(x order by x) from unnest(nums) x) from lotto_draws where draw_key='2026-11-06' and drawn_at is not null),'추첨 시각 지나 결과를 보면 서버가 4개 뽑음(서로 다른·정렬)');
+select t.ok((select lotto_sync()->'draws'->>'2026-11-06') is not null,'내 결과에 당첨 번호 포함');
+reset role; create temp table t_first as select nums from lotto_draws where draw_key='2026-11-06'; grant select on t_first to authenticated; set role authenticated;
+select lotto_sync(); select t.ok((select nums from lotto_draws where draw_key='2026-11-06')=(select nums from t_first),'한 번 뽑으면 다시 안 바뀜');
+select t.ok(not exists(select 1 from lotto_tickets where rank is null),'추첨되면 모든 행운권 등수 매김');
+-- 등수·상금 확인을 위해 당첨 번호를 정해 놓고 다시 매긴다
+reset role; update lotto_draws set nums='{1,2,3,9}' where draw_key='2026-11-06'; update lotto_tickets set rank=null; select private.lotto_draw_due(); set role authenticated;
+select t.as(:'P1');
+select t.ok((select rank from lotto_tickets where nums='{1,2,3,4}')=2 and (select rank from lotto_tickets where nums='{5,6,7,8}')=0,'3개 일치 2등 · 0개 꽝');
+select t.ok((select (claim_lotto((select id from lotto_tickets where nums='{1,2,3,4}'))->>'prize')::int)=3000,'2등 수령 3000골드');
+reset role; select t.ok((select (data->'me'->>'gold')::int from saves where user_id=:'P1')=3300,'상금이 세이브에 더해짐 (300→3300)'); set role authenticated; select t.as(:'P1');
+select t.fail($$select claim_lotto((select id from lotto_tickets where nums='{1,2,3,4}'))$$,'같은 행운권 두 번 수령');
+select t.ok((select (claim_lotto((select id from lotto_tickets where nums='{5,6,7,8}'))->>'prize')::int)=0,'꽝 확인(0골드)');
+select t.as(:'P2'); select t.fail($$select claim_lotto('00000000-0000-0000-0000-0000000000ff')$$,'남의·없는 행운권 수령');
+select t.as(:'P1'); select buy_lotto('{0,4,7,9}');
+select t.ok((select draw_key from lotto_tickets where nums='{0,4,7,9}')='2026-11-13','추첨 뒤에는 다음 주 회차로 판매');
+select t.fail($$select * from admin_lotto()$$,'유저가 운영 행운권 현황');
+select t.as(:'A',true);
+select t.ok((select tickets=2 and r2=1 and claimed=2 and paid=3000 from admin_lotto() where draw_key='2026-11-06'),'운영 현황: 판매 2 · 2등 1 · 수령 2 · 지급 3000');
+select t.as(:'P1');
 
 -- 운영 함수 · 문의 · 신고
 select t.fail($$select * from admin_players()$$,'유저가 회원 목록');

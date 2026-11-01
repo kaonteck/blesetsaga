@@ -75,6 +75,9 @@ with sync_playwright() as p:
     # 초대코드
     pg.click('.tab[data-tab=invites]');pg.wait_for_selector('#if');pg.fill('#i-code','NEWCODE9');pg.click('#if .btn-p');pg.wait_for_timeout(600)
     ok('NEWCODE9' in pg.inner_text('#i-new'),'초대코드 생성');pg.screenshot(path=OUT+'/5-invites.png')
+    # 행운권
+    pg.click('.tab[data-tab=lotto]');pg.wait_for_selector('.tbl tbody tr');lt=pg.inner_text('#view')
+    ok('1 2 3 9' in lt and '판매 중' in lt and '3,200G' in lt and '판매 7장' in lt,'행운권 회차 현황(당첨 번호·판매 중·지급 합계)');pg.screenshot(path=OUT+'/5b-lotto.png')
     # 기록
     pg.click('.tab[data-tab=log]');pg.wait_for_selector('.tbl tbody tr');t=pg.inner_text('#view')
     miss=[w for w in ['우편 발송','콘텐츠 수정','콘텐츠 되돌림','초대코드 생성','정지 해제'] if w not in t];ok(not miss,'운영 기록 통합 (빠진 것: '+','.join(miss)+')')
