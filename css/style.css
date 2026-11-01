@@ -2194,3 +2194,7 @@ html,body{overflow-x:clip;max-width:100%}
 .panel::before{background:#d6e6f7;box-shadow:0 0 6px rgba(170,205,240,.95),0 0 14px rgba(140,185,235,.55)}
 .panel>h3,.panel>.ph{border-left-color:rgba(180,212,245,.8);text-shadow:0 0 10px rgba(150,195,240,.25)}
 .logo .lg-en{text-shadow:0 0 12px rgba(160,200,245,.35)}
+
+/* 레이드 화면: 패널 위 다이아 장식·'◆ 인스턴스 던전' 같은 이름표 앞 다이아 없음 (body[data-route]는 04-ui.js syncChatFab이 붙임) */
+body[data-route="battle"] .panel::before{content:none}
+body[data-route="battle"] .lbl-d{display:none}
