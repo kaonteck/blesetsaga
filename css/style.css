@@ -2058,3 +2058,12 @@ html,body{overflow-x:clip;max-width:100%}
 @media (max-width:760px){.wm-zoom{right:auto;left:3%}.wm-zoom button{width:32px;height:32px;font-size:18px}}  /* 폰: 오른쪽 아래 채팅 버튼과 겹치지 않게 왼쪽 */
 @media (prefers-reduced-motion:reduce){.wm-stage.wm-anim{transition:none}}
 .wmap::after{z-index:2}
+
+/* 칭호: 알약 테두리 없이 글자로 (캐릭터 카드·정보 탭의 칭호, 칭호 목록의 '히든'·'순위 칭호' 표시) */
+.title-chip,.title-chip.tc-legend{background:none;border:0;border-radius:0;padding:0;gap:5px;line-height:1.5;text-underline-offset:3px}
+.title-chip::before{content:"◆";font-size:7px;opacity:.75}
+.title-chip.tc-none::before{content:none}
+.title-chip.tc-none::after{content:"›";font-size:13px;line-height:1;opacity:.7}
+.title-chip:hover{border:0;text-decoration:underline}
+.title-chip:focus-visible{outline:1px solid var(--gold-hi);outline-offset:3px;border-radius:2px}
+.trow .t > .chip{align-self:flex-start;border:0;border-radius:0;padding:0;background:none;font-size:11px;font-weight:600;letter-spacing:.02em}
