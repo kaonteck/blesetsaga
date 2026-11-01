@@ -30,6 +30,7 @@ function renderTop(){
     <nav class="nav ${NAV_OPEN?'open':''}" id="mainnav" aria-label="주 메뉴">${nav.map(([r,l])=>`<button data-act="nav" data-route="${r}" ${S.route===r?'aria-current="page"':''}><span class="nv-ko">${l}</span></button>`).join('')}</nav>
     <div class="topright">${state}<button class="ibtn me-btn ${S.route==='character'?'on':''}" data-act="nav" data-route="character" data-tip="캐릭터" aria-label="캐릭터" ${S.route==='character'?'aria-current="page"':''}><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.2" r="2.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.8 14.2c.5-3 2.6-4.6 5.2-4.6s4.7 1.6 5.2 4.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="pill" data-act="online" aria-label="접속자 목록"><span class="dot"></span><span class="pl-t">접속 </span><span class="num" data-online>${onlineCount()}</span><span class="pl-t">명</span></button>
       <button class="ibtn" data-act="pop" data-pop="mail" data-tip="메시지" aria-label="메시지${mailUnread()?' · 읽지 않은 메시지 있음':''}" aria-expanded="${S.sel.pop==='mail'}">${TICON.mail}${mailUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
+      <button class="ibtn" data-act="pop" data-pop="notice" data-tip="공지사항" aria-label="공지사항${noticeUnread()?' · 읽지 않은 공지 있음':''}" aria-expanded="${S.sel.pop==='notice'}">${HICON.notice}${noticeUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
       <button class="ibtn" data-act="pop" data-pop="settings" data-tip="환경설정" aria-label="환경설정" aria-expanded="${S.sel.pop==='settings'}">${TICON.gear}</button></div>
   </div>`;
 }
@@ -224,7 +225,7 @@ function vMain(){
   return `<div class="wrap tkwrap">${ticker()}</div>
     <div class="wrap grid2 main-grid">
       ${charCard(true)}<div class="rtop">${skyBar()}${recruitPanel()}</div>
-      ${chatPanel()}<div class="col">${todayPanel()}${noticePanel()}</div>
+      ${chatPanel()}<div class="col">${nextGoalHTML()}</div>
     </div>`;
 }
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
@@ -381,12 +382,15 @@ function recruitRows(rs,withJoin){
 const NPAGE=5;
 const NCAT={notice:'공지',maint:'점검',update:'업데이트',event:'이벤트'};
 const ncatTag=n=>{const c=NCAT[n.cat]?n.cat:'notice';return `<span class="ntag nt-${c}">${NCAT[c]}</span>`;};
-function noticePanel(){
+function noticeSeenSet(){return new Set((S.me&&S.me.noticeSeen)||[]);}
+function noticeUnread(){if(!S||!S.me||!S.data||!S.data.notices)return false;const seen=noticeSeenSet();return S.data.notices.some(n=>!seen.has(n.id));}
+function noticeMarkSeen(){if(!S.me)return;const ids=S.data.notices.map(n=>n.id);const seen=noticeSeenSet();if(ids.every(i=>seen.has(i)))return;S.me.noticeSeen=ids;save();}
+function noticePop(){
   const all=S.data.notices,adm=isAdmin();const pages=Math.max(1,Math.ceil(all.length/NPAGE));const pg=Math.min(S.sel.npage||0,pages-1);
-  const rows=all.slice(pg*NPAGE,pg*NPAGE+NPAGE);
-  return `<div class="panel" data-notices><h3>${hTitle('notice','공지사항')}${adm?'<button class="btn btn-sm" data-act="n-new" style="letter-spacing:0;text-transform:none">글쓰기</button>':''}</h3>
-    <div class="board" role="table" aria-label="공지사항 목록">
-    ${rows.length?rows.map((n,i)=>`<div class="brow ${adm?'adm':''}" role="row"><span role="cell">${ncatTag(n)}</span><button class="btitle" role="cell" data-act="n-open" data-id="${n.id}">${esc(n.title)}</button><span class="num faint" role="cell">${esc(n.date)}</span>
+  const rows=all.slice(pg*NPAGE,pg*NPAGE+NPAGE);const fresh=new Set(S.sel.noticeNew||[]);
+  return `<div class="pop-head"><b>공지사항</b>${adm?'<button class="btn btn-sm" data-act="n-new">글쓰기</button>':''}</div>
+    <div class="pop-body" data-notices><div class="board" role="table" aria-label="공지사항 목록">
+    ${rows.length?rows.map(n=>`<div class="brow ${adm?'adm':''} ${fresh.has(n.id)?'new':''}" role="row"><span role="cell">${ncatTag(n)}</span><button class="btitle" role="cell" data-act="n-open" data-id="${n.id}">${fresh.has(n.id)?'<span class="nnew" aria-label="새 공지"></span>':''}${esc(n.title)}</button><span class="num faint" role="cell">${esc(n.date)}</span>
       ${adm?`<span class="bact" role="cell"><button class="ibtn sm" data-act="n-edit" data-id="${n.id}" data-tip="수정" aria-label="${esc(n.title)} 수정">${TICON.pen}</button><button class="ibtn sm danger" data-act="n-delask" data-id="${n.id}" data-tip="삭제" aria-label="${esc(n.title)} 삭제">${TICON.trash}</button></span>`:''}</div>`).join(''):'<p class="empty" style="padding:10px 0">등록된 공지가 없습니다.</p>'}</div>
     ${pages>1?`<div class="bpager">${Array.from({length:pages},(_,k)=>`<button class="${k===pg?'on':''}" data-act="n-page" data-p="${k}" aria-label="${k+1}페이지" ${k===pg?'aria-current="page"':''}>${k+1}</button>`).join('')}</div>`:''}</div>`;
 }
@@ -404,7 +408,7 @@ function noticeEdit(n){
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" data-act="closemodal">취소</button><button class="btn btn-primary" type="submit">${n?'저장':'게시'}</button></div></form>`);
   const mm=$('.modal');if(mm)mm.classList.add('wide');const t=$('#ne-title');if(t)t.focus();
 }
-function refreshNotices(){const el=$('[data-notices]');if(el)el.outerHTML=noticePanel();}
+function refreshNotices(){if(S.sel.pop==='notice'){noticeMarkSeen();renderPop();}renderTop();}
 /* ───────── 채팅 ───────── */
 function chatPanel(opt={}){
   return `<div class="panel chat${opt.lock?'':' chat-main'}" data-chatpanel data-lock="${opt.lock||''}">${opt.lock?'':'<div class="chat-sheethead"><span>채팅</span><button type="button" class="chat-x" data-chatclose aria-label="채팅 닫기">×</button></div>'}<div data-chathead></div><div class="msgs ${opt.tall?'tall':''}" data-msgs aria-live="polite"></div>
@@ -1398,7 +1402,7 @@ function renderPop(){
   const k=S&&S.me&&!S.loggedOut?S.sel.pop:null;
   if(!k){el.innerHTML='';return;}
   const keepScroll=el.querySelector('.pop-body');const sc=keepScroll?keepScroll.scrollTop:0;
-  el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':'환경설정'}">${k==='mail'?mailPop():settingsPop()}</div>`;
+  el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':k==='notice'?'공지사항':'환경설정'}">${k==='mail'?mailPop():k==='notice'?noticePop():settingsPop()}</div>`;
   const b=el.querySelector('.pop-body');if(b)b.scrollTop=sc;
 }
 

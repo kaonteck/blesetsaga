@@ -34,7 +34,7 @@ document.addEventListener('submit',e=>{if(!S)return;
   if(k==='notice-edit'){if(!isAdmin())return;const t=$('#ne-title').value.trim(),x=$('#ne-text').value.trim(),cat=$('#ne-cat').value;if(!t){toast('제목을 입력하세요.','warn');return;}
     const id=f.dataset.id;const d=new Date(now()+9*3600e3).toISOString();
     if(id){const n=S.data.notices.find(z=>z.id===id);if(!n)return;const ch=diff({cat:n.cat,title:n.title,text:n.text},{cat,title:t,text:x});n.cat=cat;n.title=t;n.text=x;if(ch.length){n.updatedAt=now();logChange('공지 · '+t,ch);}modal('');save();refreshNotices();noticeView(n);toast('공지를 수정했습니다.','good');}
-    else{const n={id:uid('n'),cat,date:d.slice(5,7)+'.'+d.slice(8,10),title:t,text:x};S.data.notices.unshift(n);S.sel.npage=0;logChange('공지',[{field:'추가',before:undefined,after:t}]);modal('');save();refreshNotices();toast('공지를 게시했습니다.','good');}
+    else{const n={id:uid('n'),cat,date:d.slice(5,7)+'.'+d.slice(8,10),title:t,text:x};S.data.notices.unshift(n);S.sel.npage=0;S.me.noticeSeen=[...(S.me.noticeSeen||[]),n.id];logChange('공지',[{field:'추가',before:undefined,after:t}]);modal('');save();refreshNotices();toast('공지를 게시했습니다.','good');}
     return;}
   if(k==='tk-ev'){if(!isAdmin())return;const title=$('#tk-title').value.trim();if(!title){toast('이름을 입력하세요.','warn');return;}const mins=Math.min(1440,Math.max(1,Math.round(+$('#tk-min').value||30)));
     const e={id:uid('ev'),kind:$('#tk-kind').value,title,loc:$('#tk-loc').value.trim(),reward:$('#tk-reward').value.trim(),link:$('#tk-link').value,until:now()+mins*60000,by:S.me.name};
@@ -146,7 +146,7 @@ const ACTS={
   'n-del':d=>{const n=S.data.notices.find(x=>x.id===d.id);S.data.notices=S.data.notices.filter(x=>x.id!==d.id);if(n)logChange('공지',[{field:'삭제',before:n.title,after:undefined}]);modal('');save();refreshNotices();toast('공지를 삭제했습니다.');},
   'u-gift':d=>{closeRmem();modal('');S.sel.pop='mail';S.sel.mc={to:d.name,text:'',items:{},gift:true};S.sel.mailView='compose';renderPop();renderTop();},
   'u-mail':d=>{closeRmem();modal('');S.sel.pop='mail';S.sel.mc={to:d.name,text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();renderTop();const t=$('#mc-text');if(t)t.focus();},
-  pop:d=>{S.sel.pop=S.sel.pop===d.pop?null:d.pop;if(d.pop==='mail'&&S.sel.pop){S.sel.mailView=null;S.sel.mpick=false;S.sel.msel=[];}if(d.pop==='settings')S.sel.confirmDel=false;renderPop();renderTop();},
+  pop:d=>{S.sel.pop=S.sel.pop===d.pop?null:d.pop;if(d.pop==='mail'&&S.sel.pop){S.sel.mailView=null;S.sel.mpick=false;S.sel.msel=[];}if(d.pop==='settings')S.sel.confirmDel=false;if(d.pop==='notice'&&S.sel.pop){const seen=noticeSeenSet();S.sel.noticeNew=S.data.notices.filter(n=>!seen.has(n.id)).map(n=>n.id);S.sel.npage=0;noticeMarkSeen();}renderPop();renderTop();},
   'mail-tab':d=>{S.sel.mailTab=d.tab;S.sel.msel=[];renderPop();},
   'mail-open':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;m.read=true;S.sel.mailView=m.id;save();renderPop();renderTop();},
   'mail-back':()=>{S.sel.mailView=null;renderPop();},
