@@ -527,7 +527,7 @@ function botSay(ch,name,text){
 function chatShown(p){return !(innerWidth<=760&&p.classList&&p.classList.contains('chat-main')&&!document.body.classList.contains('chat-open'));}
 function visibleTab(t){return $$('[data-chatpanel]').some(p=>chatShown(p)&&(p.dataset.lock||S.sel.chatTab)===t);}
 function syncFabBadge(){const f=$('#chatfab');if(!f||!f.querySelector)return;let bd=f.querySelector('.fab-badge');const n=dmUnread();
-  if(!bd){f.insertAdjacentHTML('beforeend','<span class="fab-badge" style="position:absolute;top:3px;right:10px;width:11px;height:11px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px var(--void),0 0 8px rgba(179,162,126,.7)" hidden></span>');bd=f.querySelector('.fab-badge');}
+  if(!bd){f.insertAdjacentHTML('beforeend','<span class="fab-badge" hidden></span>');bd=f.querySelector('.fab-badge');}
   if(!bd)return;bd.hidden=!n;if(f.setAttribute)f.setAttribute('aria-label',n?'채팅 열기 · 읽지 않은 1:1 대화 있음':'채팅 열기');}
 function sysParty(text){if(S.party){S.party.chat.push({id:uid('m'),sys:true,text,ts:now()});}}
 const timers=new Set();
