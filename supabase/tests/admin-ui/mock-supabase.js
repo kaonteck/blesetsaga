@@ -7,7 +7,7 @@ const DB={
   profiles:[{user_id:ADMIN.id,username:'admin',name:'운영자'},{user_id:'u2',username:'arin',name:'아린'},{user_id:'u3',username:'bella',name:'벨라'}],
   inquiries:[{id:'i1',author:'u2',cat:'버그',text:'장비가 사라졌어요',answer:null,created_at:now()}],
   reports:[{id:'r1',reporter:'u2',target:'u3',target_name:'벨라',kind:'chat',ref_id:'5',snapshot:'도배 메시지',reason:'도배',done:false,created_at:now()}],
-  chat_messages:[{id:'5',hidden:false}],feed_posts:[],feed_comments:[],
+  chat_messages:[{id:'5',channel:'lobby',author:'u3',name:'벨라',text:'도배 메시지',hidden:false,created_at:now()},{id:'6',channel:'lobby',author:'u2',name:'아린',text:'안녕하세요',hidden:false,created_at:now()},{id:'7',channel:'world',author:null,name:'운영자',cat:'maint',text:'점검 안내',hidden:false,created_at:now()}],feed_posts:[],feed_comments:[],
   invites:[{code:'BLESET01',max_uses:5,uses:2,note:'친구',created_at:now()}],
   saves:{u2:{savedAt:Date.now(),me:{level:12,gold:3400,job:'defender',inv:{potion:3,holywater:1}}}}
 };
