@@ -2162,3 +2162,22 @@ html,body{overflow-x:clip;max-width:100%}
   body.has-chat #chatfab{background:#2b2a4e;border-color:rgba(185,190,227,.26);box-shadow:0 8px 24px rgba(5,5,15,.6),inset 0 1px 0 rgba(255,255,255,.06)}
   body.has-chat #chatfab:hover{background:#33325a}
 }
+
+/* 임시 직업 변경권 팝업(05-features.js jobTicketDlg) — JS에 주입되던 #jc-style을 옮김.
+   주입 스타일이 남아 있어도 이기도록 .modal 아래로 한정. 폰에서는 기본 클래스 한 줄 + 상위 클래스 두 칸 */
+.modal .jc-list{display:flex;flex-direction:column;gap:10px}
+.modal .jc-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.modal .jc-b{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;border:1px solid var(--rule-2);border-radius:var(--r);background:rgba(255,255,255,.025);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color .12s,background-color .12s}
+.modal .jc-b > span{min-width:0}
+.modal .jc-b b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal .jc-b small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal .jc-b:hover:not(:disabled){border-color:var(--steel-lo);background:rgba(214,203,176,.06)}
+.modal .jc-b:disabled{opacity:.45;cursor:default}
+.modal .jc-b.cur{opacity:1;border-color:var(--warn);background:rgba(217,166,92,.06)}
+@media (max-width:520px){
+  .modal .jc-g{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .modal .jc-g > .jc-b:first-child{grid-column:1/-1}
+}
+
+/* 던전 바로가기 ›: 보이는 크기는 그대로, 누르는 범위만 약 44px로 */
+.exr-dun .exr-gh .dun-go::before{content:"";position:absolute;inset:-10px -10px -10px -10px}
