@@ -2214,3 +2214,22 @@ html,body{overflow-x:clip;max-width:100%}
 .qgrp:has(>.qgrp-h[data-k^="done_"]):is(:hover,:focus-within){opacity:.8}
 /* 패널 위 다이아 장식 제거. 이름표 앞 ◆(.lbl-d)는 그대로 */
 .panel::before{content:none}
+
+/* 상단 바 한 줄 유지(공지 확성기 버튼이 생긴 뒤 다시 2줄이 되던 것) */
+/* 데스크톱(≥901px): 줄바꿈 대신 메뉴 간격·여백이 폭에 맞춰 줄어듦(전투 중 상태 칩이 붙어도 한 줄) */
+@media (min-width:901px){
+  .top .wrap{flex-wrap:nowrap}
+  .nav{flex-wrap:nowrap;gap:clamp(0px,1vw,22px)}
+  .nav button{padding-inline:clamp(8px,1vw,16px);white-space:nowrap}
+}
+/* 폰: 상태 칩이 뜬 동안 접속자 칩 숨김 기준 380 → 420px */
+@media (max-width:420px){.topright:has(.pill.state) .pill[data-act="online"]{display:none}}
+/* 아주 좁은 폰(≤340px): 버튼·간격·로고를 조금 더 작게 */
+@media (max-width:340px){
+  .top .wrap{column-gap:4px}
+  .logo .lg-en{font-size:10.5px!important;letter-spacing:.06em!important}
+  .topright{gap:2px!important}
+  .topright .ibtn{width:26px;height:26px}
+  .topright .pill{padding:3px 6px}
+  .navtog{width:26px}
+}

@@ -221,8 +221,8 @@ function vCreate(){
 function vMain(){
   return `<div class="wrap tkwrap">${ticker()}</div>
     <div class="wrap grid2 main-grid">
-      ${charCard(true)}<div class="rtop">${skyBar()}${recruitPanel()}</div>
-      ${chatPanel()}<div class="col">${nextGoalHTML()}</div>
+      ${charCard(true)}<div class="rtop">${skyBar()}${nextGoalHTML()}${recruitPanel()}</div>
+      ${chatPanel()}
     </div>`;
 }
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
