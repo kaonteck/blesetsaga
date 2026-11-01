@@ -347,7 +347,7 @@ function mapDlg(land,focus,page){
   if(!page)ins.filter(s=>s[1]==='gate').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};
     h+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>워프게이트</div><h3 class="md-title">${esc(n)}${I.job?` <span class="chip cls ${roleOf(I.job)}" style="vertical-align:middle">${CLASSES[I.job].name}</span>`:''}</h3><p class="md-text">${I.text||''}</p>`);});
   const cnt=x=>(x.match(/<section /g)||[]).length;
-  return page?`<div class="exr-row" style="--n:1">${villageHTML(land)}</div>${land===CASINO_LAND?`<div class="exr-row" style="--n:1">${casinoHTML()}</div>`:''}${FISH_LANDS[land]?`<div class="exr-row" style="--n:1">${fishCard(land)}</div>`:''}<div class="exr-row" style="--n:${cnt(h)}">${h}</div>`:h+dg;
+  return page?`${VIL_TOWN[land]?`<div class="exr-row" style="--n:1">${villageHTML(land)}</div>`:''}${land===CASINO_LAND?`<div class="exr-row" style="--n:1">${casinoHTML()}</div>`:''}${FISH_LANDS[land]?`<div class="exr-row" style="--n:1">${fishCard(land)}</div>`:''}<div class="exr-row" style="--n:${cnt(h)}">${h}</div>`:h+dg;
 }
 function openMap(land,focus){S.sel.mapLand=land;S.sel.mapFocus=focus||'';modal(mapDlg(land,focus));const mm=$('.modal');if(mm){mm.classList.add('mapmodal');const el=focus&&$('#md-'+focus);if(el)mm.scrollTop=Math.max(0,el.offsetTop-12);}}
 function refreshMap(){const mm=$('.modal.mapmodal');if(!mm)return;const st=mm.scrollTop;modal(mapDlg(S.sel.mapLand,S.sel.mapFocus));const m2=$('.modal');if(m2){m2.classList.add('mapmodal');m2.scrollTop=st;}}
