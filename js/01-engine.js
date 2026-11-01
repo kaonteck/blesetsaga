@@ -29,11 +29,11 @@ const CLASSES={
     desc:'특수 탄환과 연사로 크리티컬을 노린다.',skills:['shooting','poisonshot','smoke','legendary','overburning','fusillade']},
   priest:{name:'프리스트',en:'Priest',tier:1,role:'heal',range:'5×5',sigil:'聖',adv:['demigod','summoner'],
     desc:'신의 축복으로 동료를 치유하고 되살린다.',
-    stat:{hp:130,atk:26,def:4,luk:6},grow:{hp:8,atk:1.6,def:0.5,luk:0.15},skills:['shining','cure','sinsayer']},
+    stat:{hp:130,atk:34,def:4,luk:6},grow:{hp:8,atk:2.1,def:0.5,luk:0.15},skills:['shining','cure','sinsayer','smite']},
   demigod:{name:'데미갓',en:'Demigod',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'神',bonus:{hp:20,atk:4},
-    desc:'신을 강림시켜 파티 전체를 회복한다.',skills:['shining','cure','sinsayer','bless','fasciation','pray','utopia']},
+    desc:'신을 강림시켜 파티 전체를 회복한다.',skills:['shining','cure','sinsayer','smite','judgment','bless','fasciation','pray','utopia']},
   summoner:{name:'서머너',en:'Summoner',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'召',bonus:{hp:20,luk:4},
-    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['shining','cure','sinsayer','vindicate','blind','downworld','dystopia','backslider']}
+    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['shining','cure','sinsayer','smite','vindicate','blind','downworld','dystopia','backslider']}
 };
 const JOBS=CLASSES;
 const ORIGIN={defender:'황혼녘 강가',infighter:'바위 산맥',mage:'붉은 모래사막',shooter:'오아시스 마을',priest:'적막의 숲'};
@@ -43,8 +43,8 @@ const ITEMS={
   elixir:{name:'용기의 영약',type:'use',target:'self',desc:'[테스트용] 마시면 60분 동안 공격력 +8, 행운 +4. 아이템 보너스 표시를 확인하기 위한 가상의 아이템.',price:150,buff:{stat:'atk',val:8,min:60},buff2:{stat:'luk',val:4,min:60}},
   sword:{name:'낡은 순례자 검',type:'equip',slot:'weapon',stats:{atk:3},desc:'순례자들이 호신용으로 지니던 검',price:90},
   shield:{name:'성역의 대방패',type:'equip',slot:'weapon',stats:{def:3,maxHp:25},desc:'성역 기사단의 문장이 새겨진 방패'},
-  bow:{name:'추적자의 장궁',type:'equip',slot:'weapon',stats:{atk:6,luk:2},desc:'블라스파미아의 나무로 깎은 활'},
-  staff:{name:'축복의 지팡이',type:'equip',slot:'weapon',stats:{atk:3,luk:3},desc:'끝에 맑은 수정이 박힌 지팡이'},
+  bow:{name:'추적자의 장궁',type:'equip',slot:'weapon',stats:{mag:6,luk:2},desc:'블라스파미아의 나무로 깎은 활'},
+  staff:{name:'축복의 지팡이',type:'equip',slot:'weapon',stats:{mag:3,luk:3},desc:'끝에 맑은 수정이 박힌 지팡이'},
   leather:{name:'탐사대 가죽갑옷',type:'equip',slot:'armor',stats:{def:2,maxHp:15},desc:'탐사대 보급품',price:120},
   cloak:{name:'백야의 망토',type:'equip',slot:'armor',stats:{def:4,luk:1,maxHp:30},desc:'해가 지지 않는 땅의 빛을 머금은 망토'},
   amulet:{name:'라니아케아의 부적',type:'equip',slot:'acc',stats:{luk:5,maxHp:20},desc:'신들의 축복이 깃든 부적'},
@@ -69,18 +69,18 @@ const GEAR_IDS=[];
 GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},armor:'g'+T+'_armor',acc:'g'+T+'_acc'};
   const A=Math.round(4+L*1.0),price=Math.round(40+L*14);
   const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
-    knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{atk:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
-    gun:{atk:A,luk:Math.round(1+L*0.1)},dgun:{atk:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{atk:Math.round(A*0.7),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{atk:Math.round(A*0.8),luk:Math.round(3+L*0.25)}};
+    knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{mag:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
+    gun:{mag:A,luk:Math.round(1+L*0.1)},dgun:{mag:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{mag:Math.round(A*0.9),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{mag:A,luk:Math.round(3+L*0.25)}};
   (L<20?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
     ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
-  ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25)},desc,price};
+  ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25),mag:Math.round(L*0.25)},desc,price};
   GEAR_IDS.push(ids.armor,ids.acc);});
 function lootText(m){const L=m.loot||[];const t=ITEMS[L[0]];if(t&&t.tier)return `${GEAR_TIER[t.tier-1][0]} 장비(LV${GEAR_TIER[t.tier-1][2]}+ 무기·방어구·장신구)`;return L.map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ');}
 const gearOfTier=T=>GEAR_IDS.filter(id=>ITEMS[id].tier===T);
 function pickLoot(m){const L=m.loot||[];if(!L.length)return 'potion';const me=S&&S.me;
   if(me&&Math.random()<0.7){const mine=L.filter(k=>{const it=ITEMS[k];return it&&(!it.wtype||(CLASS_WEAPON[me.job]||[]).includes(it.wtype));});if(mine.length)return pick(mine);}return pick(L);}
-const STATK={maxHp:'HP',atk:'공격력',def:'방어력',luk:'행운',mov:'이동 범위'};
+const STATK={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',luk:'행운',mov:'이동 범위'};
 const ART={
 forest:String.raw`    \ | /   \ | /
    --(  o    o  )--
@@ -128,21 +128,21 @@ const DEFAULT_MONSTERS=[
   {id:'forest',kind:'party',name:'변이된 숲의 파수꾼',art:'forest',region:'변이된 숲',published:true,rev:1,
    desc:'혼돈에 물든 숲을 지키던 고목이 일어섰다. 가지 끝마다 독 포자가 맺혀 있다.',
    level:3,maxLevel:null,min:3,max:4,target:3,roles:{tank:1,dps:1,heal:1},
-   hp:380,hpScale:0.3,atk:60,def:0,
+   hp:760,hpScale:0.3,atk:60,def:0,
    singleName:'가시 덩굴 휘두르기',singleMult:1.0,aoeName:'뿌리 폭풍',aoeMult:0.6,aoeEvery:3,
    dotName:'독 포자',dotChance:0.3,dotDmg:8,
    exp:140,gold:70,drops:[['potion',0.5],['sword',0.2],['leather',0.15]]},
   {id:'tracker',kind:'party',name:'블라스파미아 추적자',art:'tracker',region:'블라스파미아 경계',published:true,rev:1,
    desc:'저주받은 땅의 냄새를 따라 탐사대를 쫓는 짐승. 무리를 지어 다닌다는 소문이 있다.',
    level:8,maxLevel:null,min:3,max:4,target:3,roles:{tank:1,dps:1,heal:1},
-   hp:640,hpScale:0.3,atk:104,def:0,
+   hp:1280,hpScale:0.3,atk:104,def:0,
    singleName:'그림자 송곳니',singleMult:1.0,aoeName:'추적의 포효',aoeMult:0.6,aoeEvery:3,
    dotName:'저주 출혈',dotChance:0.35,dotDmg:12,
    exp:320,gold:150,drops:[['holywater',0.4],['bow',0.15],['shield',0.15],['staff',0.15]]},
   {id:'guardian',kind:'weekly',name:'백야의 신전 봉인 수호자',art:'guardian',region:'백야의 신전',published:true,rev:1,
    desc:'잠든 혼돈을 가두는 봉인을 지켜 온 거인. 봉인이 흔들리며 다가오는 모든 것을 적으로 여긴다.',
    level:15,maxLevel:null,min:6,max:12,target:6,roles:{tank:1,dps:3,heal:2},
-   hp:2500,hpScale:0.18,atk:170,def:0,
+   hp:5000,hpScale:0.18,atk:170,def:0,
    singleName:'봉인의 사슬',singleMult:1.0,aoeName:'백야의 섬광',aoeMult:0.6,aoeEvery:3,
    dotName:'혼돈 침식',dotChance:0.3,dotDmg:18,
    exp:750,gold:400,drops:[['cloak',0.25],['amulet',0.2],['crest',0.1]]}
@@ -151,67 +151,80 @@ const DEFAULT_MONSTERS=[
    phase: pre(④ 방어·보호 단계) · main(⑤ 행동 단계) */
 const SKILLS={
   attack:{name:'공격',en:'Attack',type:'dice',target:'enemy',desc:'대상을 무기로 공격한다.'},
-  save:{name:'세이브',en:'Save',type:'support',phase:'pre',target:'self',uses:2,reduce:10,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지가 10 감소한다.'},
-  save2:{name:'세이브 Ⅱ',en:'Save Ⅱ',type:'support',phase:'pre',target:'self',uses:2,reduce:30,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지가 30 감소한다.'},
-  crimehazard:{name:'크라임 해저드',en:'Crime Hazard',type:'dice',target:'enemy',uses:2,bonus:20,desc:'무기를 강하게 내리찍어 추가 대미지(+20)를 준다.'},
+  save:{name:'세이브',en:'Save',type:'support',phase:'pre',target:'self',uses:2,reduce:10,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지 10% 감소.'},
+  save2:{name:'세이브 Ⅱ',en:'Save Ⅱ',type:'support',phase:'pre',target:'self',uses:2,reduce:30,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지 30% 감소.'},
+  crimehazard:{name:'크라임 해저드',en:'Crime Hazard',type:'dice',target:'enemy',uses:2,bonus:25,desc:'무기를 강하게 내리찍는다. 추가 대미지 +25%.'},
   forestaller:{name:'제압',en:'Forestaller',type:'support',phase:'pre',target:'self',desc:'몬스터를 도발하여 자신을 우선 표적으로 삼게 만든다. 일정 이상의 대미지를 요하며, 특정 조건이 충족되면 스킬의 효력이 없어진다.',cond:['딜러가 입힌 총 대미지가 디펜더가 입힌 총 대미지의 네 배 이상 (다시 쓸 때마다 여덟 배, 열여섯 배로 늘어난다)','제압한 탱커가 쓰러짐']},
-  execution:{name:'처형',en:'Execution',type:'dice',target:'enemy',desc:'공격하며 이번 턴 포함 3턴 동안 공격할 때마다 1~18의 추가 대미지를 준다.'},
-  roar:{name:'전장의 포효',en:'Roar of a battle',type:'addon',special:true,uses:1,desc:'두 턴 동안 대미지 +50. 시전자 HP 30 감소. 공격 스킬과 함께 사용.'},
-  berserker:{name:'광전사',en:'Berserker',type:'addon',special:true,uses:1,desc:'두 턴 동안 대미지 ×2. 유지되는 동안 시전자 최대 HP 30 감소. 공격 스킬과 함께 사용.'},
+  execution:{name:'처형',en:'Execution',type:'dice',target:'enemy',desc:'공격하며 이번 턴 포함 3턴 동안 공격할 때마다 추가 대미지 0~22%를 준다.'},
+  roar:{name:'전장의 포효',en:'Roar of a battle',type:'addon',special:true,uses:1,desc:'두 턴 동안 대미지 +60%. 시전자 HP가 최대 HP의 10%만큼 줄어든다. 공격 스킬과 함께 사용.'},
+  berserker:{name:'광전사',en:'Berserker',type:'addon',special:true,uses:1,desc:'두 턴 동안 대미지 ×2. 유지되는 동안 시전자 최대 HP 10% 감소. 공격 스킬과 함께 사용.'},
   attention:{name:'시야 강탈',en:'Attention',type:'support',phase:'pre',target:'self',desc:'제압이 걸린 몬스터의 표적을 1턴 동안 자신에게 고정한다. 제압이 유효할 때만 사용 가능.'},
-  link:{name:'결속',en:'Link',type:'support',phase:'pre',target:'ally',uses:2,desc:'지정한 아군과 결속. 자신은 30의 고정 대미지를 받고, 아군을 1턴 동안 모든 상태이상과 대미지로부터 보호한다.'},
+  link:{name:'결속',en:'Link',type:'support',phase:'pre',target:'ally',uses:2,desc:'지정한 아군과 결속. 자신은 최대 HP의 10%만큼 대미지를 받고, 아군을 1턴 동안 모든 상태이상과 대미지로부터 보호한다.'},
   link2:{name:'결속강화',en:'Link Ⅱ',type:'support',phase:'pre',target:'ally',uses:2,special:true,desc:'대미지 없이 결속한 아군과 자신을 1턴 동안 모든 상태이상과 대미지로부터 보호한다.'},
   sanctuary:{name:'성역',en:'Sacred place',type:'support',phase:'pre',target:'party',uses:1,special:true,desc:'아군 전체를 1턴 동안 모든 상태이상과 대미지로부터 보호한다.'},
   jolt:{name:'졸트',en:'Jolt',type:'dice',target:'enemy',desc:'대상을 무기로 공격한다.'},
-  takedown:{name:'테이크다운',en:'Takedown',type:'nodice',target:'self',uses:1,desc:'무기와 신체에 마력을 주입한다. 다음 턴부터 2턴 동안 대미지 +20.'},
+  takedown:{name:'테이크다운',en:'Takedown',type:'nodice',target:'self',uses:1,desc:'무기와 신체에 기운을 주입한다. 다음 턴부터 2턴 동안 대미지 +25%.'},
   battlefield:{name:'배틀 필드',en:'Battle field',type:'dice',target:'enemy',desc:'발을 굴러 근방 3×3 영역 모두에게 대미지를 준다. 대상당 한 칸의 대미지만 적용.'},
-  rush:{name:'러시',en:'Rush',type:'dice',target:'enemy',combo:{from:'jolt',bonus:10},desc:'대상을 빠르게 난도질한다.'},
-  hitend:{name:'히트엔드',en:'Hitend',type:'dice',target:'enemy',combo:{from:'rush',bonus:20},crit:true,desc:'대상의 빈틈을 노려 깊게 찌른다.'},
-  subterfuge:{name:'속임수',en:'Subterfuge',type:'dice',target:'enemy',uses:2,special:true,bonus:20,poison:{dmg:10,turns:2},desc:'독을 바른 무기로 공격(+20). 이번 턴 포함 2턴 동안 중독 10.'},
-  overkill:{name:'오버킬',en:'Overkill',type:'dice',target:'enemy',combo:{from:'jolt',bonus:10},desc:'졸트로 노린 대상의 약점을 파고든다.'},
-  might:{name:'권능',en:'Might',type:'dice',target:'enemy',combo:{from:'overkill',bonus:30},crit:true,desc:'오버킬과 연계하여 연속으로 강한 공격을 가한다.'},
-  carnage:{name:'대학살',en:'Carnage',type:'addon',special:true,uses:1,with:['overkill'],desc:'오버킬과 함께 사용. 대미지가 100 이상이면 이번 턴 포함 3턴 동안 모든 스킬 대미지 ×2.'},
+  rush:{name:'러시',en:'Rush',type:'dice',target:'enemy',combo:{from:'jolt',bonus:15},desc:'대상을 빠르게 난도질한다.'},
+  hitend:{name:'히트엔드',en:'Hitend',type:'dice',target:'enemy',combo:{from:'rush',bonus:25},crit:true,desc:'대상의 빈틈을 노려 깊게 찌른다.'},
+  subterfuge:{name:'속임수',en:'Subterfuge',type:'dice',target:'enemy',uses:2,special:true,bonus:25,poison:{pct:12,turns:2},desc:'독을 바른 무기로 공격(+25%). 이번 턴 포함 2턴 동안 공격력의 12% 중독.'},
+  overkill:{name:'오버킬',en:'Overkill',type:'dice',target:'enemy',combo:{from:'jolt',bonus:15},desc:'졸트로 노린 대상의 약점을 파고든다.'},
+  might:{name:'권능',en:'Might',type:'dice',target:'enemy',combo:{from:'overkill',bonus:40},crit:true,desc:'오버킬과 연계하여 연속으로 강한 공격을 가한다.'},
+  carnage:{name:'대학살',en:'Carnage',type:'addon',special:true,uses:1,with:['overkill'],desc:'오버킬과 함께 사용. 대미지가 공격력의 2배 이상이면 이번 턴 포함 3턴 동안 모든 스킬 대미지 ×2.'},
   flame:{name:'플레임',en:'Flame',type:'dice',target:'enemy',desc:'대상을 마력으로 공격한다.'},
-  cinder:{name:'신더',en:'Cinder',type:'nodice',phase:'pre',target:'enemy',desc:'대상에게 의욕감소(모든 공격 대미지 −10)를 2턴 동안 건다.'},
-  blaze:{name:'블레이즈',en:'Blaze',type:'dice',target:'enemy',combo:{from:'flame',bonus:10},desc:'여러 개의 불덩이를 발사한다.'},
-  meteor:{name:'메테오',en:'Meteor',type:'dice',target:'enemy',combo:{from:'flame',bonus:20},crit:true,desc:'거대한 불덩이를 발사한다.'},
-  hellfire:{name:'헬파이어',en:'Hellfire',type:'nodice',target:'enemy',desc:'대상의 신체에 불꽃을 피운다. 이번 턴 포함 3턴 동안 15의 고정 대미지.'},
-  eternalflame:{name:'이터널 플레임',en:'Eternal Flame',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 3턴 동안 공격 결과값이 100 미만이면 ×2, 100 이상이면 ×3. 단 50 미만이면 이번 턴과 다음 턴 공격 대미지가 무효.'},
+  cinder:{name:'신더',en:'Cinder',type:'nodice',phase:'pre',target:'enemy',desc:'대상에게 의욕감소(몬스터 공격 대미지 −12%)를 2턴 동안 건다.'},
+  blaze:{name:'블레이즈',en:'Blaze',type:'dice',target:'enemy',combo:{from:'flame',bonus:15},desc:'여러 개의 불덩이를 발사한다.'},
+  meteor:{name:'메테오',en:'Meteor',type:'dice',target:'enemy',combo:{from:'flame',bonus:25},crit:true,desc:'거대한 불덩이를 발사한다.'},
+  hellfire:{name:'헬파이어',en:'Hellfire',type:'nodice',target:'enemy',desc:'대상의 신체에 불꽃을 피운다. 이번 턴 포함 3턴 동안 마력의 18% 고정 대미지.'},
+  eternalflame:{name:'이터널 플레임',en:'Eternal Flame',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 3턴 동안 판정 90~109%면 ×2, 110% 이상이면 ×3. 단 90% 미만이면 이번 턴과 다음 턴 공격 대미지가 무효.'},
   shooting:{name:'집중 사격',en:'Shooting',type:'dice',target:'enemy',desc:'대상을 무기로 공격한다.'},
-  poisonshot:{name:'포이즌슈팅',en:'Poison Shooting',type:'dice',target:'enemy',poison:{dmg:10,turns:3},desc:'독을 바른 총알을 발사한다. 이번 턴 포함 3턴 동안 중독 10. 속임수 중독과 중첩되지 않는다.'},
-  smoke:{name:'연막탄',en:'Smoke Projectile',type:'dice',target:'enemy',uses:1,bonus:20,desc:'추가 대미지 +20. 다음 턴 본인을 제외한 파티원 대미지 +10.'},
-  legendary:{name:'레전더리 샷',en:'Legendary Shot',type:'dice',target:'enemy',combo:{from:'shooting',bonus:20},crit:true,desc:'특수 탄환을 장전하여 공격한다. 결과값이 50 이상이면 다음 턴 오버 버닝 사용 가능.'},
-  overburning:{name:'오버 버닝',en:'Over burning',type:'dice',target:'enemy',desc:'직전 턴 레전더리 샷의 결과값이 50 이상일 때 사용 가능. 결과값 ×2.'},
+  poisonshot:{name:'포이즌슈팅',en:'Poison Shooting',type:'dice',target:'enemy',poison:{pct:12,turns:3},desc:'독을 바른 총알을 발사한다. 이번 턴 포함 3턴 동안 마력의 12% 중독. 속임수 중독과 중첩되지 않는다.'},
+  smoke:{name:'연막탄',en:'Smoke Projectile',type:'dice',target:'enemy',uses:1,bonus:25,desc:'추가 대미지 +25%. 다음 턴 본인을 제외한 파티원 대미지 +15%(시전자 마력 기준).'},
+  legendary:{name:'레전더리 샷',en:'Legendary Shot',type:'dice',target:'enemy',combo:{from:'shooting',bonus:25},crit:true,desc:'특수 탄환을 장전하여 공격한다. 판정이 110% 이상이면 다음 턴 오버 버닝 사용 가능.'},
+  overburning:{name:'오버 버닝',en:'Over burning',type:'dice',target:'enemy',desc:'직전 턴 레전더리 샷의 판정이 110% 이상일 때 사용 가능. 결과값 ×2.'},
   fusillade:{name:'연사',en:'Fusillade',type:'passive',special:true,desc:'크리티컬 판정에 성공하면 다음 턴에 스킬을 두 번 사용할 수 있다.'},
-  shining:{name:'샤이닝',en:'Shining',type:'dice',target:'enemy',desc:'대상을 마력으로 공격한다.'},
-  cure:{name:'큐어',en:'Cure',type:'heal',target:'ally',desc:'신의 축복으로 치유한다. 회복량 + 10.'},
+  shining:{name:'샤이닝',en:'Shining',type:'dice',target:'enemy',mult:1.3,holy:true,desc:'대상을 신성한 빛으로 공격한다. 대미지 ×1.3, 영혼형 몬스터에게는 ×1.5 추가.'},
+  smite:{name:'징벌',en:'Smite',type:'dice',target:'enemy',lv:10,drain:30,desc:'신의 벌을 내린다. 준 대미지의 30%만큼 HP가 가장 낮은 아군(혼자면 자신)을 회복한다. LV10부터 사용 가능.'},
+  judgment:{name:'심판',en:'Judgment',type:'dice',target:'enemy',uses:2,mult:1.6,crit:true,desc:'하늘의 심판을 내린다. 대미지 ×1.6.'},
+  cure:{name:'큐어',en:'Cure',type:'heal',target:'ally',desc:'신의 축복으로 치유한다. 회복량 = 마력 × 판정 × 40% + 마력의 10%.'},
   sinsayer:{name:'신세이어',en:'Sin-sayer',type:'heal',target:'dead',desc:'쓰러진 아군을 최대 HP의 30%로 부활시킨다. 시전자는 2턴 동안 어떤 스킬도 쓸 수 없다. 전 범위.'},
-  bless:{name:'블레스',en:'Bless',type:'heal',target:'ally',uses:2,desc:'3턴 동안 HP를 5씩 회복한다(이번 턴 포함). 추가 회복력 적용 불가.'},
-  fasciation:{name:'결속자',en:'Fasciation',type:'heal',target:'party',uses:1,desc:'아군 전체의 HP를 회복량 + 15 회복한다.'},
-  pray:{name:'프레이',en:'Pray',type:'heal',target:'ally',uses:1,desc:'자신의 HP 50을 바쳐 대상의 HP를 전부 회복한다.'},
-  utopia:{name:'유토피아',en:'Utopia',type:'heal',target:'party',uses:1,special:true,desc:'낙원의 신을 강림시켜 아군 전체의 HP를 회복량 + 50 회복한다.'},
-  vindicate:{name:'비호',en:'Vindicate',type:'support',phase:'pre',target:'party',uses:2,desc:'이번 턴 아군 전체가 받는 대미지 20 감소.'},
-  blind:{name:'블라인드',en:'Blind',type:'support',phase:'pre',target:'party',uses:1,desc:'소환수가 대상의 방어를 낮춘다. 이번 턴 아군 전체 대미지 +20.'},
-  downworld:{name:'다운월드',en:'Down World',type:'support',phase:'pre',target:'enemy',uses:1,desc:'소환수가 한 턴 동안 대상을 봉쇄한다. 이번 턴 몬스터 대미지 −30.'},
-  dystopia:{name:'디스토피아',en:'Dystopia',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 아군 전체 HP를 5씩 바쳐 이번 공격 대미지 ×10.'},
-  backslider:{name:'타락자',en:'Backslider',type:'support',phase:'pre',target:'ally',uses:1,special:true,desc:'대상의 대미지를 이번 턴 동안 ×3.'}
+  bless:{name:'블레스',en:'Bless',type:'heal',target:'ally',uses:2,desc:'3턴 동안 대상 최대 HP의 5%씩 회복한다(이번 턴 포함). 추가 회복력 적용 불가.'},
+  fasciation:{name:'결속자',en:'Fasciation',type:'heal',target:'party',uses:1,desc:'아군 전체를 회복한다. 회복량 = 마력 × 판정 × 40% + 마력의 12%.'},
+  pray:{name:'프레이',en:'Pray',type:'heal',target:'ally',uses:1,desc:'자신의 최대 HP 15%를 바쳐 대상의 HP를 전부 회복한다.'},
+  utopia:{name:'유토피아',en:'Utopia',type:'heal',target:'party',uses:1,special:true,desc:'낙원의 신을 강림시켜 아군 전체를 회복한다. 회복량 = 마력 × 판정 × 40% + 마력의 40%.'},
+  vindicate:{name:'비호',en:'Vindicate',type:'support',phase:'pre',target:'party',uses:2,desc:'이번 턴 아군 전체가 받는 대미지 20% 감소.'},
+  blind:{name:'블라인드',en:'Blind',type:'support',phase:'pre',target:'party',uses:1,desc:'소환수가 대상의 방어를 낮춘다. 이번 턴 아군 전체 대미지 +25%(시전자 마력 기준).'},
+  downworld:{name:'다운월드',en:'Down World',type:'support',phase:'pre',target:'enemy',uses:1,desc:'소환수가 한 턴 동안 대상을 봉쇄한다. 이번 턴 몬스터 대미지 −30%.'},
+  dystopia:{name:'디스토피아',en:'Dystopia',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 아군 전체가 최대 HP의 3%씩 바쳐 이번 공격 대미지 ×3.'},
+  backslider:{name:'타락자',en:'Backslider',type:'support',phase:'pre',target:'ally',uses:1,special:true,desc:'대상의 대미지를 이번 턴 동안 ×2.'}
 };
 function basicSkill(cls){return CLASSES[cls].skills.find(s=>SKILLS[s].type==='dice');}
+/* 판정 · 크리티컬 · 회복 공식 (전투 공식 정리는 docs/combat-formulas.md) */
+const JUDGE_MIN=0.8,JUDGE_MAX=1.2,CRIT_MULT=1.5,MON_HIT=0.45,DEF_K=50;
+function judgeRoll(rng){return JUDGE_MIN+(JUDGE_MAX-JUDGE_MIN)*rng();}
+function critChance(p,s){if(!s||s.type!=='dice')return 0;return (5+(p.luk||0)*0.5)*(s.crit?2:1);}
+function healAmt(p,rng,bonus){return Math.max(1,Math.round(p.atk*(judgeRoll(rng)*0.4+bonus)));}
 function rollD(n,rng){return 1+Math.floor(rng()*Math.max(1,Math.round(n)));}
 const ENH_MAX=10;
 function enhStep(v){return Math.max(1,Math.round(Math.abs(v)*0.15))*Math.sign(v||1);}
 function itemStats(id,lv){const it=ITEMS[id];if(!it||!it.stats)return {};const o={};for(const k in it.stats)o[k]=it.stats[k]+(lv||0)*(it.stats[k]>0?enhStep(it.stats[k]):0);return o;}
+const MAGIC_BASE=['mage','shooter','priest'];
+function isMagic(job){const c=CLASSES[job];return !!c&&MAGIC_BASE.includes(c.base||job);}
+function powOf(st){return st.pk==='mag'?st.mag:st.atk;}
 function statsFor(cls,level,equip,enh){
   const c=CLASSES[cls],b=CLASSES[c.base||cls],L=(level-1)*(1+(level-1)/196);
-  const s={maxHp:Math.round(b.stat.hp+b.grow.hp*L),atk:Math.round(b.stat.atk+b.grow.atk*L),def:Math.round(b.stat.def+b.grow.def*L),luk:Math.round(b.stat.luk+b.grow.luk*L),mov:0};
+  const s={maxHp:Math.round(b.stat.hp+b.grow.hp*L),atk:Math.round(b.stat.atk+b.grow.atk*L),def:Math.round(b.stat.def+b.grow.def*L),luk:Math.round(b.stat.luk+b.grow.luk*L),mov:0,mag:0};
   for(const k in (c.bonus||{}))s[k==='hp'?'maxHp':k]+=c.bonus[k];
+  /* 마력 계열(메이지·슈터·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
+  if(isMagic(cls)){s.mag=s.atk;s.atk=0;}
   for(const slot in (equip||{})){const id=equip[slot];const st=itemStats(id,(enh||{})[id]);for(const k in st)s[k]=(s[k]||0)+st[k];}
+  s.pk=isMagic(cls)?'mag':'atk';
   return s;
 }
 function roleOf(cls){return CLASSES[cls].role;}
 function makeFighter(p){
   const s=statsFor(p.job,p.level,p.equip,p.enh);
-  return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,hp:s.maxHp,
+  return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,atk:powOf(s),hp:s.maxHp,
     dead:false,uses:{},buffs:[],poison:null,hot:null,bound:0,supUses:0,last:null,lastTurn:-9,obTurn:-9,doubleTurn:-9,
     dealt:0,turnDealt:0,protect:false,reduce:0,defending:false,action:null,action2:null,confirmed:false,direct:0,planAt:0};
 }
@@ -267,6 +280,7 @@ function checkAct(b,p,a,hasItem,primary){
   if(p.dead)return '전투 불능';
   if(!a||a.kind==='defend')return null;
   if(p.bound>0)return '빛의 속박 중 · 스킬 사용 불가';
+  if(a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].lv&&(p.level||1)<SKILLS[a.skill].lv)return `LV${SKILLS[a.skill].lv}부터 사용 가능`;
   if(a.kind==='item'){
     if(!hasItem||!hasItem(p.id,a.item))return '소지품 없음';
     return null;
@@ -313,17 +327,17 @@ function resolveTurn(b,rng,hooks){
       if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
       const s=SKILLS[a.skill];spend(p,a.skill);const t=a.target?P(a.target):null;
       switch(a.skill){
-        case 'save':case 'save2':p.reduce+=s.reduce;log('act',`${p.name} · ${s.name} (받는 대미지 −${s.reduce})`);break;
+        case 'save':case 'save2':p.reduce+=s.reduce;log('act',`${p.name} · ${s.name} (받는 대미지 −${s.reduce}%)`);break;
         case 'forestaller':p.supUses++;b.sup={by:p.id,mult:supMult(p.supUses),overheal:0};log('act',`${p.name} · 제압! 몬스터의 표적이 된다 (유지 조건: 딜러 총 대미지 < ${p.name} 총 대미지 ×${b.sup.mult})`);break;
         case 'attention':b.attention=p.id;log('act',`${p.name} · 시야 강탈! 이번 턴 표적 고정`);break;
-        case 'link':p.hp=Math.max(0,p.hp-30);t.protect=true;log('act',`${p.name} · 결속 → ${t.name} 보호, 자신은 30 고정 대미지${p.hp===0?' (쓰러짐)':''}`);if(p.hp===0)p.dead=true;break;
+        case 'link':{const lc=Math.round(p.maxHp*0.1);p.hp=Math.max(0,p.hp-lc);t.protect=true;log('act',`${p.name} · 결속 → ${t.name} 보호, 자신은 ${lc} 대미지(최대 HP 10%)${p.hp===0?' (쓰러짐)':''}`);}if(p.hp===0)p.dead=true;break;
         case 'link2':p.protect=true;t.protect=true;log('act',`${p.name} · 결속강화 → ${t.name}와(과) 함께 1턴 보호`);break;
         case 'sanctuary':b.sanct=true;log('act',`${p.name} · 성역! 아군 전체 1턴 보호`);break;
-        case 'cinder':m.weaken=2;log('act',`${p.name} · 신더 → ${m.name} 의욕감소 2턴 (공격 −10)`);break;
-        case 'vindicate':b.shield+=20;log('act',`${p.name} · 비호 (아군 전체 받는 대미지 −20)`);break;
-        case 'blind':b.players.forEach(x=>addBuff(x,'blind',T,T,{add:20}));log('act',`${p.name} · 블라인드 (이번 턴 아군 대미지 +20)`);break;
-        case 'downworld':b.bind=30;log('act',`${p.name} · 다운월드 → ${m.name} 봉쇄 (이번 턴 몬스터 대미지 −30)`);break;
-        case 'backslider':addBuff(t,'backslider',T,T,{mul:3});log('act',`${p.name} · 타락자 → ${t.name} 이번 턴 대미지 ×3`);break;
+        case 'cinder':m.weaken=2;log('act',`${p.name} · 신더 → ${m.name} 의욕감소 2턴 (공격 −12%)`);break;
+        case 'vindicate':b.shield+=20;log('act',`${p.name} · 비호 (아군 전체 받는 대미지 −20%)`);break;
+        case 'blind':{const v=Math.round(p.atk*0.25);b.players.forEach(x=>addBuff(x,'blind',T,T,{add:v}));log('act',`${p.name} · 블라인드 (이번 턴 아군 대미지 +${v})`);}break;
+        case 'downworld':b.bind=30;log('act',`${p.name} · 다운월드 → ${m.name} 봉쇄 (이번 턴 몬스터 대미지 −30%)`);break;
+        case 'backslider':addBuff(t,'backslider',T,T,{mul:2});log('act',`${p.name} · 타락자 → ${t.name} 이번 턴 대미지 ×2`);break;
       }
     }
   }
@@ -331,32 +345,37 @@ function resolveTurn(b,rng,hooks){
   const attack=(p,a)=>{
     const s=SKILLS[a.skill];
     if(a.addon){spend(p,a.addon);const ad=a.addon;
-      if(ad==='roar'){addBuff(p,'roar',T,T+1,{add:50});p.hp=Math.max(1,p.hp-30);log('act',`${p.name} · 전장의 포효! 2턴 대미지 +50 (HP −30)`);}
-      if(ad==='berserker'){addBuff(p,'berserk',T,T+1,{mul:2});p.maxHp-=30;p.hp=Math.min(p.hp,p.maxHp);log('act',`${p.name} · 광전사! 2턴 대미지 ×2 (최대 HP −30)`);}
+      if(ad==='roar'){const v=Math.round(p.atk*0.6),c=Math.round(p.maxHp*0.1);addBuff(p,'roar',T,T+1,{add:v});p.hp=Math.max(1,p.hp-c);log('act',`${p.name} · 전장의 포효! 2턴 대미지 +${v} (HP −${c})`);}
+      if(ad==='berserker'){const c=Math.round(p.maxHp*0.1);addBuff(p,'berserk',T,T+1,{mul:2,cut:c});p.maxHp-=c;p.hp=Math.min(p.hp,p.maxHp);log('act',`${p.name} · 광전사! 2턴 대미지 ×2 (최대 HP −${c})`);}
       if(ad==='eternalflame'){addBuff(p,'eternal',T,T+2);log('act',`${p.name} · 이터널 플레임! 3턴 동안 지옥의 푸른 불`);}
-      if(ad==='dystopia'){living(b).forEach(x=>x.hp=Math.max(1,x.hp-5));log('act',`${p.name} · 디스토피아! 아군 HP 5씩 제물`);}
+      if(ad==='dystopia'){living(b).forEach(x=>x.hp=Math.max(1,x.hp-Math.round(x.maxHp*0.03)));log('act',`${p.name} · 디스토피아! 아군 최대 HP 3%씩 제물`);}
     }
     if(a.skill==='execution')addBuff(p,'execution',T,T+2);
-    let pure=rollD(p.atk,rng);const raw=pure;
+    const f=judgeRoll(rng);let pure=Math.round(p.atk*f);const raw=pure;
     if(a.skill==='overburning')pure*=2;
-    const parts=[`${raw}${a.skill==='overburning'?'×2':''}`];
-    let add=s.bonus||0;if(s.bonus)parts.push(`+${s.bonus}`);
-    if(comboReady(p,a.skill,T)){add+=s.combo.bonus;parts.push(`연계 +${s.combo.bonus}`);}
-    let crit=false;if(s.crit&&rng()*100<p.luk){crit=true;add+=30;parts.push('크리티컬 +30');}
-    if(buffOn(p,'execution',T)){const e=rollD(18,rng);add+=e;parts.push(`처형 +${e}`);}
+    const parts=[`${raw} (판정 ${Math.round(f*100)}%)${a.skill==='overburning'?'×2':''}`];
+    const pct=v=>Math.round(p.atk*v/100);
+    let add=s.bonus?pct(s.bonus):0;if(s.bonus)parts.push(`+${add}`);
+    if(comboReady(p,a.skill,T)){const c=pct(s.combo.bonus);add+=c;parts.push(`연계 +${c}`);}
+    const critCh=critChance(p,s);let crit=rng()*100<critCh;
+    if(buffOn(p,'execution',T)){const e=Math.round(p.atk*rng()*0.22);add+=e;parts.push(`처형 +${e}`);}
     for(const k of ['roar','takedown','smoke','blind','ember']){const bf=buffOn(p,k,T);if(bf){add+=bf.add;parts.push(`${{roar:'포효',takedown:'테이크다운',smoke:'연막',blind:'블라인드',ember:'화염 공명'}[k]} +${bf.add}`);}}
     let mul=1;
     for(const k of ['berserk','carnage','backslider']){const bf=buffOn(p,k,T);if(bf){mul*=bf.mul;parts.push(`${{berserk:'광전사',carnage:'대학살',backslider:'타락자'}[k]} ×${bf.mul}`);}}
-    if(a.addon==='dystopia'){mul*=10;parts.push('디스토피아 ×10');}
-    if(buffOn(p,'eternal',T)){if(raw<50){addBuff(p,'null',T,T+1);parts.push('푸른 불 폭주');}else{const em=raw>=100?3:2;mul*=em;parts.push(`이터널 ×${em}`);}}
-    let dmg=Math.max(0,Math.round((pure+add)*mul)-m.def);
-    if(a.addon==='carnage'&&dmg>=100){addBuff(p,'carnage',T,T+2,{mul:2});dmg*=2;parts.push('대학살 발동 ×2');}
+    if(a.addon==='dystopia'){mul*=3;parts.push('디스토피아 ×3');}
+    if(s.mult){mul*=s.mult;parts.push(`${s.name} ×${s.mult}`);}
+    if(s.holy&&m.art==='spirit'){mul*=1.5;parts.push('신성 ×1.5');}
+    if(buffOn(p,'eternal',T)){if(f<0.9){addBuff(p,'null',T,T+1);parts.push('푸른 불 폭주');}else{const em=f>=1.1?3:2;mul*=em;parts.push(`이터널 ×${em}`);}}
+    if(crit){mul*=CRIT_MULT;parts.push(`크리티컬 ×${CRIT_MULT}`);}
+    let dmg=Math.max(0,Math.round((pure+add)*mul*(1-(m.def||0)/((m.def||0)+100))));
+    if(a.addon==='carnage'&&dmg>=p.atk*2){addBuff(p,'carnage',T,T+2,{mul:2});dmg*=2;parts.push('대학살 발동 ×2');}
     if(buffOn(p,'null',T)){dmg=0;parts.push('대미지 무효');}
     m.hp=Math.max(0,m.hp-dmg);p.dealt+=dmg;p.turnDealt+=dmg;
     log('hit',`${p.name} · ${s.name}${a.addon?' + '+SKILLS[a.addon].name:''} → ${dmg} 대미지 (${parts.join(' · ')})${crit?' · 크리티컬!':''}`);
-    if(s.poison&&m.hp>0){m.poison={dmg:s.poison.dmg,turns:s.poison.turns,by:p.id};log('act',`${m.name} · 중독 ${s.poison.turns}턴 (턴당 ${s.poison.dmg})`);}
-    if(a.skill==='smoke')b.players.forEach(x=>{if(x!==p)addBuff(x,'smoke',T+1,T+1,{add:10});});
-    if(a.skill==='legendary'&&raw>=50){p.obTurn=T+1;log('act',`${p.name} · 결과값 ${raw} · 다음 턴 오버 버닝 가능`);}
+    if(s.poison&&m.hp>0){const pd=Math.max(1,Math.round(p.atk*(s.poison.pct||12)/100));m.poison={dmg:pd,turns:s.poison.turns,by:p.id};log('act',`${m.name} · 중독 ${s.poison.turns}턴 (턴당 ${pd})`);}
+    if(s.drain&&dmg>0){const al=living(b).filter(x=>x.hp<x.maxHp).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp);const tg=al[0]||p;heal(p,tg,Math.round(dmg*s.drain/100),`${s.name} 흡수`);}
+    if(a.skill==='smoke'){const v=pct(15);b.players.forEach(x=>{if(x!==p)addBuff(x,'smoke',T+1,T+1,{add:v});});}
+    if(a.skill==='legendary'&&f>=1.1){p.obTurn=T+1;log('act',`${p.name} · 판정 ${Math.round(f*100)}% · 다음 턴 오버 버닝 가능`);}
     if(crit)p.crits=(p.crits||0)+1;
     if(crit&&p.job==='dualist'&&CLASSES.dualist.skills.includes('fusillade')){p.doubleTurn=T+1;log('act',`${p.name} · 연사! 다음 턴 스킬 2회`);}
     p.last=a.skill;p.lastTurn=T;
@@ -370,33 +389,33 @@ function resolveTurn(b,rng,hooks){
       if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
       if(a.kind==='item'){
         hooks.useItem&&hooks.useItem(p.id,a.item);
-        if(a.item==='potion')heal(p,p,50,'회복약');
+        if(a.item==='potion')heal(p,p,Math.max(50,Math.round(p.maxHp*0.2)),'회복약');
         else if(a.item==='holywater'){p.poison=null;log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
         continue;
       }
       const s=SKILLS[a.skill];spend(p,a.skill);const t=a.target?P(a.target):null;
       if(s.type==='dice'){attack(p,a);continue;}
       switch(a.skill){
-        case 'takedown':addBuff(p,'takedown',T+1,T+2,{add:20});log('act',`${p.name} · 테이크다운 (다음 턴부터 2턴 대미지 +20)`);break;
-        case 'hellfire':m.burn={dmg:15,turns:3,by:p.id};log('act',`${p.name} · 헬파이어 → ${m.name} 3턴 동안 15 고정 대미지`);break;
-        case 'cure':{const r=rollD(p.atk,rng);heal(p,t,r+10,`큐어 (${r}+10)`);break;}
+        case 'takedown':{const v=Math.round(p.atk*0.25);addBuff(p,'takedown',T+1,T+2,{add:v});log('act',`${p.name} · 테이크다운 (다음 턴부터 2턴 대미지 +${v})`);break;}
+        case 'hellfire':{const v=Math.max(1,Math.round(p.atk*0.18));m.burn={dmg:v,turns:3,by:p.id};log('act',`${p.name} · 헬파이어 → ${m.name} 3턴 동안 ${v} 고정 대미지`);break;}
+        case 'cure':{const v=healAmt(p,rng,0.10);heal(p,t,v,`큐어`);break;}
         case 'sinsayer':p.revives=(p.revives||0)+1;t.dead=false;t.hp=Math.round(t.maxHp*0.3);t.poison=null;p.bound=3;log('heal',`${p.name} · 신세이어 → ${t.name} 부활 (HP ${t.hp}) · ${p.name} 2턴 빛의 속박`);break;
-        case 'bless':t.hot={amt:5,turns:3};log('heal',`${p.name} · 블레스 → ${t.name} 3턴 동안 5씩 회복`);break;
-        case 'fasciation':{const r=rollD(p.atk,rng);healables(b,p,living(b)).forEach(x=>heal(p,x,r+15,`결속자 (${r}+15)`));break;}
-        case 'utopia':{const r=rollD(p.atk,rng);healables(b,p,living(b)).forEach(x=>heal(p,x,r+50,`유토피아 (${r}+50)`));break;}
-        case 'pray':p.hp=Math.max(1,p.hp-50);heal(p,t,t.maxHp,'프레이 (HP 50 봉헌)');break;
+        case 'bless':{const v=Math.max(1,Math.round(t.maxHp*0.05));t.hot={amt:v,turns:3};log('heal',`${p.name} · 블레스 → ${t.name} 3턴 동안 ${v}씩 회복`);break;}
+        case 'fasciation':{const v=healAmt(p,rng,0.12);healables(b,p,living(b)).forEach(x=>heal(p,x,v,`결속자`));break;}
+        case 'utopia':{const v=healAmt(p,rng,0.40);healables(b,p,living(b)).forEach(x=>heal(p,x,v,`유토피아`));break;}
+        case 'pray':{const c=Math.round(p.maxHp*0.15);p.hp=Math.max(1,p.hp-c);heal(p,t,t.maxHp,`프레이 (HP ${c} 봉헌)`);break;}
       }
     }
   }
-  const salaHit=b.players.some(p=>p.job==='salamander'&&p.turnDealt>=300);
+  const salaP=b.players.find(p=>p.job==='salamander'&&p.turnDealt>=p.atk*2.5);const salaHit=!!salaP;
   if(m.hp<=0){m.hp=0;b.over='win';log('win',`${m.name} 처치 · 승리`);return;}
-  if(salaHit){b.players.forEach(x=>addBuff(x,'ember',T+1,T+1,{add:10}));log('act','샐래맨더의 화염 공명 · 다음 턴 파티 대미지 +10');}
+  if(salaHit){const v=Math.round(salaP.atk*0.15);b.players.forEach(x=>addBuff(x,'ember',T+1,T+1,{add:v}));log('act',`샐래맨더의 화염 공명 · 다음 턴 파티 대미지 +${v}`);}
   // ⑥ 몬스터 행동
   const tel=b.tel;
   const hitP=(p,mult)=>{
     if(p.protect||b.sanct)return {d:0,note:'보호'};
-    const roll=rollD(m.atk,rng);let d=Math.round(roll*mult);if(b.dmgTakenMult)d=Math.round(d*b.dmgTakenMult);if(p.defending)d=Math.round(d*0.5);
-    d-=p.def+p.reduce+b.shield+b.bind+(m.weaken>0?10:0);d=Math.max(0,d);
+    let d=m.atk*MON_HIT*judgeRoll(rng)*mult;if(b.dmgTakenMult)d*=b.dmgTakenMult;if(p.defending)d*=0.5;
+    d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?0.88:1);d=Math.max(0,Math.round(d));
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
   };
   if(tel.type==='area'){
@@ -422,7 +441,7 @@ function resolveTurn(b,rng,hooks){
     if(!p.dead&&p.poison){if(p.protect||b.sanct)log('sys',`${p.name} · 보호로 ${p.poison.name} 무효`);else{p.hp=Math.max(0,p.hp-p.poison.dmg);log('mon',`${p.name} · ${p.poison.name} ${p.poison.dmg}${p.hp===0?' (쓰러짐)':''}`);if(p.hp===0)p.dead=true;}p.poison.turns--;if(p.poison.turns<=0)p.poison=null;}
     if(!p.dead&&p.hot){heal({name:'블레스'},p,p.hot.amt,'지속 회복');p.hot.turns--;if(p.hot.turns<=0)p.hot=null;}
     if(p.bound>0)p.bound--;
-    const bz=p.buffs.find(x=>x.k==='berserk'&&x.to===T);if(bz){p.maxHp+=30;}
+    const bz=p.buffs.find(x=>x.k==='berserk'&&x.to===T);if(bz){p.maxHp+=bz.cut||30;}
     p.buffs=p.buffs.filter(x=>x.to>T);
   }
   for(const k of ['poison','burn']){const d=m[k];if(!d)continue;m.hp=Math.max(0,m.hp-d.dmg);const src=P(d.by);if(src)src.dealt+=d.dmg;log('hit',`${m.name} · ${k==='poison'?'중독':'화상'} ${d.dmg}`);d.turns--;if(d.turns<=0)m[k]=null;}
@@ -441,7 +460,7 @@ function resolveTurn(b,rng,hooks){
 function decideBot(b,p,rng){
   const m=b.mon,tel=b.tel,al=living(b),T=b.turn,sk=CLASSES[p.job].skills;
   if(p.bound>0)return {kind:'defend'};
-  const has=k=>sk.includes(k)&&usesLeft(p,k)>0;
+  const has=k=>sk.includes(k)&&usesLeft(p,k)>0&&!(SKILLS[k].lv&&(p.level||1)<SKILLS[k].lv);
   const A=(skill,extra)=>({kind:'skill',skill,...(extra||{})});
   const targeted=tel.type==='aoe'||tel.target===p.id||(supActive(b)&&b.sup.by===p.id);
   const big=Math.round(m.atk*tel.mult*0.8)-p.def;

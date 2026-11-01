@@ -3,7 +3,7 @@
 /* ───────── 상태 ───────── */
 /* ───────── 콘텐츠 구성: 탐색 · 필드 사냥 · 개인 던전 · 이벤트 ───────── */
 const EXPLORE_MAX=10,RAID_MAX=3,DAILY_Q=3;
-const SOLO_TIER={field:[120,27],story:[140,34],dungeon:[150,36]};
+const SOLO_TIER={field:[240,27],story:[280,34],dungeon:[300,36]}; /* 체력은 기준 대미지 100% 개편으로 2배 */
 function soloStats(tier,L){const [h,a]=SOLO_TIER[tier];return {hp:Math.round(h*(1+0.09*(L-1))),atk:Math.round(a*(1+0.07*(L-1)))};}
 function soloMon(o){const L=o.statLevel||o.level;const s=soloStats(o.tier,L);const m={art:'beast',published:true,rev:1,maxLevel:null,min:1,max:1,target:1,roles:{tank:0,dps:0,heal:0},hpScale:0,def:0,
   singleName:'할퀴기',singleMult:1,aoeName:'몰아치기',aoeMult:0.6,aoeEvery:3,dotName:'상처',dotChance:0.3,dotDmg:Math.round(s.atk*0.15),exp:0,gold:0,drops:[],...s,...o};delete m.tier;delete m.statLevel;return m;}
@@ -42,11 +42,11 @@ const EXTRA_MONSTERS=[
  soloMon({id:'st_pup',name:'어린 추적자',art:'beast',kind:'story',region:'블라스파미아 경계',level:6,tier:'story',desc:'둥지를 지키려 길을 막아선 어린 추적자.',singleName:'그림자 송곳니',aoeName:'추적의 포효',dotName:'저주 출혈',dotChance:0.3}),
  {id:'ev_rift',kind:'event',name:'균열의 사도',art:'spirit',region:'갑자기 열린 균열',published:true,rev:1,
   desc:'하늘이 갈라진 자리에서 내려온 혼돈의 사도. 오래 머물지 않는다.',level:5,maxLevel:null,min:8,max:20,target:8,roles:{tank:2,dps:4,heal:2},
-  hp:1800,hpScale:0,atk:200,def:0,singleName:'균열의 창',singleMult:1.0,aoeName:'차원 붕괴',aoeMult:0.6,aoeEvery:3,dotName:'혼돈 낙인',dotChance:0.3,dotDmg:24,
+  hp:3600,hpScale:0,atk:200,def:0,singleName:'균열의 창',singleMult:1.0,aoeName:'차원 붕괴',aoeMult:0.6,aoeEvery:3,dotName:'혼돈 낙인',dotChance:0.3,dotDmg:24,
   exp:220,gold:110,drops:[['holywater',0.5],['staff',0.2],['cloak',0.1]]},
  {id:'ev_crown',kind:'event',name:'녹슨 왕관의 망령',art:'spirit',region:'녹투성이 호수',published:true,rev:1,
   desc:'호수 바닥에 가라앉은 옛 왕의 망령. 녹슨 왕관을 쓴 채 물 위로 떠오른다.',level:12,maxLevel:null,min:8,max:20,target:8,roles:{tank:2,dps:4,heal:2},
-  hp:3200,hpScale:0,atk:300,def:0,singleName:'녹슨 왕홀',singleMult:1.0,aoeName:'왕의 호령',aoeMult:0.6,aoeEvery:3,dotName:'녹물 저주',dotChance:0.35,dotDmg:36,
+  hp:6400,hpScale:0,atk:300,def:0,singleName:'녹슨 왕홀',singleMult:1.0,aoeName:'왕의 호령',aoeMult:0.6,aoeEvery:3,dotName:'녹물 저주',dotChance:0.35,dotDmg:36,
   exp:480,gold:240,drops:[['amulet',0.25],['crest',0.12],['cloak',0.2]]}
 ];
 const ALL_MONSTERS=()=>[...clone(DEFAULT_MONSTERS),...clone(EXTRA_MONSTERS)];
@@ -664,7 +664,7 @@ const SAVE_V=3;
 let S=null;
 function freshState(){
   return {v:SAVE_V,me:null,qp:{},flags:{},claimedQ:{},claimedB:{},rewardLog:[],changeLog:[],reports:[],
-    data:{monsters:ALL_MONSTERS(),quests:clone(DEFAULT_QUESTS),notices:clone(DEFAULT_NOTICES),banner:clone(DEFAULT_BANNER),config:clone(DEFAULT_CONFIG)},
+    data:{hpX2:1,monsters:ALL_MONSTERS(),quests:clone(DEFAULT_QUESTS),notices:clone(DEFAULT_NOTICES),banner:clone(DEFAULT_BANNER),config:clone(DEFAULT_CONFIG)},
     bots:freshBots(),
     rel:{'세린':'friend','아르덴':'friend','하윤':'in'},
     chat:{world:[
