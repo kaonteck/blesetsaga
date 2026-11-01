@@ -30,3 +30,26 @@ drop trigger if exists chat_rate on public.chat_messages;
 create trigger chat_rate before insert on public.chat_messages for each row execute function private.chat_rate_limit();
 drop trigger if exists dm_rate on public.direct_messages;
 create trigger dm_rate before insert on public.direct_messages for each row execute function private.chat_rate_limit();
+
+-- ── (함께) 행운권 수령 오류 이름 정리 — 체크 요청 ──
+-- 남의 것·없는 행운권을 받으려 할 때 ALREADY_CLAIMED 대신 NOT_FOUND. 동작은 같다.
+create or replace function public.claim_lotto(p_id uuid)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare me uuid := auth.uid(); t public.lotto_tickets; prize int;
+begin
+  if me is null then raise exception 'NOT_ACTIVE'; end if;
+  perform private.lotto_draw_due();
+  select * into t from public.lotto_tickets where id = p_id and user_id = me for update;
+  if not found then raise exception 'NOT_FOUND'; end if;
+  if t.rank is null then raise exception 'NOT_DRAWN'; end if;
+  if t.claimed_at is not null then raise exception 'ALREADY_CLAIMED'; end if;
+  update public.lotto_tickets set claimed_at = now() where id = p_id;
+  prize := case t.rank when 1 then 10000 when 2 then 3000 when 3 then 100 else 0 end;
+  if prize > 0 then
+    update public.saves set data = jsonb_set(data, '{me,gold}', to_jsonb(coalesce((data->'me'->>'gold')::numeric, 0) + prize)), updated_at = now()
+     where user_id = me and data->'me' is not null;
+  end if;
+  return jsonb_build_object('rank', t.rank, 'prize', prize);
+end $$;
+revoke execute on function public.claim_lotto(uuid) from public, anon;
+grant execute on function public.claim_lotto(uuid) to authenticated;

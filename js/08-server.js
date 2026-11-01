@@ -107,7 +107,7 @@ function ctApply(rows){
   const list=k=>{if(k==='market')market();return D[CT_LIST[k]]=D[CT_LIST[k]]||[];};
   const get=(k,id)=>CT_LIST[k]?list(k).find(x=>x.id===id):k==='item'?ITEMS[id]:k==='setting'?D[id]:undefined;
   const put=(k,id,v)=>{
-    if(CT_LIST[k]){const L=list(k),i=L.findIndex(x=>x.id===id);if(v==null){if(i>=0)L.splice(i,1);}else if(i>=0)L[i]=v;else L.push(v);}
+    if(CT_LIST[k]){const L=list(k),i=L.findIndex(x=>x.id===id);if(v==null){if(i>=0)L.splice(i,1);}else if(i>=0)L[i]=v;else if(k==='notice')L.unshift(v);else L.push(v);}   // 새 공지는 맨 앞(게임 공지 목록은 최신순)
     else if(k==='item'){D.items=D.items||{};if(v==null){delete D.items[id];delete ITEMS[id];}else{D.items[id]=v;ITEMS[id]=v;}}
     else if(k==='setting'&&v!=null)D[id]=v;};
   const live={};
@@ -137,7 +137,7 @@ async function ctRefresh(){
 }
 // 다시 그려도 되는 때만 다시 그린다 (전투 중·글 쓰는 중에는 다음 화면 전환 때 반영)
 function ctRedraw(){const a=document.activeElement;const typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
-  if(S.route==='battle'||typing||(S.sel&&S.sel.pop))return;try{render();}catch(e){console.warn(e);}}
+  if(S.route==='battle'||typing||(S.sel&&S.sel.pop)){try{renderTop();}catch(e){}return;}try{render();}catch(e){console.warn(e);}}   // 상단(공지 배지 등)은 항상 갱신
 async function ctStart(p){
   const rows=await p;
   if(rows&&ctApply(rows)){save();ctRedraw();}
@@ -335,7 +335,7 @@ function ltStart(){
 const ltErr=e=>{const m=(e&&e.message)||'';
   if(/SALE_CLOSED/.test(m))return '판매가 마감되었습니다 (금 19:00~20:00).';if(/MAX_TICKETS/.test(m))return `이번 주 ${LOTTO_MAX}장을 모두 샀습니다.`;
   if(/NOT_ENOUGH_GOLD/.test(m))return '골드가 부족합니다.';if(/BAD_NUMS/.test(m))return '0~9 중 서로 다른 숫자 4개를 고르세요.';
-  if(/NOT_DRAWN/.test(m))return '아직 추첨 전입니다.';if(/ALREADY_CLAIMED/.test(m))return '이미 확인한 행운권입니다.';
+  if(/NOT_DRAWN/.test(m))return '아직 추첨 전입니다.';if(/NOT_FOUND/.test(m))return '행운권을 찾을 수 없습니다.';if(/ALREADY_CLAIMED/.test(m))return '이미 확인한 행운권입니다.';
   if(/NO_SAVE/.test(m))return '진행 기록이 아직 서버에 없습니다. 잠시 뒤 다시 시도해 주세요.';if(/NOT_ACTIVE/.test(m))return '이용이 제한된 계정입니다.';
   return '행운권을 처리하지 못했습니다. 인터넷 연결을 확인해 주세요.';};
 

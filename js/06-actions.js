@@ -34,7 +34,7 @@ document.addEventListener('submit',e=>{if(!S)return;
   if(k==='notice-edit'){if(!isAdmin())return;const t=$('#ne-title').value.trim(),x=$('#ne-text').value.trim(),cat=$('#ne-cat').value;if(!t){toast('제목을 입력하세요.','warn');return;}
     const id=f.dataset.id;const d=new Date(now()+9*3600e3).toISOString();
     if(id){const n=S.data.notices.find(z=>z.id===id);if(!n)return;const ch=diff({cat:n.cat,title:n.title,text:n.text},{cat,title:t,text:x});n.cat=cat;n.title=t;n.text=x;if(ch.length){n.updatedAt=now();logChange('공지 · '+t,ch);}modal('');save();refreshNotices();noticeView(n);toast('공지를 수정했습니다.','good');}
-    else{const n={id:uid('n'),cat,date:d.slice(5,7)+'.'+d.slice(8,10),title:t,text:x};S.data.notices.unshift(n);S.sel.npage=0;logChange('공지',[{field:'추가',before:undefined,after:t}]);modal('');save();refreshNotices();toast('공지를 게시했습니다.','good');}
+    else{const n={id:uid('n'),cat,date:d.slice(5,7)+'.'+d.slice(8,10),title:t,text:x};S.data.notices.unshift(n);S.sel.npage=0;S.me.noticeSeen=[...(S.me.noticeSeen||[]),n.id];logChange('공지',[{field:'추가',before:undefined,after:t}]);modal('');save();refreshNotices();toast('공지를 게시했습니다.','good');}
     return;}
   if(k==='tk-ev'){if(!isAdmin())return;const title=$('#tk-title').value.trim();if(!title){toast('이름을 입력하세요.','warn');return;}const mins=Math.min(1440,Math.max(1,Math.round(+$('#tk-min').value||30)));
     const e={id:uid('ev'),kind:$('#tk-kind').value,title,loc:$('#tk-loc').value.trim(),reward:$('#tk-reward').value.trim(),link:$('#tk-link').value,until:now()+mins*60000,by:S.me.name};
@@ -146,7 +146,7 @@ const ACTS={
   'n-del':d=>{const n=S.data.notices.find(x=>x.id===d.id);S.data.notices=S.data.notices.filter(x=>x.id!==d.id);if(n)logChange('공지',[{field:'삭제',before:n.title,after:undefined}]);modal('');save();refreshNotices();toast('공지를 삭제했습니다.');},
   'u-gift':d=>{closeRmem();modal('');S.sel.pop='mail';S.sel.mc={to:d.name,text:'',items:{},gift:true};S.sel.mailView='compose';renderPop();renderTop();},
   'u-mail':d=>{closeRmem();modal('');S.sel.pop='mail';S.sel.mc={to:d.name,text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();renderTop();const t=$('#mc-text');if(t)t.focus();},
-  pop:d=>{S.sel.pop=S.sel.pop===d.pop?null:d.pop;if(d.pop==='mail'&&S.sel.pop){S.sel.mailView=null;S.sel.mpick=false;S.sel.msel=[];}if(d.pop==='settings')S.sel.confirmDel=false;renderPop();renderTop();},
+  pop:d=>{S.sel.pop=S.sel.pop===d.pop?null:d.pop;if(d.pop==='mail'&&S.sel.pop){S.sel.mailView=null;S.sel.mpick=false;S.sel.msel=[];}if(d.pop==='settings')S.sel.confirmDel=false;if(d.pop==='notice'&&S.sel.pop){const seen=noticeSeenSet();S.sel.noticeNew=S.data.notices.filter(n=>!seen.has(n.id)).map(n=>n.id);S.sel.npage=0;noticeMarkSeen();}renderPop();renderTop();},
   'mail-tab':d=>{S.sel.mailTab=d.tab;S.sel.msel=[];renderPop();},
   'mail-open':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;m.read=true;S.sel.mailView=m.id;save();renderPop();renderTop();},
   'mail-back':()=>{S.sel.mailView=null;renderPop();},
@@ -219,7 +219,7 @@ const ACTS={
   qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});},
   rtab:d=>{S.sel.rtab=d.tab;S.sel.monster=null;save();render();},
   dtarget:d=>{S.sel.dtarget=d.v;S.sel.dtargets={};render();},
-  dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:1,mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
+  dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
   'ev-spawn':d=>{if(!isAdmin())return;const m=monster(d.id);if(!m||S.mass)return;spawnMass(m,S.me.name);logChange('만신전',[{field:'출현',before:undefined,after:m.name}]);render();},
   'ex-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const dd=daily();const A=d.area?MAP_INFO[d.area]:null;const an=d.area?(MAP_SPOTS.find(x=>x[0]===d.area)||[])[2]:null;const need=A?A.lv:r.lv;
     if(S.me.level<need){toast(`LV${need} 이상 필요합니다.`,'warn');return;}{const sl=storyLock(r.id);if(sl){toast(sl,'warn');return;}}if(dd.explore>=EXPLORE_MAX){toast(`오늘 탐색 ${EXPLORE_MAX}회를 모두 사용했습니다.`,'warn');return;}
@@ -286,8 +286,8 @@ const ACTS={
     N.splice(i,1);save();render();if(N.length){modal(netListDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');}else modal('');},
   'aq-release':d=>{const A=aqua();const c=A[+d.i];if(!c)return;A.splice(+d.i,1);save();render();toast(`${fishName(c)}을(를) 방생했습니다.`);},
   'drun-next':()=>{const R=S.drun;if(!R||R.done)return;const k=R.phases[R.idx];if(k==='monster'||k==='boss')drunStartBattle();else drunEvent();},
-  'drun-exit':()=>{(S.drun&&S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();go('battle',{rtab:'dungeon'});},
-  'drun-quit':()=>{if(!S.drun)return;(S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();toast('던전 탐사를 포기했습니다.');go('battle',{rtab:'dungeon'});},
+  'drun-exit':()=>{if(S.drun&&S.drun.done!=='win')hpSet(S.drun.hp);(S.drun&&S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();go('battle',{rtab:'dungeon'});},
+  'drun-quit':()=>{if(!S.drun)return;hpSet(S.drun.hp);(S.drun.party||[]).forEach(x=>{const bb=bot(x.name);if(bb)bb.status='lobby';});S.drun=null;save();toast('던전 탐사를 포기했습니다.');go('battle',{rtab:'dungeon'});},
   'dex-open':()=>{modal(dexDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');},
   dparty:d=>{const m=monster(d.id);if(!m)return;const why=busyReason()||levelReason(m,S.me.level)||raidBlock(m);if(why){toast(why,'warn');return;}S.sel.mk={target:2};S.sel.monster=m.id;save();render();scrollTo({top:0});},
   'snail-open':()=>openSnail(),
@@ -457,7 +457,7 @@ const ACTS={
   'aq-reset':()=>{S.sel.aqText=null;S.sel.aqRes=null;render();},
   'nt-del':d=>{const n=S.data.notices.find(x=>x.id===d.id);S.data.notices=S.data.notices.filter(x=>x.id!==d.id);logChange('공지',[{field:'내림',before:n&&n.title,after:undefined}]);save();render();},
   'rep-done':d=>{const r=S.reports.find(x=>x.id===d.id);if(r){r.done=true;logChange('신고 처리',[{field:r.from,before:'대기',after:'처리됨'}]);}save();render();},
-  'op-level':()=>{const v=Math.round(+$('#op-level').value);if(!(v>=1&&v<=cfg().levelCap)){toast(`1~${cfg().levelCap} 사이로 입력하세요.`,'warn');return;}logChange('테스트 · 레벨',[{field:S.me.name,before:S.me.level,after:v}]);S.me.level=v;S.me.exp=0;if(S.party){const me=S.party.members.find(x=>x.isMe);if(me)me.level=v;}save();render();toast(`LV${v}로 설정했습니다.`,'good');},
+  'op-level':()=>{const v=Math.round(+$('#op-level').value);if(!(v>=1&&v<=cfg().levelCap)){toast(`1~${cfg().levelCap} 사이로 입력하세요.`,'warn');return;}logChange('테스트 · 레벨',[{field:S.me.name,before:S.me.level,after:v}]);S.me.level=v;hpFull();S.me.exp=0;if(S.party){const me=S.party.members.find(x=>x.isMe);if(me)me.level=v;}save();render();toast(`LV${v}로 설정했습니다.`,'good');},
   'op-lv':()=>{const before=S.me.level;S.me.level=Math.min(cfg().levelCap,S.me.level+5);S.me.exp=0;logChange('테스트 · 레벨',[{field:S.me.name,before,after:S.me.level}]);save();render();toast(`LV${S.me.level}`);},
   'op-gold':()=>{S.me.gold+=500;logChange('테스트 · 골드',[{field:S.me.name,before:S.me.gold-500,after:S.me.gold}]);save();render();},
   'op-items':()=>{S.me.inv.potion=(S.me.inv.potion||0)+3;S.me.inv.holywater=(S.me.inv.holywater||0)+3;save();render();toast('회복약과 정화의 성수를 3개씩 추가했습니다.');},

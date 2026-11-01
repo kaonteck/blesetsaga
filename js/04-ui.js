@@ -19,9 +19,9 @@ function renderTop(){
   const top=$('#top');
   if(!S.me||S.loggedOut){top.innerHTML=`<div class="wrap"><span class="logo"><svg class="lg-orn" viewBox="0 0 64 40" aria-hidden="true"><circle cx="32" cy="20" r="13" fill="none" stroke="currentColor" stroke-width=".8" opacity=".7"/><circle cx="32" cy="20" r="8.5" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="1 2" opacity=".6"/><path d="M32 3l2.2 14.8L49 20l-14.8 2.2L32 37l-2.2-14.8L15 20l14.8-2.2z" fill="currentColor" opacity=".9"/><path d="M2 20h11M51 20h11" stroke="currentColor" stroke-width=".8"/><path d="M60 20l-4-2.4v4.8z" fill="currentColor"/></svg><span class="lg-tx"><span class="lg-en">BLESET SAGA</span><span class="lg-ko">블레셋 전기</span></span></span></div>`;return;}
   let state='';
-  if(S.battle)state=`<button class="pill state" data-act="nav" data-route="battle">${S.battle.over?'전투 종료':'전투 중 · '+S.battle.turn+'턴'}</button>`;
-  else if(S.match)state=`<button class="pill state" data-act="nav" data-route="battle">매칭 성사 · 수락 대기</button>`;
-  else if(S.queue)state=`<button class="pill state" data-act="nav" data-route="battle">매칭 대기 <span class="num" data-qtime>${fmtDur(now()-S.queue.since)}</span></button>`;
+  if(S.battle)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="${S.battle.over?'전투 종료':'전투 중 · '+S.battle.turn+'턴'}">${S.battle.over?'<span class="st-l">전투 </span>종료':'<span class="st-l">전투 중 · </span>'+S.battle.turn+'턴'}</button>`;
+  else if(S.match)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="매칭 성사 · 수락 대기"><span class="st-l">매칭 성사 · </span>수락 대기</button>`;
+  else if(S.queue)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="매칭 대기"><span class="st-l">매칭 </span>대기 <span class="num" data-qtime>${fmtDur(now()-S.queue.since)}</span></button>`;
   else if(S.party)state=`<button class="pill state" data-act="nav" data-route="battle">파티 ${S.party.members.length}/${S.party.target}</button>`;
   const nav=[...NAV];if(isAdmin())nav.push(['admin','운영']);
   top.innerHTML=`<div class="wrap">
@@ -30,6 +30,7 @@ function renderTop(){
     <nav class="nav ${NAV_OPEN?'open':''}" id="mainnav" aria-label="주 메뉴">${nav.map(([r,l])=>`<button data-act="nav" data-route="${r}" ${S.route===r?'aria-current="page"':''}><span class="nv-ko">${l}</span></button>`).join('')}</nav>
     <div class="topright">${state}<button class="ibtn me-btn ${S.route==='character'?'on':''}" data-act="nav" data-route="character" data-tip="캐릭터" aria-label="캐릭터" ${S.route==='character'?'aria-current="page"':''}><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.2" r="2.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.8 14.2c.5-3 2.6-4.6 5.2-4.6s4.7 1.6 5.2 4.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="pill" data-act="online" aria-label="접속자 목록"><span class="dot"></span><span class="pl-t">접속 </span><span class="num" data-online>${onlineCount()}</span><span class="pl-t">명</span></button>
       <button class="ibtn" data-act="pop" data-pop="mail" data-tip="메시지" aria-label="메시지${mailUnread()?' · 읽지 않은 메시지 있음':''}" aria-expanded="${S.sel.pop==='mail'}">${TICON.mail}${mailUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
+      <button class="ibtn" data-act="pop" data-pop="notice" data-tip="공지사항" aria-label="공지사항${noticeUnread()?' · 읽지 않은 공지 있음':''}" aria-expanded="${S.sel.pop==='notice'}">${HICON.notice}${noticeUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
       <button class="ibtn" data-act="pop" data-pop="settings" data-tip="환경설정" aria-label="환경설정" aria-expanded="${S.sel.pop==='settings'}">${TICON.gear}</button></div>
   </div>`;
 }
@@ -44,7 +45,7 @@ function portraitHTML(big){
   return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button">이미지 설정</button></div>`;
 }
 const ICON={
-  mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2l1.7 4.1 4.3.4-3.3 2.8 1 4.2L8 10.5l-3.7 2.2 1-4.2L2 5.7l4.3-.4z" fill="currentColor"/></svg>`,
+  mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.3 10.9 5.2 7.4 14.7 3.9 5.2z" fill="currentColor"/><path d="M3.9 5.2h7M5.9 5.2 7.4 14.7 8.9 5.2M5.9 5.2 7.4 1.3 8.9 5.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".75" stroke-linejoin="round"/><path d="M13.2 8.6v3.2M11.6 10.2h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12.6" cy="3.4" r=".9" fill="currentColor"/></svg>`,
   maxHp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2S1.8 10.4 1.8 6.1A3.3 3.3 0 0 1 8 4.4a3.3 3.3 0 0 1 6.2 1.7c0 4.3-6.2 8.1-6.2 8.1z" fill="currentColor"/></svg>`,
   atk:`<svg viewBox="0 0 16 16" aria-hidden="true"><polygon points="14,2 13.4,5.3 7,11.7 4.3,9 10.7,2.6" fill="currentColor"/><path d="M3.1 8.4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5.2 10.8l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
   def:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l5.6 2v4.2c0 3.4-2.4 5.8-5.6 7-3.2-1.2-5.6-3.6-5.6-7V3.5z" fill="currentColor"/><path d="M8 3.6v9.2" stroke="var(--slab)" stroke-width="1.1" opacity=".55"/></svg>`,
@@ -127,6 +128,7 @@ function syncChatFab(){
     b.insertAdjacentHTML('beforeend','<div id="chatbk" data-chatclose></div><button type="button" id="chatfab" aria-label="채팅 열기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 3.2h11.2v7.4H7.2L4 13.2v-2.6H2.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>채팅</span></button>');
   }
   const has=!!$('#view .chat-main');b.classList.toggle('has-chat',has);if(!has)b.classList.remove('chat-open');
+  syncFabBadge();
   b.dataset.route=S.route||'';
   const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(top.getBoundingClientRect().bottom)+'px');
   /* 모바일 전투: 하단에 붙는 행동 패널(fightMain의 .cmdbar) 높이만큼 채팅 버튼을 띄움 */
@@ -135,7 +137,7 @@ function syncChatFab(){
 }
 function setChatOpen(on){
   document.body.classList.toggle('chat-open',on);
-  if(on){const m=$('#view .chat-main [data-msgs]');if(m)m.scrollTop=m.scrollHeight;}
+  if(on){updateChats();renderTop();const m=$('#view .chat-main [data-msgs]');if(m)m.scrollTop=m.scrollHeight;}
   else{const a=document.activeElement;if(a&&a.closest&&a.closest('.chat-main'))a.blur();}
 }
 document.addEventListener('click',e=>{
@@ -143,9 +145,56 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-chatclose]'))setChatOpen(false);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('chat-open'))setChatOpen(false);});
+/* ── 탐색 지도 확대·이동 (.wmap) ──
+   데스크톱: 휠로 확대(커서 기준) · 끌어서 이동 · 더블클릭 확대/원래대로
+   모바일: 두 번 탭 확대/원래대로 · 두 손가락 확대 · 확대 상태에서 밀어서 이동
+   지도 그림과 핀(.mspot)을 .wm-stage 하나로 감싸 함께 움직이고, 제목·지역 보기·확대 버튼은 제자리.
+   상태(MAPZ)는 다시 그려져도 유지. x·y는 지도 폭 대비 비율(0 ~ 1-s). */
+const MAPZ={s:1,x:0,y:0},MAPZ_MAX=3,MAPZ_STEP=1.5;
+function initMapZoom(){
+  $$('.wmap').forEach(m=>{
+    if(m.dataset.zoom)return;const img=m.querySelector(':scope > img');if(!img)return;m.dataset.zoom='1';
+    const st=document.createElement('div');st.className='wm-stage';m.insertBefore(st,img);st.appendChild(img);
+    m.querySelectorAll(':scope > .mspot').forEach(b=>st.appendChild(b));
+    m.insertAdjacentHTML('beforeend','<div class="wm-zoom" role="group" aria-label="지도 확대·축소"><button type="button" data-z="in" aria-label="확대" data-tip="확대">+</button><button type="button" data-z="out" aria-label="축소" data-tip="축소">−</button><button type="button" data-z="reset" aria-label="원래 크기로" data-tip="원래 크기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>');
+    const clampZ=()=>{MAPZ.s=Math.min(MAPZ_MAX,Math.max(1,MAPZ.s));MAPZ.x=Math.min(0,Math.max(1-MAPZ.s,MAPZ.x));MAPZ.y=Math.min(0,Math.max(1-MAPZ.s,MAPZ.y));};
+    const apply=anim=>{clampZ();st.classList.toggle('wm-anim',!!anim);st.style.transform=`translate(${MAPZ.x*100}%,${MAPZ.y*100}%) scale(${MAPZ.s})`;
+      const z=MAPZ.s>1.01;m.classList.toggle('zoomed',z);const q=k=>m.querySelector(`.wm-zoom [data-z="${k}"]`);q('in').disabled=MAPZ.s>=MAPZ_MAX-.01;q('out').disabled=!z;q('reset').disabled=!z;};
+    const rel=(cx,cy)=>{const r=m.getBoundingClientRect();return [(cx-r.left)/r.width,(cy-r.top)/r.height];};
+    const zoomAt=(fx,fy,ns,anim)=>{ns=Math.min(MAPZ_MAX,Math.max(1,ns));const k=ns/MAPZ.s;MAPZ.x=fx-(fx-MAPZ.x)*k;MAPZ.y=fy-(fy-MAPZ.y)*k;MAPZ.s=ns;apply(anim);};
+    const toggleAt=(cx,cy)=>{const [fx,fy]=rel(cx,cy);if(MAPZ.s>1.01){MAPZ.s=1;MAPZ.x=0;MAPZ.y=0;apply(true);}else zoomAt(fx,fy,2.2,true);};
+    apply(false);
+    m.querySelector('.wm-zoom').addEventListener('click',e=>{const b=e.target.closest('[data-z]');if(!b)return;e.stopPropagation();
+      if(b.dataset.z==='reset'){MAPZ.s=1;MAPZ.x=0;MAPZ.y=0;apply(true);}else zoomAt(.5,.5,MAPZ.s*(b.dataset.z==='in'?MAPZ_STEP:1/MAPZ_STEP),true);});
+    /* 휠: 축소 끝에서 더 내리면 페이지 스크롤로 넘김 */
+    m.addEventListener('wheel',e=>{if(e.target.closest('.wm-zoom,.wm-dd'))return;if(e.deltaY>0&&MAPZ.s<=1.001)return;e.preventDefault();
+      const [fx,fy]=rel(e.clientX,e.clientY);const d=e.deltaMode===1?e.deltaY*16:e.deltaY;zoomAt(fx,fy,MAPZ.s*Math.exp(-d*.0018),false);},{passive:false});
+    m.addEventListener('dblclick',e=>{if(e.target.closest('.wm-zoom,.wm-dd')||Date.now()-(m._tapZoom||0)<700)return;e.preventDefault();toggleAt(e.clientX,e.clientY);});
+    /* 포인터: 한 개 = 이동, 두 개 = 확대. 움직였으면 뒤따르는 클릭(핀 열기)은 막음 */
+    const P=new Map();let pan=null,pinch=null,moved=false,lastTap=null;
+    m.addEventListener('pointerdown',e=>{if(e.button>0||e.target.closest('.wm-zoom,.wm-dd'))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(P.size===1){moved=false;pan={x:e.clientX,y:e.clientY,ox:MAPZ.x,oy:MAPZ.y,id:e.pointerId};pinch=null;}
+      else if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};pan=null;moved=true;}});
+    m.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});const r=m.getBoundingClientRect();
+      if(pinch&&P.size>=2){const [a,b]=[...P.values()];const d=Math.hypot(a.x-b.x,a.y-b.y)||1,mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+        MAPZ.x+=(mx-pinch.mx)/r.width;MAPZ.y+=(my-pinch.my)/r.height;const [fx,fy]=rel(mx,my);zoomAt(fx,fy,MAPZ.s*d/pinch.d,false);pinch={d,mx,my};return;}
+      if(!pan||pan.id!==e.pointerId)return;const dx=e.clientX-pan.x,dy=e.clientY-pan.y;
+      if(!moved&&Math.hypot(dx,dy)>5&&MAPZ.s>1.01){moved=true;m.classList.add('dragging');try{m.setPointerCapture(e.pointerId);}catch(_){}}
+      if(moved){MAPZ.x=pan.ox+dx/r.width;MAPZ.y=pan.oy+dy/r.height;apply(false);}});
+    const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);m.classList.remove('dragging');
+      if(e.type==='pointerup'&&e.pointerType==='touch'&&!moved&&P.size===0){const t=Date.now();
+        if(lastTap&&t-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<30){lastTap=null;m._skipClick=true;m._tapZoom=Date.now();toggleAt(e.clientX,e.clientY);}
+        else lastTap={t,x:e.clientX,y:e.clientY};}
+      if(moved&&P.size===0)m._skipClick=true;
+      if(P.size===1){const [id,p]=[...P.entries()][0];pan={x:p.x,y:p.y,ox:MAPZ.x,oy:MAPZ.y,id};}else if(!P.size){pan=null;pinch=null;}
+      if(m._skipClick)setTimeout(()=>{m._skipClick=false;},60);};
+    m.addEventListener('pointerup',up);m.addEventListener('pointercancel',up);
+    m.addEventListener('click',e=>{if(m._skipClick){e.stopPropagation();e.preventDefault();m._skipClick=false;}},true);
+  });
+}
 document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.st-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.wm-dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.wm-dd-i'))d.open=false;});});
 function afterRender(){
-  syncChatFab();updateChats();
+  syncChatFab();initMapZoom();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
   fitExlog();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
@@ -176,7 +225,7 @@ function vMain(){
   return `<div class="wrap tkwrap">${ticker()}</div>
     <div class="wrap grid2 main-grid">
       ${charCard(true)}<div class="rtop">${skyBar()}${recruitPanel()}</div>
-      ${chatPanel()}<div class="col">${todayPanel()}${noticePanel()}</div>
+      ${chatPanel()}<div class="col">${nextGoalHTML()}</div>
     </div>`;
 }
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
@@ -237,9 +286,9 @@ function cardQuests(){
   return `<div class="me-quests ${open?'':'folded'}"><div class="ph"><button class="cq-tog" data-act="cq-toggle" aria-expanded="${open}">${hTitle('quest','진행 중인 퀘스트')}<span class="cq-n num">${n}</span><svg class="cq-ar" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <div class="list">${act.length?act.map(q=>{const st=questStatus(q);return `<div class="li clickable" data-act="openquest" data-id="${q.id}"><div class="t"><b>${esc(q.title)}</b><small>${st==='claim'?'보상 수령 대기':'단계 '+((S.qp[q.id].history||[]).length+1)}</small></div><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>`;}).join(''):'<p class="empty">진행 중인 퀘스트가 없습니다.</p>'}</div></div>`;
 }
-const STATUS={online:{n:'온라인',ic:'<span class="st-dot on"></span>'},away:{n:'자리비움',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.8h9M3.5 14.2h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M4.6 1.8c0 3.3 3.4 4.4 3.4 6.2s-3.4 2.9-3.4 6.2M11.4 1.8c0 3.3-3.4 4.4-3.4 6.2s3.4 2.9 3.4 6.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 13.4c.4-1.4 1.3-2 2-2.3.7.3 1.6.9 2 2.3z" fill="currentColor"/><path d="M6.2 4.6h3.6c-.5.9-1.2 1.4-1.8 1.8-.6-.4-1.3-.9-1.8-1.8z" fill="currentColor" opacity=".7"/></svg>'},raid:{n:'레이드 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 15.2 3.6 2.2M2 15.2 12.4 2.2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M3.8 2.4 8.3 8.1 .6 8.9z" fill="currentColor"/><path d="M12.2 2.4 7.7 8.1l7.7.8z" fill="currentColor"/><circle cx="3.4" cy="1.9" r="1" fill="currentColor"/><circle cx="12.6" cy="1.9" r="1" fill="currentColor"/></svg>'},offline:{n:'오프라인',ic:'<span class="st-dot off"></span>'}};
+const STATUS={online:{n:'온라인',ic:'<span class="st-dot on"></span>'},away:{n:'자리비움',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.8h9M3.5 14.2h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M4.6 1.8c0 3.3 3.4 4.4 3.4 6.2s-3.4 2.9-3.4 6.2M11.4 1.8c0 3.3-3.4 4.4-3.4 6.2s3.4 2.9 3.4 6.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 13.4c.4-1.4 1.3-2 2-2.3.7.3 1.6.9 2 2.3z" fill="currentColor"/><path d="M6.2 4.6h3.6c-.5.9-1.2 1.4-1.8 1.8-.6-.4-1.3-.9-1.8-1.8z" fill="currentColor" opacity=".7"/></svg>'},raid:{n:'레이드 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 15.2 3.6 2.2M2 15.2 12.4 2.2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M3.8 2.4 8.3 8.1 .6 8.9z" fill="currentColor"/><path d="M12.2 2.4 7.7 8.1l7.7.8z" fill="currentColor"/><circle cx="3.4" cy="1.9" r="1" fill="currentColor"/><circle cx="12.6" cy="1.9" r="1" fill="currentColor"/></svg>'},meal:{n:'식사 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true" style="color:#e6dcc4"><ellipse cx="5" cy="4.3" rx="2.2" ry="3" fill="currentColor"/><path d="M4.3 6.9h1.4v7.3a.7.7 0 0 1-1.4 0z" fill="currentColor"/><path d="M10.1 1.4l.7 13.2M13 1.4l-.7 13.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'},offline:{n:'오프라인',ic:'<span class="st-dot off"></span>'}};
 function myStatus(){return STATUS[S.me.status]?S.me.status:'online';}
-function statusDD(){const k=myStatus();return `<details class="st-dd"><summary aria-label="상태 · ${STATUS[k].n}" title="상태 · ${STATUS[k].n}"><span class="st-ic st-${k}">${STATUS[k].ic}</span></summary><div class="st-menu">${Object.entries(STATUS).map(([x,v])=>`<button data-act="set-status" data-v="${x}" aria-pressed="${k===x}"><span class="st-ic st-${x}">${v.ic}</span>${v.n}</button>`).join('')}</div></details>`;}
+function statusDD(){const k=myStatus();return `<details class="st-dd"><summary aria-label="상태 · ${STATUS[k].n}" title="상태 · ${STATUS[k].n}"><span class="st-ic st-${k}">${STATUS[k].ic}</span></summary><div class="st-menu">${Object.entries(STATUS).filter(([x])=>x!=='offline').map(([x,v])=>`<button data-act="set-status" data-v="${x}" aria-pressed="${k===x}"><span class="st-ic st-${x}">${v.ic}</span>${v.n}</button>`).join('')}</div></details>`;}
 function statusChip(k){const v=STATUS[k]||STATUS.online;return `<span class="st-chip"><span class="st-ic st-${k}">${v.ic}</span>${v.n}</span>`;}
 function hashN(str){let h=0;for(const c of str)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h);}
 const BOT_MEMOS=['오늘도 블레서 출근 완료','파티 구해요 · 힐러 환영','초원 들개 잡는 중','레이드 같이 가실 분 귓말 주세요','장식장 채우는 중 ✦','느긋하게 탐색하는 중','백야의 신전 언젠가 꼭',''];
@@ -333,12 +382,15 @@ function recruitRows(rs,withJoin){
 const NPAGE=5;
 const NCAT={notice:'공지',maint:'점검',update:'업데이트',event:'이벤트'};
 const ncatTag=n=>{const c=NCAT[n.cat]?n.cat:'notice';return `<span class="ntag nt-${c}">${NCAT[c]}</span>`;};
-function noticePanel(){
+function noticeSeenSet(){return new Set((S.me&&S.me.noticeSeen)||[]);}
+function noticeUnread(){if(!S||!S.me||!S.data||!S.data.notices)return false;const seen=noticeSeenSet();return S.data.notices.some(n=>!seen.has(n.id));}
+function noticeMarkSeen(){if(!S.me)return;const ids=S.data.notices.map(n=>n.id);const seen=noticeSeenSet();if(ids.every(i=>seen.has(i)))return;S.me.noticeSeen=ids;save();}
+function noticePop(){
   const all=S.data.notices,adm=isAdmin();const pages=Math.max(1,Math.ceil(all.length/NPAGE));const pg=Math.min(S.sel.npage||0,pages-1);
-  const rows=all.slice(pg*NPAGE,pg*NPAGE+NPAGE);
-  return `<div class="panel" data-notices><h3>${hTitle('notice','공지사항')}${adm?'<button class="btn btn-sm" data-act="n-new" style="letter-spacing:0;text-transform:none">글쓰기</button>':''}</h3>
-    <div class="board" role="table" aria-label="공지사항 목록">
-    ${rows.length?rows.map((n,i)=>`<div class="brow ${adm?'adm':''}" role="row"><span role="cell">${ncatTag(n)}</span><button class="btitle" role="cell" data-act="n-open" data-id="${n.id}">${esc(n.title)}</button><span class="num faint" role="cell">${esc(n.date)}</span>
+  const rows=all.slice(pg*NPAGE,pg*NPAGE+NPAGE);const fresh=new Set(S.sel.noticeNew||[]);
+  return `<div class="pop-head"><b>공지사항</b>${adm?'<button class="btn btn-sm" data-act="n-new">글쓰기</button>':''}</div>
+    <div class="pop-body" data-notices><div class="board" role="table" aria-label="공지사항 목록">
+    ${rows.length?rows.map(n=>`<div class="brow ${adm?'adm':''} ${fresh.has(n.id)?'new':''}" role="row"><span role="cell">${ncatTag(n)}</span><button class="btitle" role="cell" data-act="n-open" data-id="${n.id}">${fresh.has(n.id)?'<span class="nnew" aria-label="새 공지"></span>':''}${esc(n.title)}</button><span class="num faint" role="cell">${esc(n.date)}</span>
       ${adm?`<span class="bact" role="cell"><button class="ibtn sm" data-act="n-edit" data-id="${n.id}" data-tip="수정" aria-label="${esc(n.title)} 수정">${TICON.pen}</button><button class="ibtn sm danger" data-act="n-delask" data-id="${n.id}" data-tip="삭제" aria-label="${esc(n.title)} 삭제">${TICON.trash}</button></span>`:''}</div>`).join(''):'<p class="empty" style="padding:10px 0">등록된 공지가 없습니다.</p>'}</div>
     ${pages>1?`<div class="bpager">${Array.from({length:pages},(_,k)=>`<button class="${k===pg?'on':''}" data-act="n-page" data-p="${k}" aria-label="${k+1}페이지" ${k===pg?'aria-current="page"':''}>${k+1}</button>`).join('')}</div>`:''}</div>`;
 }
@@ -356,7 +408,7 @@ function noticeEdit(n){
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" data-act="closemodal">취소</button><button class="btn btn-primary" type="submit">${n?'저장':'게시'}</button></div></form>`);
   const mm=$('.modal');if(mm)mm.classList.add('wide');const t=$('#ne-title');if(t)t.focus();
 }
-function refreshNotices(){const el=$('[data-notices]');if(el)el.outerHTML=noticePanel();}
+function refreshNotices(){if(S.sel.pop==='notice'){noticeMarkSeen();renderPop();}renderTop();}
 /* ───────── 채팅 ───────── */
 function chatPanel(opt={}){
   return `<div class="panel chat${opt.lock?'':' chat-main'}" data-chatpanel data-lock="${opt.lock||''}">${opt.lock?'':'<div class="chat-sheethead"><span>채팅</span><button type="button" class="chat-x" data-chatclose aria-label="채팅 닫기">×</button></div>'}<div data-chathead></div><div class="msgs ${opt.tall?'tall':''}" data-msgs aria-live="polite"></div>
@@ -414,9 +466,9 @@ function msgHTML(m){
 }
 function updateChats(){
   $$('[data-chatpanel]').forEach(p=>{
-    const lock=p.dataset.lock;const tab=lock||S.sel.chatTab;
-    if(tab==='world')S.unread.world=0;if(tab==='lobby')S.unread.lobby=0;if(tab==='party')S.unread.party=0;
-    if(tab==='dm'&&S.sel.dmWith){const t=dmState().threads[S.sel.dmWith];if(t)t.unread=0;}
+    const lock=p.dataset.lock;const tab=lock||S.sel.chatTab;const shown=chatShown(p);
+    if(shown){if(tab==='world')S.unread.world=0;if(tab==='lobby')S.unread.lobby=0;if(tab==='party')S.unread.party=0;
+    if(tab==='dm'&&S.sel.dmWith){const t=dmState().threads[S.sel.dmWith];if(t)t.unread=0;}}
     p.querySelector('[data-chathead]').innerHTML=chatHead(lock);
     const box=p.querySelector('[data-msgs]');const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
     if(box.dataset.view!==tab+(S.sel.dmWith||'')){box.dataset.view=tab+(S.sel.dmWith||'');box.dataset.init='';}
@@ -436,6 +488,7 @@ function updateChats(){
     inp.placeholder=tab==='raid'?'원정대에게 메시지 입력':tab==='world'?(isAdmin()?'메시지 입력':'월드는 운영자만 작성할 수 있습니다'):tab==='lobby'?((S.sel.lobbyCh==='party')?'파티원에게 메시지 입력':'전체 채팅에 메시지 입력'):tab==='party'?((S.sel.partyCh||'party')==='lobby'?'전체 채팅에 메시지 입력':'파티원에게 메시지 입력'):S.sel.dmWith?`${S.sel.dmWith}에게 1:1 메시지`:'대화할 상대를 먼저 고르세요';
   });
   renderTopBadges();
+  syncFabBadge();
 }
 function renderTopBadges(){const el=$('[data-online]');if(el)el.textContent=onlineCount();}
 let lastSend=0;
@@ -475,7 +528,11 @@ function botSay(ch,name,text){
   else if(ch==='whisper'){(S.chat.whisper[name]=S.chat.whisper[name]||[]).push(msg);if(!(visibleTab('whisper')&&S.sel.whisperTo===name)){S.unread.whisper[name]=(S.unread.whisper[name]||0)+1;toast(`${name}의 귓속말: ${text}`);playAlarm();}}
   updateChats();renderTop();save();
 }
-function visibleTab(t){return $$('[data-chatpanel]').some(p=>(p.dataset.lock||S.sel.chatTab)===t);}
+function chatShown(p){return !(innerWidth<=760&&p.classList&&p.classList.contains('chat-main')&&!document.body.classList.contains('chat-open'));}
+function visibleTab(t){return $$('[data-chatpanel]').some(p=>chatShown(p)&&(p.dataset.lock||S.sel.chatTab)===t);}
+function syncFabBadge(){const f=$('#chatfab');if(!f||!f.querySelector)return;let bd=f.querySelector('.fab-badge');const n=dmUnread();
+  if(!bd){f.insertAdjacentHTML('beforeend','<span class="fab-badge" hidden></span>');bd=f.querySelector('.fab-badge');}
+  if(!bd)return;bd.hidden=!n;if(f.setAttribute)f.setAttribute('aria-label',n?'채팅 열기 · 읽지 않은 1:1 대화 있음':'채팅 열기');}
 function sysParty(text){if(S.party){S.party.chat.push({id:uid('m'),sys:true,text,ts:now()});}}
 const timers=new Set();
 function later(ms,fn){const t=setTimeout(()=>{timers.delete(t);fn();},ms);timers.add(t);}
@@ -887,7 +944,7 @@ function userInfo(){
   const me=S.me,st=myStats(),base=statsFor(me.job,me.level,{});
   const need=expNeed(me.level),cap=me.level>=cfg().levelCap,p=cap?100:pct(me.exp,need),left=Math.max(0,need-me.exp);
   const row=(k,v)=>`<div class="ui-row"><dt>${k}</dt><dd>${v}</dd></div>`;
-  const statRow=k=>{const eq=st[k]-base[k];const ib=itemBonus(k);return `<div class="ui-row"><dt><span class="si si-${k} inl">${ICON[k]}</span> ${STATK[k]}</dt><dd><div class="ui-stat num"><b>${st[k]+ib}</b><span class="ui-base" tabindex="0" data-tip="기본 ${STATK[k]}" aria-label="기본 ${STATK[k]} ${base[k]}">${base[k]}</span>${eq?`<span class="bpill eqb" tabindex="0" data-tip="${esc(eqBreak(k))}" aria-label="장비 보너스 ${eq}">${eq>0?'+':''}${eq}</span>`:''}${ib?`<span class="bpill itb" tabindex="0" data-tip="${esc(ibBreak(k))}" aria-label="아이템 보너스 ${ib}">${ib>0?'+':''}${ib}</span>`:''}</div>${k==='maxHp'?`<div class="hpgauge" role="img" aria-label="HP ${st.maxHp} / ${st.maxHp}"><i style="width:100%"></i><span class="num">${st.maxHp} / ${st.maxHp}</span></div>`:''}</dd></div>`;};
+  const statRow=k=>{const eq=st[k]-base[k];const ib=itemBonus(k);return `<div class="ui-row"><dt><span class="si si-${k} inl">${ICON[k]}</span> ${STATK[k]}</dt><dd><div class="ui-stat num"><b>${st[k]+ib}</b><span class="ui-base" tabindex="0" data-tip="기본 ${STATK[k]}" aria-label="기본 ${STATK[k]} ${base[k]}">${base[k]}</span>${eq?`<span class="bpill eqb" tabindex="0" data-tip="${esc(eqBreak(k))}" aria-label="장비 보너스 ${eq}">${eq>0?'+':''}${eq}</span>`:''}${ib?`<span class="bpill itb" tabindex="0" data-tip="${esc(ibBreak(k))}" aria-label="아이템 보너스 ${ib}">${ib>0?'+':''}${ib}</span>`:''}</div>${k==='maxHp'?(()=>{const mx=st.maxHp+ib,p=hpNow(),cur=Math.round(mx*p);return `<div class="hpgauge ${p<HP_WARN?'low':''}" role="img" aria-label="HP ${cur} / ${mx}"><i style="width:${Math.round(p*100)}%"></i><span class="num">${cur} / ${mx}</span></div>`;})():''}</dd></div>`;};
   return `<div class="panel ctop-info"><dl class="uinfo-list">
     ${row('이름',S.sel.nameEdit?`<form class="ui-nameedit" data-form="rename"><input type="text" id="rn-name" maxlength="10" value="${esc(me.name)}" aria-label="새 이름 (2~10자)"><button class="btn btn-sm btn-primary" type="submit">저장</button><button class="btn btn-sm btn-ghost" type="button" data-act="rn-cancel">취소</button></form>`:`<span class="row" style="gap:6px"><b class="ui-name">${esc(me.name)}</b><button class="ibtn sm" data-act="rn-start" data-tip="이름 수정" aria-label="이름 수정">${TICON.pen}</button></span>`)}
     ${row('클래스',`<span class="row" style="gap:8px">${roleChip(me.job)}${CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel?'<button class="btn btn-sm" data-act="adv-open">전직</button>':''}</span>`)}
@@ -955,6 +1012,7 @@ function vAdmin(){
   const body={monster:adminMonster,quest:adminQuest,mass:adminMass,items:adminItems,notice:adminNotice,config:adminConfig,ops:adminOps}[tab]();
   return `<div class="wrap page"><div class="page-head"><div><h2>운영<small class="en">Admin</small></h2><p>작성 → 검사(미리보기) → 공개 순서로 반영합니다. 수정한 내용은 새 전투부터 적용되고, 이미 시작한 전투는 시작 시 규칙을 유지합니다.</p></div>
     <button class="btn btn-ghost btn-sm" data-act="viewasuser">일반 사용자 시점으로 보기</button></div>
+    <div class="adm-move" role="note"><div class="adm-move-t"><b>콘텐츠 편집은 운영 페이지에서</b><p>여기서 바꾼 몬스터 · 퀘스트 · 아이템 · 공지 · 설정은 이 브라우저에만 적용되고, 운영 페이지에 같은 항목이 있으면 그쪽 값이 우선합니다. 모든 플레이어에게 반영하려면 운영 페이지에서 공개하세요.</p></div><a class="btn btn-primary btn-sm" href="/admin.html" target="_blank" rel="noopener">운영 페이지 열기 <span aria-hidden="true">↗</span></a></div>
     <div class="seg">${tabs.map(([k,l])=>`<button data-act="admintab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
     ${body}
     <p class="notice-local">시제품은 이 브라우저 안에서만 동작합니다. 실제 배포 시 운영자 권한 확인과 데이터 저장은 서버에서 처리해야 합니다.</p></div>`;
@@ -1114,11 +1172,11 @@ function showMatch(){
 /* ───────── 동작 ───────── */
 function startBattle(){
   const p=S.party,m=monster(p.monsterId);
-  if(mkind(m)==='dungeon'){S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:1,mobs:{},log:[],start:now(),party:p.members.map(x=>({name:x.name,job:x.job,level:x.level,isMe:!!x.isMe}))};
+  if(mkind(m)==='dungeon'){S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now(),party:p.members.map(x=>({name:x.name,job:x.job,level:x.level,isMe:!!x.isMe}))};
     p.members.forEach(x=>{const bb=bot(x.name);if(bb)bb.status='battle';});S.party=null;S.sel.monster=null;S.route='battle';save();render();toast(`${m.region} 입장 · 파티 ${S.drun.party.length}인 · 5페이즈 탐사`,'good');return;}
   const members=p.members.map(x=>x.isMe?{id:'me',name:S.me.name,job:S.me.job,level:S.me.level,equip:effEquip(),isMe:true,enh:S.me.enh}:{id:x.name,name:x.name,job:x.job,level:x.level,equip:{}});
   const b=createBattle(m,members,Math.random,cfg());
-  {const mf=b.players.find(x=>x.isMe);if(mf)['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});}
+  {const mf=b.players.find(x=>x.isMe);if(mf)['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});hpStart(mf);}
   b.ctx={type:mkind(m)};if(mkind(m)==='party')daily().raid++;
   const ev=eventFor(m.id);if(ev){b.ctx.ev=ev.id;b.rules.exp=Math.round(b.rules.exp*1.5);b.rules.gold=Math.round(b.rules.gold*1.5);b.eventBonus=ev.title;b.log.push({t:'warn',text:'보스 출현 이벤트 · 경험치와 골드 1.5배'});}
   b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);
@@ -1142,7 +1200,7 @@ function doResolve(){
 function finishBattle(b){
   if(S.claimedB[b.id]){return;}
   S.claimedB[b.id]=true;
-  const me=b.players.find(p=>p.isMe);if(me)wearDown();const ctx=b.ctx||{};let blocked='';
+  const me=b.players.find(p=>p.isMe);if(me){wearDown();hpAfter(b,me);}const ctx=b.ctx||{};let blocked='';
   if(b.over==='win'&&ctx.type==='weekly'&&weekly().done[b.monsterId])blocked='이번 주 토벌 보상은 이미 받았습니다. 매주 월요일 05:00에 초기화됩니다.';
   if(b.over==='win'&&ctx.type==='event'&&ctx.ev&&(S.eventDone||{})[ctx.ev])blocked='이번 출현의 보상은 이미 받았습니다.';
   const r={eligible:b.over==='win'&&me.direct>=1&&!blocked&&ctx.type!=='quest',exp:0,gold:0,items:{},blocked};
@@ -1344,7 +1402,7 @@ function renderPop(){
   const k=S&&S.me&&!S.loggedOut?S.sel.pop:null;
   if(!k){el.innerHTML='';return;}
   const keepScroll=el.querySelector('.pop-body');const sc=keepScroll?keepScroll.scrollTop:0;
-  el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':'환경설정'}">${k==='mail'?mailPop():settingsPop()}</div>`;
+  el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':k==='notice'?'공지사항':'환경설정'}">${k==='mail'?mailPop():k==='notice'?noticePop():settingsPop()}</div>`;
   const b=el.querySelector('.pop-body');if(b)b.scrollTop=sc;
 }
 

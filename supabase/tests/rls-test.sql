@@ -5,6 +5,7 @@ begin begin execute q; exception when others then raise notice 'OK  (막힘) %: 
 raise exception 'FAIL 막혀야 하는데 통과: %', label; end $$;
 create function t.ok(cond bool, label text) returns void language plpgsql as $$
 begin if cond then raise notice 'OK  %', label; else raise exception 'FAIL %', label; end if; end $$;
+create function t.err(q text) returns text language plpgsql as $f$ begin execute q; return 'none'; exception when others then return sqlerrm; end $f$;
 grant execute on all functions in schema t to authenticated;
 create function t.as(uid text, admin bool default false) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub',uid,'role','authenticated','app_metadata',json_build_object('role',case when admin then 'admin' end))::text, false) $$;
@@ -196,7 +197,8 @@ select t.ok((select (claim_lotto((select id from lotto_tickets where nums='{1,2,
 reset role; select t.ok((select (data->'me'->>'gold')::int from saves where user_id=:'P1')=3300,'상금이 세이브에 더해짐 (300→3300)'); set role authenticated; select t.as(:'P1');
 select t.fail($$select claim_lotto((select id from lotto_tickets where nums='{1,2,3,4}'))$$,'같은 행운권 두 번 수령');
 select t.ok((select (claim_lotto((select id from lotto_tickets where nums='{5,6,7,8}'))->>'prize')::int)=0,'꽝 확인(0골드)');
-select t.as(:'P2'); select t.fail($$select claim_lotto('00000000-0000-0000-0000-0000000000ff')$$,'남의·없는 행운권 수령');
+select t.as(:'P2'); select t.fail($$select claim_lotto((select id from lotto_tickets limit 1))$$,'남의 행운권 수령(보이지도 않음)');
+select t.ok(t.err($$select claim_lotto('00000000-0000-0000-0000-0000000000ff')$$)='NOT_FOUND','없는 행운권 → NOT_FOUND');
 select t.as(:'P1'); select buy_lotto('{0,4,7,9}');
 select t.ok((select draw_key from lotto_tickets where nums='{0,4,7,9}')='2026-11-13','추첨 뒤에는 다음 주 회차로 판매');
 select t.fail($$select * from admin_lotto()$$,'유저가 운영 행운권 현황');

@@ -81,6 +81,33 @@ function repairRate(id){return 5+itemLv(id)*3;}
 function repairCost(id,miss){return Math.ceil(miss*repairRate(id)*10/DURA_MAX);}
 function ensureCraft(){const me=S.me;if(!me||me.craftSeed)return;me.craftSeed=1;
   const g={haste5:3,haste10:2,haste30:1,haste60:1,haste360:1,ore:6,herb:6,grain:5,meat:2,fish:2,salt:1};for(const k in g)me.inv[k]=(me.inv[k]||0)+g[k];save();}
+/* ── 체력 유지 ──
+   던전·파티 레이드·토벌전·만신전이 끝나면 그때 남은 체력을 그대로 들고 나온다(S.me.hpPct, 0~1).
+   다음 레이드는 그 체력으로 시작. 레벨 업하면 100%, 평소에는 HP_REGEN_MS 동안 0→100% 천천히 회복.
+   필드 사냥·퀘스트 전투는 예전처럼 가득 찬 체력으로 싸우고 이 값에 영향을 주지 않는다. */
+const HP_KEEP=['dungeon','drun','party','daily','weekly','event','mass'];
+const HP_REGEN_MS=30*60e3;
+const HP_WARN=0.3;
+function hpNow(){const m=S&&S.me;if(!m||m.hpPct==null)return 1;return Math.min(1,m.hpPct+Math.max(0,now()-(m.hpAt||now()))/HP_REGEN_MS);}
+function hpSet(p){const m=S.me;if(!m)return;p=Math.max(0,Math.min(1,p));if(p>=1){delete m.hpPct;delete m.hpAt;}else{m.hpPct=p;m.hpAt=now();}}
+function hpFull(){hpSet(1);}
+function hpStart(mf){if(mf)mf.hp=Math.max(1,Math.round(mf.maxHp*hpNow()));}
+function hpAfter(b,me){if(!me||!HP_KEEP.includes((b.ctx||{}).type))return;hpSet(me.dead?0:me.hp/me.maxHp);}
+/* 입장 전 경고: 체력 30% 미만(레이드류) · 장착 장비 내구도 0(모든 전투) */
+function brokenGear(){return [...new Set(Object.values(S.me.equip||{}))].filter(id=>id&&ITEMS[id]&&dura(id)<=0).map(id=>ITEMS[id].name);}
+let GATE=null;
+function entryGate(k,d,raid){
+  if(d&&d._gate)return false;
+  const warn=[];const hp=hpNow();
+  if(raid&&hp<HP_WARN)warn.push(`체력이 30% 미만입니다. <span class="faint num">(현재 ${Math.floor(hp*100)}%)</span>`);
+  brokenGear().forEach(n=>warn.push(`${esc(n)}의 내구도가 0입니다.`));
+  if(!warn.length)return false;
+  GATE={k,d:{...d}};
+  modal(`<div class="ndlg gate-dlg"><h3>입장 전 확인</h3><ul class="gate-l">${warn.map(w=>`<li>${w}</li>`).join('')}</ul>
+    <p class="faint" style="font-size:12.5px">${hp<HP_WARN&&raid?'체력은 시간이 지나면 천천히 차오르고, 레벨 업하면 가득 찹니다. ':''}${brokenGear().length?'내구도가 0인 장비는 장착돼 있어도 능력치가 적용되지 않습니다. 대장간에서 수리할 수 있습니다.':''}</p>
+    <div class="row" style="justify-content:flex-end"><button class="btn btn-ghost" data-act="closemodal">취소</button><button class="btn btn-primary" data-act="gate-go">그래도 입장</button></div></div>`);
+  return true;
+}
 function wearDown(){const me=S.me;me.dura=me.dura||{};const broke=[];for(const sl in (me.equip||{})){const id=me.equip[sl];if(!id||!ITEMS[id])continue;const d=dura(id);if(d>0){me.dura[id]=d-1;if(d-1===0)broke.push(ITEMS[id].name);}}
   if(broke.length)setTimeout(()=>notify(`${broke.join(', ')}의 내구도가 0이 되어 능력치가 적용되지 않습니다. 제작/수리하기에서 수리하세요.`),0);}
 function matLine(mats,mult){return Object.entries(mats).map(([k,n])=>{const have=matCount(k);const need=n*(mult||1);return `<span class="cm ${have>=need?'ok':'no'}">${esc(k==='fish'?'손질한 생선(종류 무관)':ITEMS[k]?ITEMS[k].name:k)} <b class="num">${have}/${need}</b></span>`;}).join('');}
@@ -379,6 +406,7 @@ function advNoticeCheck(){const me=S&&S.me;if(!me||me.loggedOut||me.advNotice||S
   const md=$('#modal');if(md&&md.innerHTML.trim())return;me.advNotice=true;save();modal(advNoticeHTML());}
 function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.feed&&!S.feedNoImg){S.feed.forEach(p=>{delete p.img;});if(S.sel)delete S.sel.fdImg;S.feedNoImg=1;ch=true;}
+  if(S.me&&S.me.status==='offline'){S.me.status='meal';ch=true;}
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
   if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
@@ -412,7 +440,7 @@ function villageHTML(land){
   const v=S.sel.vil&&S.sel.vil.land===land?S.sel.vil:null;
   return `<section class="md-sec panel vil" id="md-village"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>마을 · <b class="vil-town">${esc(villageFull(land))}</b></div>
     <div class="vil-btns">${VIL_SPOTS.map(([k,l])=>`<button class="vil-b ${v&&v.spot===k?'on':''}" data-act="vil-go" data-land="${land}" data-spot="${k}">${VIL_IC[k]}<span>${l}</span></button>`).join('')}</div>
-    ${v?`<div class="vil-say ${v.got?'got':''} ${v.npc?'':'avoid'} ${v.lost?'theft':''}">${v.npc?`<b>${esc(v.npc)}</b><p>“${esc(v.text)}”</p>`:`<p class="${v.lost?'':'faint'}">${esc(v.text)}</p>`}${v.got?`<span class="vil-got">+ ${esc(v.got)}</span>`:''}${v.lost?`<span class="vil-lost">− ${v.lost}골드</span>`:''}</div>`:'<p class="faint vil-hint">장소를 고르면 마을 사람들과 이야기할 수 있습니다. 가끔 작은 선물을 받기도 합니다.</p>'}</section>`;
+    ${v?`<div class="vil-say ${v.got?'got':''} ${v.npc?'':'avoid'} ${v.lost?'theft':''}">${v.npc?`<b>${esc(v.npc)}</b><p>“${esc(v.text)}”</p>`:`<p class="${v.lost?'':'faint'}">${esc(v.text)}</p>`}${v.got?`<span class="vil-got">+ ${esc(v.got)}</span>`:''}${v.lost?`<span class="vil-lost">− ${v.lost}골드</span>`:''}</div>`:'<p class="faint vil-hint">장소를 고르면 마을 사람들과 이야기할 수 있습니다. 가끔 작은 선물을 받기도 합니다. 다만 하루에 너무 자주 말을 걸면 주민들이 슬슬 자리를 피할지도 모릅니다.</p>'}</section>`;
 }
 const VIL_IC={plaza:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14h12M3.5 14V8M12.5 14V8M8 14V9M2.5 8h11L8 3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
   grocer:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 5h11l-1 8.5h-9z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 5a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>',
@@ -462,8 +490,8 @@ function drunStartBattle(){
   b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);S.battle=b;resetAct();S.route='battle';save();render();toast(`${m.name} · 파티 전투 시작`,'good');
 }
 function drunAfter(b,me){const R=S.drun;if(!R)return;
-  if(b.over==='win'){R.hp=Math.max(0.05,me.hp/me.maxHp);R.log.push(`${R.idx+1}페이즈 · ${b.mon.name} 처치`);R.idx++;if(R.idx>=R.phases.length){R.done='win';}}
-  else{R.done='lose';R.log.push(`${R.idx+1}페이즈 · ${b.mon.name}에게 패배`);}
+  if(b.over==='win'){R.hp=Math.max(0.05,me.hp/me.maxHp);hpSet(R.hp);R.log.push(`${R.idx+1}페이즈 · ${b.mon.name} 처치`);R.idx++;if(R.idx>=R.phases.length){R.done='win';}}
+  else{R.done='lose';R.hp=0;R.log.push(`${R.idx+1}페이즈 · ${b.mon.name}에게 패배`);}
   save();
 }
 function drunEvent(){
@@ -471,7 +499,7 @@ function drunEvent(){
   if(k==='chest'){const g=Math.round(20+L*3+Math.random()*L*2);const it={};let line=`${g}골드`;
     if(Math.random()<0.4&&(boss.loot||[]).length){const x=pickLoot(boss);it[x]=1;line+=` · ${ITEMS[x]?ITEMS[x].name:x}`;}else if(Math.random()<0.5){it.potion=1;line+=' · 회복약';}
     grant({exp:0,gold:g,items:it},'dungeon',{label:boss.region+' 보물상자',region:boss.region});text=`낡은 보물상자를 열었다 · ${line}`;}
-  else if(k==='trap'){const dmg=0.15+Math.random()*0.15;const before=R.hp;R.hp=Math.max(0.1,R.hp-dmg);text=`함정이 발동했다! HP ${Math.round((before-R.hp)*100)}% 감소`;}
+  else if(k==='trap'){const dmg=0.15+Math.random()*0.15;const before=R.hp;R.hp=Math.max(0.1,R.hp-dmg);hpSet(R.hp);text=`함정이 발동했다! HP ${Math.round((before-R.hp)*100)}% 감소`;}
   else {const heal=Math.random()<0.5;if(heal){R.hp=Math.min(1,R.hp+0.1);text='고요한 방이다. 잠시 숨을 고르며 HP 10%를 회복했다.';}else text='아무 일도 일어나지 않았다.';}
   R.log.push(`${R.idx+1}페이즈 · ${DRUN_KIND[k][0]} · ${text}`);R.last=text;R.idx++;save();render();
 }

@@ -98,7 +98,7 @@ function viewAsUserBar(){
   if(S.me&&S.me.admin&&S.me.viewAsUser){const v=$('#view');const bar=document.createElement('div');bar.className='wrap';bar.innerHTML=`<div class="row" style="justify-content:flex-end;padding-block:8px 0"><span class="faint" style="font-size:12px">일반 사용자 시점으로 보는 중</span><button class="btn btn-sm btn-ghost" data-act="backadmin">운영자 시점으로</button></div>`;v.prepend(bar);}
 }
 const _render=render;
-render=function(){_render();viewAsUserBar();if(S&&S.me&&!S.loggedOut&&S.route==='main'){const rt=$('.main-grid .rtop');if(rt&&rt.insertAdjacentHTML)rt.insertAdjacentHTML('afterbegin',nextGoalHTML());}setTimeout(advNoticeCheck,700);};
+render=function(){_render();viewAsUserBar();setTimeout(advNoticeCheck,700);};
 function boot(data){
   S=(data&&data.state)||load();
   S.sel=S.sel||{};S.unread=S.unread||{lobby:0,party:0,whisper:{}};S.unread.world=S.unread.world||0;if(!S.mail)S.mail=freshState().mail;S.settings=S.settings||{...DEF_SND};S.inquiries=S.inquiries||[];S.sel.pop=null;S.sel.titleModal=false;if(S.data.config.levelCap===20&&S.data.config.expQuad==null){S.data.config.levelCap=99;S.data.config.expQuad=2;}S.data.config.expQuad=S.data.config.expQuad??2;loadItems();S.stats=S.stats||{};S.titles=S.titles||{owned:{},equip:null};S.bots.forEach(b=>{if(b.goldEarned==null)b.goldEarned=Math.round(b.level*b.level*32+seedRnd('g'+b.name)()*900);});{const dk=kstCycle();const ds=new Set(S.stats.days||[]);ds.add(dk);S.stats.days=[...ds];}setTimeout(checkTitles,1500);if(S.sel.chatTab==='whisper')S.sel.chatTab='lobby';dmState();if(S.route==='friends')S.route='main';S.chat.world=S.chat.world||freshState().chat.world;S.unread.whisper=S.unread.whisper||{};
@@ -122,3 +122,6 @@ function boot(data){
   setInterval(tick,250);
 }
 ['snail-open','snail-start','lotto-open','lotto-buy','cshop-open','cshop-buy'].forEach(k=>{const f=ACTS[k];if(f)ACTS[k]=(...a)=>{if(S.me.level<CASINO_LV){toast(`카지노는 LV${CASINO_LV}부터 들어갈 수 있습니다.`,'warn');return;}return f(...a);};});
+/* 입장 전 경고(체력 30% 미만 · 내구도 0 장비) — entryGate는 05-features */
+[['dfight',1],['createparty',1],['queue',1],['joinrecruit',1],['mass-join',1],['hunt-go',0],['qfight',0]].forEach(([k,raid])=>{const f=ACTS[k];if(f)ACTS[k]=(d,...a)=>{if(entryGate(k,d,!!raid))return;return f(d,...a);};});
+ACTS['gate-go']=()=>{const g=GATE;GATE=null;modal('');if(g&&ACTS[g.k])ACTS[g.k]({...g.d,_gate:1});};
