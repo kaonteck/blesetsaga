@@ -143,9 +143,56 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-chatclose]'))setChatOpen(false);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('chat-open'))setChatOpen(false);});
+/* ── 탐색 지도 확대·이동 (.wmap) ──
+   데스크톱: 휠로 확대(커서 기준) · 끌어서 이동 · 더블클릭 확대/원래대로
+   모바일: 두 번 탭 확대/원래대로 · 두 손가락 확대 · 확대 상태에서 밀어서 이동
+   지도 그림과 핀(.mspot)을 .wm-stage 하나로 감싸 함께 움직이고, 제목·지역 보기·확대 버튼은 제자리.
+   상태(MAPZ)는 다시 그려져도 유지. x·y는 지도 폭 대비 비율(0 ~ 1-s). */
+const MAPZ={s:1,x:0,y:0},MAPZ_MAX=3,MAPZ_STEP=1.5;
+function initMapZoom(){
+  $$('.wmap').forEach(m=>{
+    if(m.dataset.zoom)return;const img=m.querySelector(':scope > img');if(!img)return;m.dataset.zoom='1';
+    const st=document.createElement('div');st.className='wm-stage';m.insertBefore(st,img);st.appendChild(img);
+    m.querySelectorAll(':scope > .mspot').forEach(b=>st.appendChild(b));
+    m.insertAdjacentHTML('beforeend','<div class="wm-zoom" role="group" aria-label="지도 확대·축소"><button type="button" data-z="in" aria-label="확대" data-tip="확대">+</button><button type="button" data-z="out" aria-label="축소" data-tip="축소">−</button><button type="button" data-z="reset" aria-label="원래 크기로" data-tip="원래 크기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>');
+    const clampZ=()=>{MAPZ.s=Math.min(MAPZ_MAX,Math.max(1,MAPZ.s));MAPZ.x=Math.min(0,Math.max(1-MAPZ.s,MAPZ.x));MAPZ.y=Math.min(0,Math.max(1-MAPZ.s,MAPZ.y));};
+    const apply=anim=>{clampZ();st.classList.toggle('wm-anim',!!anim);st.style.transform=`translate(${MAPZ.x*100}%,${MAPZ.y*100}%) scale(${MAPZ.s})`;
+      const z=MAPZ.s>1.01;m.classList.toggle('zoomed',z);const q=k=>m.querySelector(`.wm-zoom [data-z="${k}"]`);q('in').disabled=MAPZ.s>=MAPZ_MAX-.01;q('out').disabled=!z;q('reset').disabled=!z;};
+    const rel=(cx,cy)=>{const r=m.getBoundingClientRect();return [(cx-r.left)/r.width,(cy-r.top)/r.height];};
+    const zoomAt=(fx,fy,ns,anim)=>{ns=Math.min(MAPZ_MAX,Math.max(1,ns));const k=ns/MAPZ.s;MAPZ.x=fx-(fx-MAPZ.x)*k;MAPZ.y=fy-(fy-MAPZ.y)*k;MAPZ.s=ns;apply(anim);};
+    const toggleAt=(cx,cy)=>{const [fx,fy]=rel(cx,cy);if(MAPZ.s>1.01){MAPZ.s=1;MAPZ.x=0;MAPZ.y=0;apply(true);}else zoomAt(fx,fy,2.2,true);};
+    apply(false);
+    m.querySelector('.wm-zoom').addEventListener('click',e=>{const b=e.target.closest('[data-z]');if(!b)return;e.stopPropagation();
+      if(b.dataset.z==='reset'){MAPZ.s=1;MAPZ.x=0;MAPZ.y=0;apply(true);}else zoomAt(.5,.5,MAPZ.s*(b.dataset.z==='in'?MAPZ_STEP:1/MAPZ_STEP),true);});
+    /* 휠: 축소 끝에서 더 내리면 페이지 스크롤로 넘김 */
+    m.addEventListener('wheel',e=>{if(e.target.closest('.wm-zoom,.wm-dd'))return;if(e.deltaY>0&&MAPZ.s<=1.001)return;e.preventDefault();
+      const [fx,fy]=rel(e.clientX,e.clientY);const d=e.deltaMode===1?e.deltaY*16:e.deltaY;zoomAt(fx,fy,MAPZ.s*Math.exp(-d*.0018),false);},{passive:false});
+    m.addEventListener('dblclick',e=>{if(e.target.closest('.wm-zoom,.wm-dd')||Date.now()-(m._tapZoom||0)<700)return;e.preventDefault();toggleAt(e.clientX,e.clientY);});
+    /* 포인터: 한 개 = 이동, 두 개 = 확대. 움직였으면 뒤따르는 클릭(핀 열기)은 막음 */
+    const P=new Map();let pan=null,pinch=null,moved=false,lastTap=null;
+    m.addEventListener('pointerdown',e=>{if(e.button>0||e.target.closest('.wm-zoom,.wm-dd'))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(P.size===1){moved=false;pan={x:e.clientX,y:e.clientY,ox:MAPZ.x,oy:MAPZ.y,id:e.pointerId};pinch=null;}
+      else if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};pan=null;moved=true;}});
+    m.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});const r=m.getBoundingClientRect();
+      if(pinch&&P.size>=2){const [a,b]=[...P.values()];const d=Math.hypot(a.x-b.x,a.y-b.y)||1,mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+        MAPZ.x+=(mx-pinch.mx)/r.width;MAPZ.y+=(my-pinch.my)/r.height;const [fx,fy]=rel(mx,my);zoomAt(fx,fy,MAPZ.s*d/pinch.d,false);pinch={d,mx,my};return;}
+      if(!pan||pan.id!==e.pointerId)return;const dx=e.clientX-pan.x,dy=e.clientY-pan.y;
+      if(!moved&&Math.hypot(dx,dy)>5&&MAPZ.s>1.01){moved=true;m.classList.add('dragging');try{m.setPointerCapture(e.pointerId);}catch(_){}}
+      if(moved){MAPZ.x=pan.ox+dx/r.width;MAPZ.y=pan.oy+dy/r.height;apply(false);}});
+    const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);m.classList.remove('dragging');
+      if(e.type==='pointerup'&&e.pointerType==='touch'&&!moved&&P.size===0){const t=Date.now();
+        if(lastTap&&t-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<30){lastTap=null;m._skipClick=true;m._tapZoom=Date.now();toggleAt(e.clientX,e.clientY);}
+        else lastTap={t,x:e.clientX,y:e.clientY};}
+      if(moved&&P.size===0)m._skipClick=true;
+      if(P.size===1){const [id,p]=[...P.entries()][0];pan={x:p.x,y:p.y,ox:MAPZ.x,oy:MAPZ.y,id};}else if(!P.size){pan=null;pinch=null;}
+      if(m._skipClick)setTimeout(()=>{m._skipClick=false;},60);};
+    m.addEventListener('pointerup',up);m.addEventListener('pointercancel',up);
+    m.addEventListener('click',e=>{if(m._skipClick){e.stopPropagation();e.preventDefault();m._skipClick=false;}},true);
+  });
+}
 document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.st-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.wm-dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.wm-dd-i'))d.open=false;});});
 function afterRender(){
-  syncChatFab();updateChats();
+  syncChatFab();initMapZoom();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
   fitExlog();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
