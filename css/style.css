@@ -2195,6 +2195,6 @@ html,body{overflow-x:clip;max-width:100%}
 .panel>h3,.panel>.ph{border-left-color:rgba(180,212,245,.8);text-shadow:0 0 10px rgba(150,195,240,.25)}
 .logo .lg-en{text-shadow:0 0 12px rgba(160,200,245,.35)}
 
-/* 레이드 화면: 패널 위 다이아 장식·'◆ 인스턴스 던전' 같은 이름표 앞 다이아 없음 (body[data-route]는 04-ui.js syncChatFab이 붙임) */
-body[data-route="battle"] .panel::before{content:none}
-body[data-route="battle"] .lbl-d{display:none}
+/* 레이드 목록 화면(던전·파티 레이드·토벌전·만신전 탭)에서만 패널 위 다이아 없음.
+   실제 전투 화면(.arena)·이름표 앞 ◆(.lbl-d)·다른 화면은 그대로 (body[data-route]는 04-ui.js syncChatFab이 붙임) */
+body[data-route="battle"] #view:not(:has(.arena)) .panel::before{content:none}
