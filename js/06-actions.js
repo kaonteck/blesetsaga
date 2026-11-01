@@ -232,7 +232,7 @@ const ACTS={
   'hunt-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const A=S.sel.huntArea?MAP_INFO[S.sel.huntArea]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:storyLock(r.id));if(why){toast(why,'warn');return;}
     const fm=huntMons(r);if(!fm.length)return;modal('');const rg=A?fm[0].region:r.region;
     if(S.sel.huntMode!=='auto'){startSolo(pick(fm),{type:'field',region:rg});return;}
-    const min=AUTO_DUR.includes(S.sel.huntDur)?S.sel.huntDur:30;S.auto={land:r.id,region:rg,mons:fm.map(m=>m.id),start:now(),end:now()+min*60000,min};save();render();toast(`${r.region} 자동 사냥을 시작했습니다 · ${durLabel(min)}`,'good');},
+    const min=AUTO_DUR.includes(S.sel.huntDur)?S.sel.huntDur:30;S.auto={land:r.id,area:S.sel.huntArea||'',region:rg,mons:fm.map(m=>m.id),start:now(),end:now()+min*60000,min};save();render();toast(`${r.region} 자동 사냥을 시작했습니다 · ${durLabel(min)}`,'good');},
   'auto-claim':()=>{autoClaim(false);},
   'auto-stop':()=>{autoClaim(true);},
   'ng-land':d=>{S.sel.exLand=d.land;S.sel.exFocus='';go('explore');},

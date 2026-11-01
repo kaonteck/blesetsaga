@@ -269,7 +269,7 @@ function spotsHTML(cur){
     :`<button class="mspot ${t}${cur&&l===cur?' cur':''}" style="left:${x}%;top:${y}%;--w:${t==='gate'?2.2+n.length*0.95:2.6+n.length*1.1}%" data-act="map-open" data-land="${l}" data-focus="${id}" aria-label="${SPOT_KIND[t]} · ${esc(n)} 열기"><span class="sr">${esc(n)}</span></button>`).join('');
 }
 function vExploreHome(d,log,spots){
-  return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>${autoBar()}
+  return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>
     <div class="panel exlog-p"><h3>${hTitle('scroll','탐색 기록')}</h3><div class="exlog">${log.length?log.map((e,i)=>`<div class="exe ${i===0&&now()-e.ts<8000?'fresh':''}"><b>${esc(e.region)}</b><p>${esc(e.text)}</p>${e.got?`<span class="exgot">${esc(e.got)}</span>`:''}<small class="faint">${fmtWhen(e.ts)}</small></div>`).join(''):'<p class="empty">아직 탐색 기록이 없습니다. 지도에서 지역을 골라 탐색해 보세요.</p>'}</div></div>
     <div class="stack" style="gap:12px">
       <div class="ex-cnt">${cntRow([['오늘 탐색',`${d.explore} / ${EXPLORE_MAX}`],['초기화','05:00']])}</div>
@@ -294,7 +294,7 @@ const LAND_DESC={frost:'만년설과 얼음 협곡으로 뒤덮인 북쪽 끝의
 function vRegion(land,d,spots){
   const W=todayWeather();const w=W.find(x=>x.name===LANDS[land]);
   return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>
-    ${autoBar()}<div class="exr-head"><div class="exr-bar"><button class="btn btn-sm btn-ghost" data-act="ex-back"><span aria-hidden="true">←</span> 돌아가기</button>
+    <div class="exr-head"><div class="exr-bar"><button class="btn btn-sm btn-ghost" data-act="ex-back"><span aria-hidden="true">←</span> 돌아가기</button>
       <span class="exr-cnt">탐색 <b>${d.explore}/${EXPLORE_MAX}</b></span>${landDD()}</div>
       <h3>${esc(LANDS[land])}</h3><p class="exr-desc">${esc(LAND_DESC[land]||'')}</p>
       <div class="exr-now">${w?`<span class="exw"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[w.w]}</svg>${WNAME[w.w]} ${w.t}°</span><i aria-hidden="true">·</i>`:''}<span class="num" data-clock>${clockText()}</span></div>${wDebuffHTML(land)}${gatesHTML(land)}${dungeonsHTML(land)}</div>
@@ -327,7 +327,7 @@ function mapDlg(land,focus,page){
     h+=sec('land',`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>지역 탐색</div><div class="row" style="gap:8px;justify-content:space-between"><span class="md-meta">최소 레벨 <b>${r.lv}</b></span>${w&&!page?`<span class="exw"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[w.w]}</svg>${WNAME[w.w]} ${w.t}°</span>`:''}</div>
       <p class="md-text">${esc(r.desc)}</p>
       <div class="row" style="gap:6px">${fm.map(m=>`<span class="chip" title="${esc(m.dotName)} ${Math.round(m.dotChance*100)}%">${esc(m.name)}</span>`).join('')}<span class="chip warn">${esc(ITEMS[r.mat].name)}</span></div>
-      ${lr?`<p class="reason">${lr}</p>`:''}
+      ${lr?`<p class="reason">${lr}</p>`:''}${autoHere(land,'')?autoBar():''}
       <div class="row md-btns"><button class="btn btn-primary" data-act="ex-go" data-id="${r.id}" data-pop="1" ${lr||d.explore>=EXPLORE_MAX?'disabled':''}>탐색 <span class="num">${d.explore}/${EXPLORE_MAX}</span></button><button class="btn" data-act="ex-hunt" data-id="${r.id}" ${hw?'disabled':''}>필드 사냥</button></div>${hw&&!lr?`<p class="reason">필드 사냥 불가 · ${esc(hw)}</p>`:''}`);}
   const last=S.me.exLog&&S.me.exLog[0];
   if(last&&now()-last.ts<6000&&last.land===land)h=h.replace('<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>지역 탐색</div>',`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>지역 탐색</div><div class="md-res"><p>${esc(last.text)}</p>${last.got?`<b>${esc(last.got)}</b>`:''}</div>`);
@@ -342,7 +342,7 @@ function mapDlg(land,focus,page){
       ${I.quote?`<p class="md-quote">“${esc(I.quote)}”</p>`:''}<div class="md-meta">최소 레벨 : <b>${I.lv||(m?m.level:'-')}</b></div><div class="md-meta">인원 제한 : <b>${I.ppl||'1–4인'}</b></div><p class="md-text">${esc(I.text||'')}</p>${act}`);});
   ins.filter(s=>s[1]==='area').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};const lr=S.me.level<I.lv?`LV${I.lv} 이상 필요`:'';
     h+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>탐험 지역</div><h3 class="md-title">${esc(n)}</h3>${I.img?`<img class="md-img" src="${SPOT_IMG[I.img]}" alt="">`:''}<div class="md-meta">최소 레벨 : <b>${I.lv}</b></div><p class="md-text">${esc(I.text)}</p>
-      ${(()=>{const am=areaMons(id);return `<div class="row" style="gap:6px">${am.map(m=>`<span class="chip">${esc(m.name)}</span>`).join('')}</div>`;})()}${lr?`<p class="reason">${lr}</p>`:''}
+      ${(()=>{const am=areaMons(id);return `<div class="row" style="gap:6px">${am.map(m=>`<span class="chip">${esc(m.name)}</span>`).join('')}</div>`;})()}${lr?`<p class="reason">${lr}</p>`:''}${autoHere(land,id)?autoBar():''}
       <div class="row md-btns"><button class="btn btn-primary" data-act="ex-go" data-id="${land}" data-area="${id}" data-pop="1" ${lr||d.explore>=EXPLORE_MAX?'disabled':''}>탐색 <span class="num">${d.explore}/${EXPLORE_MAX}</span></button><button class="btn" data-act="ex-hunt" data-id="${land}" data-area="${id}" ${lr||huntBusy()?'disabled':''}>필드 사냥</button></div>`);});
   if(!page)ins.filter(s=>s[1]==='gate').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};
     h+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>워프게이트</div><h3 class="md-title">${esc(n)}${I.job?` <span class="chip cls ${roleOf(I.job)}" style="vertical-align:middle">${CLASSES[I.job].name}</span>`:''}</h3><p class="md-text">${I.text||''}</p>`);});
@@ -751,6 +751,8 @@ function autoClaim(stop){
   save();render();toast(`${label} 보상 · ${k}마리${got?' · '+got:''}${ups?` · 레벨 업!`:''}`,'good');
 }
 function autoGain(a,t){const e=autoEst(a.mons,0);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const k=autoKills(a,t);if(!ms.length)return {exp:0,gold:0};let ex=0,gd=0;for(let i=0;i<k;i++){const m=ms[i%ms.length];ex+=m.exp*AUTO_EFF;gd+=m.gold*AUTO_EFF;}return {exp:Math.round(ex),gold:Math.round(gd)};}
+/* 자동 사냥 진행 막대는 그 사냥을 시작한 지역(또는 탐험 지역) 칸 안, 설명 아래·탐색 버튼 위에 표시 */
+function autoHere(land,area){const a=S.auto;if(!a||a.land!==land)return false;if('area' in a)return (a.area||'')===(area||'');const r=EXPLORE.find(x=>x.id===land);return area?((areaMons(area)[0]||{}).region===a.region):(r&&r.region===a.region);}
 function autoBar(){
   const a=S.auto;if(!a)return '';const t=now();const done=t>=a.end;const k=autoKills(a,t);const p=Math.min(100,(t-a.start)/(a.end-a.start)*100);
   return `<div class="auto-bar ${done?'done':''}"><div class="ab-t"><b>${done?'자동 사냥 완료':'자동 사냥 중'}</b><span>${esc(a.region)} · ${durLabel(a.min)}</span><span class="ab-k">처치 <b class="num" data-auto-k>${k}</b>마리</span>
