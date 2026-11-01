@@ -224,5 +224,31 @@ select t.ok((select answered_by is not null from inquiries),'답변자·시각 �
 update reports set done=true;
 select t.ok((select handled_at is not null from reports),'신고 처리자·시각 자동 기록');
 select t.ok((select count(*) from admin_log)>=4,'운영 기록(정지·해제·우편·초대코드)');
+
+-- 운영: 유저 레벨 조정 (010)
+select t.fail($$select admin_set_level('00000000-0000-0000-0000-000000000003',30)$$,'세이브 없는 유저 레벨 조정(NO_SAVE)');
+reset role;
+insert into saves(user_id,data) values (:'P3','{"v":3,"savedAt":1,"me":{"name":"카이","level":5,"exp":40,"gold":100,"inv":{}}}');
+set role authenticated;
+select t.as(:'P3');
+select t.fail($$select admin_set_level('00000000-0000-0000-0000-000000000003',50)$$,'유저가 자기 레벨 조정');
+select t.as(:'A',true);
+select t.fail($$select admin_set_level('00000000-0000-0000-0000-000000000003',0)$$,'레벨 0');
+select t.fail($$select admin_set_level('00000000-0000-0000-0000-000000000003',100)$$,'레벨 100');
+select t.ok((select (admin_set_level(:'P3',30,'테스트')->>'before')::int)=5,'운영자 레벨 조정 5 → 30');
+reset role;
+select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'exp')::int=0 and (data->>'adminRev')::int=1 and (data->>'savedAt')::bigint>1 and (data->'me'->>'gold')::int=100 from saves where user_id=:'P3'),'세이브: LV30·경험치 0·adminRev 1·savedAt 갱신·골드 그대로');
+select t.ok((select level from profiles where user_id=:'P3')=30,'프로필 레벨도 30');
+set role authenticated; select t.as(:'P3');
+-- 접속 중인 게임이 조정을 모른 채 예전 세이브(LV6·골드 999)를 올림 → 레벨·경험치만 서버 값 유지
+insert into saves(user_id,data) values (:'P3','{"v":3,"savedAt":2,"me":{"name":"카이","level":6,"exp":10,"gold":999,"inv":{"potion":3}}}')
+  on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'exp')::int=0 and (data->'me'->>'gold')::int=999 and (data->'me'->'inv'->>'potion')::int=3 and (data->>'adminRev')::int=1 from saves where user_id=:'P3'),'예전 세이브 덮어쓰기: 레벨·경험치는 운영 값, 나머지 진행은 게임 값');
+-- 조정을 받은 게임(adminRev 1)이 자연 레벨업 후 저장 → 그대로 저장
+insert into saves(user_id,data) values (:'P3','{"v":3,"adminRev":1,"savedAt":3,"me":{"name":"카이","level":31,"exp":5,"gold":1200,"inv":{}}}')
+  on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int=31 and (data->'me'->>'exp')::int=5 from saves where user_id=:'P3'),'조정 반영 뒤 레벨업 저장은 막지 않음');
+select t.as(:'A',true);
+select t.ok((select count(*) from admin_log where action='set_level' and target=:'P3' and (detail->>'after')::int=30)=1,'운영 기록에 레벨 조정');
 reset role;
 select 'ALL TESTS PASSED';

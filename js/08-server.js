@@ -8,11 +8,20 @@ let SB=null,SB_UID=null,SB_ADMIN=false,cloudT=null,cloudBusy=false,cloudAgain=fa
 function cloudSave(now){if(now){clearTimeout(cloudT);cloudT=null;return cloudPush();}if(cloudT)return;cloudT=setTimeout(()=>{cloudT=null;cloudPush();},4000);}
 async function cloudPush(){
   if(!SB||!SB_UID||!S)return false;if(cloudBusy){cloudAgain=true;return false;}cloudBusy=true;
-  try{const {error}=await SB.from('saves').upsert({user_id:SB_UID,data:S,updated_at:new Date().toISOString()});
-    if(error)throw error;if(cloudFailN>=3)toast('서버 저장이 다시 연결되었습니다.','good');cloudFailN=0;pfSync();return true;}
+  try{const {data:back,error}=await SB.from('saves').upsert({user_id:SB_UID,data:S,updated_at:new Date().toISOString()}).select('rev:data->adminRev,lv:data->me->level,ex:data->me->exp');
+    if(error)throw error;if(cloudFailN>=3)toast('서버 저장이 다시 연결되었습니다.','good');cloudFailN=0;admApply(back);pfSync();return true;}
   catch(e){cloudFailN++;if(cloudFailN===3)toast('서버에 저장하지 못하고 있습니다. 이 기기에는 저장되어 있으며 계속 다시 시도합니다.','bad');clearTimeout(cloudT);cloudT=setTimeout(()=>{cloudT=null;cloudPush();},Math.min(60000,4000*cloudFailN));return false;}
   finally{cloudBusy=false;if(cloudAgain){cloudAgain=false;cloudSave();}}
 }
+/* 운영자 레벨 조정 받기 (supabase/010_admin_level.sql)
+   운영 페이지에서 레벨을 바꾸면 서버 세이브의 adminRev가 오른다. 저장 응답의 adminRev가 내 것보다 크면
+   서버가 지켜 둔 레벨·경험치를 받아 반영한다(서버 트리거가 그 전까지 레벨·경험치를 덮어쓰지 못하게 막아 둠). */
+function admApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.rev==null||!S||!S.me)return;
+  const rev=+r.rev||0;if(rev<=(S.adminRev||0))return;S.adminRev=rev;
+  const lv=Math.round(+r.lv);if(!(lv>=1))return;const before=S.me.level;
+  S.me.level=lv;S.me.exp=Math.max(0,+r.ex||0);hpFull();if(S.party){const m=S.party.members.find(x=>x.isMe);if(m)m.level=lv;}
+  save();const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();else renderTop();
+  notify(lv===before?`운영자가 레벨을 LV${lv}로 확인했습니다.`:`운영자가 레벨을 LV${before} → LV${lv}로 조정했습니다.`,'good');}
 // 지금 상태를 서버에 확실히 올린다 (다른 업로드가 진행 중이면 끝날 때까지 기다림). 성공하면 true
 async function cloudFlush(){
   clearTimeout(cloudT);cloudT=null;clearTimeout(saveT);
@@ -71,6 +80,8 @@ async function sbEnter(user){
   if(error){sbEntered=false;SB_UID=null;$('#view').innerHTML=`<div class="wrap"><div class="create" style="align-items:center;text-align:center;max-width:420px"><p class="errs">서버에서 진행 기록을 불러오지 못했습니다.<br><small>${esc(error.message||'')}</small></p><button class="btn btn-primary" onclick="location.reload()">다시 시도</button></div></div>`;return;}
   const cloud=data&&migrateRaw(data.data);const local=migrateRaw(localStorage.getItem(SAVE));let st=null,imported=false;
   if(cloud&&local)st=(local.savedAt||0)>(cloud.savedAt||0)?local:cloud;else st=cloud||local;
+  // 운영자가 레벨을 조정했는데 이 기기의 로컬 세이브가 더 최근이면, 레벨·경험치만 서버 값으로
+  if(st&&cloud&&st!==cloud&&st.me&&cloud.me&&(cloud.adminRev||0)>(st.adminRev||0)){st.me.level=cloud.me.level;st.me.exp=cloud.me.exp||0;st.adminRev=cloud.adminRev;delete st.me.hpPct;delete st.me.hpAt;}
   if(!st){let legacy=null;try{if(localStorage.getItem(SAVE0+':claimed')==null)legacy=migrateRaw(localStorage.getItem(SAVE0));}catch(e){}
     if(legacy&&legacy.me){st=legacy;imported=true;try{localStorage.setItem(SAVE0+':claimed',user.id);}catch(e){}}}
   if(st){st.loggedOut=false;if(st.me){st.me.admin=SB_ADMIN;if(!SB_ADMIN)st.me.viewAsUser=false;}if(!SB_ADMIN&&st.route==='admin')st.route='main';}
