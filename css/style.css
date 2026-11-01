@@ -2183,3 +2183,4 @@ html,body{overflow-x:clip;max-width:100%}
 .tele.say b{color:var(--hp)}
 .tele.say + .tele{margin-top:0}
 .outcome .tele.say{width:min(460px,100%);margin:6px auto 4px;text-align:left}
+.qgroups>.qgrp+.list{margin-top:8px}

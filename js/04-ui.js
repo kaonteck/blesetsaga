@@ -565,7 +565,7 @@ function questGroupsHTML(tab,qs,sel){if(!qs.length)return '<p class="empty">없�
       return qGroup(key,title,L,sel,cur,done===L.length?'완료':`${done}/${L.length}`);}).join('');}
   const byLv=(a,b)=>(a.level-b.level)||a.title.localeCompare(b.title,'ko');
   const live=qs.filter(q=>!QDONE.includes(questStatus(q))).sort(byLv),done=qs.filter(q=>QDONE.includes(questStatus(q))).sort(byLv);
-  return `<div class="list">${live.map(q=>qLi(q,sel)).join('')||'<p class="empty" style="padding:6px 0">진행할 퀘스트가 없습니다.</p>'}</div>${done.length?qGroup('done_'+tab,'완료 목록',done,sel,false,`${done.length}`):''}`;}
+  return `${done.length?qGroup('done_'+tab,'완료 목록',done,sel,false,`${done.length}`):''}<div class="list">${live.map(q=>qLi(q,sel)).join('')||'<p class="empty" style="padding:6px 0">진행할 퀘스트가 없습니다.</p>'}</div>`;}  /* 완료 목록(접힘)을 진행할 퀘스트 위에 */
 function questDetail(q){
   const st=questStatus(q);const qp=S.qp[q.id];
   let h=`<div class="stack" style="gap:16px"><div><div class="row" style="justify-content:space-between"><span class="ph" style="margin:0">${{epic:'메인 스토리',sub:'서브 스토리',repeat:'데일리'}[q.cat]} · LV${q.level}</span><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>
@@ -713,7 +713,8 @@ function logHTML(){return S.battle.log.slice(-160).map(l=>`<div class="${l.t}">$
    대사는 '다음 행동' 칸 위에 같은 모양의 붉은 칸(.tele.say)으로 */
 function monSayText(b){const H=HERO_LINES[b.monsterId||b.mon.id];if(!H)return '';
   if(b.over)return b.over==='win'?H.last:'';if(b.heroSay&&b.heroSay.turn===b.turn)return b.heroSay.text;return b.turn===1?H.say[0]:'';}
-function monSayHTML(b){const t=monSayText(b);return t?`<div class="tele say" role="status"><b>${esc(b.mon.name)}</b> · “${esc(t)}”</div>`:'';}
+function monSayHTML(b){const t=(monSayText(b)||'').trim();if(!t)return '';const paren=/^\(.*\)$/s.test(t);  /* (지문)은 따옴표 없이 */
+  return `<div class="tele say" role="status">${esc(paren?t:`“${t}”`)}</div>`;}
 function monArtHTML(b,win){return `<div class="mon-art"><pre class="ascii" ${b.over?`style="opacity:${win?.35:1}"`:''}>${esc(ART[b.mon.art]||ART.generic)}</pre></div>`;}
 function fightMain(){
   const b=S.battle,m=b.mon,me=b.players.find(p=>p.isMe);
