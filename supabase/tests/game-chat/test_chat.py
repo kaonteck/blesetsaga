@@ -63,8 +63,16 @@ with sync_playwright() as p:
     ok(a.input_value('#mc-to')=='@'+B,'정보 카드 → 선물 보내기: 받는 사람 미리 선택')
     a.evaluate("S.sel.pop=null;renderPop()")
     # 접속 인원
-    base=a.evaluate("S.bots.filter(b=>b.online).length+1");n=a.evaluate("onlineCount()")
-    ok(n==base+1,f'접속 인원에 실제 블레서 포함 ({base}+1={n})')
+    n=a.evaluate("onlineCount()");bots_on=a.evaluate("S.bots.filter(b=>b.online).length")
+    ok(n==2 and bots_on>0,f'접속 인원 = 나 + 실제 블레서만, 테스트 봇 {bots_on}명 제외 ({n})')
+    ok(a.inner_text('[data-online]')=='2','상단 접속 칩도 2명')
+    a.evaluate("ACTS.online()");a.wait_for_timeout(400)
+    names=a.evaluate("[...document.querySelectorAll('#modal .who-btn')].map(b=>b.textContent)")
+    ok(sorted(names)==sorted(['아린','하늘별']),'접속자 목록에 봇 없이 나·실제 블레서만: '+', '.join(names))
+    ok('접속 중 2명' in a.inner_text('#modal').replace('\n',' ') or '2' in a.inner_text('#modal .ol-h'),'목록 머리 접속 중 2명')
+    a.click('#modal [data-act="u-mail"][data-name="하늘별"]');a.wait_for_timeout(500)
+    ok(a.input_value('#mc-to')=='@'+B,'접속자 목록 → 편지: 실제 블레서는 서버 우편 받는 사람으로')
+    a.evaluate("S.sel.pop=null;renderPop()")
     # 신고
     mid=a.evaluate("S.chat.lobby.find(m=>m.from==='하늘별').id")
     a.evaluate(f"ACTS.report({{id:'{mid}'}})");a.wait_for_timeout(500)

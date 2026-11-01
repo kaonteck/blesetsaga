@@ -515,9 +515,22 @@ if(ONLINE){
     return h.replace(/(<select id="dm-new"[^>]*>)(<option value="">[^<]*<\/option>)([\s\S]*?)(<\/select>)/,(m,open,first,bots,close)=>
       `${open}${first}${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${p.job&&CLASSES[p.job]?' · '+CLASSES[p.job].name:''}${chOnline(p)?'':' · 오프라인'}</option>`).join('')}</optgroup>`:''}${bots?`<optgroup label="테스트 봇">${bots}</optgroup>`:''}${close}`);
   };
-  // 접속 인원: 테스트 봇 + 나 + 지금 접속 중인 블레서
+  // 접속 인원·접속자 목록: 테스트 봇은 빼고 나 + 실제 블레서만
   const _onlineCount=onlineCount;
-  onlineCount=function(){return _onlineCount()+(SB_UID?mlPlayers.filter(chOnline).length:0);};
+  onlineCount=function(){return SB_UID?1+mlPlayers.filter(chOnline).length:_onlineCount();};
+  const realAsBot=p=>({name:p.name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:p.status==='raid'&&chOnline(p)?'battle':'lobby',real:true,uid:p.user_id});
+  const _showOnline=showOnline;
+  showOnline=function(){
+    if(!SB_UID)return _showOnline();
+    const real=mlPlayers.filter(p=>p.name&&!bot(p.name)).map(realAsBot).sort((a,b)=>(b.online-a.online)||a.name.localeCompare(b.name,'ko'));
+    const keep=S.bots;S.bots=real;
+    try{_showOnline();}finally{S.bots=keep;}
+    const f=$$('#modal p.faint').pop();if(f)f.textContent='지금 게임에 접속한 블레서입니다. 최근 6분 안에 활동한 계정을 접속 중으로 셉니다.';
+    mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});
+  };
+  // 접속자 목록·정보 카드의 편지 보내기: 실제 블레서는 서버 우편으로
+  const _uMail=ACTS['u-mail'];
+  ACTS['u-mail']=(d,el,e)=>{_uMail(d,el,e);const p=chPlayer(d.name);if(p&&!bot(d.name)&&S.sel.mc){S.sel.mc.to='@'+p.user_id;renderPop();mlLoadPlayers().then(()=>{if(S.sel.mailView==='compose')renderPop();});}};
   // 신고: 서버 메시지는 서버 reports 표로
   const _report=ACTS.report;
   ACTS.report=async(d,el,e)=>{
