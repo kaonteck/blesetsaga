@@ -19,9 +19,9 @@ function renderTop(){
   const top=$('#top');
   if(!S.me||S.loggedOut){top.innerHTML=`<div class="wrap"><span class="logo"><svg class="lg-orn" viewBox="0 0 64 40" aria-hidden="true"><circle cx="32" cy="20" r="13" fill="none" stroke="currentColor" stroke-width=".8" opacity=".7"/><circle cx="32" cy="20" r="8.5" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="1 2" opacity=".6"/><path d="M32 3l2.2 14.8L49 20l-14.8 2.2L32 37l-2.2-14.8L15 20l14.8-2.2z" fill="currentColor" opacity=".9"/><path d="M2 20h11M51 20h11" stroke="currentColor" stroke-width=".8"/><path d="M60 20l-4-2.4v4.8z" fill="currentColor"/></svg><span class="lg-tx"><span class="lg-en">BLESET SAGA</span><span class="lg-ko">블레셋 전기</span></span></span></div>`;return;}
   let state='';
-  if(S.battle)state=`<button class="pill state" data-act="nav" data-route="battle">${S.battle.over?'전투 종료':'전투 중 · '+S.battle.turn+'턴'}</button>`;
-  else if(S.match)state=`<button class="pill state" data-act="nav" data-route="battle">매칭 성사 · 수락 대기</button>`;
-  else if(S.queue)state=`<button class="pill state" data-act="nav" data-route="battle">매칭 대기 <span class="num" data-qtime>${fmtDur(now()-S.queue.since)}</span></button>`;
+  if(S.battle)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="${S.battle.over?'전투 종료':'전투 중 · '+S.battle.turn+'턴'}">${S.battle.over?'<span class="st-l">전투 </span>종료':'<span class="st-l">전투 중 · </span>'+S.battle.turn+'턴'}</button>`;
+  else if(S.match)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="매칭 성사 · 수락 대기"><span class="st-l">매칭 성사 · </span>수락 대기</button>`;
+  else if(S.queue)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="매칭 대기"><span class="st-l">매칭 </span>대기 <span class="num" data-qtime>${fmtDur(now()-S.queue.since)}</span></button>`;
   else if(S.party)state=`<button class="pill state" data-act="nav" data-route="battle">파티 ${S.party.members.length}/${S.party.target}</button>`;
   const nav=[...NAV];if(isAdmin())nav.push(['admin','운영']);
   top.innerHTML=`<div class="wrap">
@@ -44,7 +44,7 @@ function portraitHTML(big){
   return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button">이미지 설정</button></div>`;
 }
 const ICON={
-  mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2l1.7 4.1 4.3.4-3.3 2.8 1 4.2L8 10.5l-3.7 2.2 1-4.2L2 5.7l4.3-.4z" fill="currentColor"/></svg>`,
+  mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.3 10.9 5.2 7.4 14.7 3.9 5.2z" fill="currentColor"/><path d="M3.9 5.2h7M5.9 5.2 7.4 14.7 8.9 5.2M5.9 5.2 7.4 1.3 8.9 5.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".75" stroke-linejoin="round"/><path d="M13.2 8.6v3.2M11.6 10.2h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12.6" cy="3.4" r=".9" fill="currentColor"/></svg>`,
   maxHp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2S1.8 10.4 1.8 6.1A3.3 3.3 0 0 1 8 4.4a3.3 3.3 0 0 1 6.2 1.7c0 4.3-6.2 8.1-6.2 8.1z" fill="currentColor"/></svg>`,
   atk:`<svg viewBox="0 0 16 16" aria-hidden="true"><polygon points="14,2 13.4,5.3 7,11.7 4.3,9 10.7,2.6" fill="currentColor"/><path d="M3.1 8.4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5.2 10.8l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
   def:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l5.6 2v4.2c0 3.4-2.4 5.8-5.6 7-3.2-1.2-5.6-3.6-5.6-7V3.5z" fill="currentColor"/><path d="M8 3.6v9.2" stroke="var(--slab)" stroke-width="1.1" opacity=".55"/></svg>`,
@@ -955,6 +955,7 @@ function vAdmin(){
   const body={monster:adminMonster,quest:adminQuest,mass:adminMass,items:adminItems,notice:adminNotice,config:adminConfig,ops:adminOps}[tab]();
   return `<div class="wrap page"><div class="page-head"><div><h2>운영<small class="en">Admin</small></h2><p>작성 → 검사(미리보기) → 공개 순서로 반영합니다. 수정한 내용은 새 전투부터 적용되고, 이미 시작한 전투는 시작 시 규칙을 유지합니다.</p></div>
     <button class="btn btn-ghost btn-sm" data-act="viewasuser">일반 사용자 시점으로 보기</button></div>
+    <div class="adm-move" role="note"><div class="adm-move-t"><b>콘텐츠 편집은 운영 페이지에서</b><p>여기서 바꾼 몬스터 · 퀘스트 · 아이템 · 공지 · 설정은 이 브라우저에만 적용되고, 운영 페이지에 같은 항목이 있으면 그쪽 값이 우선합니다. 모든 플레이어에게 반영하려면 운영 페이지에서 공개하세요.</p></div><a class="btn btn-primary btn-sm" href="/admin.html" target="_blank" rel="noopener">운영 페이지 열기 <span aria-hidden="true">↗</span></a></div>
     <div class="seg">${tabs.map(([k,l])=>`<button data-act="admintab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
     ${body}
     <p class="notice-local">시제품은 이 브라우저 안에서만 동작합니다. 실제 배포 시 운영자 권한 확인과 데이터 저장은 서버에서 처리해야 합니다.</p></div>`;
