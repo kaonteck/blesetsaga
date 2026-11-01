@@ -216,10 +216,10 @@ const VIL_LINES={
   clinic:[['돌팔이 의원 하켄',['뼈 부러졌냐? 그 정도면 그냥 붙는다! 다음 손님!','아프다고 울면 약값 두 배다. 이를 악물어!','에트나 놈들은 상처를 훈장으로 여기지. 너도 하나 달고 가라!']]],
   alley:[['협곡 깡패 둘',['어이, 이 골목 지나가려면 통행세 내야지! …농담이다, 하하! 근데 어깨는 왜 그리 좁냐?','덤빌 거면 지금 덤벼! 뒤에서 치는 건 에트나 방식이 아니거든!']],['골목 고양이',['하악! 고양이가 털을 곤두세우고 당신을 노려본다.','고양이가 돌멩이를 앞발로 툭 차더니 당당하게 지나간다.']]]},
  swamp:{
-  plaza:[['안개 속의 노인',['…….','…왔구나.','…안개가 짙다. …조심하거라.']],['말없는 소녀',['……(고개를 살짝 끄덕인다)','…로타스는… 찾기 어려운 곳인데….']]],
+  plaza:[['장로 하윈',['안개가 마을까지 올라온 건 처음이에요. …처음이었던가요?','균열이 열린 뒤로 밤마다 늪이 숨을 쉬어요. 크게, 천천히.','마스크는 꼭 쓰고 다니세요. 숨은 한 번에 하나씩만 쉴 수 있으니까요.']],['안개 속의 노인',['…….','…왔구나.','…안개가 짙다. …조심하거라.']],['말없는 소녀',['……(고개를 살짝 끄덕인다)','…로타스는… 찾기 어려운 곳인데….']]],
   grocer:[['버섯 상인',['…버섯… 독은 빼 두었다…. …아마도.','…값은… 알아서….','……이건… 팔지 않는다.']]],
-  clinic:[['늪의 약사',['…해독제다. …서두르지 마라….','…늪의 독은… 조용히 퍼진다….','…아프면… 말해라. …작게.']]],
-  alley:[['그림자 속의 누군가',['……(시선만 느껴진다)','…여기 온 걸… 아무도 모르게 해라….']],['골목 고양이',['……(고양이가 소리 없이 당신을 지켜본다)','고양이가 안개 속으로 스르륵 사라진다.']]]},
+  clinic:[['약초꾼 이브',['독으로 독을 막아요. 이상하게 들리죠? 여기선 다 그래요.','마스크 끈이 풀리면 바로 말씀하세요. …그분도 자주 풀렸거든요.','안개 속에선 얼굴이 다 비슷해 보여요. 그래서 가끔 헷갈려요.']],['늪의 약사',['…해독제다. …서두르지 마라….','…늪의 독은… 조용히 퍼진다….','…아프면… 말해라. …작게.']]],
+  alley:[['그림자 속의 누군가',['……(시선만 느껴진다)','…여기 온 걸… 아무도 모르게 해라….']],['골목 고양이',['……(고양이가 소리 없이 당신을 지켜본다)','고양이가 안개 속으로 스르륵 사라진다.']],['나룻배 사공 토르',['(노를 젓는 시늉을 하며 같은 노래를 흥얼거린다.)','균열까지 가는 손님은 오랜만이야. 아니, 지난번에도 그렇게 말했나.','배는 늘 같은 데로만 가. 그래도 손님들은 다른 데로 간다고 생각하더라.']]]},
  salt:{
   plaza:[['귀족 영애 셀레스트',['어머, 그 옷차림으로 히페리온 광장에 나오셨어요? 용기가 대단하시네요, 호호.','소금이 금값이라는 말 들어 봤죠? 여기선 반대예요. 금이 소금값이거든요.','시간 아깝게 왜 말을 거세요? 제 시간은 비싸요.']],['금박 장식의 신사',['자네, 지갑 사정은 괜찮나? 표정을 보니 아닌 것 같군. 흐흐.','히페리온에선 걷는 것도 돈이야. 농담 같지? 농담 아니라네.']]],
   grocer:[['향신료 상인 마르셀',['이 소금 한 꼬집이 당신 하루 일당이에요. 그래도 사실래요? 흐흐.','손님 같은 분은 구경만 하셔도 돼요. 아, 구경도 유료였나?','에누리요? 그런 단어는 히페리온 사전에 없어요.']]],
@@ -312,9 +312,21 @@ function qReward(q,r){if(r&&r.gearTier&&S.me){const T=r.gearTier;const w=gearOfT
 /* ───────── 메인 스토리 · 서장과 1장 (2054 재오픈) ───────── */
 Object.assign(ITEMS,{
   q_return:{name:'라니아케아로의 귀환',type:'mat',tag:'???',desc:'이 세계에 머무르시겠습니까? ▒▒▒ 귀환 대상: [데이터 없음] · 사용 기한: 영원 · 이 아이템은 버릴 수 없습▒',price:0},
-  j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',readText:'2052.09.14 — 타임어택 접수 완료. 컨빨이랑 템빨이 한 공대라니 웃기다.\n2052.09.14 — 로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.\n2052.09.21 — 일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.\n2052.10.03 — 지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.\n(마지막 장은 찢겨 있다.)',desc:'풀숲에서 주운 가죽 표지의 일지. 방패 두 개가 겹친 길드 문장이 찍혀 있다. 사용하면 읽는다.',price:0}});
-Object.assign(ITEMS,{q_pilgrim:{name:'순례자의 표식',type:'mat',tag:'퀘스트 아이템',desc:'에트나 안내인이 건넨 돌 표식. 손때가 묻어 반들반들하다.'},q_cavemap:{name:'동굴 지도',type:'mat',tag:'퀘스트 아이템',desc:'무너진 바위 동굴로 가는 길이 그려진 낡은 지도. 종이만 새것이다.'}});
-const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',kind:'story',region:'순례자의 길',level:11,statLevel:12,tier:'story',desc:'순례자의 길 끝에서 블레서를 시험하는 거대한 석상.',singleName:'바위 주먹',aoeName:'지진',dotName:'균열',dotChance:0.2}),soloMon({id:'st_monk',name:'동굴의 은둔 무승',art:'golem',kind:'story',region:'무너진 바위 동굴',level:17,statLevel:18,tier:'story',desc:'언제부터 동굴에 있었는지 아무도 모르는 무승.',singleName:'발레티 정권',aoeName:'산을 울리는 발경',dotName:'내상',dotChance:0.3}),soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35})];
+  j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 방패 두 개가 겹친 길드 문장이 찍혀 있다. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
+/* 2052년 탐사 일지: 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다(S.me.jPages, 3장에서 1쪽). 4장 이후 J2052_LATER를 한 쪽씩 연다. */
+const J2052_P1='2052.10.19\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— 아우로라';
+const J2052_LATER=['2052.09.14 — 타임어택 접수 완료. 컨빨이랑 템빨이 한 공대라니 웃기다.\n2052.09.14 — 로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','2052.09.21 — 일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','2052.10.03 — 지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.'];
+function j2052Text(){const me=S&&S.me;const n=Math.max(1,(me&&me.jPages)||1);const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
+  return pages.join('\n\n― ― ―\n\n')+(n-1<J2052_LATER.length?'\n\n(나머지 쪽은 물에 젖어 붙어 있다. 억지로 떼면 찢어질 것 같다.)':'\n\n(마지막 장은 찢겨 있다.)');}
+Object.defineProperty(ITEMS.j2052,'readText',{get:j2052Text,enumerable:true,configurable:true});
+
+Object.assign(ITEMS,{q_mask:{name:'빈 안개 마스크',type:'mat',tag:'퀘스트 아이템',desc:'약초꾼 이브가 건넨 가죽 마스크. 늪 독샘을 먹여야 숨을 쉴 수 있다.'},q_ferry:{name:'토르의 나룻배 표',type:'mat',tag:'퀘스트 아이템',desc:'나무 조각에 배 그림이 새겨져 있다. 뒷면에는 오늘 날짜가 이미 적혀 있다.'},q_lamp:{name:'꺼진 등불',type:'mat',tag:'퀘스트 아이템',desc:'장로 하윈이 맡긴 낡은 등불. 정화의 성수를 부으면 다시 켜진다고 한다.'},q_pilgrim:{name:'순례자의 표식',type:'mat',tag:'퀘스트 아이템',desc:'에트나 안내인이 건넨 돌 표식. 손때가 묻어 반들반들하다.'},q_cavemap:{name:'동굴 지도',type:'mat',tag:'퀘스트 아이템',desc:'무너진 바위 동굴로 가는 길이 그려진 낡은 지도. 종이만 새것이다.'}});
+const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',kind:'story',region:'순례자의 길',level:11,statLevel:12,tier:'story',desc:'순례자의 길 끝에서 블레서를 시험하는 거대한 석상.',singleName:'바위 주먹',aoeName:'지진',dotName:'균열',dotChance:0.2}),soloMon({id:'st_monk',name:'동굴의 은둔 무승',art:'golem',kind:'story',region:'무너진 바위 동굴',level:17,statLevel:18,tier:'story',desc:'언제부터 동굴에 있었는지 아무도 모르는 무승.',singleName:'발레티 정권',aoeName:'산을 울리는 발경',dotName:'내상',dotChance:0.3}),soloMon({id:'st_leech',name:'늪가의 독거머리 떼',art:'beast',kind:'story',region:'로타스 늪가',level:20,statLevel:21,tier:'story',desc:'마스크 없이 늪가에 나온 사람에게 한꺼번에 달라붙는 거머리 떼.',singleName:'달라붙기',aoeName:'떼로 덮치기',dotName:'흡혈',dotChance:0.35}),
+  soloMon({id:'st_rift',name:'균열에서 기어 나온 것',art:'spirit',kind:'story',region:'늪 한가운데의 균열',level:22,statLevel:23,tier:'story',desc:'보랏빛 균열에서 기어 나온 무언가. 형체가 한 박자씩 늦게 따라온다.',singleName:'끌어당기기',aoeName:'균열의 파동',dotName:'잠식',dotChance:0.3}),
+  soloMon({id:'st_warden',name:'수문 파수꾼',art:'golem',kind:'story',region:'물에 잠긴 등대 신전',level:25,statLevel:26,tier:'story',desc:'등대 신전의 수문을 지키는 돌 파수꾼. 이끼가 눈을 덮어도 정확히 침입자 쪽을 본다.',singleName:'수문 망치',aoeName:'역류',dotName:'이끼 독',dotChance:0.3}),
+  soloMon({id:'st_serpent',name:'고대 바다뱀',art:'beast',kind:'story',region:'물에 잠긴 등대 신전 깊은 곳',level:28,statLevel:29,tier:'story',desc:'균열의 기운에 깨어나 등대 신전에 똬리를 튼 늪의 주인. 비늘 사이로 독안개가 새어 나온다. [3장 보스]',singleName:'꼬리 후려치기',aoeName:'몸통 휘감기',dotName:'독니',dotChance:0.2,
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 독안개',say:'바다뱀이 독안개를 내뿜는다. 중독되면 정화의 성수로 풀 수 있다',atkMul:1.3,dotName:'독안개 중독',dotChance:0.55,dotMul:1.5,aoeName:'독안개 내뿜기'},{at:25,name:'3페이즈 · 붕괴',say:'신전 바닥이 무너진다',atkMul:1.6,aoeName:'바닥 붕괴',aoeMult:0.75,aoeEvery:2,dotChance:0.25}]}),
+  soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35})];
 const STORY_QUESTS=[
  {id:'E0',cat:'epic',title:'블레스 링크',published:true,level:1,prereq:null,repeat:null,cond:{},
   desc:'2054년, <Bleset Saga>가 다시 문을 열었다. 블레스 링크를 쓰고 처음으로 접속한다.',start:'s1',steps:{
@@ -366,7 +378,76 @@ const STORY_QUESTS=[
   s2:{text:'"수련이 끝나지 않았다. 몇 번째 해가 뜨는지도 잊었다. 네가 나를 넘으면… 그래, 나도 조금은 쉴 수 있겠지."',battle:'st_monk',next:'s3',winText:'무승이 천천히 주저앉는다. "…드디어, 쉴 수 있겠군." 그는 그대로 눈을 감는다. 숨소리가 들리지 않는다.'},
   s3:{text:'동굴을 나서자 해가 지고 있다. 에트나 쪽에서 수련하는 소리가 들린다. 오늘따라 그 박자가 한 번, 아주 살짝 어긋난다. 그날 밤 꿈속에서 누군가 당신의 클래스 이름을 부른다.',choices:[
     {label:'꿈에서 깬다',result:'이불이 땀에 젖어 있다. 게임 속인데도.',next:'end',flag:'ch2_clear'}]},
-  end:{end:true,text:'2장 「시련의 길」 완료',reward:{exp:2600,gold:500,items:{potion:2},gearTier:2}}}}];
+  end:{end:true,text:'2장 「시련의 길」 완료',reward:{exp:2600,gold:500,items:{potion:2},gearTier:2}}}},
+ {id:'E8',cat:'epic',title:'안개 마스크',published:true,level:20,prereq:'E7',repeat:null,cond:{adv:true},
+  desc:'늪 한가운데 보랏빛 균열이 열린 뒤로, 독안개가 마을까지 차오른다. 늪의 마을 로타스로 향한다. [3장 「독안개 아래」]',start:'s1',steps:{
+  s1:{text:'늪의 땅으로 들어서자 숨이 턱 막힌다. 말뚝 위에 선 집들 사이로 보랏빛 안개가 낮게 깔려 있다. 마을 사람들은 모두 가죽 마스크를 쓰고 있다. 치료소의 약초꾼이 마스크를 만들어 준다고 한다. (탐색 › 늪의 땅 › 마을 › 치료소)',
+    give:{land:'swamp',spot:'clinic',item:'q_mask',n:1,npc:'약초꾼 이브',text:'"돌아오셨네요, 아우로라 님." 이브가 반갑게 웃다가, 당신 얼굴을 다시 보고 멈칫한다. "…아, 죄송해요. 닮은 분이 계셨어요. 마스크가 없으시군요. 이 마스크에 늪 독샘을 먹이면 안개를 걸러 줘요."'},
+    choices:[{label:'마스크를 받아 든다',req:{item:'q_mask'},result:'이브가 늪 독샘 세 개가 필요하다고 한다. 늪의 생물에게서 얻을 수 있다.',next:'s2'},
+      {label:'아직 치료소에 가지 못했다',result:'로타스 치료소의 약초꾼을 찾아야 한다.',next:'s1'}]},
+  s2:{text:'이브: "독샘 세 개면 충분해요. 독으로 독을 막는 거예요. 이상하게 들리죠?" (늪 독샘 3개 · 늪의 땅 필드 사냥)',choices:[
+    {label:'늪 독샘 3개를 건넨다',req:{items:{venom:3}},take:{venom:3},result:'이브가 독샘을 짜 마스크 안쪽에 바른다. 쓴 냄새가 나더니, 이내 숨이 편해진다.',next:'s3'},
+    {label:'아직 모으지 못했다',result:'늪의 생물을 사냥해 독샘을 모아야 한다.',next:'s2'}]},
+  s3:{text:'마스크를 쓰고 늪가로 나서자 물속에서 무언가 꿈틀거린다. 마스크 없이 나온 사람을 노리던 거머리 떼가 한꺼번에 몰려온다.',battle:'st_leech',next:'s4',winText:'거머리 떼가 물속으로 흩어진다. 마스크 덕에 독안개 속에서도 숨이 차지 않는다.'},
+  s4:{text:'치료소로 돌아오자 이브가 마스크 끈을 다시 매 준다. "잘 맞네요. 원래 당신 것이었던 것처럼." 그녀는 잠깐 당신 뒤쪽 하늘을 올려다본다.',choices:[
+    {label:'고맙다고 인사한다',result:'"안개가 걷히면 다시 들러 주세요. 그분도… 늘 그렇게 말했거든요."',next:'end',flag:'e8_mask'}]},
+  end:{end:true,text:'안개 마스크 완성',reward:{exp:3000,gold:550,items:{potion:2}}}}},
+ {id:'E9',cat:'epic',title:'첫 균열',published:true,level:22,prereq:'E8',repeat:null,cond:{},
+  desc:'늪 한가운데의 균열을 직접 보러 간다. 균열까지는 배로만 갈 수 있다. [3장 「독안개 아래」]',start:'s1',steps:{
+  s1:{text:'장로 하윈이 말한다. "균열은 늪 한가운데 있어요. 걸어서는 못 가요. 뒷골목 끝 나루터의 토르에게 가 보세요." (탐색 › 늪의 땅 › 마을 › 뒷골목)',
+    give:{land:'swamp',spot:'alley',item:'q_ferry',n:1,npc:'나룻배 사공 토르',text:'토르가 노를 내려놓지도 않고 나무 표를 내민다. "균열까지? 태워 주지. 표는 미리 써 뒀어. 올 줄 알았거든."'},
+    choices:[{label:'나룻배에 오른다',req:{item:'q_ferry'},result:'배가 소리 없이 미끄러진다. 토르는 내내 같은 노래를 흥얼거린다.',next:'s2'},
+      {label:'아직 나루터에 가지 못했다',result:'로타스 뒷골목 끝 나루터에서 토르를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'안개가 가장 짙은 곳, 물 위에 보랏빛 균열이 떠 있다. 균열은 천천히 열렸다가 닫힌다. 깜빡이는 눈처럼. 열릴 때마다 블라스파미아의 냄새가 난다.',choices:[
+    {label:'균열 가장자리를 살핀다',result:'갈대 사이에 가죽 표지의 무언가가 걸려 있다. 손을 뻗는 순간 균열이 활짝 열린다.',next:'s3'},
+    {label:'균열이 닫힐 때까지 기다린다',result:'균열은 닫히지 않는다. 당신이 볼 때까지 기다리는 것처럼.',next:'s3'}]},
+  s3:{text:'균열 속에서 무언가 기어 나온다. 움직임이 한 박자씩 늦게 따라온다.',battle:'st_rift',next:'s4',winText:'형체가 균열 속으로 끌려 들어간다. 균열이 한 번, 아주 천천히 깜빡인다.'},
+  s4:{text:'갈대 사이에서 건진 것은 낡은 탐사 일지다. 대부분의 쪽이 물에 젖어 붙어 있고, 첫 장만 겨우 읽힌다. 날짜는 2052년. 맨 아래 서명은 「아우로라」. 이브가 당신을 부른 그 이름이다.',choices:[
+    {label:'일지를 품에 넣는다',result:'돌아오는 배 위에서 토르의 노래가 처음으로 멈춘다. "그 일지, 버리지 마. 주인이 찾으러 올지도 모르니까."',next:'end',flag:'e9_journal'}]},
+  end:{end:true,text:'균열에서 2052년 일지 발견',reward:{exp:3600,gold:600,items:{j2052:1}}}}},
+ {id:'E10',cat:'epic',title:'가라앉은 등불',published:true,level:24,prereq:'E9',repeat:null,cond:{},
+  desc:'일지 첫 장 뒷면에 물에 잠긴 등대 신전이 그려져 있다. 장로 하윈은 그곳의 등불이 안개를 걷어 낸다고 한다. [3장 「독안개 아래」]',start:'s1',steps:{
+  s1:{text:'일지 뒷면에 그려진 건물을 보여 주자 장로 하윈이 오래 말이 없다. "물에 잠긴 등대 신전이에요. 등불이 꺼진 뒤로 안개가 짙어졌죠." (탐색 › 늪의 땅 › 마을 › 광장)',
+    give:{land:'swamp',spot:'plaza',item:'q_lamp',n:1,npc:'장로 하윈',text:'하윈이 낡은 등불을 건넨다. "정화의 성수를 부으면 다시 켜질 거예요. 성수가 없으면 늪 독샘을 달여서라도 불을 붙여 볼 수 있어요. 냄새는 지독하겠지만."'},
+    choices:[{label:'등불을 받는다',req:{item:'q_lamp'},result:'등불은 차갑고, 안쪽에 오래된 그을음이 남아 있다.',next:'s2'},
+      {label:'아직 하윈을 만나지 못했다',result:'로타스 광장의 장로 하윈을 찾아야 한다.',next:'s1'}]},
+  s2:{text:'등불을 다시 밝혀야 한다. 정화의 성수는 거래소나 연금 공방에서 구할 수 있다.',choices:[
+    {label:'정화의 성수를 붓는다',req:{items:{holywater:1}},take:{holywater:1},result:'성수가 닿자 등불 안에서 푸른 불꽃이 피어오른다. 주변 안개가 한 뼘 물러선다.',next:'s3'},
+    {label:'늪 독샘 5개를 달여 불을 붙인다',req:{items:{venom:5}},take:{venom:5},result:'지독한 냄새와 함께 초록빛 불꽃이 붙는다. 안개가 마지못해 한 뼘 물러선다.',next:'s3'},
+    {label:'아직 준비하지 못했다',result:'정화의 성수 1개, 또는 늪 독샘 5개가 필요하다.',next:'s2'}]},
+  s3:{text:'토르의 배로 등대 신전에 닿는다. 물에 잠긴 수문 앞에 이끼 덮인 돌 파수꾼이 서 있다. 눈이 이끼에 덮여 있는데도 정확히 당신 쪽을 본다.',battle:'st_warden',next:'s4',winText:'파수꾼이 무너지며 수문이 열린다. 신전 깊은 곳에서 무언가 거대한 것이 몸을 뒤척인다.'},
+  s4:{text:'마을로 돌아와 하윈에게 수문이 열렸다고 전한다. 이야기 끝에 당신이 무심코 말한다. "일을 마치면 돌아가야 해서요."',choices:[
+    {label:'하윈의 대답을 기다린다',result:'하윈이 고개를 갸웃한다. "돌아가요? 어디로요?" 정말 모르겠다는 얼굴이다. 잠시 뒤 그는 아무 일 없었다는 듯 다음 이야기를 꺼낸다.',next:'end',flag:'e10_lamp'}]},
+  end:{end:true,text:'등대 신전의 수문을 열다',reward:{exp:4200,gold:650,items:{potion:2,holywater:1}}}}},
+ {id:'E11',cat:'epic',title:'독안개 아래',published:true,level:27,prereq:'E10',repeat:null,cond:{},
+  desc:'등불로 안개를 걷어 내고 등대 신전 깊은 곳의 늪의 주인과 마주한다. 권장 LV28 · 회복약 2개, 정화의 성수 1개 이상 준비. [3장 「독안개 아래」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'등불을 들고 신전 깊은 곳으로 내려간다. 푸른 불빛이 닿는 곳마다 독안개가 갈라진다. 물에 잠긴 회랑 끝, 거대한 비늘이 등불 빛을 받아 번들거린다. (권장 LV28 · 회복약 2개, 정화의 성수 1개 이상)',choices:[
+    {label:'준비를 마치고 나아간다',result:'비늘이 움직인다. 회랑 전체가 한 마리의 몸이었다.',next:'s2'},
+    {label:'회복약과 성수를 더 챙겨 온다',result:'등불은 꺼지지 않고 기다려 준다.',next:'s1'}]},
+  s2:{text:'고대 바다뱀이 똬리를 풀고 머리를 든다. 균열과 같은 보랏빛 눈이 천천히 깜빡인다. 체력이 줄면 독안개를 뿜고(60%), 끝에는 신전 바닥을 무너뜨린다(25%).',battle:'st_serpent',next:'s3',winText:'바다뱀이 물속으로 무너진다. 독안개가 한순간에 걷히고, 신전 천장 틈으로 하늘이 보인다.'},
+  s3:{text:'하늘에 균열과 같은 모양의 커다란 눈이 떠 있다. 눈은 한 번 깜빡이고 사라진다. 그리고 시야 한쪽에 시스템 메시지가 떠오른다.\n\n「관람석이 소란스럽습니다.」\n「늪의 독안개가 걷혔습니다.」',choices:[
+    {label:'메시지를 다시 확인한다',result:'메시지 창에는 「늪의 독안개가 걷혔습니다.」 한 줄만 남아 있다.',next:'s4'},
+    {label:'못 본 척한다',result:'아무도 하늘 이야기를 하지 않는다. 당신도 하지 않기로 한다.',next:'s4'}]},
+  s4:{text:'로타스로 돌아오자 마을 사람들이 일제히 박수를 친다. 이브도, 하윈도, 노를 내려놓은 토르도. 강가 마을에서 들었던 것과 똑같은 박자로.',choices:[
+    {label:'박수를 받는다',result:'박수가 뚝 멈춘다. 그날 밤 일지를 펼치자 첫 장 맨 아래에 아까는 없던 단어 하나가 번져 있다. 「히페리온」.',next:'end',flag:'ch3_clear'}]},
+  end:{end:true,text:'3장 「독안개 아래」 완료',reward:{exp:6000,gold:900,items:{potion:3},gearTier:3}}}},
+ {id:'S3a',cat:'sub',title:'이름 없는 말뚝',published:true,level:22,prereq:null,repeat:null,cond:{quests:['E9']},
+  desc:'로타스의 말뚝 집마다 문패가 걸려 있다. 몇 개는 비어 있다.',start:'s1',steps:{
+  s1:{text:'로타스의 말뚝 집들을 따라 걷는다. 문패마다 이름이 새겨져 있는데, 몇 개는 텅 비어 있다. 에트나 순례자의 길, 이름이 새겨진 바위의 빈자리가 떠오른다.',choices:[
+    {label:'빈 문패를 하나씩 살펴본다',result:'맨 끝 집 빈 문패에 손톱으로 긁은 자국이 있다. 「아우…」까지만 남아 있다.',next:'s2'}]},
+  s2:{text:'긁힌 자국은 오래되었는데, 나무는 새것이다. 누군가 이름을 새기다 멈춘 것 같다.',choices:[
+    {label:'자국을 손으로 문질러 본다',result:'나무 가루가 떨어지고 자국이 조금 더 선명해진다. 「아우…」 다음 글자는 끝내 보이지 않는다.',next:'end',flag:'s3a_post'},
+    {label:'그대로 둔다',result:'돌아서는데 등 뒤에서 나무 긁는 소리가 한 번 난다. 돌아보면 아무도 없다.',next:'end',flag:'s3a_post'}]},
+  end:{end:true,text:'빈 문패를 확인함',reward:{exp:900,gold:150,items:{}}}}},
+ {id:'S3b',cat:'sub',title:'토르의 노래',published:true,level:25,prereq:null,repeat:null,cond:{quests:['E10']},
+  desc:'나룻배 사공 토르는 매일 같은 노래를 부른다. 끝까지 들은 사람은 없다고 한다.',start:'s1',steps:{
+  s1:{text:'나루터에서 토르가 노래를 흥얼거린다. 오늘은 배에 손님이 없다. "끝까지 들어 볼 테야? 다들 중간에 가 버리던데."',choices:[
+    {label:'배에 앉아 끝까지 듣는다',result:'노래는 길고, 가사는 늪 사투리라 잘 들리지 않는다.',next:'s2'},
+    {label:'다음에 듣겠다고 한다',result:'"그래. 나는 여기 계속 있으니까."',next:'s1'}]},
+  s2:{text:'후렴이 몇 번이고 반복된다. 듣다 보니 가사 한 줄이 이상하게 귀에 박힌다. "컨빨이 노를 젓고, 템빨이 등불 들고…" 어디서 들어 본 이름 같다.',choices:[
+    {label:'"그 이름들, 누구예요?"',result:'토르가 노를 멈춘다. "이름? 그냥 노래야. 아주 오래전부터 다들 이렇게 불렀어." 그리고 처음부터 다시 부르기 시작한다.',next:'end',flag:'s3b_song'},
+    {label:'조용히 끝까지 듣는다',result:'노래가 끝나자 토르가 박수를 기다리듯 당신을 본다. 당신이 손뼉을 치자, 그는 만족스럽게 처음부터 다시 부른다.',next:'end',flag:'s3b_song'}]},
+  end:{end:true,text:'토르의 노래를 끝까지 들음',reward:{exp:1200,gold:200,items:{}}}}}];
 /* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
@@ -420,7 +501,7 @@ function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
-  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -442,7 +523,7 @@ function vilVisit(land,spot){
     if(!done){S.theft={cycle:kstCycle(),land};if(S.qp.D_THEFT)delete S.qp.D_THEFT;setTimeout(()=>notify('데일리 퀘스트 「잃어버린 골드를 찾아서」가 생겼습니다.'),600);}}
   else if(n>10){npc='';text=pick(VIL_AVOID[spot]);}
   else {const r=Math.random();const ex=EXPLORE.find(x=>x.id===land);
-    if(Math.random()<0.015){text=pick(CLASSES[S.me.job].tier===2?VIL_GLITCH:VIL_GLITCH_SOFT).replace('{N}',pick(GLITCH_NAMES));}
+    if(Math.random()<(CLASSES[S.me.job].tier===2?0.02:0.015)){text=pick(CLASSES[S.me.job].tier===2?VIL_GLITCH:VIL_GLITCH_SOFT).replace('{N}',pick(GLITCH_NAMES));}
     else if(r<0.015){const g=3+Math.floor(Math.random()*10);S.me.gold+=g;got=`${g}골드`;d.vil++;}
     else if(r<0.028&&ex){const k=(FOOD_BY_LAND[land]&&Math.random()<0.5)?FOOD_BY_LAND[land]:ex.mat;addItem(k,1);got=`${ITEMS[k].name} ×1`;d.vil++;}}
   S.sel.vil={land,spot,npc,text,got,lost,ts:now()};save();
@@ -1095,6 +1176,7 @@ function ngStory(){const me=S.me,c=CLASSES[me.job];
   if(c.tier===1&&me.level>=cfg().jobAdvanceLevel){const q=quest('J_'+me.job);if(q&&questStatus(q)!=='done')return {t:'전직',v:q.title,s:questStatus(q)==='active'||questStatus(q)==='claim'?'진행 중':'받을 수 있음',act:`data-act="openquest" data-id="${q.id}"`};}
   const ep=(S.data.quests||[]).filter(q=>q.cat==='epic'&&q.published);
   for(const q of ep){const st=questStatus(q);if(st==='done'||st==='hidden')continue;
+    if(st==='locked'&&q.cond&&q.cond.adv&&c.tier===1)break;
     if(st==='locked'){const r=lockReason(q);return {t:'메인 스토리',v:q.title,s:r||'잠김',lock:true,act:`data-act="openquest" data-id="${q.id}"`};}
     return {t:'메인 스토리',v:q.title,s:st==='available'?'수락할 수 있음':st==='claim'?'보상 받기':'진행 중',act:`data-act="openquest" data-id="${q.id}"`};}
   if(c.tier===1&&me.level<cfg().jobAdvanceLevel){const AL=cfg().jobAdvanceLevel,O=ADV_ORIGIN[me.job];

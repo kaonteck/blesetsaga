@@ -152,6 +152,7 @@ function dailyPicks0(){const c=kstCycle();const pool=S.data.quests.filter(q=>q.p
   S.dailyQ={cycle:c,ids};return ids;}
 function condReason(q){const c=q.cond;if(!c)return '';const r=[];
   if(c.level&&S.me.level<c.level)r.push(`LV${c.level} 이상 필요`);
+  if(c.adv&&S.me&&CLASSES[S.me.job]&&CLASSES[S.me.job].tier!==2)r.push('전직 완료 필요');
   (c.quests||[]).forEach(id=>{if(!(S.qp[id]&&S.qp[id].status==='done')){const p=quest(id);r.push(`완료 필요: ${p?p.title:id}`);}});
   (c.flags||[]).forEach(f=>{if(!S.flags[f])r.push(`필요한 기록: ${FLAG_NAMES[f]||f}`);});
   if(c.item&&!(S.me.inv[c.item]>0))r.push(`필요한 아이템: ${ITEMS[c.item]?ITEMS[c.item].name:c.item}`);
@@ -210,7 +211,7 @@ function vBattle(){
     <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-const LAND_STORY={rock:'E4',swamp:'E7'};
+const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11'};
 function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
@@ -814,6 +815,7 @@ function choiceReason(c){
   if(r.flag&&!S.flags[r.flag])return `필요한 기록: ${FLAG_NAMES[r.flag]||r.flag}`;
   if(r.level&&S.me.level<r.level)return `LV${r.level} 이상 필요`;
   if(r.item&&!(S.me.inv[r.item]>0))return `필요한 아이템: ${ITEMS[r.item]?ITEMS[r.item].name:r.item}`;
+  if(r.items)for(const k in r.items){const have=S.me.inv[k]||0;if(have<r.items[k])return `필요한 아이템: ${ITEMS[k]?ITEMS[k].name:k} ${have}/${r.items[k]}`;}
   return null;
 }
 function validateQuest(q,all){

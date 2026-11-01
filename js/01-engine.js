@@ -239,7 +239,7 @@ function createBattle(m,members,rng,cfg){
   const b={id:'B'+Date.now().toString(36)+Math.floor(rng()*1e8).toString(36),monsterId:m.id,
     mon:{name:m.name,art:m.art,hp,maxHp:hp,atk:m.atk,def:m.def||0,poison:null,burn:null,weaken:0,
       singleName:m.singleName,singleMult:m.singleMult,aoeName:m.aoeName,aoeMult:m.aoeMult,aoeEvery:Math.max(2,m.aoeEvery|0),
-      dotName:m.dotName,dotChance:m.dotChance,dotDmg:m.dotDmg},
+      dotName:m.dotName,dotChance:m.dotChance,dotDmg:m.dotDmg,sphases:m.sphases?JSON.parse(JSON.stringify(m.sphases)):null,sph:0,baseAtk:m.atk},
     rules:{exp:m.exp,gold:m.gold,drops:m.drops.map(d=>d.slice()),turnSeconds:cfg.turnSeconds},
     players,order,turn:0,log:[],over:null,sup:null,partyBuffs:[],startedAt:Date.now()};
   b.log.push({t:'sys',text:`전투 시작 · ${n}인 · 몬스터 HP ${hp} · 몬스터 공격력 ${m.atk} · 행동 순서(행운): ${order.map(id=>players.find(p=>p.id===id).name).join(' → ')}`});
@@ -257,12 +257,17 @@ function telText(b){
   const p=b.players.find(x=>x.id===t.target);
   return `${t.name} → ${p?p.name:'?'}${t.type==='dot'?` · ${b.mon.dotName} 부여`:''}`;
 }
+/* 개인 레이드 보스 페이즈(그리드 없음): m.sphases=[{at:HP%,name,atkMul,…덮어쓸 몬스터 값}] — HP가 at% 이하로 내려가면 다음 턴부터 적용 */
+function soloPhase(b){const m=b.mon,P=m.sphases;if(!P||!P.length)return;const pct=m.hp/m.maxHp*100;let k=0;P.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
+  if(k===m.sph)return;m.sph=k;const ph=P[k];m.atk=Math.round(m.baseAtk*(ph.atkMul||1));
+  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
+  b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 공격력 ×${ph.atkMul||1}`});}
 function startTurn(b,rng){
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
   b.players.forEach(p=>{p.action=null;p.action2=null;p.confirmed=false;p.defending=false;p.protect=false;p.reduce=0;p.turnDealt=0;});
   const m=b.mon,alive=living(b);
   if(b.grid){gridPhase(b);b.tel=gridTel(b,rng);}
-  else if(b.turn%m.aoeEvery===0)b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
+  else if((soloPhase(b),b.turn%m.aoeEvery===0))b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
   else{
     const target=supActive(b)?b.players.find(p=>p.id===b.sup.by):weightedPick(alive,p=>p.role==='tank'?2:1,rng);
     const dot=rng()<m.dotChance;
