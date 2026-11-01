@@ -13,7 +13,7 @@
   --f-logo:'Cinzel','Nanum Myeongjo',Georgia,serif;
   --f-body:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   --f-mono:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
-  --r:4px; --coin-dk:#6e5520; --luck:#b9a8e6; --enh:#b88cff;
+  --r:4px; --mag:#5cc8d8; --coin-dk:#6e5520; --luck:#b9a8e6; --enh:#b88cff;
 }
 html,body{height:100%}
 body{margin:0;background:var(--void);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.6;
@@ -1375,7 +1375,9 @@ input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{bord
 .hud-id{align-items:center}
 .hud-lvl{font-size:12.5px;font-weight:600;color:#ecd6a0}
 .hud-pos{font-size:12px;padding:1px 8px;border:1px solid rgba(255,255,255,.85);border-radius:999px;color:#fff;line-height:1.4}
-@media (max-width:720px){.page-head{padding-left:52px}.page-head::before{width:42px}
+@media (max-width:720px){.page-head{padding-left:52px}.page-head::before{width:42px}}
+/* 상단 메뉴: 메뉴가 한 줄에 다 안 들어가는 폭(≤900px)부터 ☰ 메뉴로 */
+@media (max-width:900px){
   .top .wrap{gap:10px}
   .logo{order:0}.topright{order:1;margin-left:auto}.navtog{display:inline-grid;order:2}
   .nav{order:3;flex:0 0 100%;display:none;flex-direction:column;align-items:stretch;gap:0;padding:4px 0 8px;border-top:1px solid rgba(184,166,128,.18)}
@@ -1862,8 +1864,6 @@ img.px{image-rendering:pixelated}
 .fd-av{flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover;display:grid;place-items:center;background:var(--night);border:1px solid var(--rule-2);font-size:18px;font-family:var(--f-display)}
 .fd-av.sm{width:30px;height:30px;font-size:14px}.fd-av.xs{width:24px;height:24px;font-size:11px}
 .fd-tools{display:flex;align-items:center;gap:8px}.fd-count{margin-left:auto;font-size:12px}
-.fd-tool{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);padding:5px 10px;border:1px solid var(--rule-2);border-radius:999px;cursor:pointer}.fd-tool svg{width:15px;height:15px}.fd-tool:hover{color:#fff;border-color:var(--gold)}
-.fd-prev{position:relative;align-self:flex-start;margin-left:52px}.fd-prev img{max-width:240px;max-height:200px;border-radius:4px;display:block;border:1px solid var(--rule-2)}.fd-prev .ibtn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6)}
 .emo-w{position:relative;display:inline-block}.emo-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule-2);background:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .emo-w{flex:none}.fd-cform .emo-pop{left:auto;right:0}.emo-pop{width:min(260px,calc(100vw - 48px))!important}.emo-btn:hover{color:#ffd76a;border-color:var(--gold)}
 .emo-pop{position:absolute;z-index:25;bottom:calc(100% + 6px);left:0;width:260px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;padding:6px;background:#1a1b20;border:1px solid var(--rule-2);border-radius:6px;box-shadow:0 10px 26px rgba(0,0,0,.55)}
@@ -1874,7 +1874,6 @@ img.px{image-rendering:pixelated}
 .fd-name{font-weight:700;color:var(--silver)!important;font-size:13.5px}
 .fd-del{margin-left:auto}
 .fd-text{margin:0;font-family:var(--f-sys);font-size:14.5px;line-height:1.7;color:var(--text);white-space:normal;word-break:break-word}
-.fd-img{max-width:100%;max-height:460px;object-fit:cover;border-radius:4px;border:1px solid var(--rule-2);cursor:zoom-in;align-self:flex-start}
 .fd-bar{display:flex;align-items:center;gap:14px;padding-top:4px;border-top:1px solid var(--rule)}
 .fd-like,.fd-cc{display:inline-flex;align-items:center;gap:5px;background:none;border:0;color:var(--muted);font-size:12.5px;cursor:pointer;padding:4px 0}.fd-like svg,.fd-cc svg{width:16px;height:16px}
 .fd-like.on{color:#ff6b81}.fd-like:hover{color:#ff8a9c}.fd-cc{cursor:default}.fd-lk{font-size:11.5px}
@@ -2001,3 +2000,41 @@ html,body{overflow-x:clip;max-width:100%}
   .cmdbar .opts{margin:0;padding:0 0 2px;gap:10px;scroll-padding-inline:0}
   .cmdbar .opt{flex-basis:min(62%,220px)}
 }
+
+/* 상단 바: 폰에서 상태 칩(전투 중·종료·매칭)이 생겨도 로고 · 버튼 · ☰ 를 한 줄로 */
+@media (max-width:480px){
+  .top .wrap{column-gap:6px}
+  .logo{flex:0 1 auto;min-width:0}
+  .logo .lg-en{font-size:clamp(11.5px,3.3vw,14px)!important;letter-spacing:.1em!important}
+  .topright{flex:0 1 auto;min-width:0;flex-wrap:nowrap;gap:4px!important}
+  .topright .st-l{display:none}
+  .topright .pill.state{padding:4px 8px;white-space:nowrap}
+}
+@media (max-width:380px){
+  .top .wrap{column-gap:6px}
+  .logo .lg-ko{font-size:9.5px!important}
+  /* 아주 좁은 폰: 상태 칩이 떠 있는 동안 접속자 수 칩은 잠시 숨김 */
+  .topright:has(.pill.state) .pill[data-act="online"]{display:none}
+  .topright{gap:4px!important}
+  .topright .ibtn{width:28px;height:28px}
+  .topright .pill{padding:3px 7px}
+  .navtog{width:30px}
+}
+/* 태블릿 폭(901~1180px): 메뉴 항목 간격을 줄여 한 줄 유지 */
+@media (min-width:901px) and (max-width:1180px){
+  .top .wrap{gap:12px;flex-wrap:nowrap}
+  .nav{flex-wrap:nowrap;gap:2px}
+  .nav button{padding:10px 9px;white-space:nowrap}
+  .topright .pl-t{display:none}
+}
+
+/* 게임 안 운영 탭: 운영 페이지(/admin.html)로 안내 */
+.adm-move{display:flex;align-items:center;gap:16px;margin:0 0 16px;padding:12px 16px;border:1px solid var(--gold-lo);border-left:3px solid var(--gold);border-radius:var(--r);background:linear-gradient(90deg,rgba(214,203,176,.07),rgba(214,203,176,.015))}
+.adm-move-t{flex:1;min-width:0}
+.adm-move-t b{display:block;color:var(--gold-hi);font-size:14px;font-weight:600}
+.adm-move-t p{margin:2px 0 0;font-family:var(--f-sys);font-size:12.5px;line-height:1.55;color:var(--muted)}
+.adm-move .btn{flex:none;white-space:nowrap;text-decoration:none}
+@media (max-width:560px){.adm-move{flex-direction:column;align-items:stretch;gap:10px}.adm-move .btn{text-align:center}}
+
+/* 마력 능력치 아이콘: 수정 결정, 청록 (HP 빨강 · 공격 금속 · 방어 파랑 · 행운 연보라와 구분) */
+.si-mag{color:var(--mag)}
