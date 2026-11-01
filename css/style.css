@@ -2067,3 +2067,12 @@ html,body{overflow-x:clip;max-width:100%}
 .title-chip:hover{border:0;text-decoration:underline}
 .title-chip:focus-visible{outline:1px solid var(--gold-hi);outline-offset:3px;border-radius:2px}
 .trow .t > .chip{align-self:flex-start;border:0;border-radius:0;padding:0;background:none;font-size:11px;font-weight:600;letter-spacing:.02em}
+
+/* 모바일 '채팅' 버튼: 알약 안쪽 여백을 좁게 */
+@media (max-width:760px){
+  body.has-chat #chatfab{height:40px;padding:0 13px 0 11px;gap:5px;font-size:13.5px}
+  #chatfab svg{width:16px;height:16px}
+  #chatfab .fab-badge{top:1px!important;right:4px!important}
+}
+/* 읽지 않음 점(우편함 등): 아이콘 오른쪽 위로 */
+.ndot{left:auto;right:1px}
