@@ -1991,3 +1991,13 @@ html,body{overflow-x:clip;max-width:100%}
   .toasts{top:calc(var(--top-h,64px) + 8px);bottom:auto;left:12px;right:12px;max-width:none;align-items:stretch;gap:6px}
   .toasts > *{font-size:13px;padding:8px 12px}
 }
+
+/* 전투 결과: '내 보상' 상자 안 내용 가운데 정렬 */
+.outcome .result{text-align:center}
+.outcome .result .reward{justify-content:center}
+
+/* 모바일 전투 하단 패널: 스킬 카드 줄도 아래 줄들과 같은 좌우 여백, 카드 사이 간격 */
+@media (max-width:760px){
+  .cmdbar .opts{margin:0;padding:0 0 2px;gap:10px;scroll-padding-inline:0}
+  .cmdbar .opt{flex-basis:min(62%,220px)}
+}
