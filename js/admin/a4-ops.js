@@ -185,3 +185,39 @@ VIEWS.lotto=async(el)=>{
       <td class="n">${r.nums?`${r.claimed}/${r.tickets}`:''}</td><td class="n">${Number(r.paid)?Number(r.paid).toLocaleString('ko-KR')+'G':''}</td></tr>`).join('')||'<tr><td colspan="9" class="empty">아직 판매된 행운권이 없습니다.</td></tr>'}
     </tbody></table></div></div>`;
 };
+
+/* ── 채팅 (전체·월드 최근 메시지: 가리기·지우기·정지, 운영 공지 올리기) ── */
+let CHT={ch:'lobby',hidden:false};
+VIEWS.chat=async(el)=>{
+  let qy=A.sb.from('chat_messages').select('id,channel,author,name,cat,text,hidden,created_at').eq('channel',CHT.ch).order('id',{ascending:false}).limit(200);
+  if(CHT.hidden)qy=qy.eq('hidden',true);
+  const rows=await q(qy);
+  if(!rows){el.innerHTML='<div class="msg bad">채팅을 불러오지 못했습니다.</div>';return;}
+  const WC={notice:'공지',update:'업데이트',maint:'점검'};
+  el.innerHTML=`<div class="two">
+    <div class="panel" style="grid-column:1/-1"><h3><span class="row" style="gap:8px">
+        <select id="ct-ch" style="width:auto">${[['lobby','전체 채팅'],['world','월드(공지)']].map(([v,l])=>`<option value="${v}" ${CHT.ch===v?'selected':''}>${l}</option>`).join('')}</select>
+        <label class="chk"><input type="checkbox" id="ct-hid" ${CHT.hidden?'checked':''}> 가린 것만</label>
+        <span class="faint" style="font-weight:400">최근 ${rows.length}개</span></span>
+        <button class="btn btn-sm" id="ct-reload">새로고침</button></h3>
+      ${CHT.ch==='world'?`<form class="row" id="ct-post" style="flex-wrap:nowrap;margin-bottom:12px"><select id="ct-cat" style="width:auto">${Object.entries(WC).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><input type="text" id="ct-text" maxlength="200" placeholder="월드 채널에 올릴 공지 (게임 채팅 '월드' 탭에 바로 뜹니다)"><button class="btn btn-p">올리기</button></form>`:''}
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>시각</th><th>보낸 사람</th><th>내용</th><th></th></tr></thead><tbody>
+      ${rows.map(r=>`<tr${r.hidden?' style="opacity:.55"':''}><td class="small faint" style="white-space:nowrap">${fmtTime(r.created_at)}</td>
+        <td class="small" style="white-space:nowrap">${r.author?who(r.author):esc(r.name)}${r.cat?` <span class="chip info">${esc(WC[r.cat]||r.cat)}</span>`:''}</td>
+        <td>${esc(r.text)}${r.hidden?' <span class="chip dim">가림</span>':''}</td>
+        <td><div class="row" style="flex-wrap:nowrap">
+          <button class="btn btn-sm" data-hide="${r.id}" data-v="${r.hidden?0:1}">${r.hidden?'다시 보이기':'가리기'}</button>
+          <button class="btn btn-sm btn-g" data-del="${r.id}">삭제</button>
+          ${r.author&&r.author!==A.user.id?`<button class="btn btn-sm btn-d" data-ban="${r.author}">정지</button>`:''}</div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">메시지가 없습니다.</td></tr>'}
+      </tbody></table></div>
+      <p class="faint small" style="margin:10px 0 0">가리면 유저 화면에서 바로 사라집니다(1분 안). 1:1 대화는 당사자만 볼 수 있어 여기 나오지 않습니다 — 신고된 1:1은 '문의 · 신고'에서 내용을 확인하세요.</p></div></div>`;
+  $('#ct-ch').onchange=e=>{CHT.ch=e.target.value;go('chat');};
+  $('#ct-hid').onchange=e=>{CHT.hidden=e.target.checked;go('chat');};
+  $('#ct-reload').onclick=()=>go('chat');
+  const pf=$('#ct-post');if(pf)pf.onsubmit=async e=>{e.preventDefault();const text=$('#ct-text').value.trim();if(!text)return;
+    if(await q(A.sb.from('chat_messages').insert({channel:'world',name:'운영자',cat:$('#ct-cat').value,text}),'월드 채널에 올렸습니다.'))go('chat');};
+  $$('[data-hide]').forEach(b=>b.onclick=async()=>{if(await q(A.sb.from('chat_messages').update({hidden:b.dataset.v==='1'}).eq('id',b.dataset.hide),b.dataset.v==='1'?'가렸습니다.':'다시 보이게 했습니다.'))go('chat');});
+  $$('[data-del]').forEach(b=>b.onclick=async()=>{if(!await ask('메시지 삭제','삭제한 메시지는 되돌릴 수 없습니다. 기록으로 남기려면 가리기를 쓰세요.','삭제',true))return;
+    if(await q(A.sb.from('chat_messages').delete().eq('id',b.dataset.del),'삭제했습니다.'))go('chat');});
+  $$('[data-ban]').forEach(b=>b.onclick=()=>banDlg(b.dataset.ban));
+};

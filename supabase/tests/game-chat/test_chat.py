@@ -1,0 +1,96 @@
+from playwright.sync_api import sync_playwright
+import os; SP=os.path.dirname(os.path.abspath(__file__)); OUT=os.environ.get('SHOTS','/tmp')
+MOCK=open(SP+'/mock-supabase.js').read();res=[]
+A='aaaaaaaa-0000-0000-0000-00000000000a';B='bbbbbbbb-0000-0000-0000-00000000000b'
+def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
+with sync_playwright() as p:
+    b=p.chromium.launch();ctx=b.new_context(viewport={'width':1280,'height':860});errs=[]
+    ctx.route('**/fonts.g*/**',lambda r:r.abort())
+    def player(uid,user,name):
+        pg=ctx.new_page();pg.on('pageerror',lambda e:errs.append(name+': '+str(e)))
+        pg.on('console',lambda m:m.type=='error' and 'ERR_FAILED' not in m.text and errs.append(name+': '+m.text))
+        pg.add_init_script(f"window.__UID='{uid}';window.__USERNAME='{user}';")
+        pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
+        pg.goto('http://localhost:8765/');pg.wait_for_selector('input[maxlength="10"]',timeout=20000)
+        pg.fill('input[maxlength="10"]',name);pg.locator('.create button.btn-primary').first.click();pg.wait_for_function('S&&S.me',timeout=10000)
+        pg.evaluate("cloudFlush()");pg.wait_for_timeout(500);return pg
+    a=player(A,'arin','아린');bp=player(B,'bella','하늘별')
+    for pg in (a,bp): pg.evaluate("mlLoadPlayers().then(()=>chFetch())");
+    a.wait_for_timeout(600)
+    db=lambda:a.evaluate("JSON.parse(localStorage.getItem('__mockdb'))")
+    srv=lambda pg,key:pg.evaluate(f"(S.chat.{key}||[]).filter(m=>String(m.id).startsWith('srv:')).map(m=>m.from+':'+m.text)")
+    # 전체 채팅
+    a.evaluate("S.sel.chatTab='lobby';S.sel.lobbyCh='lobby';updateChats()");bp.evaluate("S.sel.chatTab='lobby';updateChats()")
+    a.fill('#chat-in-all','안녕하세요 첫 실제 채팅');a.press('#chat-in-all','Enter');a.wait_for_timeout(800)
+    ok(any(x['channel']=='lobby' and x['text']=='안녕하세요 첫 실제 채팅' for x in db()['chat_messages']),'전체 채팅이 서버에 저장')
+    ok('아린:안녕하세요 첫 실제 채팅' in srv(bp,'lobby'),'상대에게 실시간 도착')
+    ok('안녕하세요 첫 실제 채팅' in bp.inner_text('.chat-main [data-msgs]'),'상대 채팅창에 표시')
+    ok(srv(a,'lobby').count('아린:안녕하세요 첫 실제 채팅')==1,'내 화면에도 한 번만(중복 없음)')
+    cls=bp.evaluate("document.querySelector('.chat-main [data-msgs] .who')&&[...document.querySelectorAll('.chat-main [data-msgs] .who')].find(x=>x.textContent==='아린').className")
+    ok(cls and 'w-' in cls and 'w-me' not in cls,'실제 블레서 이름에 클래스 색: '+str(cls))
+    ok(a.locator('.chat-main [data-msgs] .who.w-me').count()>=1,'내 메시지는 내 색')
+    ok(a.input_value('#chat-in-all')=='','보낸 뒤 입력창 비움')
+    # 안 읽음
+    a.evaluate("S.sel.chatTab='world';updateChats();S.unread.lobby=0")
+    bp.fill('#chat-in-all','반가워요!');bp.press('#chat-in-all','Enter');a.wait_for_timeout(900)
+    ok(a.evaluate("S.unread.lobby")>=1 and a.evaluate("S.chat.lobby.some(m=>m.text==='반가워요!')"),'다른 탭 보고 있으면 전체 안 읽음 표시(테스트 봇 말도 함께 셈)')
+    # 월드 공지 (운영자가 서버에 올린 것) 받기
+    a.evaluate("""(()=>{const db=JSON.parse(localStorage.getItem('__mockdb'));const r={id:9001,channel:'world',author:'admin',name:'운영자',cat:'maint',text:'오늘 23시 점검',hidden:false,created_at:new Date().toISOString()};db.chat_messages.push(r);localStorage.setItem('__mockdb',JSON.stringify(db));window.__notifyRT('chat_messages',r);})()""")
+    a.wait_for_timeout(600);bp.wait_for_timeout(300)
+    ok(bp.evaluate("S.chat.world.some(m=>m.id==='srv:9001'&&m.cat==='maint')"),'월드 점검 공지 도착(점검 분류)')
+    ok('오늘 23시 점검' in a.inner_text('.chat-main [data-msgs]'),'월드 탭에 표시')
+    ok(a.locator('.chat-main input').is_disabled(),'일반 유저는 월드 작성 불가(입력 잠김)')
+    # 1:1
+    a.evaluate("S.sel.chatTab='dm';S.sel.dmWith=null;updateChats()")
+    opts=a.evaluate("[...document.querySelectorAll('#dm-new optgroup[label=\"블레서\"] option')].map(o=>o.textContent)")
+    ok(any('하늘별' in o for o in opts),'1:1 새 상대 목록에 실제 블레서: '+', '.join(opts))
+    a.select_option('#dm-new','하늘별');a.click('[data-act="dm-start"]');a.wait_for_timeout(200)
+    ok(a.locator('[data-act="u-gift-srv"]').count()==1,'1:1 머리줄에 선물 버튼')
+    a.fill('#chat-in-all','귓속말 테스트');a.press('#chat-in-all','Enter');a.wait_for_timeout(900)
+    ok(any(x.get('recipient')==B and x['text']=='귓속말 테스트' for x in db()['direct_messages']),'1:1이 서버에 저장(받는 사람=하늘별)')
+    t=bp.evaluate("(dmState().threads['아린']||{msgs:[],unread:0})")
+    ok(any(m['text']=='귓속말 테스트' for m in t['msgs']) and t['unread']==1,'상대에게 1:1 도착 · 안 읽음 1')
+    bp.evaluate("S.sel.chatTab='dm';S.sel.dmWith='아린';updateChats()");bp.fill('#chat-in-all','답장이요');bp.press('#chat-in-all','Enter');bp.wait_for_timeout(900)
+    ok(a.evaluate("dmState().threads['하늘별'].msgs.map(m=>m.text)")==['귓속말 테스트','답장이요'],'답장 도착 · 순서 맞음 · 중복 없음')
+    # 새로 고침해도 1:1 유지(서버에서 다시 받음)
+    a.evaluate("dmState().threads={};chFetch()");a.wait_for_timeout(600)
+    ok(a.evaluate("(dmState().threads['하늘별']||{msgs:[]}).msgs.length")==2,'다시 받아도 이번 주 1:1 복원')
+    # 정보 카드
+    a.evaluate("S.sel.chatTab='lobby';updateChats()");a.wait_for_timeout(200)
+    a.locator('.chat-main [data-msgs] .who',has_text='하늘별').first.click();a.wait_for_timeout(300)
+    card=a.inner_text('#rmenu');ok('하늘별' in card and 'LV1' in card and '1:1 대화' in card and '선물 보내기' in card,'실제 블레서 정보 카드(LV·1:1·선물)')
+    a.click('#rmenu [data-act="u-gift-srv"]');a.wait_for_timeout(500)
+    ok(a.input_value('#mc-to')=='@'+B,'정보 카드 → 선물 보내기: 받는 사람 미리 선택')
+    a.evaluate("S.sel.pop=null;renderPop()")
+    # 접속 인원
+    n=a.evaluate("onlineCount()");bots_on=a.evaluate("S.bots.filter(b=>b.online).length")
+    ok(n==2 and bots_on>0,f'접속 인원 = 나 + 실제 블레서만, 테스트 봇 {bots_on}명 제외 ({n})')
+    ok(a.inner_text('[data-online]')=='2','상단 접속 칩도 2명')
+    a.evaluate("ACTS.online()");a.wait_for_timeout(400)
+    names=a.evaluate("[...document.querySelectorAll('#modal .who-btn')].map(b=>b.textContent)")
+    ok(sorted(names)==sorted(['아린','하늘별']),'접속자 목록에 봇 없이 나·실제 블레서만: '+', '.join(names))
+    ok('접속 중 2명' in a.inner_text('#modal').replace('\n',' ') or '2' in a.inner_text('#modal .ol-h'),'목록 머리 접속 중 2명')
+    a.click('#modal [data-act="u-mail"][data-name="하늘별"]');a.wait_for_timeout(500)
+    ok(a.input_value('#mc-to')=='@'+B,'접속자 목록 → 편지: 실제 블레서는 서버 우편 받는 사람으로')
+    a.evaluate("S.sel.pop=null;renderPop()")
+    # 신고
+    mid=a.evaluate("S.chat.lobby.find(m=>m.from==='하늘별').id")
+    a.evaluate(f"ACTS.report({{id:'{mid}'}})");a.wait_for_timeout(500)
+    rp=db()['reports'];ok(len(rp)==1 and rp[0]['target']==B and rp[0]['kind']=='chat' and rp[0]['snapshot']=='반가워요!','신고가 서버로(대상·종류·내용)')
+    # 운영자가 가림 → 사라짐
+    a.evaluate("""(()=>{const db=JSON.parse(localStorage.getItem('__mockdb'));const r=db.chat_messages.find(x=>x.text==='반가워요!');r.hidden=true;localStorage.setItem('__mockdb',JSON.stringify(db));window.__notifyRT('chat_messages',r,'UPDATE');})()""")
+    a.wait_for_timeout(1300);bp.wait_for_timeout(200)
+    ok(not a.evaluate("S.chat.lobby.some(m=>m.text==='반가워요!')"),'운영자가 가린 메시지는 사라짐')
+    # 정지 → 못 보냄, 입력 복구
+    bp.evaluate("window.__BANNED=true;S.sel.chatTab='lobby';updateChats()");bp.wait_for_timeout(1300)
+    bp.fill('#chat-in-all','도배');bp.press('#chat-in-all','Enter');bp.wait_for_timeout(700)
+    ok(bp.input_value('#chat-in-all')=='도배' and '이용이 제한' in bp.inner_text('#toasts'),'정지 중엔 거절 · 쓴 글 되돌림 · 안내')
+    # 파티 채팅은 로컬 그대로
+    n0=len(db()['chat_messages']);lastsend=a.evaluate("lastSend=0")
+    went=a.evaluate("(()=>{const P=S.party;S.party={chat:[],members:[]};S.sel.partyCh='party';const r=sendChat('party','파티원 안녕');const got=S.party.chat.some(m=>m.text==='파티원 안녕');S.party=P;return r&&got;})()")
+    a.wait_for_timeout(500)
+    ok(went and len(db()['chat_messages'])==n0,'파티 채팅은 서버로 안 감(로컬 그대로)')
+    ok(not errs,'콘솔 오류 없음 '+'; '.join(errs[:3]))
+    a.screenshot(path=OUT+'/chat-a.png');bp.evaluate("window.__BANNED=false;S.sel.chatTab='dm';S.sel.dmWith=null;updateChats()");bp.wait_for_timeout(200);bp.screenshot(path=OUT+'/chat-b-dm.png')
+    b.close()
+print('\n'.join(res));print('PASS',sum(r.startswith('OK') for r in res),'/',len(res))

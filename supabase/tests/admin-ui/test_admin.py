@@ -75,6 +75,16 @@ with sync_playwright() as p:
     # 초대코드
     pg.click('.tab[data-tab=invites]');pg.wait_for_selector('#if');pg.fill('#i-code','NEWCODE9');pg.click('#if .btn-p');pg.wait_for_timeout(600)
     ok('NEWCODE9' in pg.inner_text('#i-new'),'초대코드 생성');pg.screenshot(path=OUT+'/5-invites.png')
+    # 채팅
+    pg.click('.tab[data-tab=chat]');pg.wait_for_selector('[data-hide]');ct=pg.inner_text('#view')
+    ok('도배 메시지' in ct and '안녕하세요' in ct and '점검 안내' not in ct,'채팅 탭: 전체 채팅 메시지 목록')
+    pg.click('[data-hide="6"]');pg.wait_for_timeout(400);ok(pg.evaluate("__DB.chat_messages.find(x=>x.id==='6').hidden")==True,'채팅 가리기')
+    pg.click('[data-hide="6"]');pg.wait_for_timeout(400);ok(pg.evaluate("__DB.chat_messages.find(x=>x.id==='6').hidden")==False,'다시 보이기')
+    pg.select_option('#ct-ch','world');pg.wait_for_selector('#ct-post');ok('점검 안내' in pg.inner_text('#view'),'월드 채널 보기')
+    pg.select_option('#ct-cat','notice');pg.fill('#ct-text','이벤트 시작!');pg.click('#ct-post .btn-p');pg.wait_for_timeout(500)
+    ok(pg.evaluate("__DB.chat_messages.some(x=>x.channel==='world'&&x.text==='이벤트 시작!'&&x.cat==='notice')"),'운영 페이지에서 월드 공지 올리기')
+    pg.screenshot(path=OUT+'/5c-chat.png');pg.select_option('#ct-ch','lobby');pg.wait_for_selector('[data-del="5"]')
+    pg.click('[data-del="5"]');pg.click('[data-ans="1"]');pg.wait_for_timeout(400);ok(not pg.evaluate("__DB.chat_messages.some(x=>x.id==='5')"),'채팅 삭제')
     # 행운권
     pg.click('.tab[data-tab=lotto]');pg.wait_for_selector('.tbl tbody tr');lt=pg.inner_text('#view')
     ok('1 2 3 9' in lt and '판매 중' in lt and '3,200G' in lt and '판매 7장' in lt,'행운권 회차 현황(당첨 번호·판매 중·지급 합계)');pg.screenshot(path=OUT+'/5b-lotto.png')

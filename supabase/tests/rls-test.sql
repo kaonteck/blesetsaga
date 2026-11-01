@@ -5,6 +5,7 @@ begin begin execute q; exception when others then raise notice 'OK  (막힘) %: 
 raise exception 'FAIL 막혀야 하는데 통과: %', label; end $$;
 create function t.ok(cond bool, label text) returns void language plpgsql as $$
 begin if cond then raise notice 'OK  %', label; else raise exception 'FAIL %', label; end if; end $$;
+create function t.err(q text) returns text language plpgsql as $f$ begin execute q; return 'none'; exception when others then return sqlerrm; end $f$;
 grant execute on all functions in schema t to authenticated;
 create function t.as(uid text, admin bool default false) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub',uid,'role','authenticated','app_metadata',json_build_object('role',case when admin then 'admin' end))::text, false) $$;
@@ -28,6 +29,9 @@ select t.as(:'P2'); update profiles set name='벨라' where user_id=:'P2';
 select t.as(:'P3'); update profiles set name='카이' where user_id=:'P3';
 select t.as(:'P1');
 select t.fail($$update profiles set banned_until=now()+interval '1d' where user_id='00000000-0000-0000-0000-000000000001'$$,'본인이 정지 칸 수정');
+update profiles set status='meal' where user_id=:'P1';
+select t.ok((select status from profiles where user_id=:'P1')='meal','상태 식사 중(meal) 저장');
+select t.fail($$update profiles set status='sleep' where user_id='00000000-0000-0000-0000-000000000001'$$,'없는 상태');
 update profiles set name='해킹' where user_id=:'P2';
 select t.ok((select name from profiles where user_id=:'P2')='벨라','남의 프로필 수정 무시');
 select t.fail($$update profiles set name='벨라' where user_id='00000000-0000-0000-0000-000000000001'$$,'이름 중복(대소문자 무시)');
@@ -82,11 +86,23 @@ select t.fail($$insert into chat_messages(channel,text) values ('world','공지 
 select t.fail($$insert into chat_messages(channel,text) values ('lobby; drop','x')$$,'잘못된 채널');
 select t.as(:'A',true); insert into chat_messages(channel,name,cat,text) values ('world','운영자','notice','점검 안내');
 select t.ok((select name from chat_messages where channel='world')='운영자','운영자는 이름 지정 가능');
+insert into chat_messages(channel,name,cat,text) values ('world','운영자','maint','내일 점검');
+select t.ok(exists(select 1 from chat_messages where cat='maint'),'월드 분류에 점검(maint)');
+select t.fail($$insert into chat_messages(channel,name,cat,text) values ('world','운영자','event','x')$$,'없는 월드 분류');
+-- 도배 막기: 5초 안에 4개까지, 5개째 막힘 (운영자는 제외)
+select t.as(:'P3');
+insert into chat_messages(channel,text) values ('lobby','1'),('lobby','2'),('lobby','3'),('lobby','4');
+select t.fail($$insert into chat_messages(channel,text) values ('lobby','5')$$,'채팅 5초 안에 5개째');
+insert into direct_messages(recipient,text) values (:'P1','a'),(:'P1','b'),(:'P1','c'),(:'P1','d');
+select t.fail($$insert into direct_messages(recipient,text) values ('00000000-0000-0000-0000-000000000001','e')$$,'귓속말 5초 안에 5개째');
+select t.as(:'A',true);
+insert into chat_messages(channel,name,cat,text) values ('world','운영자','notice','a'),('world','운영자','notice','b'),('world','운영자','notice','c'),('world','운영자','notice','d'),('world','운영자','notice','e');
+select t.ok(true,'운영자는 연속 공지 가능');
 
 -- 귓속말
 select t.as(:'P1'); insert into direct_messages(recipient,text) values (:'P3','비밀 얘기');
 select t.as(:'P2'); select t.ok((select count(*) from direct_messages)=0,'남의 귓속말 못 봄');
-select t.as(:'P3'); select t.ok((select count(*) from direct_messages)=1,'받은 사람은 봄');
+select t.as(:'P3'); select t.ok((select count(*) from direct_messages where recipient=:'P3')=1,'받은 사람은 봄');
 
 -- 우편
 select t.as(:'P1'); select t.fail($$select admin_send_mail(null,'x')$$,'유저가 전체 우편');
@@ -184,7 +200,8 @@ select t.ok((select (claim_lotto((select id from lotto_tickets where nums='{1,2,
 reset role; select t.ok((select (data->'me'->>'gold')::int from saves where user_id=:'P1')=3300,'상금이 세이브에 더해짐 (300→3300)'); set role authenticated; select t.as(:'P1');
 select t.fail($$select claim_lotto((select id from lotto_tickets where nums='{1,2,3,4}'))$$,'같은 행운권 두 번 수령');
 select t.ok((select (claim_lotto((select id from lotto_tickets where nums='{5,6,7,8}'))->>'prize')::int)=0,'꽝 확인(0골드)');
-select t.as(:'P2'); select t.fail($$select claim_lotto('00000000-0000-0000-0000-0000000000ff')$$,'남의·없는 행운권 수령');
+select t.as(:'P2'); select t.fail($$select claim_lotto((select id from lotto_tickets limit 1))$$,'남의 행운권 수령(보이지도 않음)');
+select t.ok(t.err($$select claim_lotto('00000000-0000-0000-0000-0000000000ff')$$)='NOT_FOUND','없는 행운권 → NOT_FOUND');
 select t.as(:'P1'); select buy_lotto('{0,4,7,9}');
 select t.ok((select draw_key from lotto_tickets where nums='{0,4,7,9}')='2026-11-13','추첨 뒤에는 다음 주 회차로 판매');
 select t.fail($$select * from admin_lotto()$$,'유저가 운영 행운권 현황');

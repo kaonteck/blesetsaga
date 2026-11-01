@@ -17,7 +17,7 @@ with sync_playwright() as p:
     ok(g("quest('S1').title")!='미래 퀘스트','예약(미래) 항목은 아직 적용 안 함')
     ok(g("ITEMS.potion.name")=='서버 회복약','아이템 이름 적용')
     ok(g("cfg().levelCap")==50 and g("cfg().expBase")==100,'설정은 일부만 덮기 (levelCap 50, expBase 유지)')
-    ok(g("S.data.notices.some(n=>n.id==='n_srv')"),'서버 공지 추가')
+    ok(g("S.data.notices[0]&&S.data.notices[0].id==='n_srv'"),'서버 공지 추가 · 목록 맨 앞(최신순)')
     ok(g("activeEvents().some(e=>e.id==='srv:ev1'&&e.title==='서버 보스 출현')"),'전광판 이벤트 표시')
     # 실시간: forest 삭제, potion 이름 변경
     g("window.__CT=window.__CT.filter(r=>r.id!=='forest');window.__CT.find(r=>r.id==='potion').data.name='바뀐 회복약';window.__CT_CB({eventType:'UPDATE'})")

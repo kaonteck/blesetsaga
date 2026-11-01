@@ -78,7 +78,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);
-  pfSync();mlStart();ltStart();
+  pfSync();mlStart();ltStart();chStart();
 }
 
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
@@ -107,7 +107,7 @@ function ctApply(rows){
   const list=k=>{if(k==='market')market();return D[CT_LIST[k]]=D[CT_LIST[k]]||[];};
   const get=(k,id)=>CT_LIST[k]?list(k).find(x=>x.id===id):k==='item'?ITEMS[id]:k==='setting'?D[id]:undefined;
   const put=(k,id,v)=>{
-    if(CT_LIST[k]){const L=list(k),i=L.findIndex(x=>x.id===id);if(v==null){if(i>=0)L.splice(i,1);}else if(i>=0)L[i]=v;else L.push(v);}
+    if(CT_LIST[k]){const L=list(k),i=L.findIndex(x=>x.id===id);if(v==null){if(i>=0)L.splice(i,1);}else if(i>=0)L[i]=v;else if(k==='notice')L.unshift(v);else L.push(v);}   // 새 공지는 맨 앞(게임 공지 목록은 최신순)
     else if(k==='item'){D.items=D.items||{};if(v==null){delete D.items[id];delete ITEMS[id];}else{D.items[id]=v;ITEMS[id]=v;}}
     else if(k==='setting'&&v!=null)D[id]=v;};
   const live={};
@@ -137,7 +137,7 @@ async function ctRefresh(){
 }
 // 다시 그려도 되는 때만 다시 그린다 (전투 중·글 쓰는 중에는 다음 화면 전환 때 반영)
 function ctRedraw(){const a=document.activeElement;const typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
-  if(S.route==='battle'||typing||(S.sel&&S.sel.pop))return;try{render();}catch(e){console.warn(e);}}
+  if(S.route==='battle'||typing||(S.sel&&S.sel.pop)){try{renderTop();}catch(e){}return;}try{render();}catch(e){console.warn(e);}}   // 상단(공지 배지 등)은 항상 갱신
 async function ctStart(p){
   const rows=await p;
   if(rows&&ctApply(rows)){save();ctRedraw();}
@@ -168,7 +168,8 @@ window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?
 let pfLast='',pfAt=0,pfNameWarned=false,pfBusy=false;
 async function pfSync(status){
   if(!SB||!SB_UID||!S||!S.me||pfBusy)return;
-  const row={name:S.me.name||null,job:S.me.job||null,level:S.me.level||1,title:(S.titles&&S.titles.equip)||null,status:status||'online',last_seen:new Date().toISOString()};
+  const st=status||(['online','away','raid','meal','offline'].includes(S.me.status)?S.me.status:'online');
+  const row={name:S.me.name||null,job:S.me.job||null,level:S.me.level||1,title:(S.titles&&S.titles.equip)||null,memo:(S.me.memo||'').slice(0,40)||null,status:st,last_seen:new Date().toISOString()};
   const key=JSON.stringify({...row,last_seen:0});if(!status&&key===pfLast&&Date.now()-pfAt<120000)return;
   pfBusy=true;
   try{let {error}=await SB.from('profiles').update(row).eq('user_id',SB_UID);
@@ -178,7 +179,7 @@ async function pfSync(status){
     if(!error){pfLast=key;pfAt=Date.now();}}
   catch(e){}finally{pfBusy=false;}
 }
-document.addEventListener('visibilitychange',()=>{if(SB_UID)pfSync(document.visibilityState==='hidden'?'offline':'online');});
+document.addEventListener('visibilitychange',()=>{if(SB_UID)pfSync(document.visibilityState==='hidden'?'offline':undefined);});
 
 /* ───────── 우편 (mail) · 유저끼리 주고받기 ─────────
    - 받은 우편: 서버 우편을 S.mail 에 'srv:<id>' 로 합친다(게임 안 시스템 우편은 그대로). 실시간 + 1분마다.
@@ -192,8 +193,8 @@ let mlPlayers=[],mlNames={},mlT=null,mlPoll=null,mlSending=false;
 const mlSrvId=id=>String(id).startsWith('srv:')?String(id).slice(4):null;
 async function mlLoadPlayers(){
   if(!SB||!SB_UID)return;
-  const {data}=await SB.from('profiles').select('user_id,name,username,job,level').neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
-  if(data){mlPlayers=data;data.forEach(p=>mlNames[p.user_id]=p.name);}
+  const {data}=await SB.from('profiles').select('user_id,name,username,job,level,title,memo,status,last_seen').neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
+  if(data){mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
 }
 async function mlFetch(){
   if(!SB||!SB_UID||!S||!S.me)return;
@@ -334,7 +335,7 @@ function ltStart(){
 const ltErr=e=>{const m=(e&&e.message)||'';
   if(/SALE_CLOSED/.test(m))return '판매가 마감되었습니다 (금 19:00~20:00).';if(/MAX_TICKETS/.test(m))return `이번 주 ${LOTTO_MAX}장을 모두 샀습니다.`;
   if(/NOT_ENOUGH_GOLD/.test(m))return '골드가 부족합니다.';if(/BAD_NUMS/.test(m))return '0~9 중 서로 다른 숫자 4개를 고르세요.';
-  if(/NOT_DRAWN/.test(m))return '아직 추첨 전입니다.';if(/ALREADY_CLAIMED/.test(m))return '이미 확인한 행운권입니다.';
+  if(/NOT_DRAWN/.test(m))return '아직 추첨 전입니다.';if(/NOT_FOUND/.test(m))return '행운권을 찾을 수 없습니다.';if(/ALREADY_CLAIMED/.test(m))return '이미 확인한 행운권입니다.';
   if(/NO_SAVE/.test(m))return '진행 기록이 아직 서버에 없습니다. 잠시 뒤 다시 시도해 주세요.';if(/NOT_ACTIVE/.test(m))return '이용이 제한된 계정입니다.';
   return '행운권을 처리하지 못했습니다. 인터넷 연결을 확인해 주세요.';};
 
@@ -372,5 +373,173 @@ if(ONLINE){
       save();cloudSave(true);render();openLotto();
     }catch(err){console.warn(err);toast(ltErr(err),'bad');if(ltOpen())openLotto();}
     finally{LT.busy=false;}
+  };
+}
+
+/* ───────── 채팅 (chat_messages · direct_messages) ─────────
+   서버로 주고받는 탭: 월드(운영자 공지) · 전체 · 1:1(실제 블레서와).
+   그대로 이 기기에서만: 파티·레이드 채팅(파티가 아직 각자 브라우저 안의 시뮬레이션이라 — 4단계), 테스트 봇과의 1:1·봇의 말.
+   - 서버 메시지는 S.chat.lobby / S.chat.world / 1:1 스레드에 'srv:<id>'로 합친다(실시간 + 1분마다 다시 맞춤 → 운영자가 가린 글은 사라짐).
+   - 1:1은 게임 규칙대로 이번 주(월 00:00 KST부터) 것만.
+   - 실제 블레서도 이름 색·정보 카드·1:1 상대 목록·접속 인원에 보인다(playerInfo·uinfoHTML·chatHead·onlineCount 감싸기).
+   - 신고는 서버 reports 표로(운영 페이지 '문의 · 신고'에 뜸). */
+const CH={uid:{},t:null,dmT:null,poll:null,loaded:false};
+const chIsSrv=id=>String(id).startsWith('srv:');
+const chPlayer=name=>mlPlayers.find(p=>p.name===name)||null;
+const chOnline=p=>p&&p.status!=='offline'&&Date.now()-Date.parse(p.last_seen||0)<6*60*1000;
+const chWeekStart=()=>new Date(weekKey()+'T00:00:00+09:00').toISOString();
+function chName(uid){return uid===SB_UID?(S.me&&S.me.name):(mlNames[uid]||null);}
+async function chNames(uids){const miss=[...new Set(uids)].filter(u=>u&&u!==SB_UID&&!mlNames[u]);if(!miss.length)return;
+  const {data}=await SB.from('profiles').select('user_id,name,username,job,level,title,memo,status,last_seen').in('user_id',miss);
+  (data||[]).forEach(p=>{const n=p.name||p.username;mlNames[p.user_id]=n;CH.uid[n]=p.user_id;if(p.name&&!mlPlayers.some(x=>x.user_id===p.user_id))mlPlayers.push(p);});}
+const chRow=r=>({id:'srv:'+r.id,from:r.author===SB_UID?S.me.name:(r.name||'알 수 없음'),uid:r.author||null,text:r.text,ts:Date.parse(r.created_at),...(r.cat?{cat:r.cat}:{})});
+function chMerge(key,rows,cap){const L=(S.chat[key]||[]).filter(m=>!chIsSrv(m.id));const next=[...L,...rows].sort((a,b)=>a.ts-b.ts).slice(-cap);
+  if(JSON.stringify(next)===JSON.stringify(S.chat[key]))return false;S.chat[key]=next;return true;}
+function chDmMsg(r){const other=r.sender===SB_UID?r.recipient:r.sender;const name=chName(other)||'블레서';CH.uid[name]=other;
+  return {name,incoming:r.recipient===SB_UID,msg:{id:'srv:'+r.id,from:r.sender===SB_UID?S.me.name:name,uid:r.sender,text:r.text,ts:Date.parse(r.created_at)}};}
+async function chFetch(){
+  if(!SB||!SB_UID||!S||!S.me)return;
+  const cols='id,channel,author,name,cat,text,created_at';
+  const [lob,wor,dm]=await Promise.all([
+    SB.from('chat_messages').select(cols).eq('channel','lobby').order('id',{ascending:false}).limit(100),
+    SB.from('chat_messages').select(cols).eq('channel','world').order('id',{ascending:false}).limit(50),
+    SB.from('direct_messages').select('id,sender,recipient,text,created_at').or(`sender.eq.${SB_UID},recipient.eq.${SB_UID}`).gte('created_at',chWeekStart()).order('id',{ascending:true}).limit(500)]);
+  let ch=false;
+  if(lob.data){await chNames(lob.data.map(r=>r.author));ch=chMerge('lobby',lob.data.map(chRow),150)||ch;}
+  if(wor.data)ch=chMerge('world',wor.data.map(chRow),100)||ch;
+  if(dm.data){await chNames(dm.data.flatMap(r=>[r.sender,r.recipient]));
+    const d=dmState();const keep={};
+    for(const n in d.threads){const L=d.threads[n].msgs.filter(m=>!chIsSrv(m.id));keep[n]={...d.threads[n],msgs:L};}
+    dm.data.forEach(r=>{const x=chDmMsg(r);const th=keep[x.name]=keep[x.name]||{msgs:[],unread:0};th.msgs.push(x.msg);});
+    for(const n in keep){keep[n].msgs.sort((a,b)=>a.ts-b.ts);keep[n].msgs=keep[n].msgs.slice(-100);}
+    if(JSON.stringify(keep)!==JSON.stringify(d.threads)){d.threads=keep;ch=true;}}
+  CH.loaded=true;
+  if(ch){save();try{updateChats();renderTop();}catch(e){}}
+}
+// 실시간으로 한 줄 들어왔을 때 (이미 있으면 무시)
+async function chOnInsert(r){
+  if(!S||!S.me||!r||!r.id)return;
+  if(r.channel){
+    if(r.hidden)return;const key=r.channel==='world'?'world':r.channel==='lobby'?'lobby':null;if(!key)return;
+    const id='srv:'+r.id;if((S.chat[key]||[]).some(m=>m.id===id))return;
+    if(r.author&&r.author!==SB_UID&&!mlNames[r.author])await chNames([r.author]);
+    const m=chRow(r);if(key==='lobby'&&S.rel[m.from]==='blocked')return;
+    S.chat[key]=[...(S.chat[key]||[]),m].slice(-(key==='lobby'?150:100));
+    if(r.author!==SB_UID&&!visibleTab(key)){S.unread[key]=(S.unread[key]||0)+1;}
+    save();updateChats();renderTop();return;
+  }
+  if(r.sender){
+    await chNames([r.sender,r.recipient]);const x=chDmMsg(r);const t=dmState().threads[x.name];
+    if(t&&t.msgs.some(m=>m.id===x.msg.id))return;
+    if(x.incoming&&S.rel[x.name]==='blocked')return;
+    dmPush(x.name,x.msg,x.incoming);if(x.incoming)bump('chats');save();updateChats();renderTop();
+  }
+}
+function chStart(){
+  chFetch();
+  const later_=()=>{clearTimeout(CH.t);CH.t=setTimeout(chFetch,700);};
+  try{SB.channel('chat-live')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},p=>chOnInsert(p.new))
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'chat_messages'},later_)
+      .on('postgres_changes',{event:'DELETE',schema:'public',table:'chat_messages'},later_)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`recipient=eq.${SB_UID}`},p=>chOnInsert(p.new))
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`sender=eq.${SB_UID}`},p=>chOnInsert(p.new))
+      .subscribe();}catch(e){console.warn('채팅 실시간 연결 실패',e);}
+  clearInterval(CH.poll);CH.poll=setInterval(()=>{chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});},60000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')chFetch();});
+}
+const chErr=e=>{const m=(e&&e.message)||'';
+  if(/TOO_FAST/.test(m))return '메시지를 너무 빠르게 보내고 있습니다. 잠시 후 다시 보내세요.';
+  if(/row-level security|NOT_ACTIVE/.test(m))return '이용이 제한된 계정이라 메시지를 보낼 수 없습니다.';
+  if(/check constraint/.test(m))return '메시지는 200자까지 보낼 수 있습니다.';
+  return '메시지를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.';};
+async function chSend(kind,text,input){
+  try{
+    if(kind==='dm'){
+      const to=S.sel.dmWith,uid=CH.uid[to];
+      const {data,error}=await SB.from('direct_messages').insert({recipient:uid,text}).select('id,sender,recipient,text,created_at').single();
+      if(error)throw error;await chOnInsert(data);bump('chats');return;
+    }
+    const row={channel:kind,text};if(kind==='world'){row.cat=S.sel.wcat||'notice';row.name=S.me.name;}
+    const {data,error}=await SB.from('chat_messages').insert(row).select('id,channel,author,name,cat,text,created_at,hidden').single();
+    if(error)throw error;await chOnInsert(data);
+    if(kind==='world'){logChange('월드 채팅',[{field:WCAT[row.cat]||row.cat,before:undefined,after:text}]);toast(`월드에 ${WCAT[row.cat]||'공지'}을(를) 올렸습니다.`,'good');}
+    else bump('chats');
+  }catch(err){console.warn(err);toast(chErr(err),'bad');if(input&&!input.value)input.value=text;}
+}
+
+if(ONLINE){
+  // 보내기: 전체·월드·실제 블레서와의 1:1만 서버로. 나머지(파티·레이드·봇)는 원래대로.
+  const _sendChat=sendChat;
+  sendChat=function(tab,text){
+    if(!SB_UID)return _sendChat(tab,text);
+    let t=tab;
+    if(t==='lobby'&&S.sel.lobbyCh==='party')return _sendChat(tab,text);
+    if(t==='party'&&S.sel.partyCh==='lobby')t='lobby';
+    const realDm=t==='dm'&&S.sel.dmWith&&!bot(S.sel.dmWith)&&CH.uid[S.sel.dmWith];
+    if(!(t==='lobby'||t==='world'||realDm))return _sendChat(tab,text);
+    const msg=String(text||'').replace(/\s+/g,' ').trim().slice(0,200);if(!msg)return;
+    if(now()-lastSend<1200){toast('메시지를 너무 빠르게 보내고 있습니다. 잠시 후 다시 보내세요.','warn');return false;}
+    if(t==='world'&&!isAdmin()){toast('월드 채팅은 운영자만 작성할 수 있습니다.','warn');return false;}
+    if(realDm&&S.rel[S.sel.dmWith]==='blocked'){toast('차단한 사람에게는 보낼 수 없습니다.','warn');return false;}
+    lastSend=now();
+    const inp=$$('[data-chatpanel] input').find(i=>document.activeElement===i)||$('#chat-in-all');
+    chSend(realDm?'dm':t,msg,inp);
+    return true;
+  };
+  // 실제 블레서도 이름 색·정보·1:1 머리줄에 보이게
+  const _playerInfo=playerInfo;
+  playerInfo=function(name){const r=_playerInfo(name);if(r)return r;const p=chPlayer(name);
+    return p?{name,job:p.job||'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
+  const _uinfo=uinfoHTML;
+  uinfoHTML=function(name){
+    if((S.me&&name===S.me.name)||bot(name))return _uinfo(name);
+    const p=chPlayer(name);if(!p)return _uinfo(name);
+    const job=p.job||'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
+    return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${sigil(job)}<div class="rm-t">${tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="row" style="gap:6px"><b>${esc(name)}</b><span class="chip dim">블레서</span></div>
+      <small><span class="num">LV${p.level||1}</span></small><div class="row" style="gap:4px">${roleChip(job)}${statusChip(st)}</div></div></div>
+      ${p.memo?`<div class="u-sec u-memo">${esc(p.memo)}</div>`:''}${noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}
+      <div class="u-sec">${statLine(statsFor(job,p.level||1,{}),true)}</div>
+      <div class="u-sec row" style="gap:6px"><button class="btn btn-sm" data-act="u-dm" data-name="${esc(name)}">1:1 대화</button><button class="btn btn-sm" data-act="u-gift-srv" data-uid="${esc(p.user_id)}">선물 보내기</button></div></div>`;
+  };
+  ACTS['u-gift-srv']=d=>{closeRmem();modal('');S.sel.pop='mail';S.sel.mc={to:'@'+d.uid,text:'',items:{},gift:true};S.sel.mailView='compose';renderPop();renderTop();mlLoadPlayers().then(()=>{if(S.sel.mailView==='compose')renderPop();});};
+  // 1:1: 새 대화 상대에 실제 블레서, 대화 중 머리줄에 선물 버튼
+  const _chatHead=chatHead;
+  chatHead=function(lock){
+    let h=_chatHead(lock);const tab=lock||S.sel.chatTab;if(tab!=='dm'||!SB_UID)return h;
+    if(S.sel.dmWith){const p=chPlayer(S.sel.dmWith);
+      if(p&&!bot(S.sel.dmWith)){const i=h.lastIndexOf('</div>');h=h.slice(0,i)+`<button class="ibtn sm dm-gift" data-act="u-gift-srv" data-uid="${esc(p.user_id)}" data-tip="선물 보내기" aria-label="${esc(S.sel.dmWith)}에게 선물 보내기">${TICON.gift}</button>`+h.slice(i);}
+      return h;}
+    const has=n=>((dmState().threads[n]||{msgs:[]}).msgs.length>0);
+    const ppl=mlPlayers.filter(p=>!has(p.name)&&S.rel[p.name]!=='blocked'&&!bot(p.name)).sort((a,b)=>(chOnline(b)-chOnline(a))||a.name.localeCompare(b.name,'ko'));
+    return h.replace(/(<select id="dm-new"[^>]*>)(<option value="">[^<]*<\/option>)([\s\S]*?)(<\/select>)/,(m,open,first,bots,close)=>
+      `${open}${first}${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${p.job&&CLASSES[p.job]?' · '+CLASSES[p.job].name:''}${chOnline(p)?'':' · 오프라인'}</option>`).join('')}</optgroup>`:''}${bots?`<optgroup label="테스트 봇">${bots}</optgroup>`:''}${close}`);
+  };
+  // 접속 인원·접속자 목록: 테스트 봇은 빼고 나 + 실제 블레서만
+  const _onlineCount=onlineCount;
+  onlineCount=function(){return SB_UID?1+mlPlayers.filter(chOnline).length:_onlineCount();};
+  const realAsBot=p=>({name:p.name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:p.status==='raid'&&chOnline(p)?'battle':'lobby',real:true,uid:p.user_id});
+  const _showOnline=showOnline;
+  showOnline=function(){
+    if(!SB_UID)return _showOnline();
+    const real=mlPlayers.filter(p=>p.name&&!bot(p.name)).map(realAsBot).sort((a,b)=>(b.online-a.online)||a.name.localeCompare(b.name,'ko'));
+    const keep=S.bots;S.bots=real;
+    try{_showOnline();}finally{S.bots=keep;}
+    const f=$$('#modal p.faint').pop();if(f)f.textContent='지금 게임에 접속한 블레서입니다. 최근 6분 안에 활동한 계정을 접속 중으로 셉니다.';
+    mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});
+  };
+  // 접속자 목록·정보 카드의 편지 보내기: 실제 블레서는 서버 우편으로
+  const _uMail=ACTS['u-mail'];
+  ACTS['u-mail']=(d,el,e)=>{_uMail(d,el,e);const p=chPlayer(d.name);if(p&&!bot(d.name)&&S.sel.mc){S.sel.mc.to='@'+p.user_id;renderPop();mlLoadPlayers().then(()=>{if(S.sel.mailView==='compose')renderPop();});}};
+  // 신고: 서버 메시지는 서버 reports 표로
+  const _report=ACTS.report;
+  ACTS.report=async(d,el,e)=>{
+    if(!chIsSrv(d.id)||!SB_UID)return _report(d,el,e);
+    const all=[...(S.chat.lobby||[]),...Object.values(dmState().threads).flatMap(t=>t.msgs)];const m=all.find(x=>x.id===d.id);if(!m)return;
+    if((S.reports||[]).some(r=>r.msgId===m.id)){toast('이미 신고한 메시지입니다.');return;}
+    const dm=!(S.chat.lobby||[]).some(x=>x.id===m.id);
+    const {error}=await SB.from('reports').insert({target:m.uid||CH.uid[m.from]||null,target_name:m.from,kind:dm?'dm':'chat',ref_id:String(m.id).slice(4),snapshot:String(m.text).slice(0,500)});
+    if(error){toast('신고를 보내지 못했습니다. 잠시 후 다시 시도해 주세요.','bad');return;}
+    S.reports.unshift({id:uid('r'),msgId:m.id,from:m.from,text:m.text,ts:now(),done:false});save();toast('신고를 접수했습니다. 운영자가 확인합니다.');
   };
 }
