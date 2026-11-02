@@ -2268,3 +2268,25 @@ body{background:
   radial-gradient(55% 40% at 100% 40%,rgba(60,85,140,.22),transparent 70%),
   radial-gradient(60% 45% at 0% 20%,rgba(55,70,110,.25),transparent 70%),
   linear-gradient(180deg,#1b2235 0%,#141a2a 40%,#161d30 70%,#26324c 100%);background-attachment:fixed;background-color:#141a29}
+/* 캐릭터 이미지 테두리: 모서리 각지게, 그림이 안쪽 테두리 장식을 덮어 아래가 잘려 보이던 것 → 1px 테두리만 선명하게.
+   캐릭터 카드는 높이가 소수점(149.33px)이라 아래 테두리가 흐려 보였음 → 111×148px 정수 크기 */
+.portrait{border-radius:0;box-shadow:none;overflow:hidden;border:1px solid rgba(209,224,238,.55)}
+.portrait img{position:static}
+.me-card .portrait{width:111px;height:148px;aspect-ratio:auto}
+
+#top{z-index:30}  /* ☰ 팝업이 본문(#view, z-index:1) 위에 */
+/* 폰·태블릿(≤900px) ☰ 메뉴: 화면을 밀어내는 대신 오른쪽 위에 뜨는 작은 팝업(환경설정 팝업과 같은 모양) */
+@media (max-width:900px){
+  .nav.open{position:fixed;z-index:36;top:calc(env(safe-area-inset-top,0px) + 56px);right:12px;width:min(200px,calc(100vw - 24px));flex:none;padding:4px 0;border:1px solid rgba(209,224,238,.35);border-radius:var(--r);background:linear-gradient(180deg,#21212f,#1a1a24);box-shadow:0 16px 40px -10px rgba(0,0,0,.8);animation:tin .15s ease}
+  .nav.open button{padding:9px 14px;border-bottom:1px solid rgba(209,224,238,.07)}
+  .nav.open button:last-child{border-bottom:0}
+  .nav.open .nv-ko{font-size:14px}
+}
+
+/* 팝업·버튼 여백 줄이기 */
+.btn{padding:6px 14px}
+.btn-sm{padding:3px 10px}
+.modal{padding:14px 16px;gap:10px}
+.pop-head{padding:9px 12px}
+.pop-body{padding:10px 12px}
+.pop-notice .pop-body{padding:4px 12px 10px}

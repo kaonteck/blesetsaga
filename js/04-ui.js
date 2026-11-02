@@ -7,6 +7,9 @@ function toast(text,kind=''){
   setTimeout(()=>el.remove(),3000);
 }
 let NAV_OPEN=false;
+/* ☰ 메뉴 팝업: 바깥을 누르거나 Esc면 닫힘 */
+document.addEventListener('click',e=>{if(!NAV_OPEN||e.target.closest('#mainnav,.navtog'))return;NAV_OPEN=false;renderTop();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NAV_OPEN){NAV_OPEN=false;renderTop();}});
 function go(route,sel){S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
 function openLink(l){
   if(!l)return;const [k,v]=l.split(':');
