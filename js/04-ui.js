@@ -42,7 +42,7 @@ function goldHTML(n){return `<span class="gold" title="골드"><span class="sr">
 function portraitHTML(big){
   const me=S.me;
   const inner=me.portrait?`<img src="${me.portrait}" alt="${esc(me.name)}의 캐릭터 이미지">`:`<div class="ph-empty ${jobCls(me.job)}"><span class="ph-glyph">${CLASSES[me.job].sigil}</span><span class="ph-cls">${CLASSES[me.job].en}</span></div>`;
-  return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button">이미지 설정</button></div>`;
+  return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button" title="이미지 설정">이미지 설정</button></div>`;
 }
 const ICON={
   mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.3 10.9 5.2 7.4 14.7 3.9 5.2z" fill="currentColor"/><path d="M3.9 5.2h7M5.9 5.2 7.4 14.7 8.9 5.2M5.9 5.2 7.4 1.3 8.9 5.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".75" stroke-linejoin="round"/><path d="M13.2 8.6v3.2M11.6 10.2h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12.6" cy="3.4" r=".9" fill="currentColor"/></svg>`,

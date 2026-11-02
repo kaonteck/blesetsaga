@@ -2245,3 +2245,16 @@ html,body{overflow-x:clip;max-width:100%}
 
 /* 상단 메뉴 바: 바탕색·그림자·테두리 없음(뒤 내용이 비치면 흐림만) */
 .top{background:none;border-bottom:0;box-shadow:none}
+
+/* 상단 로고: 한글 '블레셋 전기' 빼고, 아이콘은 가운데 별만(둘레 원·양옆 선 없음) */
+.logo .lg-ko{display:none}
+.logo .lg-orn circle,.logo .lg-orn path:not(:first-of-type){display:none}
+.logo .lg-orn{margin-inline:-10px -8px}
+
+/* EXP 막대 금색 */
+.bar.xp>i{background:linear-gradient(90deg,#9b8752,var(--xp) 60%,#d8c58f);box-shadow:none}
+
+/* 캐릭터 이미지: '이미지 설정' 글자 없이 그림 전체를 누르면 설정 창(버튼 이름은 화면 낭독기용으로 유지) */
+.portrait .ph-edit{inset:0;padding:0;opacity:1;background:transparent;color:transparent;font-size:0;border:0;border-radius:inherit;transition:background .15s}
+.portrait .ph-edit:hover{background:rgba(237,243,248,.05)}
+.portrait .ph-edit:focus-visible{outline:2px solid var(--gold-hi);outline-offset:-2px}
