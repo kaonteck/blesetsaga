@@ -479,7 +479,7 @@ function msgHTML(m,i,arr){
   const rep=!mine&&!raid&&m.ch!=='party'?`<button class="rep" data-act="report" data-id="${m.id}" data-from="${esc(m.from)}" title="메시지 신고">신고</button>`:'';
   if(cont)return `<div class="msg cmsg cont"><div class="cmsg-b"><div class="cmsg-x">${esc(m.text)}</div></div>${rep}</div>`;
   const tt=chatTitleOf(m.from);
-  return `<div class="msg cmsg"><button class="cmsg-av" data-act="${act}" data-name="${esc(m.from)}" tabindex="-1" aria-hidden="true">${chatFaceHTML(m.from,pi)}</button><div class="cmsg-b">${tt?`<span class="cmsg-tt tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="cmsg-h">${m.ch==='party'?'<span class="chtag">파티</span>':''}<button class="who ${cls}" data-act="${act}" data-name="${esc(m.from)}" title="${esc(m.from)} 정보 보기">${esc(m.from)}</button><span class="when num">${hhmm(m.ts)}</span>${rep}</div><div class="cmsg-x">${esc(m.text)}</div></div></div>`;
+  return `<div class="msg cmsg"><button class="cmsg-av" data-act="${act}" data-name="${esc(m.from)}" tabindex="-1" aria-hidden="true"><span class="cmsg-pic">${chatFaceHTML(m.from,pi)}</span>${pi&&pi.job?`<span class="cmsg-role r-${roleOf(pi.job)}">${ROLE_ICON[roleOf(pi.job)]||''}</span>`:''}</button><div class="cmsg-b">${tt?`<span class="cmsg-tt tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="cmsg-h">${m.ch==='party'?'<span class="chtag">파티</span>':''}<button class="who ${cls}" data-act="${act}" data-name="${esc(m.from)}" title="${esc(m.from)} 정보 보기">${esc(m.from)}</button><span class="when num">${hhmm(m.ts)}</span>${rep}</div><div class="cmsg-x">${esc(m.text)}</div></div></div>`;
 }
 function updateChats(){
   $$('[data-chatpanel]').forEach(p=>{

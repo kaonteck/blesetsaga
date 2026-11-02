@@ -2316,3 +2316,14 @@ body{background:
 .cmsg-h .rep{order:1}
 .cmsg-h .when{order:2;margin-left:auto;padding-left:8px;font-size:10px;flex:none}
 .msg.sys{text-align:center;color:#c3cbe0;font-size:11.5px}
+/* 채팅: 안내 줄 « » 감싸기, 동그란 사진 + 오른쪽 아래 직군(탱·딜·힐) 뱃지, 이름 흰색, 칭호 보통 굵기 */
+.msg.sys::before{content:"« "}
+.msg.sys::after{content:" »"}
+.cmsg-av{position:relative;overflow:visible;border:0;background:none;border-radius:50%}
+.cmsg-pic{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;overflow:hidden;border:1px solid rgba(209,224,238,.3);background:var(--night)}
+.cmsg-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.cmsg-role{position:absolute;right:-4px;bottom:-3px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;background:#151a2a;border:1px solid rgba(209,224,238,.35)}
+.cmsg-role svg{width:9px;height:9px}
+.cmsg-role.r-tank{color:var(--tank)} .cmsg-role.r-dps{color:var(--dps)} .cmsg-role.r-heal{color:var(--heal)}
+.cmsg-h .who,.cmsg-h .who.w-me,.cmsg-h .who[class*="w-"]{color:#fff}
+.cmsg-tt{font-weight:400}
