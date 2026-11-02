@@ -42,6 +42,8 @@ function dbErr(e){const m=(e&&(e.message||e.error_description||e.details))||Stri
   if(/NO_DRAFT/.test(m))return '공개할 초안이 없습니다.';
   if(/duplicate key/.test(m))return '이미 있는 id입니다.';
   if(/BAD_CODE/.test(m))return '초대코드는 영문 대문자·숫자·_- 4–32자여야 합니다.';
+  if(/NO_SAVE/.test(m))return '이 유저는 서버에 저장된 진행 기록이 없습니다(한 번도 접속해 저장하지 않음).';
+  if(/BAD_LEVEL/.test(m))return '레벨은 1~99 사이여야 합니다.';
   if(/Failed to fetch|NetworkError/i.test(m))return '서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.';
   return '문제가 생겼습니다: '+m;}
 // supabase 호출 → 오류면 알림 후 null

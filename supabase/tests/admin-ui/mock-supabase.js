@@ -17,8 +17,11 @@ function upsertContent(r,restore){const i=DB.content.findIndex(x=>x.kind===r.kin
   if(i<0){const n={published:true,starts_at:null,ends_at:null,sort:0,note:null,...r,rev:1,updated_by:ADMIN.id,updated_at:now()};DB.content.push(n);log({kind:r.kind,id:r.id,op:'insert',before:null,after:n,rev:1});return n;}
   const o=DB.content[i],n={...o,...r,rev:o.rev+1,updated_at:now()};DB.content[i]=n;log({kind:r.kind,id:r.id,op:restore?'restore':'update',before:o,after:n,rev:n.rev});return n;}
 const RPC={
-  admin_players:()=>DB.profiles.map((p,i)=>({...p,job:'defender',level:5+i,status:i===1?'online':'offline',last_seen:now(),banned_until:p.banned_until||null,ban_reason:p.ban_reason||null,is_admin:p.user_id===ADMIN.id,last_sign_in:now(),saved_at:now(),joined_at:now(),invite:'BLESET01'})),
+  admin_players:()=>DB.profiles.map((p,i)=>({...p,job:'defender',level:p.level??(5+i),status:i===1?'online':'offline',last_seen:now(),banned_until:p.banned_until||null,ban_reason:p.ban_reason||null,is_admin:p.user_id===ADMIN.id,last_sign_in:now(),saved_at:now(),joined_at:now(),invite:'BLESET01'})),
   admin_player_save:a=>DB.saves[a.p_user]||null,
+  admin_set_level:a=>{if(!(a.p_level>=1&&a.p_level<=99))throw {message:'BAD_LEVEL'};const d=DB.saves[a.p_user];if(!d||!d.me)throw {message:'NO_SAVE'};
+    const before=d.me.level;d.me.level=a.p_level;d.me.exp=0;d.adminRev=(d.adminRev||0)+1;d.savedAt=Date.now();const p=DB.profiles.find(x=>x.user_id===a.p_user);if(p)p.level=a.p_level;
+    DB.admin_log.unshift({id:Date.now(),admin:ADMIN.id,action:'set_level',target:a.p_user,detail:{before,after:a.p_level,reason:a.p_reason},created_at:now()});return {before,after:a.p_level,rev:d.adminRev};},
   admin_ban:a=>{const p=DB.profiles.find(x=>x.user_id===a.p_user);p.banned_until=a.p_until;p.ban_reason=a.p_reason;DB.admin_log.unshift({id:Date.now(),admin:ADMIN.id,action:a.p_until?'ban':'unban',target:a.p_user,detail:{until:a.p_until,reason:a.p_reason},created_at:now()});return null;},
   admin_send_mail:a=>{const n=a.p_users?a.p_users.length:DB.profiles.length;DB.admin_log.unshift({id:Date.now(),admin:ADMIN.id,action:'send_mail',target:'all',detail:{text:a.p_text,items:a.p_items,gold:a.p_gold,count:n},created_at:now()});return n;},
   admin_invites:()=>DB.invites,

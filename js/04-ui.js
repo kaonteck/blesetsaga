@@ -131,9 +131,6 @@ function syncChatFab(){
   syncFabBadge();
   b.dataset.route=S.route||'';
   const top=$('#top');if(top)b.style.setProperty('--top-h',Math.round(Math.max(top.offsetHeight||0,top.getBoundingClientRect().bottom))+'px');
-  /* 모바일 전투: 하단에 붙는 행동 패널(fightMain의 .cmdbar) 높이만큼 채팅 버튼을 띄움 */
-  const bar=$('#fightmain > .cmdbar');
-  b.style.setProperty('--cmdbar-h',bar&&innerWidth<=760?bar.offsetHeight+'px':'0px');
 }
 function setChatOpen(on){
   document.body.classList.toggle('chat-open',on);
@@ -224,8 +221,8 @@ function vCreate(){
 function vMain(){
   return `<div class="wrap tkwrap">${ticker()}</div>
     <div class="wrap grid2 main-grid">
-      ${charCard(true)}<div class="rtop">${skyBar()}${recruitPanel()}</div>
-      ${chatPanel()}<div class="col">${nextGoalHTML()}</div>
+      ${charCard(true)}<div class="rtop">${skyBar()}${nextGoalHTML()}${recruitPanel()}</div>
+      ${chatPanel()}
     </div>`;
 }
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
@@ -552,10 +549,23 @@ function vQuest(){
     <div class="page-head"><div><h2>퀘스트<small class="en">Quest</small></h2><p>수락 → 상황 읽기 → 선택 → 결과 확인 → 다음 단계 → 보상 수령. 선택은 캐릭터별로 저장됩니다.</p></div></div>
     <div class="qtabs" role="tablist">${QT.map(([k,l])=>`<button role="tab" data-act="qtab" data-tab="${k}" aria-selected="${tab===k}">${l}<span class="num">${cnt(k)}</span></button>`).join('')}</div>
     <div class="split">
-      <div class="panel qcats"><p class="qtab-note">${note}</p><div class="list" data-cat="${tab}">${qs.map(q=>{const st=questStatus(q);return `<div class="li clickable" data-act="openquest" data-id="${q.id}" ${q.id===sel?'aria-current="true"':''}><div class="t"><b>${esc(q.title)}</b><small>LV${q.level}${q.prereq?' · 선행 '+esc((quest(q.prereq)||{}).title||q.prereq):''}${hasBattle(q)?' · 개인 레이드':''}</small></div><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>`;}).join('')||'<p class="empty">없음</p>'}</div></div>
+      <div class="panel qcats"><p class="qtab-note">${note}</p><div class="qgroups" data-cat="${tab}">${questGroupsHTML(tab,qs,sel)}</div></div>
       <div class="panel" id="qdetail">${sel?questDetail(quest(sel)):'<p class="empty">퀘스트가 없습니다.</p>'}</div>
     </div></div>`;
 }
+/* 퀘스트 목록 묶음: 메인=챕터별(QCHAPTERS, 접기), 서브·데일리=레벨순 + 완료 목록(기본 접힘) */
+const QDONE=['done','doneToday'];
+function qLi(q,sel){const st=questStatus(q);return `<div class="li clickable" data-act="openquest" data-id="${q.id}" ${q.id===sel?'aria-current="true"':''}><div class="t"><b>${esc(q.title)}</b><small>LV${q.level}${q.prereq?' · 선행 '+esc((quest(q.prereq)||{}).title||q.prereq):''}${hasBattle(q)?' · 개인 레이드':''}</small></div><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>`;}
+function qGroup(key,title,list,sel,defOpen,meta){const O=S.sel.qgrp||{};const open=key in O?O[key]:defOpen;
+  return `<div class="qgrp ${open?'open':''}"><button class="qgrp-h" data-act="qgrp" data-k="${key}" data-def="${defOpen?1:0}" aria-expanded="${open}"><span class="qgrp-t">${esc(title)}</span><span class="qgrp-m num">${meta}</span><svg class="qgrp-c" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>${open?`<div class="list">${list.map(q=>qLi(q,sel)).join('')}</div>`:''}</div>`;}
+function questGroupsHTML(tab,qs,sel){if(!qs.length)return '<p class="empty">없음</p>';
+  if(tab==='epic'){const used=new Set();const groups=QCHAPTERS.map(([key,title,ids])=>{const L=ids.map(id=>qs.find(q=>q.id===id)).filter(Boolean);L.forEach(q=>used.add(q.id));return [key,title,L];});
+    const rest=qs.filter(q=>!used.has(q.id));if(rest.length)groups.push(['ch_etc','그 밖의 이야기',rest]);
+    return groups.filter(g=>g[2].length).map(([key,title,L])=>{const done=L.filter(q=>QDONE.includes(questStatus(q))).length;const cur=L.some(q=>q.id===sel)||done<L.length&&L.some(q=>questStatus(q)!=='locked');
+      return qGroup(key,title,L,sel,cur,done===L.length?'완료':`${done}/${L.length}`);}).join('');}
+  const byLv=(a,b)=>(a.level-b.level)||a.title.localeCompare(b.title,'ko');
+  const live=qs.filter(q=>!QDONE.includes(questStatus(q))).sort(byLv),done=qs.filter(q=>QDONE.includes(questStatus(q))).sort(byLv);
+  return `${done.length?qGroup('done_'+tab,'완료 목록',done,sel,false,`${done.length}`):''}<div class="list">${live.map(q=>qLi(q,sel)).join('')||'<p class="empty" style="padding:6px 0">진행할 퀘스트가 없습니다.</p>'}</div>`;}  /* 완료 목록(접힘)을 진행할 퀘스트 위에 */
 function questDetail(q){
   const st=questStatus(q);const qp=S.qp[q.id];
   let h=`<div class="stack" style="gap:16px"><div><div class="row" style="justify-content:space-between"><span class="ph" style="margin:0">${{epic:'메인 스토리',sub:'서브 스토리',repeat:'데일리'}[q.cat]} · LV${q.level}</span><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>
@@ -582,7 +592,7 @@ function questDetail(q){
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="nextq" data-id="${q.id}">다음 단계</button></div>`;
     }else if(step.battle){
       const m=monster(step.battle);const busy=busyReason();
-      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted num" style="font-size:12.5px">HP ${m.hp} · 공격력 ${m.atk} · ${esc(m.dotName)} ${Math.round(m.dotChance*100)}%</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
+      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
         ${qp.lost?'<p class="reason">지난 전투에서 쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.</p>':''}
         <div class="row"><button class="btn btn-primary" data-act="qfight" data-id="${q.id}" ${busy||!m?'disabled':''}>${qp.lost?'다시 도전':'전투 시작'}</button>${busy?`<span class="reason">${esc(busy)}</span>`:''}</div>`;
     }else{
@@ -611,10 +621,10 @@ function vMonster(m){
       <div class="stack" style="gap:16px">
         <div class="panel"><div class="boss"><pre class="ascii big">${esc(ART[m.art]||ART.generic)}</pre>
           <div class="stack"><div class="ph" style="margin:0">${esc(m.region||'')}</div><h2 class="mname" style="font-size:26px">${esc(m.name)}</h2><p class="muted">${esc(m.desc||'')}</p></div></div>
-          <div class="facts" style="margin-top:16px"><div><small>입장 레벨</small><b class="num">LV${m.level}${m.maxLevel?'~'+m.maxLevel:'+'}</b></div><div><small>참가 인원</small><b class="num">${m.min}~${m.max}명</b></div><div><small>HP (${m.min}인 기준) · 공격력</small><b class="num">${m.hp} · ${m.atk}</b></div><div><small>필요 역할</small><b>${['tank','dps','heal'].filter(r=>m.roles[r]).map(r=>ROLE[r].slice(0,1)+m.roles[r]).join(' · ')}</b></div></div>
-          <p class="faint" style="font-size:12px;margin-top:8px">${m.min}명을 넘는 1명마다 몬스터 체력 +${Math.round(m.hpScale*100)}% · 전투 시작 시 확정</p></div>
-        <div class="panel"><h3>주요 패턴</h3><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">${patternLines(m).map(l=>`<li>${esc(l)}</li>`).join('')}</ul></div>
-        <div class="panel"><h3>보상 · 참가자별 개별 지급</h3>${mkind(m)==='dungeon'?(()=>{const R=dungeonReward(m,dtg(m.id));return rewardHTML({exp:R.exp,gold:R.gold});})():rewardHTML({exp:m.exp,gold:m.gold})}<p class="muted" style="margin-top:8px;font-size:13px">개인 확률 획득: ${m.drops.map(([k,c])=>`${ITEMS[k]?ITEMS[k].name:k} ${Math.round(c*100)}%`).join(' · ')}</p>
+          <div class="facts" style="margin-top:16px"><div><small>입장 레벨</small><b class="num">LV${m.level}${m.maxLevel?'~'+m.maxLevel:'+'}</b></div><div><small>참가 인원</small><b class="num">${m.min}~${m.max}명</b></div><div><small>필요 역할</small><b>${['tank','dps','heal'].filter(r=>m.roles[r]).map(r=>ROLE[r].slice(0,1)+m.roles[r]).join(' · ')}</b></div></div>
+          ${m.hpScale?`<p class="faint" style="font-size:12px;margin-top:8px">* ${m.min}명을 넘는 1명마다 보스 체력이 +${Math.round(m.hpScale*100)}% 늘어납니다 · 전투 시작 시 확정</p>`:''}
+</div>
+        <div class="panel"><h3>보상 · 참가자별 개별 지급</h3>${mkind(m)==='dungeon'?(()=>{const R=dungeonReward(m,dtg(m.id));return rewardHTML({exp:R.exp,gold:R.gold});})():rewardHTML({exp:m.exp,gold:m.gold})}${(()=>{const parts=[m.drops.length?rewardItemsHTML(m.drops.map(d=>d[0]),Object.fromEntries(m.drops)):'',mkind(m)==='dungeon'&&(m.loot||[]).length?`보물상자 ${lootText(m)}`:''].filter(Boolean);return parts.length?`<p class="muted" style="margin-top:8px;font-size:13px">획득할 수 있는 아이템: ${parts.join(' · ')}</p>`:'';})()}
           <p class="faint" style="font-size:12px;margin-top:6px">직접 행동을 1회 이상 확정한 참가자만 보상 대상입니다. 패배해도 경험치와 아이템을 잃지 않습니다.${{party:` 데일리 파티 레이드는 출발할 때 하루 ${RAID_MAX}회 중 1회를 씁니다.`,weekly:' 주간 토벌 보상은 매주 월요일 05:00 초기화 · 주 1회입니다.',event:' 이벤트 보스는 출현 중에만 입장할 수 있고, 보상은 출현마다 1회 · 1.5배입니다.'}[mkind(m)]||''}</p></div>
       </div>
       <div class="stack" style="gap:16px">
@@ -699,6 +709,13 @@ function vFight(){
     ${S.battle&&S.battle.solo?'':S.battle&&S.battle.grid?chatPanel({lock:'raid'})+`<div class="panel" id="dmgrank">${dmgRank(S.battle)}</div>`:chatPanel({lock:'party'})}</div></div></div>`;
 }
 function logHTML(){return S.battle.log.slice(-160).map(l=>`<div class="${l.t}">${esc(l.text)}</div>`).join('');}
+/* 몬스터 그림 / 대사(옛 영웅 보스 HERO_LINES): 전투 중엔 이번 턴 대사(첫 턴은 첫 대사), 승리 후엔 마지막 말.
+   대사는 '다음 행동' 칸 위에 같은 모양의 붉은 칸(.tele.say)으로 */
+function monSayText(b){const H=HERO_LINES[b.monsterId||b.mon.id];if(!H)return '';
+  if(b.over)return b.over==='win'?H.last:'';if(b.heroSay&&b.heroSay.turn===b.turn)return b.heroSay.text;return b.turn===1?H.say[0]:'';}
+function monSayHTML(b){const t=(monSayText(b)||'').trim();if(!t)return '';const paren=/^\(.*\)$/s.test(t);  /* (지문)은 따옴표 없이 */
+  return `<div class="tele say" role="status">${esc(paren?t:`“${t}”`)}</div>`;}
+function monArtHTML(b,win){return `<div class="mon-art"><pre class="ascii" ${b.over?`style="opacity:${win?.35:1}"`:''}>${esc(ART[b.mon.art]||ART.generic)}</pre></div>`;}
 function fightMain(){
   const b=S.battle,m=b.mon,me=b.players.find(p=>p.isMe);
   if(b.over)return outcomeHTML(b);
@@ -707,10 +724,11 @@ function fightMain(){
   const left=Math.max(0,Math.ceil((b.deadline-now())/1000));
   const sup=supActive(b)?b.players.find(p=>p.id===b.sup.by):null;
   const dps=b.players.filter(p=>p.role==='dps').reduce((a,p)=>a+p.dealt,0);
-  return `<div class="panel"><div class="boss"><pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:8px">
+  return `<div class="panel"><div class="boss">${monArtHTML(b)}<div class="stack" style="gap:8px">
       <div class="row" style="justify-content:space-between"><span class="mname">${esc(m.name)}</span><span class="num muted">${m.hp} / ${m.maxHp}</span></div>
       <div class="bar hp big"><i style="width:${pct(m.hp,m.maxHp)}%"></i></div>
       <div class="row" style="gap:6px"><span class="chip num">${b.turn}턴</span><span class="chip num">공격 ${m.atk}</span>${m.poison?`<span class="chip heal">중독 ${m.poison.dmg}·${m.poison.turns}턴</span>`:''}${m.burn?`<span class="chip dps">화상 ${m.burn.dmg}·${m.burn.turns}턴</span>`:''}${m.weaken?`<span class="chip tank">의욕감소 ${m.weaken}턴</span>`:''}</div>
+      ${monSayHTML(b)}
       <div class="tele ${tel.type==='aoe'?'aoe':''}"><b>다음 행동</b> · ${esc(telText(b))}</div>
       ${sup?`<p class="muted" style="font-size:12.5px">제압 중 · ${esc(sup.name)} (딜러 총 ${dps} / 유지 한도 ${Math.max(1,sup.dealt)*b.sup.mult} · ${b.sup.mult}배)</p>`:''}
     </div></div></div>
@@ -803,15 +821,15 @@ function actLabel(b,a){
 function outcomeHTML(b){
   const r=b.result||{};const win=b.over==='win';const ctx=b.ctx||{};
   const back={quest:'퀘스트로 돌아가기',field:'탐색으로 돌아가기'}[ctx.type]||'레이드로 돌아가기';
-  if(ctx.type==='mass')return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre><h2>${win?'만신전 성공':'만신전 실패'}</h2>
-    <p class="muted">${win?`${b.players.length}인 원정대가 ${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:`${esc(b.mon.name)}을(를) 쓰러뜨리지 못했습니다. 이번 이벤트는 종료되었습니다.`}</p>
+  if(ctx.type==='mass')return `<div class="panel outcome">${monArtHTML(b,win)}<h2>${win?'만신전 성공':'만신전 실패'}</h2>
+    <p class="muted">${win?`${b.players.length}인 원정대가 ${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:`${esc(b.mon.name)}을(를) 쓰러뜨리지 못했습니다. 이번 이벤트는 종료되었습니다.`}</p>${monSayHTML(b)}
     ${r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">${win?'참여 + 처치 보상':'참여 보상'}</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}${wearNowHTML(r.items)}</div>`:'<p class="reason">직접 행동을 제출하지 않아 보상 대상에서 제외되었습니다.</p>'}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
-  if(ctx.type==='quest')return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre><h2>${win?'승리':'패배'}</h2>
-    <p class="muted">${win?`${esc(b.mon.name)}을(를) 쓰러뜨렸습니다. 퀘스트로 돌아가 이야기를 이어 가세요.`:'쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.'}</p><button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
-  return `<div class="panel outcome"><pre class="ascii" style="opacity:${win?.35:1}">${esc(ART[b.mon.art]||ART.generic)}</pre>
+  if(ctx.type==='quest')return `<div class="panel outcome">${monArtHTML(b,win)}<h2>${win?'승리':'패배'}</h2>
+    <p class="muted">${win?`${esc(b.mon.name)}을(를) 쓰러뜨렸습니다. 퀘스트로 돌아가 이야기를 이어 가세요.`:'쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.'}</p>${monSayHTML(b)}<button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
+  return `<div class="panel outcome">${monArtHTML(b,win)}
     <h2>${win?'승리':b.over==='abandon'?'전투 종료':'패배'}</h2>
-    <p class="muted">${win?`${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
+    <p class="muted">${win?`${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${monSayHTML(b)}${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
     ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}${wearNowHTML(r.items)}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
 }
@@ -853,7 +871,7 @@ function renderFight(){
 function vChar(){
   const me=S.me,c=CLASSES[me.job];
   const flags=Object.keys(S.flags).filter(k=>S.flags[k]);
-  const invAll=Object.entries(me.inv).filter(([k,n])=>n>0&&ITEMS[k]);const icat=S.sel.invCat||'equip';const catOf=k=>ITEMS[k].type==='equip'?'equip':ITEMS[k].type==='mat'?'mat':ITEMS[k].type==='deco'?'deco':'use';const inv=invAll.filter(([k])=>catOf(k)===icat);
+  const invAll=Object.entries(me.inv).filter(([k,n])=>n>0&&ITEMS[k]);const icat=S.sel.invCat||'equip';const catOf=k=>ITEMS[k].type==='equip'?'equip':ITEMS[k].rod?'use':ITEMS[k].type==='mat'?'mat':ITEMS[k].type==='deco'?'deco':'use';const inv=invAll.filter(([k])=>catOf(k)===icat);
   const eqIds=Object.values(me.equip||{});
   const ctab=['equip','craft'].includes(S.sel.ctab)?S.sel.ctab:'info';
   return `<div class="wrap page"><div class="page-head"><div><h2>캐릭터<small class="en">Character</small></h2></div></div>
@@ -1191,7 +1209,7 @@ function planBots(b){b.players.forEach(p=>{if(!p.isMe&&!p.dead)p.planAt=now()+rn
 const hooks={hasItem:(pid,k)=>pid==='me'?(S.me.inv[k]||0)>0&&!itemBlock(k):false,useItem:(pid,k)=>{if(pid==='me'&&S.me.inv[k]>0)S.me.inv[k]--;}};
 function doResolve(){
   const b=S.battle;if(b.bless&&!b.bless.pick)applyBless(b,pick(b.bless.cards));if(b.grid)gridPre(b,Math.random,hooks);resolveTurn(b,Math.random,hooks);
-  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&!b.over&&Math.random()<0.4){const pool=H.say.filter(x=>x!==b.heroLast);const l=pick(pool.length?pool:H.say);b.heroLast=l;b.log.push({t:'warn',text:`${b.mon.name} · “${l}”`});}}
+  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&!b.over&&Math.random()<0.4){const pool=H.say.filter(x=>x!==b.heroLast);const l=pick(pool.length?pool:H.say);b.heroLast=l;b.heroSay={text:l,turn:b.turn};b.log.push({t:'warn',text:`${b.mon.name} · “${l}”`});}}
   if(b.over)finishBattle(b);
   else{b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);resetAct();
     if(Math.random()<(b.grid?0.3:0.25)){const bm=b.players.filter(p=>!p.isMe&&!p.dead);if(bm.length)later(rnd(800,2500),()=>botSay(b.grid?'raid':'party',pick(bm).name,pick(b.grid?MASS_LINES:PARTY_LINES)));}}
@@ -1560,7 +1578,7 @@ const ITEM_DEFAULTS=JSON.parse(JSON.stringify(ITEMS));
 function loadItems(){S.data.items=S.data.items||{};for(const id in S.data.items)ITEMS[id]=S.data.items[id];(S.data.itemsDeleted||[]).forEach(id=>{if(!S.data.items[id])delete ITEMS[id];});}
 function classAllowed(it,job){if(it.wtype)return (CLASS_WEAPON[job]||[]).includes(it.wtype);if(!it.classReq||!it.classReq.length)return true;const c=CLASSES[job];return it.classReq.includes(job)||(c.base&&it.classReq.includes(c.base));}
 function itemBlock(k){const it=ITEMS[k];if(!it)return '알 수 없는 아이템';if(it.levelReq&&S.me.level<it.levelReq)return `LV${it.levelReq} 이상 사용 가능`;if(!classAllowed(it,S.me.job))return it.wtype?`${CLASSES[S.me.job].name}의 무기가 아닙니다 · ${WTYPE[it.wtype]}`:`${it.classReq.map(c=>CLASSES[c].name).join('·')} 전용`;return null;}
-function typeLabel(it){return it.type==='equip'?SLOT[it.slot]:it.type==='mat'?'재료':it.type==='deco'?'장식품':'소모품';}
+function typeLabel(it){return it.type==='equip'?SLOT[it.slot]:it.rod?'소모품':it.type==='mat'?'재료':it.type==='deco'?'장식품':'소모품';}
 function reqText(it){const r=[];if(it.levelReq)r.push(`LV${it.levelReq}+`);if(it.wtype)r.push(`${WTYPE[it.wtype]} · ${Object.keys(CLASS_WEAPON).filter(c=>CLASS_WEAPON[c].includes(it.wtype)).map(c=>CLASSES[c].name).join('·')}`);if(it.classReq&&it.classReq.length)r.push(it.classReq.map(c=>CLASSES[c].name).join('·')+' 전용');if(it.maxOwn)r.push(`1인 최대 ${it.maxOwn}개`);return r.join(' · ');}
 function addItem(k,n){const it=ITEMS[k];if(!it)return 0;const have=S.me.inv[k]||0;const room=it.maxOwn?Math.max(0,it.maxOwn-have):n;const add=Math.min(n,room);if(add>0)S.me.inv[k]=have+add;if(add<n)toast(`${it.name}은(는) 1인 최대 ${it.maxOwn}개까지 가질 수 있어 ${n-add}개는 받지 못했습니다.`,'warn');return add;}
 function adminItems(){

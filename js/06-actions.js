@@ -232,7 +232,7 @@ const ACTS={
   'hunt-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const A=S.sel.huntArea?MAP_INFO[S.sel.huntArea]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:storyLock(r.id));if(why){toast(why,'warn');return;}
     const fm=huntMons(r);if(!fm.length)return;modal('');const rg=A?fm[0].region:r.region;
     if(S.sel.huntMode!=='auto'){startSolo(pick(fm),{type:'field',region:rg});return;}
-    const min=AUTO_DUR.includes(S.sel.huntDur)?S.sel.huntDur:30;S.auto={land:r.id,region:rg,mons:fm.map(m=>m.id),start:now(),end:now()+min*60000,min};save();render();toast(`${r.region} 자동 사냥을 시작했습니다 · ${durLabel(min)}`,'good');},
+    const min=AUTO_DUR.includes(S.sel.huntDur)?S.sel.huntDur:30;S.auto={land:r.id,area:S.sel.huntArea||'',region:rg,mons:fm.map(m=>m.id),start:now(),end:now()+min*60000,min};save();render();toast(`${r.region} 자동 사냥을 시작했습니다 · ${durLabel(min)}`,'good');},
   'auto-claim':()=>{autoClaim(false);},
   'auto-stop':()=>{autoClaim(true);},
   'ng-land':d=>{S.sel.exLand=d.land;S.sel.exFocus='';go('explore');},
@@ -325,11 +325,13 @@ const ACTS={
   'ex-back':()=>{S.sel.exLand=null;S.sel.exFocus='';render();scrollTo({top:0});},
   'map-goto':d=>{modal('');openLink(d.link);},
   'md-target':d=>{const m=monster(d.focus);S.sel.dtargets=S.sel.dtargets||{};S.sel.dtargets[m?m.id:d.focus]=d.v;if($('.modal.mapmodal'))refreshMap();else render();},
+  qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},
   chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;qp.pending=+d.i;save();render();},
-  nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];
+  nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))){qp.pending=null;render();return;}
     qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.advTo)doAdvance(c.advTo);
+    if(c.take){for(const k in c.take){S.me.inv[k]-=c.take[k];if(S.me.inv[k]<=0)delete S.me.inv[k];}}
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}

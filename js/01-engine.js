@@ -71,12 +71,19 @@ GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},ar
   const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
     knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{mag:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
     gun:{mag:A,luk:Math.round(1+L*0.1)},dgun:{mag:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{mag:Math.round(A*0.9),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{mag:A,luk:Math.round(3+L*0.25)}};
-  (L<20?BASE_WT:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
+  (L<20?[...BASE_WT,...(T===2?['orb']:[])]:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
     ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
   ITEMS[ids.acc]={name:`${pre} ${acc}`,type:'equip',slot:'acc',tier:T,levelReq:L,stats:{luk:Math.round(2+L*0.15),maxHp:Math.round(10+L*2),atk:Math.round(L*0.25),mag:Math.round(L*0.25)},desc,price};
   GEAR_IDS.push(ids.armor,ids.acc);});
-function lootText(m){const L=m.loot||[];const t=ITEMS[L[0]];if(t&&t.tier)return `${GEAR_TIER[t.tier-1][0]} 장비(LV${GEAR_TIER[t.tier-1][2]}+ 무기·방어구·장신구)`;return L.map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ');}
+/* 보상 표시: 단계 장비는 '{단계} 장비' + 도움말(마우스 올리면 장비 이름 목록, 확률 없음). 나머지 아이템은 이름 그대로 */
+const HELP_SVG='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.7c-.5.2-.8.6-.8 1.1v.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".8" fill="currentColor"/></svg>';
+function gearSetHTML(T,ids){const nm=GEAR_TIER[T-1][0];const names=ids.filter(k=>ITEMS[k]).map(k=>ITEMS[k].name);
+  return `<span class="gset">${nm} 장비<span class="sky-help gset-h" tabindex="0" role="button" aria-label="${nm} 장비 목록">${HELP_SVG}<span class="sky-tip gset-tip"><b>${nm} 장비 · LV${GEAR_TIER[T-1][2]}+</b><span>${names.map(n=>n.replace(/&/g,'&amp;').replace(/</g,'&lt;')).join('<br>')}</span></span></span></span>`;}
+/* ids: 아이템 id 목록 · pct(선택): id→확률(장비 아닌 아이템에만 표시) */
+function rewardItemsHTML(ids,pct){const tiers={},rest=[];ids.forEach(k=>{const it=ITEMS[k];if(it&&it.tier&&it.type==='equip')(tiers[it.tier]=tiers[it.tier]||[]).push(k);else rest.push(k);});
+  return [...rest.map(k=>`${(ITEMS[k]?ITEMS[k].name:k).replace(/</g,'&lt;')}${pct&&pct[k]!=null?` ${Math.round(pct[k]*100)}%`:''}`),...Object.keys(tiers).sort((a,b)=>a-b).map(T=>gearSetHTML(+T,tiers[T]))].join(' · ');}
+function lootText(m){return rewardItemsHTML(m.loot||[]);}
 const gearOfTier=T=>GEAR_IDS.filter(id=>ITEMS[id].tier===T);
 function pickLoot(m){const L=m.loot||[];if(!L.length)return 'potion';const me=S&&S.me;
   if(me&&Math.random()<0.7){const mine=L.filter(k=>{const it=ITEMS[k];return it&&(!it.wtype||(CLASS_WEAPON[me.job]||[]).includes(it.wtype));});if(mine.length)return pick(mine);}return pick(L);}
@@ -239,7 +246,7 @@ function createBattle(m,members,rng,cfg){
   const b={id:'B'+Date.now().toString(36)+Math.floor(rng()*1e8).toString(36),monsterId:m.id,
     mon:{name:m.name,art:m.art,hp,maxHp:hp,atk:m.atk,def:m.def||0,poison:null,burn:null,weaken:0,
       singleName:m.singleName,singleMult:m.singleMult,aoeName:m.aoeName,aoeMult:m.aoeMult,aoeEvery:Math.max(2,m.aoeEvery|0),
-      dotName:m.dotName,dotChance:m.dotChance,dotDmg:m.dotDmg},
+      dotName:m.dotName,dotChance:m.dotChance,dotDmg:m.dotDmg,sphases:m.sphases?JSON.parse(JSON.stringify(m.sphases)):null,sph:0,baseAtk:m.atk},
     rules:{exp:m.exp,gold:m.gold,drops:m.drops.map(d=>d.slice()),turnSeconds:cfg.turnSeconds},
     players,order,turn:0,log:[],over:null,sup:null,partyBuffs:[],startedAt:Date.now()};
   b.log.push({t:'sys',text:`전투 시작 · ${n}인 · 몬스터 HP ${hp} · 몬스터 공격력 ${m.atk} · 행동 순서(행운): ${order.map(id=>players.find(p=>p.id===id).name).join(' → ')}`});
@@ -257,12 +264,17 @@ function telText(b){
   const p=b.players.find(x=>x.id===t.target);
   return `${t.name} → ${p?p.name:'?'}${t.type==='dot'?` · ${b.mon.dotName} 부여`:''}`;
 }
+/* 개인 레이드 보스 페이즈(그리드 없음): m.sphases=[{at:HP%,name,atkMul,…덮어쓸 몬스터 값}] — HP가 at% 이하로 내려가면 다음 턴부터 적용 */
+function soloPhase(b){const m=b.mon,P=m.sphases;if(!P||!P.length)return;const pct=m.hp/m.maxHp*100;let k=0;P.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
+  if(k===m.sph)return;m.sph=k;const ph=P[k];m.atk=Math.round(m.baseAtk*(ph.atkMul||1));
+  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
+  b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 공격력 ×${ph.atkMul||1}`});}
 function startTurn(b,rng){
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
   b.players.forEach(p=>{p.action=null;p.action2=null;p.confirmed=false;p.defending=false;p.protect=false;p.reduce=0;p.turnDealt=0;});
   const m=b.mon,alive=living(b);
   if(b.grid){gridPhase(b);b.tel=gridTel(b,rng);}
-  else if(b.turn%m.aoeEvery===0)b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
+  else if((soloPhase(b),b.turn%m.aoeEvery===0))b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
   else{
     const target=supActive(b)?b.players.find(p=>p.id===b.sup.by):weightedPick(alive,p=>p.role==='tank'?2:1,rng);
     const dot=rng()<m.dotChance;

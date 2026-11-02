@@ -20,12 +20,14 @@ VIEWS.players=async(el)=>{
       <td class="small">${ago(p.saved_at)}</td><td class="small">${fmtTime(p.joined_at,true)}</td><td class="small faint">${esc(p.invite||'')}</td>
       <td><div class="row" style="flex-wrap:nowrap">
         <button class="btn btn-sm" data-save="${p.user_id}">세이브</button>
+        <button class="btn btn-sm" data-lvl="${p.user_id}" data-cur="${p.level??''}">레벨</button>
         <button class="btn btn-sm" data-mail="${p.user_id}">우편</button>
         ${banned(p)?`<button class="btn btn-sm" data-unban="${p.user_id}">정지 해제</button>`:p.is_admin?'':`<button class="btn btn-sm btn-d" data-ban="${p.user_id}">정지</button>`}
       </div></td></tr>`;}).join('')||'<tr><td colspan="8" class="empty">회원이 없습니다.</td></tr>'}
     </tbody></table></div></div>`;
   $('#pl-f').onsubmit=e=>{e.preventDefault();PL.search=$('#pl-s').value.trim();go('players');};
   $$('[data-save]').forEach(b=>b.onclick=()=>showSave(b.dataset.save));
+  $$('[data-lvl]').forEach(b=>b.onclick=()=>levelDlg(b.dataset.lvl,b.dataset.cur));
   $$('[data-mail]').forEach(b=>b.onclick=()=>go('mail',{to:[b.dataset.mail]}));
   $$('[data-ban]').forEach(b=>b.onclick=()=>banDlg(b.dataset.ban));
   $$('[data-unban]').forEach(b=>b.onclick=async()=>{if(!await ask('정지 해제',`${who(b.dataset.unban)} 님의 정지를 풉니다.`,'해제'))return;
@@ -42,6 +44,18 @@ async function showSave(uid){
     <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="sv-copy">JSON 복사</button><button class="btn" data-close-btn>닫기</button></div>`);
   $('#sv-copy').onclick=()=>navigator.clipboard.writeText(pretty(d)).then(()=>toast('복사했습니다.'),()=>toast('복사하지 못했습니다.','bad'));
   if(!DEF)loadDefaults();
+}
+/* 레벨 조정 (임시 운영 도구 · supabase/010_admin_level.sql) */
+function levelDlg(uid,cur){
+  modal(`<h3>${who(uid)} 레벨 조정</h3><form class="stack" id="lvf">
+    <label class="f">새 레벨 (1~99)<input type="number" id="lv-n" min="1" max="99" step="1" value="${esc(cur||'')}" required></label>
+    <label class="f">사유 (기록용)<input type="text" id="lv-why" maxlength="200" placeholder="예) 3장 테스트용"></label>
+    <p class="faint small" style="margin:0">경험치는 0이 되고 체력은 가득 찹니다. 클래스(전직)는 그대로입니다. 접속 중이면 다음 저장 때(보통 몇 초 안), 아니면 다음 접속 때 반영되고 유저에게 알림이 뜹니다. 운영 기록에 남습니다.</p>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-g" data-close-btn>취소</button><button class="btn btn-p">적용</button></div></form>`);
+  $('#lvf').onsubmit=async e=>{e.preventDefault();const n=Math.round(+$('#lv-n').value);
+    if(!(n>=1&&n<=99)){toast('레벨은 1~99 사이로 적어 주세요.','bad');return;}
+    const r=await q(A.sb.rpc('admin_set_level',{p_user:uid,p_level:n,p_reason:$('#lv-why').value.trim()||null}));
+    if(r&&r!==true){toast(`LV${r.before} → LV${r.after}로 바꿨습니다.`,'good');modal(null);go('players');}};
 }
 function banDlg(uid){
   modal(`<h3>${who(uid)} 정지</h3><form class="stack" id="bf">
@@ -157,9 +171,9 @@ VIEWS.log=async(el)=>{
     q(A.sb.from('admin_log').select('*').order('id',{ascending:false}).limit(100)),
     q(A.sb.from('content_history').select('hid,kind,id,op,rev,changed_by,changed_at').order('hid',{ascending:false}).limit(100))]);
   if(!ops||!ch){el.innerHTML='<div class="msg bad">기록을 불러오지 못했습니다.</div>';return;}
-  const ACT={send_mail:'우편 발송',ban:'정지',unban:'정지 해제',invite_create:'초대코드 생성',invite_delete:'초대코드 삭제'};
+  const ACT={send_mail:'우편 발송',ban:'정지',unban:'정지 해제',invite_create:'초대코드 생성',invite_delete:'초대코드 삭제',set_level:'레벨 조정'};
   const OP={insert:'올림',update:'수정',delete:'삭제',restore:'되돌림'};
-  const items=[...ops.map(r=>({t:r.created_at,who:r.admin,what:ACT[r.action]||r.action,detail:r.action==='send_mail'?`${r.detail.count??'?'}명 · ${r.detail.text||''}`:r.action==='ban'?`${who(r.target)} ~${fmtTime(r.detail.until)} ${esc(r.detail.reason||'')}`:r.action==='unban'?who(r.target):esc(r.target||''),raw:r.action!=='ban'&&r.action!=='unban'})),
+  const items=[...ops.map(r=>({t:r.created_at,who:r.admin,what:ACT[r.action]||r.action,detail:r.action==='send_mail'?`${r.detail.count??'?'}명 · ${r.detail.text||''}`:r.action==='ban'?`${who(r.target)} ~${fmtTime(r.detail.until)} ${esc(r.detail.reason||'')}`:r.action==='unban'?who(r.target):r.action==='set_level'?`${who(r.target)} LV${+r.detail.before||'?'} → LV${+r.detail.after||'?'} ${esc(r.detail.reason||'')}`:esc(r.target||''),raw:!['ban','unban','set_level'].includes(r.action)})),
     ...ch.map(r=>({t:r.changed_at,who:r.changed_by,what:`콘텐츠 ${OP[r.op]||r.op}`,detail:`${(KINDS[r.kind]||{}).label||r.kind} · ${r.id}${r.rev?' v'+r.rev:''}`,link:{kind:r.kind,id:r.id}}))]
     .sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,150);
   el.innerHTML=`<div class="panel"><h3>운영 기록 <span class="faint" style="font-weight:400">최근 ${items.length}건</span></h3>

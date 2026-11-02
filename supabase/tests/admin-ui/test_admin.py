@@ -61,6 +61,14 @@ with sync_playwright() as p:
     pg.click('[data-ban="u3"]');pg.fill('#b-why','도배');pg.click('#bf .btn-d');pg.wait_for_timeout(500)
     ok('정지 ~' in pg.inner_text('#view'),'정지 표시')
     pg.click('[data-unban="u3"]');pg.click('[data-ans="1"]');pg.wait_for_timeout(500);ok('정지 ~' not in pg.inner_text('#view'),'정지 해제')
+    # 레벨 조정 (010)
+    pg.click('[data-lvl="u2"]');pg.wait_for_selector('#lv-n');ok(pg.input_value('#lv-n')=='6','레벨 조정 창: 지금 레벨 미리 채움')
+    pg.fill('#lv-n','0');pg.click('#lvf .btn-p');pg.wait_for_timeout(200);ok(pg.locator('#lvf').count()==1 and pg.evaluate("__DB.saves.u2.me.level")==12,'레벨 0은 보내지 않음')
+    pg.fill('#lv-n','30');pg.fill('#lv-why','3장 테스트');pg.click('#lvf .btn-p');pg.wait_for_timeout(500)
+    ok(pg.evaluate("__DB.saves.u2.me.level")==30 and pg.evaluate("__DB.saves.u2.adminRev")==1,'레벨 조정 → 세이브 LV30·adminRev 1')
+    ok(pg.locator('tbody tr').filter(has_text='아린').locator('td.n').inner_text().strip()=='30','회원 표 레벨 30으로 갱신')
+    pg.click('[data-lvl="u3"]');pg.wait_for_selector('#lv-n');pg.fill('#lv-n','10');pg.click('#lvf .btn-p');pg.wait_for_timeout(400)
+    ok('진행 기록이 없습니다' in pg.inner_text('#toasts'),'세이브 없는 유저는 안내');pg.keyboard.press('Escape')
     # 우편
     pg.click('[data-mail="u2"]');pg.wait_for_selector('#mf');ok(pg.is_checked('input[value=pick]'),'회원 → 우편: 받는 사람 미리 선택')
     pg.fill('#m-text','점검 보상');pg.fill('#m-gold','500');pg.click('#m-add');pg.select_option('[data-it]','potion');pg.fill('[data-n]','3')
@@ -90,7 +98,7 @@ with sync_playwright() as p:
     ok('1 2 3 9' in lt and '판매 중' in lt and '3,200G' in lt and '판매 7장' in lt,'행운권 회차 현황(당첨 번호·판매 중·지급 합계)');pg.screenshot(path=OUT+'/5b-lotto.png')
     # 기록
     pg.click('.tab[data-tab=log]');pg.wait_for_selector('.tbl tbody tr');t=pg.inner_text('#view')
-    miss=[w for w in ['우편 발송','콘텐츠 수정','콘텐츠 되돌림','초대코드 생성','정지 해제'] if w not in t];ok(not miss,'운영 기록 통합 (빠진 것: '+','.join(miss)+')')
+    miss=[w for w in ['우편 발송','콘텐츠 수정','콘텐츠 되돌림','초대코드 생성','정지 해제','레벨 조정'] if w not in t];ok(not miss,'운영 기록 통합 (빠진 것: '+','.join(miss)+')')
     pg.click('[data-go]');pg.wait_for_selector('[data-restore]');ok('삭제됨' in pg.inner_text('#view'),'기록 → 삭제된 항목 열기')
     pg.click('[data-restore]');pg.click('[data-ans="1"]');pg.wait_for_timeout(500);ok(pg.evaluate("__DB.content.some(x=>x.id==='ev_test')"),'삭제된 항목 살리기')
     ok(pg.locator('#c-json').count()==1,'살린 뒤 편집기 열림')
