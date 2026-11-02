@@ -223,6 +223,10 @@ function mlStart(){
   clearInterval(mlPoll);mlPoll=setInterval(mlFetch,60000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')mlFetch();});
 }
+// 선물을 받거나 보낸 뒤 골드·인벤토리가 보이는 화면(캐릭터 카드·장비·상점 등)도 바로 다시 그린다. 우편 팝업은 그대로 열려 있음.
+// 전투 중이거나 글을 쓰는 중이면 상단만.
+function mlRedraw(){const a=document.activeElement;const typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!a.closest('#pop');
+  if(S.route==='battle'||typing){try{renderTop();}catch(e){}return;}try{render();}catch(e){console.warn(e);}}
 const mlErr=e=>{const m=(e&&e.message)||'';const k=/NOT_ENOUGH:(\S+)/.exec(m);
   if(k)return `${(ITEMS[k[1]]||{}).name||k[1]} 수량이 서버 기록보다 많습니다. 잠시 뒤 다시 시도해 주세요.`;
   if(/NOT_ENOUGH_GOLD/.test(m))return '골드가 부족합니다.';if(/NOT_ACTIVE/.test(m))return '이용이 제한된 계정이라 우편을 보낼 수 없습니다.';
@@ -281,7 +285,7 @@ if(ONLINE){
       if(gold){S.me.gold-=gold;bump('goldSpent',gold);}
       (S.sentMail=S.sentMail||[]).push({to:toName,toUid:to,text,items:{...c.items,...(gold?{_gold:gold}:{})},ts:now()});
       const gave=Object.keys(c.items).length>0||gold>0;bump('lettersSent');if(gave)bump('giftsSent');
-      S.sel.mc=null;S.sel.mailView=null;save();cloudSave(true);renderPop();renderTop();
+      S.sel.mc=null;S.sel.mailView=null;save();cloudSave(true);renderPop();renderTop();mlRedraw();
       toast(`${toName}님에게 ${gave?'선물을':'편지를'} 보냈습니다.`,'good');
     }catch(err){console.warn(err);toast(mlErr(err),'bad');const b=$('[data-act="mc-send"]');if(b){b.disabled=false;b.textContent='보내기';}}
     finally{mlSending=false;}
@@ -292,7 +296,9 @@ if(ONLINE){
     if(m.claimed||m._claiming)return;m._claiming=true;
     const {error}=await SB.rpc('claim_mail',{p_id:sid});delete m._claiming;
     if(error){if(/ALREADY_CLAIMED/.test(error.message||'')){m.claimed=true;save();renderPop();}toast(mlErr(error),'bad');return;}
-    m.claimed=false;A0.claim(d,el,e);m.read=true;cloudSave(true);
+    // 기다리는 동안 우편 목록이 새로 받아져 객체가 바뀌었을 수 있으니 지금 목록의 것으로 넣는다(빠뜨림 방지)
+    const cur=(S.mail||[]).find(x=>x.id===d.id)||m;if(!S.mail.includes(cur))S.mail.push(cur);
+    cur.claimed=false;A0.claim(d,el,e);cur.read=true;cloudSave(true);mlRedraw();
   };
   const upd=(ids,row)=>{ids=ids.map(mlSrvId).filter(Boolean);if(ids.length&&SB_UID)SB.from('mail').update(row).in('id',ids).then(()=>{},()=>{});};
   ACTS['mail-open']=(d,el,e)=>{const m=(S.mail||[]).find(x=>x.id===d.id);const was=m&&m.read;A0.open(d,el,e);if(m&&!was)upd([m.id],{read_at:new Date().toISOString()});};
