@@ -2290,3 +2290,6 @@ body{background:
 .pop-head{padding:9px 12px}
 .pop-body{padding:10px 12px}
 .pop-notice .pop-body{padding:4px 12px 10px}
+/* 상단 버튼과 팝업(우편·공지·환경설정·☰ 메뉴) 사이 간격 약 22px → 6px 안팎 */
+.pop{top:calc(env(safe-area-inset-top,0px) + 50px)}
+@media (max-width:900px){.nav.open{top:calc(env(safe-area-inset-top,0px) + 53px)}}
