@@ -2185,10 +2185,10 @@ html,body{overflow-x:clip;max-width:100%}
 .outcome .tele.say{width:min(460px,100%);margin:6px auto 4px;text-align:left}
 .qgroups>.qgrp+.list{margin-top:8px}
 
-/* 박스: 어둡고 반투명(뒤 배경이 비침) + 아래로 옅은 그림자 */
+/* 박스: 어둡고 반투명(뒤 배경이 비침) · 바깥 그림자 없음 */
 .panel,.skybar,.skilllist{background:linear-gradient(180deg,rgba(11,15,23,.42),rgba(8,11,16,.52));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  box-shadow:inset 0 0 0 3px rgba(7,9,14,.3),inset 0 0 0 4px rgba(209,224,238,.08),0 12px 28px -12px rgba(4,7,16,.45)}
-.ticker{background:linear-gradient(90deg,rgba(11,15,23,.42),rgba(8,11,16,.5))!important;backdrop-filter:blur(8px);box-shadow:0 8px 20px -12px rgba(4,7,16,.4)}
+  box-shadow:inset 0 0 0 3px rgba(7,9,14,.3),inset 0 0 0 4px rgba(209,224,238,.08)}
+.ticker{background:linear-gradient(90deg,rgba(11,15,23,.42),rgba(8,11,16,.5))!important;backdrop-filter:blur(8px);box-shadow:none}
 
 /* 푸른 은빛 장식(다이아·제목 줄·로고 빛 번짐) */
 .panel::before{background:#d6e6f7;box-shadow:0 0 6px rgba(170,205,240,.95),0 0 14px rgba(140,185,235,.55)}
