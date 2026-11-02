@@ -2233,3 +2233,15 @@ html,body{overflow-x:clip;max-width:100%}
   .topright .pill{padding:3px 6px}
   .navtog{width:26px}
 }
+/* 오늘의 대륙 날씨: 상자 안은 날씨만, 날짜·시간은 상자 오른쪽 위에 제목과 같은 줄로 */
+.skybar{display:block;position:relative}
+.skybar .sky-l{gap:8px}
+.skybar .sky-lbl{padding-right:150px}
+.skybar .sky-r{position:absolute;top:10px;right:14px;flex-direction:row;align-items:baseline;gap:8px;padding:0;border:0;white-space:nowrap}
+.skybar .sky-date{font-size:11px}
+.skybar .sky-clock{font-size:12px;line-height:inherit}
+.sky-list{grid-template-columns:repeat(8,minmax(0,1fr))}
+@media (max-width:760px){.sky-list{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* 상단 메뉴 바: 바탕색·그림자·테두리 없음(뒤 내용이 비치면 흐림만) */
+.top{background:none;border-bottom:0;box-shadow:none}
