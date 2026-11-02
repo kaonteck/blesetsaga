@@ -47,13 +47,14 @@ const RPC={
     const row={id:'m'+Math.random().toString(36).slice(2,10),recipient:a.p_to,sender:me,sender_name:sp.name||sp.username,text:a.p_text||'(선물)',items,gold,read_at:null,claimed_at:null,archived:false,created_at:now()};
     db.mail.push(row);store(db);notifyRT('mail',row);return {id:row.id};},
   claim_mail(a){const db=load();const m=db.mail.find(x=>x.id===a.p_id&&x.recipient===UID);
-    if(!m||m.claimed_at)throw {message:'ALREADY_CLAIMED'};m.claimed_at=now();m.read_at=m.read_at||now();store(db);return {items:m.items,gold:m.gold};},
+    if(!m||m.claimed_at)throw {message:'ALREADY_CLAIMED'};m.claimed_at=now();m.read_at=m.read_at||now();store(db);notifyRT('mail',m);return {items:m.items,gold:m.gold};},
 };
 window.supabase={createClient:()=>({
   auth:{getSession:async()=>({data:{session:{user:{id:UID,email:window.__USERNAME+'@x',app_metadata:{}}}}}),
     getUser:async()=>({data:{user:{id:UID,email:window.__USERNAME+'@x',app_metadata:{}}}}),onAuthStateChange:()=>({}),signOut:async()=>({})},
   from:t=>new QB(t),
-  rpc:async(n,a)=>{window.__RPC.push(n);try{return {data:RPC[n](a),error:null};}catch(e){return {data:null,error:e};}},
+  rpc:async(n,a)=>{window.__RPC.push(n);let r;try{r={data:RPC[n](a),error:null};}catch(e){r={data:null,error:e};}
+    if(window.__RPCDELAY)await new Promise(f=>setTimeout(f,window.__RPCDELAY));return r;},   // 느린 응답 흉내(서버는 이미 처리·실시간 알림 보낸 뒤)
   channel:()=>({on(ev,f,cb){subs.push({table:f.table,cb});return this;},subscribe(){return this;}}),
 })};
 })();
