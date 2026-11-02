@@ -456,13 +456,30 @@ function dmListHTML(){
   if(!th.length)return note+`<p class="empty">아직 1:1 대화가 없습니다. 위에서 상대를 고르거나, 채팅에서 이름을 눌러 대화를 시작하세요.</p>`;
   return note+th.map(([n,t])=>{const p=playerInfo(n);const last=t.msgs.at(-1);return `<button class="dmrow ${t.unread?'unread':''}" data-act="dm-open" data-name="${esc(n)}">${p?sigil(p.job,'sm'):''}<span class="dm-t"><span class="row" style="gap:6px;justify-content:space-between"><b>${esc(n)}</b><span class="mwhen">${fmtWhen(last.ts)}</span></span><span class="dm-last">${last.from===S.me.name?'나: ':''}${esc(last.text)}</span></span>${t.unread?`<span class="badge">${t.unread}</span>`:''}</button>`;}).join('');
 }
-function msgHTML(m){
+/* 채팅 한 줄: 사진(내 이미지 또는 클래스 문장) · 칭호(이름 위 작게) · 이름 · 시각 · 내용.
+   같은 사람이 3분 안에 이어 말하면 사진·이름 줄 없이 내용만(.cont) */
+function chatTitleOf(name){
+  if(S.me&&name===S.me.name)return S.titles&&S.titles.equip?titleById(S.titles.equip):null;
+  if(bot(name))return typeof botTitle==='function'?botTitle(name):null;
+  if(typeof chPlayer==='function'){const p=chPlayer(name);if(p&&p.title&&typeof titleById==='function')return titleById(p.title);}
+  return null;
+}
+function chatFaceHTML(name,pi){
+  if(S.me&&name===S.me.name&&S.me.portrait)return `<img src="${S.me.portrait}" alt="">`;
+  return pi&&pi.job&&JOBS[pi.job]?`<span class="cmsg-sg ${jobCls(pi.job)}">${JOBS[pi.job].sigil}</span>`:`<span class="cmsg-sg">${esc(String(name||'?').slice(0,1))}</span>`;
+}
+function msgHTML(m,i,arr){
   if(m.sys)return `<div class="msg sys">${esc(m.text)}</div>`;
-  if(m.ch==='party')return `<div class="msg"><span class="chtag">파티</span><button class="who ${m.from===S.me.name?'w-me':'w-'+jobCls((playerInfo(m.from)||{}).job||'')}" data-act="uinfo" data-name="${esc(m.from)}">${esc(m.from)}</button>${esc(m.text)}<span class="when num">${hhmm(m.ts)}</span></div>`;
-  if(m.ch==='raid'){const r=raidRole(m.from);return `<div class="msg"><button class="who w-${r} ${m.from===S.me.name?'w-mine':''}" data-act="r-who" data-name="${esc(m.from)}" title="${esc(m.from)} 정보 보기">${esc(m.from)}</button>${esc(m.text)}<span class="when num">${hhmm(m.ts)}</span></div>`;}
   if(m.cat)return `<div class="msg world w-${m.cat}"><span class="wtag">${WCAT[m.cat]||'공지'}</span>${esc(m.text)}<span class="when num">${hhmm(m.ts)}</span></div>`;
-  const pi=playerInfo(m.from);const cls=m.from===S.me.name?'w-me':pi?'w-'+jobCls(pi.job):'';
-  return `<div class="msg"><button class="who ${cls}" data-act="uinfo" data-name="${esc(m.from)}" title="${esc(m.from)} 정보 보기">${esc(m.from)}</button>${esc(m.text)}<span class="when num">${hhmm(m.ts)}</span>${m.from!==S.me.name?`<button class="rep" data-act="report" data-id="${m.id}" data-from="${esc(m.from)}" title="메시지 신고">신고</button>`:''}</div>`;
+  const mine=m.from===S.me.name,pi=playerInfo(m.from);
+  const prev=arr&&i>0?arr[i-1]:null;
+  const cont=prev&&!prev.sys&&!prev.cat&&prev.from===m.from&&(prev.ch||'')===(m.ch||'')&&m.ts-prev.ts<180000;
+  const raid=m.ch==='raid',act=raid?'r-who':'uinfo';
+  const cls=raid?`w-${raidRole(m.from)} ${mine?'w-mine':''}`:mine?'w-me':pi?'w-'+jobCls(pi.job):'';
+  const rep=!mine&&!raid&&m.ch!=='party'?`<button class="rep" data-act="report" data-id="${m.id}" data-from="${esc(m.from)}" title="메시지 신고">신고</button>`:'';
+  if(cont)return `<div class="msg cmsg cont"><div class="cmsg-b"><div class="cmsg-x">${esc(m.text)}</div></div>${rep}</div>`;
+  const tt=chatTitleOf(m.from);
+  return `<div class="msg cmsg"><button class="cmsg-av" data-act="${act}" data-name="${esc(m.from)}" tabindex="-1" aria-hidden="true">${chatFaceHTML(m.from,pi)}</button><div class="cmsg-b">${tt?`<span class="cmsg-tt tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="cmsg-h">${m.ch==='party'?'<span class="chtag">파티</span>':''}<button class="who ${cls}" data-act="${act}" data-name="${esc(m.from)}" title="${esc(m.from)} 정보 보기">${esc(m.from)}</button><span class="when num">${hhmm(m.ts)}</span>${rep}</div><div class="cmsg-x">${esc(m.text)}</div></div></div>`;
 }
 function updateChats(){
   $$('[data-chatpanel]').forEach(p=>{
@@ -479,7 +496,7 @@ function updateChats(){
       else if(tab==='raid'&&!S.mass)empty='<p class="empty">레이드가 끝나 채팅이 닫혔습니다.</p>';
       else if(tab==='raid'&&!list.length)empty='<p class="empty">원정대와 대화해 보세요. 전투 로그와는 따로 표시됩니다.</p>';
       else if(!list.length)empty=tab==='dm'?`<p class="empty">${esc(S.sel.dmWith)}님에게 첫 메시지를 보내 보세요.</p>`:'<p class="empty">아직 메시지가 없습니다.</p>';
-      box.innerHTML=empty||list.slice(-80).map(msgHTML).join('');
+      box.innerHTML=empty||list.slice(-80).map((m,i,a)=>msgHTML(m,i,a)).join('');
       if(atBottom||!box.dataset.init){box.scrollTop=box.scrollHeight;box.dataset.init=1;}
     }
     const ws=p.querySelector('.wsel');if(ws){ws.hidden=!(tab==='world'&&isAdmin());ws.value=S.sel.wcat||'notice';}
