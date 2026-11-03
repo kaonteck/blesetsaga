@@ -1385,3 +1385,5 @@ html[data-theme="light"]{--st-buff:#e0b13a;--st-debuff:#8f63e3;--st-heal:#45bf78
 html[data-theme="light"] .chip.st-debuff,html[data-theme="light"] .hud-fx.st-debuff{color:#fff}
 html[data-theme="light"] .gtel,html[data-theme="light"] .gtel.aoe{background:#fff;box-shadow:none}
 html[data-theme="light"] .gtel .gtel-k,html[data-theme="light"] .gtel .tk-run{color:#c62828}
+html[data-theme="light"] .hud-lvl,html[data-theme="light"] .hud-tag{color:#8a6a1c}
+html[data-theme="light"] .sks-n{color:#fff;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent)}
