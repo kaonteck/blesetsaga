@@ -187,6 +187,8 @@ async function pfSync(status){
     if(error&&/profiles_name_unique|duplicate key/.test(error.message||'')){
       if(!pfNameWarned){pfNameWarned=true;toast(`다른 블레서가 이미 '${S.me.name}' 이름을 쓰고 있어, 다른 유저에게는 아이디로 보입니다. 이름을 바꾸면 해결됩니다.`,'warn');}
       ({error}=await SB.from('profiles').update({...row,name:null}).eq('user_id',SB_UID));}
+    // 서버 목록(013)에 아직 없는 새 클래스면 직업만 비우고 나머지는 올린다
+    if(error&&/profiles_job_check/.test(error.message||''))({error}=await SB.from('profiles').update({...row,job:null}).eq('user_id',SB_UID));
     if(!error){pfLast=key;pfAt=Date.now();}}
   catch(e){}finally{pfBusy=false;}
 }
@@ -205,7 +207,8 @@ const mlSrvId=id=>String(id).startsWith('srv:')?String(id).slice(4):null;
 async function mlLoadPlayers(){
   if(!SB||!SB_UID)return;
   const {data}=await SB.from('profiles').select('user_id,name,username,job,level,title,memo,status,last_seen').neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
-  if(data){mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
+  // 모르는 직업 값은 비워 둔다(이상한 값 하나로 채팅·목록 그리기가 멈추지 않게 — 서버도 013에서 막음)
+  if(data){data.forEach(p=>{if(p.job&&!CLASSES[p.job])p.job=null;});mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
 }
 async function mlFetch(){
   if(!SB||!SB_UID||!S||!S.me)return;
@@ -507,12 +510,12 @@ if(ONLINE){
   // 실제 블레서도 이름 색·정보·1:1 머리줄에 보이게
   const _playerInfo=playerInfo;
   playerInfo=function(name){const r=_playerInfo(name);if(r)return r;const p=chPlayer(name);
-    return p?{name,job:p.job||'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
+    return p?{name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
   const _uinfo=uinfoHTML;
   uinfoHTML=function(name){
     if((S.me&&name===S.me.name)||bot(name))return _uinfo(name);
     const p=chPlayer(name);if(!p)return _uinfo(name);
-    const job=p.job||'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
+    const job=CLASSES[p.job]?p.job:'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
     return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${sigil(job)}<div class="rm-t">${tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="row" style="gap:6px"><b>${esc(name)}</b><span class="chip dim">블레서</span></div>
       <small><span class="num">LV${p.level||1}</span></small><div class="row" style="gap:4px">${roleChip(job)}${statusChip(st)}</div></div></div>
       ${p.memo?`<div class="u-sec u-memo">${esc(p.memo)}</div>`:''}${noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}
