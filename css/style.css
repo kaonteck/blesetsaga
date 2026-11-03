@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap');
 /* Layout: sticky command bar over a three-column lobby; flat midnight slabs carry text, fog and particles live only in the banner */
 :root{
   color-scheme:dark;
@@ -6,11 +7,11 @@
   --silver:#edf3f8; --text:#d3d1dc; --muted:#8e8e99; --faint:#62636c;
   --steel:#d0e0ed; --steel-hi:#edf3f8; --steel-lo:#3c719f;
   --gold:#cadceb; --gold-hi:#edf3f8; --gold-lo:#4f89bc; --violet:#6fa9e6; --violet-hi:#a8d4ff; --violet-lo:#4d4d4d;
-  --f-serif-en:'Cormorant Garamond','Cinzel',Georgia,serif;
+  --f-serif-en:'Gowun Batang',Georgia,serif;
   --hp:#d06a6a; --mp:#6b93d6; --xp:#b5a684; --ok:#72c096; --warn:#d9a65c; --bad:#e27f7f;
   --tank:#6fa8f0; --dps:#ec6f6f; --heal:#5fcf8c;
-  --f-display:'Nanum Myeongjo','Cinzel',Georgia,serif;
-  --f-logo:'Cinzel','Nanum Myeongjo',Georgia,serif;
+  --f-display:'Gowun Batang',Georgia,serif;
+  --f-logo:'Gowun Batang',Georgia,serif;
   --f-body:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   --f-mono:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   --r:4px; --mag:#5cc8d8; --coin-dk:#6e5520; --luck:#b9a8e6; --enh:#b88cff;
@@ -35,7 +36,7 @@ p{margin:0}
 .top .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap;padding-block:6px}
 .logo{display:flex;flex-direction:column;line-height:1;text-decoration:none;cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .logo .lg-en{font-family:var(--f-logo);font-weight:700;font-size:19px;letter-spacing:.2em;color:var(--silver)}
-.logo .lg-ko{font-family:'Nanum Myeongjo',serif;font-size:11px;letter-spacing:.42em;color:var(--steel);margin-top:4px}
+.logo .lg-ko{font-family:'Gowun Batang',serif;font-size:11px;letter-spacing:.42em;color:var(--steel);margin-top:4px}
 .logo:hover .lg-en{color:var(--steel-hi)}
 .biglogo{height:clamp(84px,14vw,132px);width:auto;display:block}
 .nav{display:flex;gap:2px;flex-wrap:wrap;flex:1;min-width:0}
@@ -1012,14 +1013,14 @@ input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{bord
 /* map dialog */
 .modal.mapmodal{width:min(560px,100%);max-height:88vh;padding:26px 28px 30px;gap:0;background:#0a0a0a!important;box-shadow:0 30px 80px -10px rgba(0,0,0,.9);border-color:rgba(209,224,238,.28)!important;position:relative}
 .md-x{position:absolute;right:12px;top:12px}
-.md-land{text-align:center;font-family:'Nanum Myeongjo',serif;font-size:22px;color:#edf3f8;letter-spacing:.06em;margin:4px 0 18px}
+.md-land{text-align:center;font-family:'Gowun Batang',serif;font-size:22px;color:#edf3f8;letter-spacing:.06em;margin:4px 0 18px}
 .md-sec{padding:18px 0;border-top:1px solid rgba(209,224,238,.1);display:flex;flex-direction:column;gap:8px;scroll-margin-top:12px}
 .md-sec:first-of-type{border-top:0}
 .md-sec.focus .md-title{color:#fff;text-shadow:0 0 14px rgba(255,240,210,.35)}
-.md-lbl{font-family:'Nanum Myeongjo',serif;font-size:13px;color:#cfdfed}
-.md-title{font-family:'Nanum Myeongjo',serif!important;font-weight:800;font-size:28px!important;color:#edf3f8!important;letter-spacing:-.01em;line-height:1.2;margin:0}
+.md-lbl{font-family:'Gowun Batang',serif;font-size:13px;color:#cfdfed}
+.md-title{font-family:'Gowun Batang',serif!important;font-weight:800;font-size:28px!important;color:#edf3f8!important;letter-spacing:-.01em;line-height:1.2;margin:0}
 .md-img{display:block;width:calc(100% + 56px);margin:6px -28px 4px;aspect-ratio:560/190;object-fit:cover}
-.md-quote{font-family:'Nanum Myeongjo',serif;font-style:italic;font-size:17px;color:#edf3f8;line-height:1.6;margin:6px 0 4px}
+.md-quote{font-family:'Gowun Batang',serif;font-style:italic;font-size:17px;color:#edf3f8;line-height:1.6;margin:6px 0 4px}
 .md-meta{font-size:13px;color:#edf3f8}
 .md-meta b{color:#fff;font-weight:600}
 .md-text{font-size:12.8px;color:#edf3f8;line-height:1.75}
@@ -1544,19 +1545,19 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .chat-send:hover{background:#434343;border-color:#47668f;color:#fff}
 .chat-send:disabled{opacity:.5;cursor:default}
 .qtabs.ltabs button,.qtabs.ltabs [role=tab]{font-size:12px!important}
-.news{max-width:860px;margin:8px 0 0;padding:26px 32px 22px;background:#edf3f8;background-image:radial-gradient(120% 90% at 50% 0%,#edf3f8 0%,#edf3f8 60%,#edf3f8 100%);color:#2a241b;border:1px solid #dfeaf3;box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 0 60px rgba(84,141,190,.18);font-family:'Nanum Myeongjo',Georgia,serif}
+.news{max-width:860px;margin:8px 0 0;padding:26px 32px 22px;background:#edf3f8;background-image:radial-gradient(120% 90% at 50% 0%,#edf3f8 0%,#edf3f8 60%,#edf3f8 100%);color:#2a241b;border:1px solid #dfeaf3;box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 0 60px rgba(84,141,190,.18);font-family:'Gowun Batang',Georgia,serif}
 .nw-top,.nw-info{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-sys);font-size:11px;letter-spacing:.06em;color:#4179ab}
 .nw-top{padding-bottom:6px;border-bottom:1px solid #548cbe}
 .nw-title{font-family:var(--f-logo);font-size:clamp(30px,5.4vw,52px);font-weight:700;letter-spacing:.12em;text-align:center;color:#1e1e1e;margin:12px 0 0;line-height:1}
 .nw-sub{text-align:center;font-size:14px;letter-spacing:.6em;color:#5b5b5b;margin:6px 0 10px;padding-left:.6em}
 .nw-info{padding:6px 0;border-top:3px double #5b5b5b;border-bottom:3px double #5b5b5b}
-.nw-head{font-family:'Nanum Myeongjo',Georgia,serif;font-weight:800;font-size:clamp(22px,3vw,30px);line-height:1.3;color:#161616;margin:18px 0 8px;letter-spacing:-.01em}
+.nw-head{font-family:'Gowun Batang',Georgia,serif;font-weight:800;font-size:clamp(22px,3vw,30px);line-height:1.3;color:#161616;margin:18px 0 8px;letter-spacing:-.01em}
 .nw-deck{font-size:14.5px;color:#386892;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid #86aed1}
 .nw-cols{column-count:2;column-gap:30px;column-rule:1px solid #d1e0ee;font-size:14px;line-height:1.85;text-align:justify;word-break:keep-all}
 .nw-cols p{margin:0 0 10px;text-indent:.6em}
 .nw-cols p.dc{text-indent:0}.nw-cols p.dc::first-letter{float:left;font-size:3.1em;line-height:.9;font-weight:800;margin:4px 8px 0 0;color:#161616}
 .nw-quote{break-inside:avoid;margin:6px 0 14px;padding:10px 0;border-top:2px solid #5b5b5b;border-bottom:1px solid #5b5b5b;font-size:16px;font-weight:800;line-height:1.5;text-align:center;color:#2a241b}
-.nw-now{break-after:avoid;font-family:'Nanum Myeongjo',Georgia,serif;font-size:17px;font-weight:800;color:#161616;margin:14px 0 6px;padding-top:8px;border-top:1px solid #86aed1}
+.nw-now{break-after:avoid;font-family:'Gowun Batang',Georgia,serif;font-size:17px;font-weight:800;color:#161616;margin:14px 0 6px;padding-top:8px;border-top:1px solid #86aed1}
 .nw-foot{margin-top:14px;padding-top:8px;border-top:1px solid #548cbe;font-family:var(--f-sys);font-size:11px;color:#4179ab;text-align:right}
 @media (max-width:760px){.news{padding:18px 16px}.nw-cols{column-count:1}.nw-top span:nth-child(2),.nw-info span:nth-child(2){display:none}}
 .news.nw-img{max-width:620px;transform:rotate(-.6deg);margin:10px 0 28px 72px}
@@ -1589,7 +1590,7 @@ pre,.ascii,.seal{font-family:ui-monospace,Menlo,Consolas,monospace!important}
 .wq-wrap{margin-top:6px}
 .wq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;padding:40px 8px 44px;border-bottom:1px solid rgba(255,255,255,.07);scroll-margin-top:84px}
 .wq:last-child{border-bottom:0}
-.wq-q{margin:0;font-family:'Nanum Myeongjo',Georgia,serif;font-size:clamp(18px,1.8vw,22px);line-height:1.55;color:#edf3f8;font-weight:400;padding-left:.55em;text-indent:-.55em;letter-spacing:.01em}
+.wq-q{margin:0;font-family:'Gowun Batang',Georgia,serif;font-size:clamp(18px,1.8vw,22px);line-height:1.55;color:#edf3f8;font-weight:400;padding-left:.55em;text-indent:-.55em;letter-spacing:.01em}
 .wq-r>.wq-g{margin:0 0 12px;font-family:var(--f-sys);font-size:15px;line-height:1.6;color:#edf3f8;font-weight:600}
 .wq-r{padding-top:4px}
 .wq-r>p{font-family:var(--f-sys);font-size:14px;line-height:1.95;color:#b9bcc4;margin:0 0 18px}
@@ -1784,7 +1785,7 @@ img.px{image-rendering:pixelated}
 .dex-j{font-size:30px;line-height:40px;height:40px}.dex.unk .dex-j{filter:grayscale(1) brightness(.4)}
 .letter{display:flex;flex-direction:column;gap:12px}
 .lt-paper{padding:22px 24px;background:linear-gradient(180deg,#edf3f8,#edf3f8);color:#3a2f1f;border-radius:2px;box-shadow:0 8px 24px rgba(0,0,0,.5);transform:rotate(-1deg);transition:opacity 1.4s,transform 1.4s,filter 1.4s}
-.lt-paper small{display:block;font-size:11px;letter-spacing:.2em;color:#6598c5;margin-bottom:8px}.lt-paper p{font-family:'Nanum Myeongjo',serif;font-size:15px;line-height:1.8;margin:0}
+.lt-paper small{display:block;font-size:11px;letter-spacing:.2em;color:#6598c5;margin-bottom:8px}.lt-paper p{font-family:'Gowun Batang',serif;font-size:15px;line-height:1.8;margin:0}
 .lt-paper.fade{opacity:0;transform:rotate(-4deg) translateY(-12px);filter:blur(2px)}
 .dun-rw{font-size:13px;color:var(--muted)}.dun-rw b{color:var(--gold-hi);font-weight:600}
 .dr-party{display:flex;gap:6px;flex-wrap:wrap}
@@ -2555,3 +2556,7 @@ body::after{display:none!important}
 .ddex-m{grid-area:m;font-size:12.5px;color:var(--muted)}
 .ddex-s{grid-area:s}
 .ddex.unk .ddex-t b{color:var(--muted)}
+
+/* 접속 인원: 테두리·바탕 없이 점 + 숫자(마크업이 data-pop="online"으로 바뀐 뒤 예전 선택자가 안 맞던 것) */
+.topright .pill[data-pop="online"]{border:0;background:none;box-shadow:none;padding:2px 6px}
+@media (max-width:420px){.topright:has(.pill.state) .pill[data-pop="online"]{display:none}}
