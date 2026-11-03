@@ -110,8 +110,8 @@
 | 012_feed_no_rate.sql | 적용됨 (2026-11-03) |
 | 013_profile_job.sql | 적용됨 (2026-11-03) — 클래스를 새로 추가하면 이 목록도 늘려야 함 |
 | 014_inquiry_fish.sql | 적용됨 (2026-11-03) |
-| 015_fish_limits.sql | 미적용 |
-| 016_save_guard.sql | 미적용 |
+| 015_fish_limits.sql | 적용됨 (2026-11-04) |
+| 016_save_guard.sql | 적용됨 (2026-11-04) |
 
 ## 보안 점검 결과 (적용 직후)
 - 공개 표는 전부 RLS 켜짐.
