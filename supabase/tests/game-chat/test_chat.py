@@ -97,7 +97,7 @@ with sync_playwright() as p:
     a.wait_for_timeout(500)
     ok(went and len(db()['chat_messages'])==n0,'파티 채팅은 서버로 안 감(로컬 그대로)')
     # 이상한 직업 값(서버 제약 전 데이터·조작)이 와도 채팅·정보 카드가 그려짐
-    a.evaluate("(()=>{const d=JSON.parse(localStorage.getItem('__mockdb'));d.profiles.find(p=>p.user_id==='bbbbbbbb-0000-0000-0000-00000000000b').job='<b>x</b>';localStorage.setItem('__mockdb',JSON.stringify(d));})()")
+    a.evaluate("(()=>{const d=JSON.parse(localStorage.getItem('__mockdb'));d.profiles.find(p=>p.user_id==='bbbbbbbb-0000-0000-0000-00000000000b').job='constructor';localStorage.setItem('__mockdb',JSON.stringify(d));})()")
     a.evaluate("mlLoadPlayers().then(()=>{S.sel.chatTab='lobby';updateChats();})");a.wait_for_timeout(500)
     ok(a.evaluate("playerInfo('하늘별').job")=='defender' and a.locator('.chat-main [data-msgs] .msg').count()>0,'모르는 직업 값이면 기본값으로 그림(채팅창 안 깨짐)')
     ok('하늘별' in a.evaluate("uinfoHTML('하늘별')") and '하늘별' in a.evaluate("msgHTML({id:'x',from:'하늘별',text:'hi',ts:Date.now()},0,[])"),'모르는 직업 값이어도 정보 카드·채팅 줄 그려짐')

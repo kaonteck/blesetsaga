@@ -201,6 +201,8 @@ document.addEventListener('visibilitychange',()=>{if(SB_UID)pfSync(document.visi
    - 선물 받기: claim_mail(서버가 한 번만 표시) 성공 후 게임의 원래 받기 처리로 아이템·골드를 넣는다.
    - 읽음·보관·삭제는 서버에도 반영.
    화면 함수(composeHTML·mailDetail)와 동작(ACTS)은 메인·프론트 파일에 있어서, 서버 모드에서만 여기서 감싸 덧붙인다. */
+// 게임 클래스 id인지 (CLASSES 객체의 기본 속성 이름 'constructor' 등은 제외)
+const isClass=j=>typeof j==='string'&&Object.prototype.hasOwnProperty.call(CLASSES,j);
 const ML_TTL=7*24*3600e3;
 let mlPlayers=[],mlNames={},mlT=null,mlPoll=null,mlSending=false;
 const mlSrvId=id=>String(id).startsWith('srv:')?String(id).slice(4):null;
@@ -208,7 +210,7 @@ async function mlLoadPlayers(){
   if(!SB||!SB_UID)return;
   const {data}=await SB.from('profiles').select('user_id,name,username,job,level,title,memo,status,last_seen').neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
   // 모르는 직업 값은 비워 둔다(이상한 값 하나로 채팅·목록 그리기가 멈추지 않게 — 서버도 013에서 막음)
-  if(data){data.forEach(p=>{if(p.job&&!CLASSES[p.job])p.job=null;});mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
+  if(data){data.forEach(p=>{if(p.job&&!isClass(p.job))p.job=null;});mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
 }
 async function mlFetch(){
   if(!SB||!SB_UID||!S||!S.me)return;
@@ -259,7 +261,7 @@ if(ONLINE){
     const ppl=mlPlayers.filter(p=>!blocked(p.name));
     if(String(c.to).startsWith('@')&&!ppl.some(p=>'@'+p.user_id===c.to)){const u=c.to.slice(1);ppl.unshift({user_id:u,name:mlNames[u]||'블레서',job:null,level:null});}
     const bots=(S.bots||[]).filter(b=>!blocked(b.name)).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
-    const opt=`<option value="">선택하세요</option>${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="@${p.user_id}" ${c.to==='@'+p.user_id?'selected':''}>${esc(p.name)}${p.job&&CLASSES[p.job]?' · '+CLASSES[p.job].name:''}${p.level?' · LV'+p.level:''}</option>`).join('')}</optgroup>`:''}
+    const opt=`<option value="">선택하세요</option>${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="@${p.user_id}" ${c.to==='@'+p.user_id?'selected':''}>${esc(p.name)}${isClass(p.job)?' · '+CLASSES[p.job].name:''}${p.level?' · LV'+p.level:''}</option>`).join('')}</optgroup>`:''}
       ${bots.length?`<optgroup label="테스트 봇">${bots.map(b=>`<option value="${esc(b.name)}" ${c.to===b.name?'selected':''}>${esc(b.name)} · ${CLASSES[b.job].name}</option>`).join('')}</optgroup>`:''}`;
     h=h.replace(/<select id="mc-to">[\s\S]*?<\/select>/,`<select id="mc-to">${opt}</select>`);
     if(c.gift){const gold=`<label class="row" style="gap:8px;justify-content:space-between"><span style="font-size:12.5px">골드</span><span class="row" style="gap:6px"><input type="number" id="mc-gold" min="0" max="${S.me.gold}" step="1" value="${c.gold||0}" style="width:110px"><span class="faint num" style="font-size:12px">보유 ${(S.me.gold||0).toLocaleString('ko-KR')}</span></span></label>`;
@@ -510,12 +512,12 @@ if(ONLINE){
   // 실제 블레서도 이름 색·정보·1:1 머리줄에 보이게
   const _playerInfo=playerInfo;
   playerInfo=function(name){const r=_playerInfo(name);if(r)return r;const p=chPlayer(name);
-    return p?{name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
+    return p?{name,job:isClass(p.job)?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
   const _uinfo=uinfoHTML;
   uinfoHTML=function(name){
     if((S.me&&name===S.me.name)||bot(name))return _uinfo(name);
     const p=chPlayer(name);if(!p)return _uinfo(name);
-    const job=CLASSES[p.job]?p.job:'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
+    const job=isClass(p.job)?p.job:'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
     return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${sigil(job)}<div class="rm-t">${tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="row" style="gap:6px"><b>${esc(name)}</b><span class="chip dim">블레서</span></div>
       <small><span class="num">LV${p.level||1}</span></small><div class="row" style="gap:4px">${roleChip(job)}${statusChip(st)}</div></div></div>
       ${p.memo?`<div class="u-sec u-memo">${esc(p.memo)}</div>`:''}${noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}
@@ -533,12 +535,12 @@ if(ONLINE){
     const has=n=>((dmState().threads[n]||{msgs:[]}).msgs.length>0);
     const ppl=mlPlayers.filter(p=>!has(p.name)&&S.rel[p.name]!=='blocked'&&!bot(p.name)).sort((a,b)=>(chOnline(b)-chOnline(a))||a.name.localeCompare(b.name,'ko'));
     return h.replace(/(<select id="dm-new"[^>]*>)(<option value="">[^<]*<\/option>)([\s\S]*?)(<\/select>)/,(m,open,first,bots,close)=>
-      `${open}${first}${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${p.job&&CLASSES[p.job]?' · '+CLASSES[p.job].name:''}${chOnline(p)?'':' · 오프라인'}</option>`).join('')}</optgroup>`:''}${bots?`<optgroup label="테스트 봇">${bots}</optgroup>`:''}${close}`);
+      `${open}${first}${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${isClass(p.job)?' · '+CLASSES[p.job].name:''}${chOnline(p)?'':' · 오프라인'}</option>`).join('')}</optgroup>`:''}${bots?`<optgroup label="테스트 봇">${bots}</optgroup>`:''}${close}`);
   };
   // 접속 인원·접속자 목록: 테스트 봇은 빼고 나 + 실제 블레서만
   const _onlineCount=onlineCount;
   onlineCount=function(){return SB_UID?1+mlPlayers.filter(chOnline).length:_onlineCount();};
-  const realAsBot=p=>({name:p.name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:p.status==='raid'&&chOnline(p)?'battle':'lobby',real:true,uid:p.user_id});
+  const realAsBot=p=>({name:p.name,job:isClass(p.job)?p.job:'defender',level:p.level||1,online:chOnline(p),status:p.status==='raid'&&chOnline(p)?'battle':'lobby',real:true,uid:p.user_id});
   const _showOnline=showOnline;
   showOnline=function(){
     if(!SB_UID)return _showOnline();
@@ -641,7 +643,7 @@ if(ONLINE){
     return h.replace('<div class="fd-list"></div>','<div class="fd-list"><p class="empty">아직 올라온 글이 없습니다. 블레서들에게 첫 이야기를 남겨 보세요.</p></div>');};
   // 실제 블레서의 클래스 문양
   const _pInfo=pInfo;
-  pInfo=function(n){if(!SB_UID||(S.me&&n===S.me.name))return _pInfo(n);const p=chPlayer(n);return p?{job:CLASSES[p.job]?p.job:'defender',img:null}:_pInfo(n);};
+  pInfo=function(n){if(!SB_UID||(S.me&&n===S.me.name))return _pInfo(n);const p=chPlayer(n);return p?{job:isClass(p.job)?p.job:'defender',img:null}:_pInfo(n);};
   // 글·댓글·답글 쓰기: 게임의 submit 처리(document)보다 먼저(window, 잡기 단계) 받아 서버로
   window.addEventListener('submit',async e=>{
     if(!SB_UID||!S||!S.me)return;const f=e.target&&e.target.closest&&e.target.closest('[data-form]');if(!f)return;
