@@ -2495,3 +2495,6 @@ body::after{display:none!important}
 @media (max-width:340px){.topright .ibtn{width:24px;height:24px}}
 /* 체크 요청: 날씨 4칸 두 줄 기준 1080 → 1340px(그 사이 8칸이면 '블라스파미아' 등이 잘림), 모집 중인 파티가 없을 때 안내 글을 패널 폭 전체로 */
 .rslide:has(>.empty){display:block}
+/* 상단 메뉴 바: 스크롤해도 위에 고정(바탕은 페이지와 같은 단색, 아래 얇은 선) */
+#top,#top.top,.top{position:sticky;top:0;z-index:30}
+.top{background:var(--void);border-bottom:1px solid var(--rule)}
