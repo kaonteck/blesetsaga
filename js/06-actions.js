@@ -100,6 +100,7 @@ const ACTS={
   'sk-sel':d=>{S.sel.skSel=S.sel.skSel===d.id?null:d.id;render();},
   'inv-cat':d=>{S.sel.invCat=d.cat;S.sel.invSel=null;render();},
   'inv-sel':d=>{S.sel.invSel=S.sel.invSel===d.id?null:(d.id||null);render();},
+  'dex-tab':d=>{S.sel.dexTab=d.t;render();},
   togglerec:()=>{S.sel.recOpen=!S.sel.recOpen;save();render();},
   'bond-open':d=>{closeRmem();bondAsk(d.name);},
   'bond-send':d=>{S.bondReq=S.bondReq||{in:{},out:{}};S.bondReq.out=S.bondReq.out||{};if(d.type==='lover'&&(Object.entries(S.bonds||{}).some(([n,b])=>b.type==='lover'&&n!==d.name)||Object.entries(S.bondReq.out).some(([n,r])=>r.type==='lover'&&n!==d.name))){toast('연인은 한 사람과만 맺을 수 있습니다. 이미 연인이 있거나 다른 사람에게 연인 신청을 보낸 상태입니다.','warn');return;}
