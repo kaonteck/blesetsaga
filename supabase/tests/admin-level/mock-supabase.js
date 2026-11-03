@@ -29,8 +29,14 @@ class QB{
     if(this.op==='upsert'){const i=T.findIndex(r=>r.user_id===this.row.user_id);const r=JSON.parse(JSON.stringify(this.row));
       if(this.t==='saves'&&i>=0){const o=T[i].data||{},n=r.data||{};const or=+o.adminRev||0,nr=+n.adminRev||0;   // saves_keep_admin
         if(or>nr&&o.me&&n.me){n.me.level=o.me.level;n.me.exp=o.me.exp;n.adminRev=or;}}
+      // saves_zguard(016) 흉내: 골드가 한 번에 window.__GUARD_GOLD 넘게 늘면 허용치까지만 + guard.rev++
+      if(this.t==='saves'){const old=i>=0?T[i]:null;r.guard=old&&old.guard?old.guard:{rev:0};const o=old&&old.data&&old.data.me,n=r.data&&r.data.me;
+        if(o&&n&&window.__GUARD_GOLD&&(n.gold-o.gold)>window.__GUARD_GOLD){n.gold=o.gold+window.__GUARD_GOLD;r.guard={...r.guard,rev:(r.guard.rev||0)+1};}
+        if(o&&!n&&r.data){r.data.me=o;}   // 캐릭터 없는 저장으로 예전 캐릭터를 못 지움(016)
+        if(o&&n&&n.level<o.level){n.level=o.level;r.guard={...r.guard,rev:(r.guard.rev||0)+1};}   // 레벨은 내려가지 않음
+        if(n&&n.inv){let cut=false;for(const k in n.inv)if(n.inv[k]>99){n.inv[k]=99;cut=true;}if(cut)r.guard={...r.guard,rev:(r.guard.rev||0)+1};}}
       if(i>=0)T[i]=r;else T.push(r);store(db);window.__UPSERTS=(window.__UPSERTS||0)+1;
-      if(this.ret&&this.t==='saves'){const d=r.data||{};return {data:[{rev:d.adminRev??null,lv:d.me?d.me.level:null,ex:d.me?d.me.exp:null}],error:null};}
+      if(this.ret&&this.t==='saves'){const d=r.data||{};return {data:[{rev:d.adminRev??null,lv:d.me?d.me.level:null,ex:d.me?d.me.exp:null,gr:r.guard?r.guard.rev:null,gd:d.me?d.me.gold:null}],error:null};}
       return {data:null,error:null};}
     if(this.op==='update'){
       if(this.t==='profiles'&&this.row.name){const clash=T.find(p=>p.name&&p.name.toLowerCase()===this.row.name.toLowerCase()&&!ok(p));if(clash)return {data:null,error:{message:'duplicate key value violates unique constraint "profiles_name_unique"'}};}
@@ -40,6 +46,7 @@ class QB{
   then(res,rej){return Promise.resolve().then(()=>this.run()).then(res,rej);}
 }
 const RPC={
+  reset_my_save(){const db=load();const s=db.saves.find(x=>x.user_id===UID);if(s){s.data={};}db.mail=(db.mail||[]).filter(m=>m.recipient!==UID);store(db);return null;},
   send_mail(a){const db=load();const me=UID;
     if(a.p_to===me)throw {message:'SELF'};
     const prof=db.profiles.find(p=>p.user_id===a.p_to);if(!prof)throw {message:'NO_RECIPIENT'};

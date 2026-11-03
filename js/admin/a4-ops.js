@@ -293,3 +293,23 @@ VIEWS.fish=async(el)=>{
   $('#fs-reload').onclick=()=>go('fish');
   $('#fs-settle').onclick=async()=>{const n=await q(A.sb.rpc('fish_settle'));if(n!=null){toast(n?`${n}곳 정산했습니다(1위에게 우편 발송).`:'정산할 지난 주 기록이 없습니다.','good');go('fish');}};
 };
+
+// ───────── 부정 의심 (016 세이브 검사) ─────────
+// 서버가 세이브를 검사하다 레벨·골드·인벤토리를 허용치까지만 남긴 기록. 값은 이미 잘렸으니 여기서는 확인·정리만 한다.
+const GUARD_K={level:'레벨',gold:'골드',inv:'아이템 개수',first:'첫 업로드'};
+const gnum=v=>v==null||v===''?'—':Number(v).toLocaleString('ko-KR');
+VIEWS.guard=async(el)=>{
+  const rows=await q(A.sb.rpc('admin_save_flags'));
+  if(!rows){el.innerHTML='<div class="msg bad">부정 의심 기록을 불러오지 못했습니다.</div>';return;}
+  el.innerHTML=`<div class="panel"><h3>부정 의심 <span class="faint" style="font-weight:400">${rows.length}명</span><span class="row" style="gap:6px"><button class="btn btn-sm" id="gd-reload">새로고침</button></span></h3>
+    <p class="faint small" style="margin:0 0 10px">서버가 세이브를 받을 때 직전 서버 값과 비교해, 짧은 시간에 말이 안 되게 오른 레벨(1분에 1레벨, 최대 10레벨까지 모임)·골드(1분에 3,000, 최대 10만까지 모임 + 서버 우편으로 받은 골드)·인벤토리 개수(아이템마다 99개, 999개를 넘게 올리면 기록)는 허용치까지만 남기고 여기에 기록합니다. 계정의 첫 저장(서버 연결 전 이 기기에서 키운 캐릭터)은 자르지 않고 받되, LV11 이상·10만 골드 초과면 '첫 업로드'로 기록합니다. 값은 이미 잘렸고, 게임에도 반영됐습니다. 반복되면 회원 탭에서 정지를 검토하세요.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>회원</th><th>지금</th><th>최근 기록</th><th>내용 (요청 → 남긴 값)</th><th></th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td><b>${esc(r.name||'(이름 없음)')}</b><div class="faint small">${esc(r.username||'')}</div></td>
+      <td class="small">LV${gnum(r.level)}<br>${gnum(r.gold)}G</td><td class="small faint">${fmtTime(r.last_at)}<br>${r.n}건</td>
+      <td class="small">${(r.flags||[]).slice(0,6).map(f=>`<div>${esc(GUARD_K[f.k]||f.k)} · ${f.k==='first'?`${f.what==='level'?'LV'+gnum(f.to):gnum(f.to)+'G'} 로 시작 (그대로 받음)`:f.k==='inv'?'999 초과 → 99':`${gnum(f.from)} → <s>${gnum(f.to)}</s> → <b>${gnum(f.ok)}</b>`} <span class="faint">${fmtTime(new Date(f.at*1000).toISOString())}</span></div>`).join('')}${r.n>6?`<div class="faint">외 ${r.n-6}건</div>`:''}</td>
+      <td><button class="btn btn-sm" data-gclear="${esc(r.user_id)}">기록 지우기</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">의심 기록이 없습니다.</td></tr>'}
+    </tbody></table></div></div>`;
+  $('#gd-reload').onclick=()=>go('guard');
+  el.querySelectorAll('[data-gclear]').forEach(b=>b.onclick=async()=>{if(!await ask('의심 기록 지우기','이 회원의 부정 의심 기록을 지웁니다. 레벨·골드는 이미 잘려 있어 바뀌지 않습니다.','지우기'))return;
+    const ok=await q(A.sb.rpc('admin_clear_flags',{p_user:b.dataset.gclear}));if(ok!==null){toast('기록을 지웠습니다.','good');go('guard');}});
+};

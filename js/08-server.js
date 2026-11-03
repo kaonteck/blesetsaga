@@ -8,8 +8,8 @@ let SB=null,SB_UID=null,SB_ADMIN=false,cloudT=null,cloudBusy=false,cloudAgain=fa
 function cloudSave(now){if(now){clearTimeout(cloudT);cloudT=null;return cloudPush();}if(cloudT)return;cloudT=setTimeout(()=>{cloudT=null;cloudPush();},4000);}
 async function cloudPush(){
   if(!SB||!SB_UID||!S)return false;if(cloudBusy){cloudAgain=true;return false;}cloudBusy=true;
-  try{const {data:back,error}=await SB.from('saves').upsert({user_id:SB_UID,data:S,updated_at:new Date().toISOString()}).select('rev:data->adminRev,lv:data->me->level,ex:data->me->exp');
-    if(error)throw error;if(cloudFailN>=3)toast('서버 저장이 다시 연결되었습니다.','good');cloudFailN=0;admApply(back);pfSync();return true;}
+  try{const {data:back,error}=await SB.from('saves').upsert({user_id:SB_UID,data:S,updated_at:new Date().toISOString()}).select('rev:data->adminRev,lv:data->me->level,ex:data->me->exp,gr:guard->rev,gd:data->me->gold');
+    if(error)throw error;if(cloudFailN>=3)toast('서버 저장이 다시 연결되었습니다.','good');cloudFailN=0;admApply(back);grdApply(back);pfSync();return true;}
   catch(e){cloudFailN++;if(cloudFailN===3)toast('서버에 저장하지 못하고 있습니다. 이 기기에는 저장되어 있으며 계속 다시 시도합니다.','bad');clearTimeout(cloudT);cloudT=setTimeout(()=>{cloudT=null;cloudPush();},Math.min(60000,4000*cloudFailN));return false;}
   finally{cloudBusy=false;if(cloudAgain){cloudAgain=false;cloudSave();}}
 }
@@ -22,6 +22,20 @@ function admApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.rev==n
   S.me.level=lv;S.me.exp=Math.max(0,+r.ex||0);hpFull();if(S.party){const m=S.party.members.find(x=>x.isMe);if(m)m.level=lv;}
   save();const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();else renderTop();
   notify(lv===before?`운영자가 레벨을 LV${lv}로 확인했습니다.`:`운영자가 레벨을 LV${before} → LV${lv}로 조정했습니다.`,'good');}
+/* 부정 방지(016): 서버가 세이브를 검사해서 말이 안 되는 레벨·골드 변화를 허용치까지만 남기면 guard.rev가 오른다.
+   저장 응답의 guard.rev가 내 것보다 크면 서버의 레벨·경험치·골드로 맞춘다(그래야 다음 저장에서 또 깎이지 않음).
+   아이템 개수는 서버가 99개까지만 남기므로 보정 번호가 오르면 이 기기도 99개로 자른다.
+   다른 기기에서 생긴 보정 번호만 따라잡는 경우(값이 같음)는 조용히 번호만 맞춘다. */
+const INV_CAP=99;   // 016 saves_guard와 같아야 함
+function grdApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.gr==null||!S||!S.me)return;
+  const rev=+r.gr||0;if(rev<=(S.guardRev||0))return;S.guardRev=rev;
+  const lv=Math.round(+r.lv),ex=Math.max(0,+r.ex||0),gd=Math.max(0,Math.round(+r.gd||0));if(!(lv>=1)){save();return;}
+  let invCut=false;const inv=S.me.inv||{};for(const k in inv)if(inv[k]>INV_CAP){inv[k]=INV_CAP;invCut=true;}   // 서버는 아이템마다 99개까지
+  const other=lv!==S.me.level||Math.round(S.me.gold||0)!==gd||(S.me.exp||0)!==ex;const diff=invCut||other;
+  if(other){const up=lv!==S.me.level;S.me.level=lv;S.me.exp=ex;S.me.gold=gd;if(up){hpFull();if(S.party){const m=S.party.members.find(x=>x.isMe);if(m)m.level=lv;}}}
+  save();if(!diff)return;
+  const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();else renderTop();
+  notify(!other?`아이템은 종류마다 ${INV_CAP}개까지 가질 수 있어 넘친 개수를 정리했습니다.`:'서버 기록과 맞지 않는 변화가 있어 레벨·골드·아이템 개수를 서버 기준으로 맞췄습니다. 잘못된 것 같으면 1:1 문의로 알려 주세요.','warn');}
 // 지금 상태를 서버에 확실히 올린다 (다른 업로드가 진행 중이면 끝날 때까지 기다림). 성공하면 true
 async function cloudFlush(){
   clearTimeout(cloudT);cloudT=null;clearTimeout(saveT);
@@ -356,7 +370,7 @@ function ltStart(){
 }
 const ltErr=e=>{const m=(e&&e.message)||'';
   if(/SALE_CLOSED/.test(m))return '판매가 마감되었습니다 (금 19:00~20:00).';if(/MAX_TICKETS/.test(m))return `이번 주 ${LOTTO_MAX}장을 모두 샀습니다.`;
-  if(/NOT_ENOUGH_GOLD/.test(m))return '골드가 부족합니다.';if(/BAD_NUMS/.test(m))return '0~9 중 서로 다른 숫자 4개를 고르세요.';
+  if(/LOW_LEVEL/.test(m))return `행운권은 LV${CASINO_LV} 이상부터 살 수 있습니다.`;if(/NOT_ENOUGH_GOLD/.test(m))return '골드가 부족합니다.';if(/BAD_NUMS/.test(m))return '0~9 중 서로 다른 숫자 4개를 고르세요.';
   if(/NOT_DRAWN/.test(m))return '아직 추첨 전입니다.';if(/NOT_FOUND/.test(m))return '행운권을 찾을 수 없습니다.';if(/ALREADY_CLAIMED/.test(m))return '이미 확인한 행운권입니다.';
   if(/NO_SAVE/.test(m))return '진행 기록이 아직 서버에 없습니다. 잠시 뒤 다시 시도해 주세요.';if(/NOT_ACTIVE/.test(m))return '이용이 제한된 계정입니다.';
   return '행운권을 처리하지 못했습니다. 인터넷 연결을 확인해 주세요.';};
@@ -552,6 +566,22 @@ if(ONLINE){
     if(Date.now()-olAt>10000){olAt=Date.now();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel.pop==='online')renderPop();}catch(e){}});}
   };
   // 접속자 목록·정보 카드의 편지 보내기: 실제 블레서는 서버 우편으로
+  // 계정 삭제(017): 서버 세이브·우편·행운권·낚시 기록을 서버 함수로 먼저 지운 뒤 게임의 원래 삭제(새 상태 저장)를 한다.
+  // 서버 검사(016)는 캐릭터 없는 저장으로 예전 캐릭터를 지우지 못하게 막으므로, 삭제는 반드시 이 길로.
+  const _accDel=ACTS['acc-del-yes'];
+  ACTS['acc-del-yes']=async(d,el,e)=>{
+    if(!SB_UID)return _accDel(d,el,e);
+    if(el)el.disabled=true;
+    clearTimeout(cloudT);cloudT=null;
+    for(let i=0;i<60&&cloudBusy;i++)await new Promise(r=>setTimeout(r,100));
+    cloudBusy=true;   // 지우는 동안 예전 상태가 올라가지 않게
+    try{const {error}=await SB.rpc('reset_my_save');if(error)throw error;}
+    catch(err){console.warn(err);cloudBusy=false;cloudAgain=false;if(el)el.disabled=false;toast('계정을 삭제하지 못했습니다. 인터넷 연결을 확인해 주세요.','bad');return;}
+    cloudBusy=false;cloudAgain=false;
+    _accDel(d,el,e);
+    try{FB.rows={};}catch(x){}
+    cloudFlush();
+  };
   const _uMail=ACTS['u-mail'];
   ACTS['u-mail']=(d,el,e)=>{_uMail(d,el,e);const p=chPlayer(d.name);if(p&&!bot(d.name)&&S.sel.mc){S.sel.mc.to='@'+p.user_id;renderPop();mlLoadPlayers().then(()=>{if(S.sel.mailView==='compose')renderPop();});}};
   // 신고: 서버 메시지는 서버 reports 표로
