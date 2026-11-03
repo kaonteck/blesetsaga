@@ -351,7 +351,7 @@ function mapDlg(land,focus,page){
   if(!page)ins.filter(s=>s[1]==='gate').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};
     h+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>워프게이트</div><h3 class="md-title">${esc(n)}${I.job?` <span class="chip cls ${roleOf(I.job)}" style="vertical-align:middle">${CLASSES[I.job].name}</span>`:''}</h3><p class="md-text">${I.text||''}</p>`);});
   const cnt=x=>(x.match(/<section /g)||[]).length;
-  return page?`${VIL_TOWN[land]?`<div class="exr-row" style="--n:1">${villageHTML(land)}</div>`:''}${land===CASINO_LAND?`<div class="exr-row" style="--n:1">${casinoHTML()}</div>`:''}${FISH_LANDS[land]?`<div class="exr-row" style="--n:1">${fishCard(land)}</div>`:''}<div class="exr-row" style="--n:${cnt(h)}">${h}</div>`:h+dg;
+  return page?`${VIL_TOWN[land]?`<div class="exr-row" style="--n:1">${villageHTML(land)}</div>`:''}${land===CASINO_LAND?`<div class="exr-row" style="--n:1">${casinoHTML()}</div>`:''}${FISH_LANDS[land]?`<div class="exr-row" style="--n:1">${fishCard(land)}</div>`:''}${h.split(/(?=<section )/).filter(x=>x.trim()).map(x=>`<div class="exr-row" style="--n:1">${x}</div>`).join('')}`:h+dg;  /* 지역 탐색 · 탐험 지역은 각각 한 단락씩 */
 }
 function openMap(land,focus){S.sel.mapLand=land;S.sel.mapFocus=focus||'';modal(mapDlg(land,focus));const mm=$('.modal');if(mm){mm.classList.add('mapmodal');const el=focus&&$('#md-'+focus);if(el)mm.scrollTop=Math.max(0,el.offsetTop-12);}}
 function refreshMap(){const mm=$('.modal.mapmodal');if(!mm)return;const st=mm.scrollTop;modal(mapDlg(S.sel.mapLand,S.sel.mapFocus));const m2=$('.modal');if(m2){m2.classList.add('mapmodal');m2.scrollTop=st;}}
@@ -431,7 +431,7 @@ function massStart(){
   S.route='battle';save();render();notify(`${m.name} 만신전 시작 · ${n}인`,'good');
   showBless(false);
 }
-function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
+function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');const B0=S.battle;if(B0&&B0.bless&&B0.bless.pick){const bid=B0.id;clearTimeout(showBless._t);showBless._t=setTimeout(()=>{const B=S.battle;if(B&&B.id===bid&&$('.modal.bless'))modal('');},anim?3200:2200);}  /* 가호가 정해지면 잠시 보여 준 뒤 자동으로 닫음 */if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
 function massTick(t){
   const M=S.mass;if(!M||M.phase!=='gather')return;
   const m=monster(M.monsterId);const C=massCfg();
