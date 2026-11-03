@@ -182,12 +182,11 @@ function monCard(m,extra){const lr=levelReason(m,S.me.level)||raidBlock(m);
       <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div>
       ${extra?`<div class="row" style="gap:6px">${extra}</div>`:''}${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t" style="font-size:12.5px">입장 가능</p>'}</div>`;}
 /* 가로형 레이드 보스 카드: 그림 · 이름/지역/조건 · 입장 상태 */
-function monCardH(m){const lr=levelReason(m,S.me.level)||raidBlock(m);
-  return `<div class="panel mcard mcard-h" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
-    <pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre>
-    <div class="mh-main"><div class="mname">${esc(m.name)}</div><p class="muted" style="font-size:12.5px">${esc(m.region||'')}</p>
-      <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div></div>
-    <div class="mh-st">${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}<span class="mh-go" aria-hidden="true">›</span></div></div>`;}
+function monCardH(m){const lvLock=S.me.level<m.level;const lr=lvLock?'':(levelReason(m,S.me.level)||raidBlock(m));
+  return `<div class="panel mcard mcard-h ${lvLock?'locked':''}" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
+    <div class="mh-main"><div class="mname">${esc(m.name)}</div>
+      <div class="row" style="gap:6px"><span class="muted" style="font-size:12.5px;margin-right:4px">${esc(m.region||'')}</span><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div></div>
+    <div class="mh-st">${lvLock?`<span class="mh-lock" aria-label="LV ${m.level} 제한"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.3 7V5.1a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><small class="num">(LV ${m.level} 제한)</small></span>`:lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}<span class="mh-go" aria-hidden="true">›</span></div></div>`;}
 function cntRow(items){return `<div class="cntrow">${items.map(([l,v,n])=>`<span class="cnt"><small>${l}</small><b class="num">${v}</b>${n?`<em>${n}</em>`:''}</span>`).join('')}</div>`;}
 function vBattle(){
   if(S.battle)return vFight();
@@ -200,7 +199,7 @@ function vBattle(){
   let body='';
   if(tab==='daily'){
     const party=ms.filter(m=>mkind(m)==='party');const dun=ms.filter(m=>mkind(m)==='dungeon').sort((a,b)=>a.level-b.level);const tg=S.sel.dtarget||'exp';const busy=busyReason();
-    body=`<div class="raid-bar"><span class="rb-l">3~4인 · 하루 ${RAID_MAX}회</span><span class="rb-r"><span class="rb-c">파티 레이드 <b class="num">${d.raid} / ${RAID_MAX}</b><em>하루 ${RAID_MAX}회</em></span><i aria-hidden="true">·</i><span class="rb-c">초기화 <b class="num">05:00</b><em>매일</em></span></span></div>
+    body=`<div class="raid-bar"><span class="rb-r"><span class="rb-c">파티 레이드 <b class="num">${d.raid} / ${RAID_MAX}</b><em>하루 ${RAID_MAX}회</em></span><i aria-hidden="true">·</i><span class="rb-c">초기화 <b class="num">05:00</b><em>매일</em></span></span></div>
         <div class="mlist">${party.map(m=>monCardH(m)).join('')||'<p class="empty">등록된 파티 레이드가 없습니다.</p>'}</div>
       <div class="panel"><h3>모집 중인 파티</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='party'),true)}</div></div>`;
   }else if(tab==='dungeon'){

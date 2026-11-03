@@ -2434,3 +2434,15 @@ body{background:
 .mh-go{font-size:22px;line-height:1;color:var(--faint);transition:color .12s,transform .12s}
 .mcard-h:hover .mh-go{color:var(--gold-hi);transform:translateX(2px)}
 @media (max-width:640px){.mcard-h{flex-wrap:wrap;gap:10px 12px;padding:12px}.mcard-h .ascii{width:96px;font-size:5.6px;padding:6px}.mh-main{flex:1 1 0}.mh-st{width:100%;justify-content:space-between;text-align:left}}
+
+/* 파티 레이드 카드: 그림 없이 얇게 · 레벨 잠금 */
+.raid-bar{justify-content:flex-end}
+.mlist{gap:8px}
+.mcard-h{padding:10px 16px;gap:14px}
+.mcard-h .mh-main{gap:6px}
+.mcard-h .mname{font-size:16px}
+.mh-lock{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted)}
+.mh-lock svg{width:18px;height:18px}
+.mh-lock small{font-size:11px;color:var(--faint)}
+.mcard-h.locked .mname{color:var(--muted)}
+@media (max-width:640px){.mcard-h{flex-wrap:nowrap}.mh-st{width:auto}}
