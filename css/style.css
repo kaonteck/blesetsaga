@@ -15,7 +15,7 @@
   --f-mono:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   --r:4px; --mag:#5cc8d8; --coin-dk:#6e5520; --luck:#b9a8e6; --enh:#b88cff;
 }
-html,body{height:100%}
+html,body{height:auto;min-height:100%}
 body{margin:0;background:var(--void);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.6;
   padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--void)}
@@ -2588,3 +2588,6 @@ body::after{display:none!important}
 .ri{display:inline-flex;align-items:center;gap:4px;font-weight:600}
 .ri svg{width:15px;height:15px;flex:none}
 .ri.r-tank svg{color:var(--tank)}.ri.r-dps svg{color:var(--dps)}.ri.r-heal svg{color:var(--heal)}
+
+/* 페이지 제목줄 부가 설명: 캐릭터 카드 칭호와 같은 11.5px */
+.page-head p{font-size:11.5px;line-height:1.6}
