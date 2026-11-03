@@ -2559,3 +2559,13 @@ body::after{display:none!important}
 /* 접속 인원: 테두리·바탕 없이 점 + 숫자(마크업이 data-pop="online"으로 바뀐 뒤 예전 선택자가 안 맞던 것) */
 .topright .pill[data-pop="online"]{border:0;background:none;box-shadow:none;padding:2px 6px}
 @media (max-width:420px){.topright:has(.pill.state) .pill[data-pop="online"]{display:none}}
+
+/* 페이지 제목줄: 영어 부제 숨김(한글만) + 패널로 감쌈. 바로 아래 탭 줄(.qtabs·.mtabs)이 있으면 한 패널로 이어 붙임 */
+.page-head h2 .en{display:none!important}
+.page-head{background:var(--slab);border:1px solid var(--rule);border-radius:12px;padding:14px 18px 14px 74px;min-height:0}
+.page-head::before{left:14px;top:14px;transform:none}
+.page-head::after{content:none}
+.page-head:has(+.qtabs),.page-head:has(+.mtabs){border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:6px}
+.page-head+.qtabs,.page-head+.mtabs{margin-top:-18px;background:var(--slab);border:1px solid var(--rule);border-top:0;border-radius:0 0 12px 12px;padding:0 10px}
+.page-head+.qtabs button[aria-selected="true"]::after{bottom:0}
+@media (max-width:720px){.page-head{padding-left:62px}.page-head::before{left:10px}}
