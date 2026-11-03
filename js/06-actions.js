@@ -202,7 +202,7 @@ const ACTS={
   navtog:()=>{NAV_OPEN=!NAV_OPEN;renderTop();},
   nav:d=>{if(d.route==='battle'&&!S.party&&!S.battle&&!S.queue&&!S.match&&S.route==='battle')S.sel.monster=null;go(d.route);},
   link:d=>openLink(d.link),
-  online:()=>{S.sel.noteEdit=null;showOnline();},
+  online:()=>{S.sel.noteEdit=null;S.sel.pop='online';renderPop();renderTop();},
   closemodal:()=>modal(''),
   pickjob:d=>{S.sel.newJob=d.job;const nm=$('#new-name')?$('#new-name').value:'';render();if($('#new-name'))$('#new-name').value=nm;},
   chattab:d=>{S.sel.chatTab=d.tab;if(d.tab!=='dm')S.sel.dmWith=null;updateChats();save();},

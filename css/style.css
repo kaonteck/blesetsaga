@@ -2522,3 +2522,12 @@ body::after{display:none!important}
 .recp-q svg{width:13px;height:13px;flex:none}
 .recp-q input{flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:12.5px;outline:none}
 .recp-q:focus-within{border-color:var(--gold)}
+
+/* 접속자 목록: 공지처럼 상단 팝업 */
+.pop-online{width:min(400px,calc(100vw - 32px))}
+.pop-online .pop-head{align-items:baseline}
+.pop-online .pop-head small{font-size:12px}
+.pop-online .pop-body{padding:4px 14px 12px}
+.pop-online .ol-note{font-size:11.5px;margin-top:8px}
+.ol-st{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:3px;font-size:12px;min-width:0}
+.ol-memo{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
