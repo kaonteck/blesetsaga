@@ -2630,3 +2630,10 @@ body::after{display:none!important}
 /* 월드맵 확대·축소·원래 크기 버튼: 오른쪽 아래 → 왼쪽, 범례(탐험 지역·던전·워프 게이트) 아래 */
 .wm-zoom{right:auto;bottom:auto;left:3%;top:calc(2.6% + 162px)}
 @media (max-width:760px){.wm-zoom{left:3%;top:calc(2.6% + 40px)}}
+
+/* 라이트/다크 모드 스위치 */
+.thsw{position:relative;width:40px;height:22px;border-radius:11px;border:0;padding:0;cursor:pointer;background:#fff;flex:none;align-self:center;transition:background .2s}
+.thsw-k{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#161616;color:#fff;display:grid;place-items:center;transition:left .2s,background .2s,color .2s}
+.thsw.on{background:#95afe3}
+.thsw.on .thsw-k{left:20px;background:#fff;color:#e0a526}
+.thsw:focus-visible{outline:2px solid var(--gold);outline-offset:2px}

@@ -479,3 +479,11 @@ const ACTS={
   'op-reset-yes':()=>{timers.forEach(clearTimeout);timers.clear();try{localStorage.removeItem(SAVE);}catch(e){}S=freshState();modal('');save();render();toast('모든 데이터를 초기화했습니다.');}
 };
 
+
+ACTS['theme-toggle']=()=>{
+  const L=!isLight(),de=document.documentElement;
+  if(L)de.dataset.theme='light';else delete de.dataset.theme;
+  try{localStorage.setItem('bs-theme',L?'light':'dark');}catch(e){}
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=L?'#ebeef4':'#161616';
+  renderTop();
+};

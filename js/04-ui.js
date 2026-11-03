@@ -33,6 +33,7 @@ function renderTop(){
     <nav class="nav ${NAV_OPEN?'open':''}" id="mainnav" aria-label="주 메뉴">${nav.map(([r,l])=>`<button data-act="nav" data-route="${r}" ${S.route===r?'aria-current="page"':''}><span class="nv-ko">${l}</span></button>`).join('')}</nav>
     <div class="topright">${state}<button class="ibtn me-btn ${S.route==='character'?'on':''}" data-act="nav" data-route="character" data-tip="캐릭터" aria-label="캐릭터" ${S.route==='character'?'aria-current="page"':''}><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.2" r="2.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.8 14.2c.5-3 2.6-4.6 5.2-4.6s4.7 1.6 5.2 4.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="pill" data-act="pop" data-pop="online" aria-label="접속자 목록" aria-expanded="${S.sel.pop==='online'}"><span class="dot"></span><span class="num" data-online>${onlineCount()}</span><span class="pl-t">명</span></button>
       <button class="ibtn" data-act="pop" data-pop="mail" data-tip="메시지" aria-label="메시지${mailUnread()?' · 읽지 않은 메시지 있음':''}" aria-expanded="${S.sel.pop==='mail'}">${TICON.mail}${mailUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
+      ${themeSwitch()}
       <button class="ibtn" data-act="pop" data-pop="notice" data-tip="공지사항" aria-label="공지사항${noticeUnread()?' · 읽지 않은 공지 있음':''}" aria-expanded="${S.sel.pop==='notice'}">${HICON.notice}${noticeUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
       <button class="ibtn" data-act="pop" data-pop="settings" data-tip="환경설정" aria-label="환경설정" aria-expanded="${S.sel.pop==='settings'}">${TICON.gear}</button></div>
   </div>`;
@@ -1713,3 +1714,12 @@ function enhHTML(id,res){
       <div class="row" style="justify-content:flex-end"><button class="btn btn-primary" data-act="enh-do" data-id="${id}" ${S.me.gold<cost?'disabled':''}>${S.me.gold<cost?'골드 부족':`+${nx} 강화`}</button></div>`}</div>`;
 }
 function openEnh(id,res){modal(enhHTML(id,res));const mm=$('.modal');if(mm)mm.classList.add('narrow2');}
+
+/* 라이트/다크 모드 스위치 (우편과 공지 사이) — 라이트: 해 · 파란 트랙, 다크: 달 · 흰 트랙 */
+function isLight(){const d=document.documentElement;return !!(d&&d.dataset&&d.dataset.theme==='light');}
+function themeSwitch(){
+  const L=isLight();
+  const sun='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>';
+  const moon='<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z" fill="currentColor"/></svg>';
+  return `<button class="thsw${L?' on':''}" role="switch" aria-checked="${L}" data-act="theme-toggle" data-tip="${L?'다크 모드로':'라이트 모드로'}" aria-label="라이트 모드"><span class="thsw-k">${L?sun:moon}</span></button>`;
+}

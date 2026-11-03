@@ -247,6 +247,7 @@
 
 - (메인) 2026-11-04 완료(`style.css` 맨 위·`index.html` — 프론트 참고): 유저 요청으로 세리프 외 글꼴을 **Pretendard**로(`--f-body`·`--f-mono`·`--f-sys` 맨 앞에 'Pretendard', 시스템 글꼴은 뒤로 남김). `@font-face`는 유저가 준 jsDelivr 주소(100~900 + PretendardVariable) 그대로 `style.css` 맨 위. Google Fonts 링크에서 IBM Plex Sans KR 삭제(Plex Mono는 남음). **체크 요청:** 실제 브라우저에서 Pretendard가 받아지는지(이 작업 환경은 jsDelivr 접속 불가라 확인 못 함).
 
+- (메인) **라이트 모드 추가** — 상단 우편과 공지 사이에 스위치(`.thsw`, 라이트=해·파란 트랙 #95afe3 / 다크=달·흰 트랙). `ACTS['theme-toggle']`가 `html[data-theme="light"]`를 켜고 localStorage `bs-theme`에 저장, index.html head 인라인 스크립트가 첫 화면 전에 적용. 라이트 색은 `css/light.css` — **자동 생성 파일**이라 직접 고치지 말 것. 프론트 참고: style.css 를 바꾼 뒤에는 `python3 tools/gen-light-css.py` 를 다시 돌려 light.css 도 같이 커밋해 주세요(바탕 #ebeef4, 포인트 #95afe3, 세계 지도·스위치는 어두운 그대로). 체크 참고: 라이트 모드에서 팝업·모달·전투·만신전·관리 화면 글자가 안 보이는 곳이 있는지 봐 주세요.
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.
