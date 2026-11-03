@@ -181,6 +181,12 @@ function monCard(m,extra){const lr=levelReason(m,S.me.level)||raidBlock(m);
       <div><div class="mname">${esc(m.name)}</div><p class="muted" style="font-size:12.5px">${esc(m.region||'')}</p></div>
       <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div>
       ${extra?`<div class="row" style="gap:6px">${extra}</div>`:''}${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t" style="font-size:12.5px">입장 가능</p>'}</div>`;}
+/* 가로형 레이드 보스 카드: 그림 · 이름/지역/조건 · 입장 상태 */
+function monCardH(m){const lvLock=S.me.level<m.level;const lr=lvLock?'':(levelReason(m,S.me.level)||raidBlock(m));
+  return `<div class="panel mcard mcard-h ${lvLock?'locked':''}" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
+    <div class="mh-main"><div class="mname">${esc(m.name)}</div>
+      <div class="row" style="gap:6px"><span class="muted" style="font-size:12.5px;margin-right:4px">${esc(m.region||'')}</span><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div></div>
+    <div class="mh-st">${lvLock?`<span class="mh-lock" aria-label="LV ${m.level} 제한"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.3 7V5.1a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><small class="num">(LV ${m.level} 제한)</small></span>`:lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}${lvLock?'':'<span class="mh-go" aria-hidden="true">›</span>'}</div></div>`;}
 function cntRow(items){return `<div class="cntrow">${items.map(([l,v,n])=>`<span class="cnt"><small>${l}</small><b class="num">${v}</b>${n?`<em>${n}</em>`:''}</span>`).join('')}</div>`;}
 function vBattle(){
   if(S.battle)return vFight();
@@ -193,9 +199,8 @@ function vBattle(){
   let body='';
   if(tab==='daily'){
     const party=ms.filter(m=>mkind(m)==='party');const dun=ms.filter(m=>mkind(m)==='dungeon').sort((a,b)=>a.level-b.level);const tg=S.sel.dtarget||'exp';const busy=busyReason();
-    body=`${cntRow([['파티 레이드',`${d.raid} / ${RAID_MAX}`,'하루 3회'],['초기화','05:00','매일']])}
-      <section class="stack" style="gap:12px"><div class="sec-h"><h3>파티 레이드</h3><span>3~4인 · 하루 3회</span></div>
-        <div class="mgrid">${party.map(m=>monCard(m)).join('')||'<p class="empty">등록된 파티 레이드가 없습니다.</p>'}</div></section>
+    body=`<div class="raid-bar"><span class="rb-r"><span class="rb-c">파티 레이드 <b class="num">${d.raid} / ${RAID_MAX}</b><em>하루 ${RAID_MAX}회</em></span><i aria-hidden="true">·</i><span class="rb-c">초기화 <b class="num">05:00</b><em>매일</em></span></span></div>
+        <div class="mlist">${party.map(m=>monCardH(m)).join('')||'<p class="empty">등록된 파티 레이드가 없습니다.</p>'}</div>
       <div class="panel"><h3>모집 중인 파티</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='party'),true)}</div></div>`;
   }else if(tab==='dungeon'){
     body=dungeonTab();
@@ -270,7 +275,6 @@ function spotsHTML(cur){
 }
 function vExploreHome(d,log,spots){
   return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>
-    <div class="panel exlog-p"><h3>${hTitle('scroll','탐색 기록')}</h3><div class="exlog">${log.length?log.map((e,i)=>`<div class="exe ${i===0&&now()-e.ts<8000?'fresh':''}"><b>${esc(e.region)}</b><p>${esc(e.text)}</p>${e.got?`<span class="exgot">${esc(e.got)}</span>`:''}<small class="faint">${fmtWhen(e.ts)}</small></div>`).join(''):'<p class="empty">아직 탐색 기록이 없습니다. 지도에서 지역을 골라 탐색해 보세요.</p>'}</div></div>
     <div class="stack" style="gap:12px">
       <div class="ex-cnt">${cntRow([['오늘 탐색',`${d.explore} / ${EXPLORE_MAX}`],['초기화','05:00']])}</div>
       <div class="wmap"><img src="${MAP_IMG}" alt="라니아케아 대륙 지도" draggable="false"><div class="wm-head"><b>WORLD MAP</b><small>지역 이름이나 핀을 눌러 보세요</small>
@@ -747,7 +751,7 @@ function autoClaim(stop){
   for(let i=0;i<k&&ms.length;i++){const m=ms[i%ms.length];R.exp+=m.exp*AUTO_EFF;R.gold+=m.gold*AUTO_EFF;}
   R.exp=Math.round(R.exp);R.gold=Math.round(R.gold);S.auto=null;
   const label=`${a.region} 자동 사냥`;const ups=grant(R,'field',{label,region:a.region});
-  const got=gotText(R);S.me.exLog=[{ts:t,region:label,land:a.land,text:`${stop?'자동 사냥을 중단했다. ':''}${durLabel(a.min)} 동안 몬스터 ${k}마리를 처치했다.`,got},...(S.me.exLog||[])].slice(0,12);
+  const got=gotText(R);S.me.exLog=[{ts:t,region:label,land:a.land,text:`${stop?'자동 사냥을 중단했다. ':''}${durLabel(a.min)} 동안 몬스터 ${k}마리를 처치했다.`,got},...(S.me.exLog||[])].slice(0,12);rec('explore',`${label} · 자동 사냥 ${durLabel(a.min)} · ${k}마리 처치`,got);
   save();render();toast(`${label} 보상 · ${k}마리${got?' · '+got:''}${ups?` · 레벨 업!`:''}`,'good');
 }
 function autoGain(a,t){const e=autoEst(a.mons,0);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const k=autoKills(a,t);if(!ms.length)return {exp:0,gold:0};let ex=0,gd=0;for(let i=0;i<k;i++){const m=ms[i%ms.length];ex+=m.exp*AUTO_EFF;gd+=m.gold*AUTO_EFF;}return {exp:Math.round(ex),gold:Math.round(gd)};}
@@ -782,6 +786,7 @@ function grant(reward,source,meta){
   S.rewardLog.unshift({ts:now(),source,...meta,exp:reward.exp||0,gold:reward.gold||0,items:{...(reward.items||{})}});
   S.rewardLog=S.rewardLog.slice(0,200);
   if(ups)toast(`레벨 업! LV${S.me.level}`,'good');
+  try{recFromGrant(reward,source,meta);}catch(e){}
   if(!(meta&&meta.battleId))wearNowToast(reward.items);
   return ups;
 }

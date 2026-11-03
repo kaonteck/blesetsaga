@@ -31,7 +31,7 @@ function renderTop(){
     <button class="logo" data-act="nav" data-route="main" aria-label="BLESET SAGA 블레셋 전기 · 메인으로"><svg class="lg-orn" viewBox="0 0 64 40" aria-hidden="true"><circle cx="32" cy="20" r="13" fill="none" stroke="currentColor" stroke-width=".8" opacity=".7"/><circle cx="32" cy="20" r="8.5" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="1 2" opacity=".6"/><path d="M32 3l2.2 14.8L49 20l-14.8 2.2L32 37l-2.2-14.8L15 20l14.8-2.2z" fill="currentColor" opacity=".9"/><path d="M2 20h11M51 20h11" stroke="currentColor" stroke-width=".8"/><path d="M60 20l-4-2.4v4.8z" fill="currentColor"/></svg><span class="lg-tx"><span class="lg-en">BLESET SAGA</span><span class="lg-ko">블레셋 전기</span></span></button>
     <button class="navtog" data-act="navtog" aria-label="메뉴 ${NAV_OPEN?'닫기':'열기'}" aria-expanded="${NAV_OPEN}" aria-controls="mainnav">${NAV_OPEN?'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>':'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'}</button>
     <nav class="nav ${NAV_OPEN?'open':''}" id="mainnav" aria-label="주 메뉴">${nav.map(([r,l])=>`<button data-act="nav" data-route="${r}" ${S.route===r?'aria-current="page"':''}><span class="nv-ko">${l}</span></button>`).join('')}</nav>
-    <div class="topright">${state}<button class="ibtn me-btn ${S.route==='character'?'on':''}" data-act="nav" data-route="character" data-tip="캐릭터" aria-label="캐릭터" ${S.route==='character'?'aria-current="page"':''}><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.2" r="2.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.8 14.2c.5-3 2.6-4.6 5.2-4.6s4.7 1.6 5.2 4.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="pill" data-act="online" aria-label="접속자 목록"><span class="dot"></span><span class="pl-t">접속 </span><span class="num" data-online>${onlineCount()}</span><span class="pl-t">명</span></button>
+    <div class="topright">${state}<button class="ibtn me-btn ${S.route==='character'?'on':''}" data-act="nav" data-route="character" data-tip="캐릭터" aria-label="캐릭터" ${S.route==='character'?'aria-current="page"':''}><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.2" r="2.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.8 14.2c.5-3 2.6-4.6 5.2-4.6s4.7 1.6 5.2 4.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="pill" data-act="pop" data-pop="online" aria-label="접속자 목록" aria-expanded="${S.sel.pop==='online'}"><span class="dot"></span><span class="pl-t">접속 </span><span class="num" data-online>${onlineCount()}</span><span class="pl-t">명</span></button>
       <button class="ibtn" data-act="pop" data-pop="mail" data-tip="메시지" aria-label="메시지${mailUnread()?' · 읽지 않은 메시지 있음':''}" aria-expanded="${S.sel.pop==='mail'}">${TICON.mail}${mailUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
       <button class="ibtn" data-act="pop" data-pop="notice" data-tip="공지사항" aria-label="공지사항${noticeUnread()?' · 읽지 않은 공지 있음':''}" aria-expanded="${S.sel.pop==='notice'}">${HICON.notice}${noticeUnread()?'<span class="ndot" aria-hidden="true"></span>':''}</button>
       <button class="ibtn" data-act="pop" data-pop="settings" data-tip="환경설정" aria-label="환경설정" aria-expanded="${S.sel.pop==='settings'}">${TICON.gear}</button></div>
@@ -113,11 +113,21 @@ function render(){
   const r=S.route;
   if(r==='admin'&&!isAdmin()){v.innerHTML=`<div class="wrap page"><div class="panel"><h3>운영</h3><p>운영자 권한이 있는 계정만 열 수 있습니다.</p></div></div>`;return;}
   const fn={community:vCommunity,profile:vProfile,main:vMain,quest:vQuest,explore:vExplore,battle:vBattle,character:vChar,lore:vLore,market:vMarket,admin:vAdmin}[r]||vMain;
-  const dock=['quest','explore','character','lore','market','profile','community'].includes(r);
-  v.innerHTML=dock?`<div class="wrap dock-grid" data-route="${r}"><aside class="dock-side">${charCard(true)}${chatPanel()}</aside><div class="dock-main">${fn()}</div></div>`:fn();
+  /* 3단 레이아웃: 왼쪽(캐릭터)·오른쪽(퀵바·진행 중·주간 미션·채팅)은 고정, 가운데만 페이지별로 바뀜. DOM 순서는 가운데 먼저(모바일에서 위에 오도록) */
+  /* 예외: 운영 페이지, 만신전 전투(10×10 전장)는 3단 없이 넓게 */
+  const wide=r==='admin'||(r==='battle'&&S.battle&&S.battle.grid);
+  v.innerHTML=wide?fn():`<div class="wrap tri" data-route="${r}"><main class="tri-c">${fn()}</main><aside class="tri-l" aria-label="내 캐릭터">${sideCard()}</aside><aside class="tri-r" aria-label="바로가기와 진행 상황">${rightCol()}</aside></div>`;
   afterRender();
   renderPop();
 }
+/* 메인 화면(데스크톱): 오른쪽 채팅 아래 끝을 가운데 '모집 중인 파티' 아래 끝에 맞춤 */
+function fitSideChat(){const ch=$('.tri-r .chat-main');if(!ch)return;ch.style.height='';ch.style.flex='';const last=$('.tri-c .main-c > :last-child');if(last)last.style.minHeight='';
+  if(S.route!=='main'||innerWidth<=980||!last)return;
+  const top=ch.getBoundingClientRect().top,lb=last.getBoundingClientRect();
+  /* 둘의 아래 끝을 같게: 모집 패널이 더 짧으면 채팅 최소 높이(300px)까지 모집 패널을 늘림 */
+  const target=Math.max(lb.bottom,top+300);ch.style.height=Math.round(target-top)+'px';ch.style.flex='none';
+  if(target>lb.bottom+1)last.style.minHeight=Math.round(target-lb.top)+'px';}
+addEventListener('resize',()=>{try{fitSideChat();}catch(e){}});
 function fitExlog(){
   const p=$('.exlog-p'),line=$('.dock-side .me-quests');if(!p)return;
   if(!line||innerWidth<=980){p.style.height='';return;}
@@ -196,7 +206,7 @@ document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').
 function afterRender(){
   syncChatFab();initMapZoom();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
-  fitExlog();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
+  fitExlog();fitSideChat();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
 }
 
@@ -222,12 +232,52 @@ function vCreate(){
 }
 /* ───────── 메인 ───────── */
 function vMain(){
-  return `<div class="wrap tkwrap">${ticker()}</div>
-    <div class="wrap grid2 main-grid">
-      ${charCard(true)}<div class="rtop">${skyBar()}${nextGoalHTML()}${recruitPanel()}</div>
-      ${chatPanel()}
-    </div>`;
+  return `<div class="main-c">${ticker()}${skyBar()}${nextGoalHTML()}${recruitPanel()}</div>`;
 }
+/* ── 왼쪽 고정: 캐릭터 카드(초상 · 칭호 · 이름 · 레벨 · 경험치 · STATUS) ── */
+function sideCard(){
+  const me=S.me,st=myStats(),need=expNeed(me.level),cap=me.level>=cfg().levelCap;
+  const ib=k=>(st[k]||0)+(typeof itemBonus==='function'?itemBonus(k):0);
+  const xp=cap?100:pct(me.exp,need);const canAdv=CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel;
+  const mx=ib('maxHp'),hp=hpNow(),cur=Math.round(mx*hp);
+  const row=(k,l)=>`<li class="sc-row"><span class="si si-${k} inl">${ICON[k]}</span><span class="sc-k">${l}</span><b class="num">${ib(k)}</b></li>`;
+  return `<div class="panel me-card sc">
+    <div class="sc-por">${portraitHTML(false)}</div>
+    <div class="sc-id">${titleChip()}
+      <h2 class="sc-name"><button class="me-link" data-act="nav" data-route="character" title="캐릭터 페이지로">${esc(me.name)}</button></h2>
+      <div class="sc-lvl num">LV ${me.level}</div>
+      <div class="sc-lv">${roleChip(me.job)}${profChips()}${canAdv?'<button class="chip warn" data-act="nav" data-route="character" style="cursor:pointer;background:none">전직 가능</button>':''}</div></div>
+    <div class="sc-memo">${memoHTML()}</div>
+    <div class="sc-gauge xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`${me.exp} / ${need}`}"><div class="sc-gh"><span class="sc-gl">경험치</span><span class="num">${cap?'MAX':`${me.exp.toLocaleString('ko-KR')}/${need.toLocaleString('ko-KR')}`}</span></div><div class="bar xp"><i style="width:${xp}%"></i></div></div>
+    <div class="sc-st"><div class="sc-sh">STATUS</div>
+      <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxHp inl">${ICON.maxHp}</span>체력</span><span class="num">${cur.toLocaleString('ko-KR')}/${mx.toLocaleString('ko-KR')}</span></div><div class="bar hp"><i style="width:${Math.round(hp*100)}%"></i></div></div>
+      <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
+      <div class="sc-gold">${goldHTML(me.gold)}</div></div></div>`;
+}
+/* ── 오른쪽 고정: 퀵바(바로가기 3칸) · 진행 중인 목록 · 주간 미션 · 채팅 ── */
+const QB_PAGES=[['main','메인'],['character','캐릭터'],['lore','세계관'],['quest','퀘스트'],['explore','탐색'],['battle','레이드'],['market','거래소'],['community','커뮤니티'],['profile','프로필']];
+const QB_ICON={
+  main:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h4.5v-5h3v5H18V9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  character:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5c.8-4.2 3.8-6.5 7.5-6.5s6.7 2.3 7.5 6.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  lore:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5c-2-1.6-4.8-2-8-1.5v13c3.2-.5 6 0 8 1.5 2-1.5 4.8-2 8-1.5V5c-3.2-.5-6-.1-8 1.5zM12 6.5v13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  quest:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10.5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2h11v2M7 3.5a2 2 0 0 0-2 2v11M9.5 8h5M9.5 11.5h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  explore:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/></svg>',
+  battle:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5M6.5 15.5l-2.5 2.5 2 2 2.5-2.5M17.5 15.5l2.5 2.5-2 2-2.5-2.5M4 4h3.5M4 4v3.5M20 4h-3.5M20 4v3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  market:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.5 11h-13zM8 9a4 4 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12.5v4.5M10 14.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  community:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h11v7.5H8L5 15v-2.5H3.5zM17 9h3.5v7.5H19V19l-3-2.5h-5.5V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  profile:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="11" r="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.8 16.5c.6-1.6 1.7-2.5 3.2-2.5s2.6.9 3.2 2.5M14.5 10h3.5M14.5 13.5h3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'};
+const QB_DEFAULT=['quest','explore','battle'];
+function quickSlots(){const q=S.me.quick;return Array.isArray(q)&&q.length===3?q:QB_DEFAULT.slice();}
+function quickBar(){const Q=quickSlots(),ed=!!S.sel.qbEdit;const nm=r=>(QB_PAGES.find(p=>p[0]===r)||[])[1];
+  return `<div class="panel qb ${ed?'editing':''}"><div class="qb-h"><span class="qb-t">${hTitle('bolt','퀵바')}</span><button class="qb-ed" data-act="qb-edit" aria-pressed="${ed}">${ed?'완료':'편집'}</button></div>
+    <div class="qb-slots">${Q.map((r,i)=>r&&nm(r)?`<button class="qb-s ${S.route===r?'on':''}" data-act="${ed?'qb-pick':'nav'}" data-route="${r}" data-i="${i}" data-tip="${nm(r)}" aria-label="${ed?`${i+1}번 칸 바꾸기 · 지금 ${nm(r)}`:nm(r)+' 바로가기'}">${QB_ICON[r]||''}<span class="qb-l">${nm(r)}</span></button>`:`<button class="qb-s empty" data-act="qb-pick" data-i="${i}" aria-label="${i+1}번 칸에 바로가기 추가"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="qb-l">추가</span></button>`).join('')}</div></div>`;}
+function quickPickDlg(i){const Q=quickSlots();
+  return `<div class="ndlg qb-dlg"><div class="row" style="justify-content:space-between"><h3>${i+1}번 칸 바로가기</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    <div class="qb-grid">${QB_PAGES.map(([r,l])=>`<button class="qb-opt ${Q[i]===r?'on':''}" data-act="qb-set" data-i="${i}" data-route="${r}">${QB_ICON[r]}<span>${l}</span></button>`).join('')}</div>
+    ${Q[i]?`<div class="row" style="justify-content:flex-end"><button class="btn btn-sm btn-ghost" data-act="qb-set" data-i="${i}" data-route="">이 칸 비우기</button></div>`:''}</div>`;}
+function rightCol(){
+  return `${recPanel()}<div class="panel prog-p"><h3>${hTitle('spark','진행 중인 목록')}</h3><div class="me-prog-wrap">${progInner()}</div></div>
+    <div class="panel me-qp">${weeklyPanel()}</div>${chatPanel()}`;}
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
 function progItems(){
   const t=now(),L=[];const b=S.battle;
@@ -286,7 +336,7 @@ function cardQuests(){
   return `<div class="me-quests ${open?'':'folded'}"><div class="ph"><button class="cq-tog" data-act="cq-toggle" aria-expanded="${open}">${hTitle('quest','진행 중인 퀘스트')}<span class="cq-n num">${n}</span><svg class="cq-ar" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <div class="list">${act.length?act.map(q=>{const st=questStatus(q);return `<div class="li clickable" data-act="openquest" data-id="${q.id}"><div class="t"><b>${esc(q.title)}</b><small>${st==='claim'?'보상 수령 대기':'단계 '+((S.qp[q.id].history||[]).length+1)}</small></div><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>`;}).join(''):'<p class="empty">진행 중인 퀘스트가 없습니다.</p>'}</div></div>`;
 }
-const STATUS={online:{n:'온라인',ic:'<span class="st-dot on"></span>'},away:{n:'자리비움',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.8h9M3.5 14.2h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M4.6 1.8c0 3.3 3.4 4.4 3.4 6.2s-3.4 2.9-3.4 6.2M11.4 1.8c0 3.3-3.4 4.4-3.4 6.2s3.4 2.9 3.4 6.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 13.4c.4-1.4 1.3-2 2-2.3.7.3 1.6.9 2 2.3z" fill="currentColor"/><path d="M6.2 4.6h3.6c-.5.9-1.2 1.4-1.8 1.8-.6-.4-1.3-.9-1.8-1.8z" fill="currentColor" opacity=".7"/></svg>'},raid:{n:'레이드 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 15.2 3.6 2.2M2 15.2 12.4 2.2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M3.8 2.4 8.3 8.1 .6 8.9z" fill="currentColor"/><path d="M12.2 2.4 7.7 8.1l7.7.8z" fill="currentColor"/><circle cx="3.4" cy="1.9" r="1" fill="currentColor"/><circle cx="12.6" cy="1.9" r="1" fill="currentColor"/></svg>'},meal:{n:'식사 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true" style="color:#e6dcc4"><ellipse cx="5" cy="4.3" rx="2.2" ry="3" fill="currentColor"/><path d="M4.3 6.9h1.4v7.3a.7.7 0 0 1-1.4 0z" fill="currentColor"/><path d="M10.1 1.4l.7 13.2M13 1.4l-.7 13.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'},offline:{n:'오프라인',ic:'<span class="st-dot off"></span>'}};
+const STATUS={online:{n:'온라인',ic:'<span class="st-dot on"></span>'},away:{n:'자리비움',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.8h9M3.5 14.2h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M4.6 1.8c0 3.3 3.4 4.4 3.4 6.2s-3.4 2.9-3.4 6.2M11.4 1.8c0 3.3-3.4 4.4-3.4 6.2s3.4 2.9 3.4 6.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 13.4c.4-1.4 1.3-2 2-2.3.7.3 1.6.9 2 2.3z" fill="currentColor"/><path d="M6.2 4.6h3.6c-.5.9-1.2 1.4-1.8 1.8-.6-.4-1.3-.9-1.8-1.8z" fill="currentColor" opacity=".7"/></svg>'},raid:{n:'파티모집 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 14.5V1.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 2.2h9l-2.2 3 2.2 3h-9z" fill="currentColor"/></svg>'},meal:{n:'식사 중',ic:'<svg viewBox="0 0 16 16" aria-hidden="true" style="color:#e6dcc4"><ellipse cx="5" cy="4.3" rx="2.2" ry="3" fill="currentColor"/><path d="M4.3 6.9h1.4v7.3a.7.7 0 0 1-1.4 0z" fill="currentColor"/><path d="M10.1 1.4l.7 13.2M13 1.4l-.7 13.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'},offline:{n:'오프라인',ic:'<span class="st-dot off"></span>'}};
 function myStatus(){return STATUS[S.me.status]?S.me.status:'online';}
 function statusDD(){const k=myStatus();return `<details class="st-dd"><summary aria-label="상태 · ${STATUS[k].n}" title="상태 · ${STATUS[k].n}"><span class="st-ic st-${k}">${STATUS[k].ic}</span></summary><div class="st-menu">${Object.entries(STATUS).filter(([x])=>x!=='offline').map(([x,v])=>`<button data-act="set-status" data-v="${x}" aria-pressed="${k===x}"><span class="st-ic st-${x}">${v.ic}</span>${v.n}</button>`).join('')}</div></details>`;}
 function statusChip(k){const v=STATUS[k]||STATUS.online;return `<span class="st-chip"><span class="st-ic st-${k}">${v.ic}</span>${v.n}</span>`;}
@@ -486,7 +536,10 @@ function updateChats(){
     const lock=p.dataset.lock;const tab=lock||S.sel.chatTab;const shown=chatShown(p);
     if(shown){if(tab==='world')S.unread.world=0;if(tab==='lobby')S.unread.lobby=0;if(tab==='party')S.unread.party=0;
     if(tab==='dm'&&S.sel.dmWith){const t=dmState().threads[S.sel.dmWith];if(t)t.unread=0;}}
-    p.querySelector('[data-chathead]').innerHTML=chatHead(lock);
+    /* 1:1 '새 대화 상대 선택' 칸: 채팅이 올 때마다 머리줄을 다시 그려 고른 값이 사라지던 것 → 고른 값 유지, 고르는 중(포커스)이면 다시 그리지 않음 */
+    {const hd=p.querySelector('[data-chathead]');const ds=hd.querySelector('#dm-new');const dv=ds?ds.value:'';
+     if(!(ds&&document.activeElement===ds&&tab==='dm'&&!S.sel.dmWith)){hd.innerHTML=chatHead(lock);
+       const n=dv&&hd.querySelector('#dm-new');if(n&&[...n.options].some(o=>o.value===dv))n.value=dv;}}
     const box=p.querySelector('[data-msgs]');const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
     if(box.dataset.view!==tab+(S.sel.dmWith||'')){box.dataset.view=tab+(S.sel.dmWith||'');box.dataset.init='';}
     if(tab==='dm'&&!S.sel.dmWith){box.innerHTML=dmListHTML();box.scrollTop=0;}
@@ -1194,9 +1247,12 @@ function roleBadge(job){const r=roleOf(job);return `<span class="rbadge rb-${r}"
 function showOnline(){
   const meI=playerInfo(S.me.name);const meOff=myStatus()==='offline';
   const on=[...(meOff?[]:[meI]),...S.bots.filter(b=>b.online)],off=[...(meOff?[meI]:[]),...S.bots.filter(b=>!b.online)];const all=[...on,...off];
-  modal(`<div class="row" style="justify-content:space-between"><h3 class="ol-h">접속 중 <span class="num">${on.length}</span>명 <small class="faint" style="font-size:12px;font-weight:400">· 오프라인 ${off.length}명</small></h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
-    <div class="list">${all.map(p=>{const isOff=off.includes(p);return `<div class="li ${isOff?'ol-off':''}"><div class="row" style="gap:10px;flex:1;min-width:0">${faceSm(p)}<div class="t"><div class="row" style="gap:2px">${roleBadge(p.job)}<button class="who-btn" data-act="uinfo" data-name="${esc(p.name)}" title="${esc(p.name)} 정보 보기">${esc(p.name)}</button>${p.isMe?'':bondChip(p.name,true)}${p.isMe?' <span class="chip dim">나</span>':`<button class="ibtn sm" data-act="u-mail" data-name="${esc(p.name)}" data-tip="메시지" aria-label="${esc(p.name)}에게 메시지 보내기">${TICON.mail}</button><button class="ibtn sm" data-act="u-dm" data-name="${esc(p.name)}" data-tip="1:1 대화" aria-label="${esc(p.name)}와 1:1 대화">${HICON.chat}</button>`}</div><small>${JOBS[p.job].name} · LV${p.level}${p.isMe?'':noteHTML(p.name)}</small></div></div>${isOff?'<span class="ol-badge"><span class="st-dot off"></span>오프라인</span>':activityHTML(p)}</div>`;}).join('')}</div>
-    <p class="faint" style="font-size:12px">게임 전체의 접속 계정 수입니다. 시제품에서는 연습용 동료 블레서가 함께 접속해 있습니다.</p>`);
+  S.sel.pop='online';const pel=$('#pop');if(!pel)return;
+  const ust=p=>p.isMe?myStatus():(p.ustat&&STATUS[p.ustat]?p.ustat:null);
+  const memoOf=p=>p.isMe?(S.me.memo||''):(p.memo||'');
+  pel.innerHTML=`<div class="pop pop-online" role="dialog" aria-label="접속자 목록"><div class="pop-head"><b>접속 중 <span class="num">${on.length}</span>명</b><small class="faint">오프라인 ${off.length}명</small></div>
+    <div class="pop-body"><div class="list">${all.map(p=>{const isOff=off.includes(p);return `<div class="li ${isOff?'ol-off':''}"><div class="row" style="gap:10px;flex:1;min-width:0">${faceSm(p)}<div class="t"><div class="row" style="gap:2px">${roleBadge(p.job)}<button class="who-btn" data-act="uinfo" data-name="${esc(p.name)}" title="${esc(p.name)} 정보 보기">${esc(p.name)}</button>${p.isMe?'':bondChip(p.name,true)}${p.isMe?' <span class="chip dim">나</span>':`<button class="ibtn sm" data-act="u-mail" data-name="${esc(p.name)}" data-tip="메시지" aria-label="${esc(p.name)}에게 메시지 보내기">${TICON.mail}</button><button class="ibtn sm" data-act="u-dm" data-name="${esc(p.name)}" data-tip="1:1 대화" aria-label="${esc(p.name)}와 1:1 대화">${HICON.chat}</button>`}</div><small>${JOBS[p.job].name} · LV${p.level}${p.isMe?'':noteHTML(p.name)}</small>${(()=>{const u=!isOff&&ust(p),m=memoOf(p);return u||m?`<div class="ol-st">${u&&u!=='online'?statusChip(u):''}${m?`<span class="ol-memo">${esc(m)}</span>`:''}</div>`:'';})()}</div></div>${isOff?'<span class="ol-badge"><span class="st-dot off"></span>오프라인</span>':activityHTML(p)}</div>`;}).join('')}</div>
+    <p class="faint ol-note">${typeof SB_UID!=='undefined'&&SB_UID?'지금 게임에 접속한 블레서입니다. 최근 6분 안에 활동한 계정을 접속 중으로 셉니다.':'게임 전체의 접속 계정 수입니다. 시제품에서는 연습용 동료 블레서가 함께 접속해 있습니다.'}</p></div></div>`;
 }
 function showMatch(){
   const mt=S.match;if(!mt){modal('');return;}
@@ -1259,7 +1315,7 @@ function finishBattle(b){
   }
   if(me.direct>=1){bump('damage',me.dealt||0);bump('crits',me.crits||0);bump('healing',me.healed||0);bump('revives',me.revives||0);
     if(b.over==='win'){bump('raidsWon');const k=S.stats.kills=S.stats.kills||{};k[b.monsterId]=(k[b.monsterId]||0)+1;if(b.eventBonus)bump('bossWins');if(me.dead)bump('fallenWins');}else bump('raidsLost');}
-  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);}}
+  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);rec({drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type]||'raid',`${b.mon.name}의 마지막 말 · “${H.last}”`);}}
   b.result=r;
   if(ctx.drun)drunAfter(b,me);
   sysParty(b.over==='win'?'승리! 보상은 각자 지급됩니다.':'전투가 끝났습니다.');
@@ -1439,6 +1495,7 @@ function renderPop(){
   const el=$('#pop');if(!el)return;
   const k=S&&S.me&&!S.loggedOut?S.sel.pop:null;
   if(!k){el.innerHTML='';return;}
+  if(k==='online'){const b0=el.querySelector('.pop-body');const sc0=b0?b0.scrollTop:0;showOnline();const b1=el.querySelector('.pop-body');if(b1)b1.scrollTop=sc0;return;}
   const keepScroll=el.querySelector('.pop-body');const sc=keepScroll?keepScroll.scrollTop:0;
   el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':k==='notice'?'공지사항':'환경설정'}">${k==='mail'?mailPop():k==='notice'?noticePop():settingsPop()}</div>`;
   const b=el.querySelector('.pop-body');if(b)b.scrollTop=sc;
@@ -1464,7 +1521,7 @@ function mailList(tab,sort){
 function fmtWhen(t){const d=now()-t;if(d<60000)return '방금';if(d<3600000)return Math.floor(d/60000)+'분 전';if(d<86400000)return Math.floor(d/3600000)+'시간 전';return new Date(t+9*3600e3).toISOString().slice(5,10).replace('-','.');}
 function availItem(k){if(isQuestItem(k))return 0;const n=S.me.inv[k]||0;return n-(Object.values(S.me.equip||{}).includes(k)?1:0);}
 function deliverMail(from,text,items,extra){
-  S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
+  S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});try{rec('mail',`${from}님에게서 ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착`);}catch(e){}bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
   if(S.mail.length>120){const drop=S.mail.filter(m=>!m.archived).sort((a,b)=>a.ts-b.ts)[0];S.mail=S.mail.filter(m=>m!==drop);}
   notify(`${from}님에게서 ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착했습니다.`);renderTop();renderPop();save();
 }

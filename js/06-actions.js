@@ -133,9 +133,9 @@ const ACTS={
   'mk-tab':d=>{S.sel.mkTab=d.tab;render();},
   'mk-buy':d=>{const x=market().find(y=>y.id===d.id);if(!x||!ITEMS[x.item]||ITEMS[x.item].off)return;if(x.stock===0){toast('품절되었습니다.','warn');return;}if(S.me.gold<x.price){toast('골드가 부족합니다.','warn');return;}
     if(ITEMS[x.item].maxOwn&&(S.me.inv[x.item]||0)>=ITEMS[x.item].maxOwn){toast(`${ITEMS[x.item].name}은(는) 1인 최대 ${ITEMS[x.item].maxOwn}개까지 가질 수 있습니다.`,'warn');return;}S.me.gold-=x.price;if(x.stock!=null)x.stock--;addItem(x.item,1);bump('goldSpent',x.price);bump('purchases');noteItems({[x.item]:1});
-    (S.trades=S.trades||[]).unshift({ts:now(),kind:'buy',item:x.item,gold:-x.price});save();render();toast(`${ITEMS[x.item].name} 구매 · ${x.price}골드`,'good');},
+    (S.trades=S.trades||[]).unshift({ts:now(),kind:'buy',item:x.item,gold:-x.price});rec('market',`${ITEMS[x.item].name} 구매`,`-${x.price}골드`);save();render();toast(`${ITEMS[x.item].name} 구매 · ${x.price}골드`,'good');},
   'mk-sell':d=>{const k=d.id;if(isQuestItem(k)){toast('퀘스트 아이템은 팔 수 없습니다.','warn');return;}if(availItem(k)<1){toast('팔 수 있는 수량이 없습니다.','warn');return;}const g=sellPrice(k);S.me.inv[k]--;if(!(S.me.inv[k]>0)&&S.me.enh)delete S.me.enh[k];
-    S.me.gold+=g;bump('goldEarned',g);(S.trades=S.trades||[]).unshift({ts:now(),kind:'sell',item:k,gold:g});save();render();toast(`${ITEMS[k].name} 판매 · +${g}골드`,'good');},
+    S.me.gold+=g;bump('goldEarned',g);(S.trades=S.trades||[]).unshift({ts:now(),kind:'sell',item:k,gold:g});rec('market',`${ITEMS[k].name} 판매`,`+${g}골드`);save();render();toast(`${ITEMS[k].name} 판매 · +${g}골드`,'good');},
   'mk-del':d=>{S.data.market=market().filter(x=>x.id!==d.id);logChange('거래소',[{field:'내림',before:d.id,after:undefined}]);save();render();},
   'n-open':d=>{const n=S.data.notices.find(x=>x.id===d.id);if(n)noticeView(n);},
   'n-page':d=>{S.sel.npage=+d.p;refreshNotices();},
@@ -153,7 +153,7 @@ const ACTS={
   'mail-compose':()=>{S.sel.mc={to:'',text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();},
   'mail-reply':d=>{S.sel.mc={to:d.to,text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();const t=$('#mc-text');if(t)t.focus();},
   'mail-claim':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m||m.claimed||!hasItems(m))return;m.claimed=true;for(const k in m.items)if(ITEMS[k]&&ITEMS[k].type==='deco')noteDeco(k,{t:'gift',v:m.from});for(const k in m.items){if(k==='_gold'){S.me.gold+=m.items[k];bump('goldEarned',m.items[k]);continue;}addItem(k,m.items[k]);}{const it={...m.items};delete it._gold;noteItems(it);}
-    S.rewardLog.unshift({ts:now(),source:'mail',label:`${m.from}의 선물`,exp:0,gold:0,items:{...m.items}});save();renderPop();toast(`선물을 받았습니다 · ${itemsText(m.items)}`,'good');},
+    S.rewardLog.unshift({ts:now(),source:'mail',label:`${m.from}의 선물`,exp:0,gold:0,items:{...m.items}});rec('mail',`${m.from}의 선물 받음`,itemsText(m.items));save();renderPop();toast(`선물을 받았습니다 · ${itemsText(m.items)}`,'good');},
   'mail-archive':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;if(!m.archived&&S.mail.filter(x=>x.archived).length>=10){toast('보관함은 최대 10개까지입니다. 보관한 메시지를 먼저 정리하세요.','warn');return;}
     m.archived=!m.archived;m.archivedAt=m.archived?now():null;S.sel.mailView=null;S.sel.mailTab=m.archived?'archive':'all';save();renderPop();toast(m.archived?'보관함으로 옮겼습니다.':'보관을 해제했습니다.');},
   'm-pickon':()=>{S.sel.mpick=true;S.sel.msel=[];renderPop();},
@@ -183,7 +183,7 @@ const ACTS={
     for(const [k,n] of Object.entries(c.items))if(ITEMS[k].type==='equip'){toast('장비는 우편으로 보낼 수 없습니다.','warn');return;}
     for(const [k,n] of Object.entries(c.items))if(availItem(k)<n){toast(`${ITEMS[k].name} 수량이 부족합니다.`,'warn');return;}
     for(const [k,n] of Object.entries(c.items))S.me.inv[k]-=n;
-    (S.sentMail=S.sentMail||[]).push({to:c.to,text,items:{...c.items},ts:now()});
+    (S.sentMail=S.sentMail||[]).push({to:c.to,text,items:{...c.items},ts:now()});rec('mail',`${c.to}님에게 ${Object.keys(c.items).length?'선물을':'메시지를'} 보냄`,itemsText(c.items));
     const to=c.to,gave=Object.keys(c.items).length>0;bump('lettersSent');if(gave)bump('giftsSent');S.sel.mc=null;S.sel.mailView=null;save();renderPop();toast(`${to}님에게 ${gave?'선물을':'편지를'} 보냈습니다.`,'good');
     if(gave||Math.random()<0.6)later(rnd(5000,11000),()=>{if(!S.me||S.rel[to]==='blocked')return;deliverMail(to,gave?pick(['선물 고마워요! 잘 쓸게요.','와, 이거 필요했는데 고마워요!','덕분에 수호자 공략 준비가 끝났어요.']):pick(['편지 잘 받았어요. 다음에 같이 파티 가요!','안부 고마워요 :)','오늘 일일 의뢰 같이 하실래요?']),null);});},
   'evpop-toggle':()=>{S.settings=S.settings||{};S.settings.evPopup=S.settings.evPopup===false;save();renderPop();},
@@ -202,7 +202,7 @@ const ACTS={
   navtog:()=>{NAV_OPEN=!NAV_OPEN;renderTop();},
   nav:d=>{if(d.route==='battle'&&!S.party&&!S.battle&&!S.queue&&!S.match&&S.route==='battle')S.sel.monster=null;go(d.route);},
   link:d=>openLink(d.link),
-  online:()=>{S.sel.noteEdit=null;showOnline();},
+  online:()=>{S.sel.noteEdit=null;S.sel.pop='online';renderPop();renderTop();},
   closemodal:()=>modal(''),
   pickjob:d=>{S.sel.newJob=d.job;const nm=$('#new-name')?$('#new-name').value:'';render();if($('#new-name'))$('#new-name').value=nm;},
   chattab:d=>{S.sel.chatTab=d.tab;if(d.tab!=='dm')S.sel.dmWith=null;updateChats();save();},
@@ -224,7 +224,7 @@ const ACTS={
   'ex-go':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;const dd=daily();const A=d.area?MAP_INFO[d.area]:null;const an=d.area?(MAP_SPOTS.find(x=>x[0]===d.area)||[])[2]:null;const need=A?A.lv:r.lv;
     if(S.me.level<need){toast(`LV${need} 이상 필요합니다.`,'warn');return;}{const sl=storyLock(r.id);if(sl){toast(sl,'warn');return;}}if(dd.explore>=EXPLORE_MAX){toast(`오늘 탐색 ${EXPLORE_MAX}회를 모두 사용했습니다.`,'warn');return;}
     dd.explore++;let [text,type]=pick(r.scenes);if(landW(r.id)==='fog'&&Math.random()<FOG_LOST){text=pick(['짙은 안개 속에서 길을 잃고 한참을 헤맸다. 아무것도 찾지 못했다.','안개 때문에 한 치 앞도 보이지 않아 탐색을 포기했다.','안개 너머로 무언가 보였지만, 다가가자 사라졌다.']);type='none';}const rw=exploreReward(A?{...r,lv:A.lv}:r,type);const label=an||r.region;grant(rw,'explore',{label});bump('explores');
-    S.me.exLog=[{ts:now(),region:label,land:r.id,text,got:gotText(rw)},...(S.me.exLog||[])].slice(0,12);save();render();if(d.pop)refreshMap();toast(`${label} 탐색${gotText(rw)?' · '+gotText(rw):''}`,'good');},
+    S.me.exLog=[{ts:now(),region:label,land:r.id,text,got:gotText(rw)},...(S.me.exLog||[])].slice(0,12);rec('explore',`${label} · ${text}`,gotText(rw));save();render();if(d.pop)refreshMap();toast(`${label} 탐색${gotText(rw)?' · '+gotText(rw):''}`,'good');},
   'ex-hunt':d=>{const r=EXPLORE.find(x=>x.id===d.id);if(!r)return;S.sel.huntArea=d.area||'';const A=d.area?MAP_INFO[d.area]:null;const need=A?A.lv:r.lv;const why=huntBusy()||(S.me.level<need?`LV${need} 이상 필요합니다`:storyLock(r.id));if(why){toast(why,'warn');return;}
     const fm=huntMons(r);if(!fm.length)return;S.sel.huntMode=S.sel.huntMode||'manual';S.sel.huntDur=S.sel.huntDur||30;modal(huntDlg(r.id));},
   'hunt-mode':d=>{S.sel.huntMode=d.v;modal(huntDlg(d.id));},
@@ -325,6 +325,10 @@ const ACTS={
   'ex-back':()=>{S.sel.exLand=null;S.sel.exFocus='';render();scrollTo({top:0});},
   'map-goto':d=>{modal('');openLink(d.link);},
   'md-target':d=>{const m=monster(d.focus);S.sel.dtargets=S.sel.dtargets||{};S.sel.dtargets[m?m.id:d.focus]=d.v;if($('.modal.mapmodal'))refreshMap();else render();},
+  'qb-edit':()=>{S.sel.qbEdit=!S.sel.qbEdit;render();},
+  'qb-pick':d=>{modal(quickPickDlg(+d.i));},
+  'qb-set':d=>{const Q=quickSlots().slice();Q[+d.i]=d.route||null;S.me.quick=Q;modal('');save();render();},
+  'rec-fold':()=>{S.sel.recOpen=S.sel.recOpen===false;const el=$('[data-recp]');if(el)el.outerHTML=recPanel();},
   qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},

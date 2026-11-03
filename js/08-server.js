@@ -467,7 +467,7 @@ function chStart(){
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`recipient=eq.${SB_UID}`},p=>chOnInsert(p.new))
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`sender=eq.${SB_UID}`},p=>chOnInsert(p.new))
       .subscribe();}catch(e){console.warn('채팅 실시간 연결 실패',e);}
-  clearInterval(CH.poll);CH.poll=setInterval(()=>{chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});},60000);
+  clearInterval(CH.poll);CH.poll=setInterval(()=>{chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel&&S.sel.pop==='online')renderPop();}catch(e){}});},60000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')chFetch();});
 }
 const chErr=e=>{const m=(e&&e.message)||'';
@@ -540,15 +540,16 @@ if(ONLINE){
   // 접속 인원·접속자 목록: 테스트 봇은 빼고 나 + 실제 블레서만
   const _onlineCount=onlineCount;
   onlineCount=function(){return SB_UID?1+mlPlayers.filter(chOnline).length:_onlineCount();};
-  const realAsBot=p=>({name:p.name,job:isClass(p.job)?p.job:'defender',level:p.level||1,online:chOnline(p),status:p.status==='raid'&&chOnline(p)?'battle':'lobby',real:true,uid:p.user_id});
-  const _showOnline=showOnline;
+  // 실제 블레서의 상태('raid' = 파티모집 중 등)·한줄메모는 접속자 팝업의 ustat·memo로(봇 활동 표시는 '로비')
+  const realAsBot=p=>({name:p.name,job:isClass(p.job)?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',ustat:p.status||null,memo:p.memo||'',real:true,uid:p.user_id});
+  const _showOnline=showOnline;let olAt=0;
   showOnline=function(){
     if(!SB_UID)return _showOnline();
     const real=mlPlayers.filter(p=>p.name&&!bot(p.name)).map(realAsBot).sort((a,b)=>(b.online-a.online)||a.name.localeCompare(b.name,'ko'));
     const keep=S.bots;S.bots=real;
     try{_showOnline();}finally{S.bots=keep;}
-    const f=$$('#modal p.faint').pop();if(f)f.textContent='지금 게임에 접속한 블레서입니다. 최근 6분 안에 활동한 계정을 접속 중으로 셉니다.';
-    mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});
+    // 팝업을 열 때 목록을 새로 받아 다시 그림(팝업은 자주 다시 그려지므로 10초에 한 번만)
+    if(Date.now()-olAt>10000){olAt=Date.now();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel.pop==='online')renderPop();}catch(e){}});}
   };
   // 접속자 목록·정보 카드의 편지 보내기: 실제 블레서는 서버 우편으로
   const _uMail=ACTS['u-mail'];
