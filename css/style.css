@@ -2726,3 +2726,8 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 @keyframes glx-shake{0%{transform:translate(0,0)}25%{transform:translate(-6px,2px)}50%{transform:translate(5px,-3px)}75%{transform:translate(-3px,-1px)}100%{transform:translate(4px,3px)}}
 @keyframes glx-flick{0%{opacity:1}50%{opacity:.55}100%{opacity:.9}}
 @media (prefers-reduced-motion:reduce){body.glx .wrap,body.glx .top{animation:none}#glx-ov{animation:none}}
+/* 폰: 파티 레이드 목록 카드의 탱커·딜러·힐러 칩은 지역·LV·인원 아래 줄로 */
+@media (max-width:760px){
+  .mcard-h .mh-main>.row::after{content:"";flex-basis:100%;order:1;height:0}
+  .mcard-h .mh-main>.row>.chip.tank,.mcard-h .mh-main>.row>.chip.dps,.mcard-h .mh-main>.row>.chip.heal{order:2}
+}
