@@ -2604,3 +2604,7 @@ body::after{display:none!important}
 .mk-sec.open .mk-sec-h svg{transform:rotate(180deg)}
 .mk-sec-h:hover svg{color:var(--gold-hi)}
 .mk-sec>.mkgrid,.mk-sec>.mk-sell{margin-top:10px}
+
+/* 제목·설명과 탭이 한 패널에 있을 때: 탭 위 구분선 */
+.page-head:has(p):has(+.qtabs),.page-head:has(p):has(+.mtabs){padding-bottom:12px}
+.page-head:has(p)+.qtabs,.page-head:has(p)+.mtabs{background-image:linear-gradient(var(--rule),var(--rule));background-size:calc(100% - 36px) 1px;background-position:18px 0;background-repeat:no-repeat}
