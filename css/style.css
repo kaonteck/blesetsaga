@@ -2657,3 +2657,11 @@ body::after{display:none!important}
 .flog .flog-l>div{height:22px;line-height:22px;padding:0;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .flog.open .flog-l{max-height:110px;overflow-y:auto}
 .flog.open .flog-l>div{height:auto;min-height:22px;white-space:normal}
+
+/* 던전·토벌전 카운트 줄(.cntrow): 파티 레이드 줄(.raid-bar)과 같은 모양 — 오른쪽 정렬 한 줄, 이름 · 숫자 · 작은 설명, 항목 사이 · */
+.cntrow:not(.ex-cnt .cntrow){justify-content:flex-end;align-items:baseline;gap:0 10px;padding:2px 2px 0;font-size:12.5px;color:var(--muted)}
+.cntrow:not(.ex-cnt .cntrow)>.cnt{display:inline-flex;flex-direction:row;align-items:baseline;gap:0;padding:0;border:0;background:none;min-width:0}
+.cntrow:not(.ex-cnt .cntrow)>.cnt+.cnt::before{content:"·";color:var(--faint);margin-right:10px}
+.cntrow:not(.ex-cnt .cntrow)>.cnt small{display:inline;height:auto;padding:0;border:0;border-radius:0;font-size:12.5px;color:var(--muted);letter-spacing:0}
+.cntrow:not(.ex-cnt .cntrow)>.cnt b{margin:0 4px 0 6px;font-size:15px;font-weight:500;line-height:1.2;color:var(--gold-hi)}
+.cntrow:not(.ex-cnt .cntrow)>.cnt em{font-size:11.5px;color:var(--faint)}
