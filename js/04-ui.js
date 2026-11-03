@@ -948,10 +948,12 @@ function renderFight(){
 function flogScroll(){const lg=document.querySelector('.flog #blog');if(lg)lg.scrollTop=lg.scrollHeight;}
 
 /* ───────── 캐릭터 ───────── */
+const INV_STACK=99; // 인벤토리 한 칸에 쌓는 최대 개수(넘으면 칸을 나눠 그림, 세이브는 아이템마다 총 개수 하나)
 function vChar(){
   const me=S.me,c=CLASSES[me.job];
   const flags=Object.keys(S.flags).filter(k=>S.flags[k]);
   const invAll=Object.entries(me.inv).filter(([k,n])=>n>0&&ITEMS[k]);const icat=S.sel.invCat||'equip';const catOf=k=>ITEMS[k].type==='equip'?'equip':ITEMS[k].rod?'use':ITEMS[k].type==='mat'?'mat':ITEMS[k].type==='deco'?'deco':'use';const inv=invAll.filter(([k])=>catOf(k)===icat);
+  const invSlots=inv.flatMap(([k,n])=>{const out=[];for(let r=n;r>0;r-=INV_STACK)out.push([k,Math.min(INV_STACK,r),n]);return out;});
   const eqIds=Object.values(me.equip||{});
   const ctab=['equip','craft','dex','log'].includes(S.sel.ctab)?S.sel.ctab:'info';
   return `<div class="wrap page"><div class="page-head"><div><h2>캐릭터<small class="en">Character</small></h2></div></div>
@@ -964,10 +966,10 @@ function vChar(){
           ${open?`<div class="eqdet"><img src="${ITEM_IMG}" alt=""><div class="invd-t"><span class="bpill eqb sm" style="align-self:flex-start">${statText(itemStats(id,enhOf(id)))}</span><p>${esc(it.desc)}</p><small class="faint">강화 +${enhOf(id)} / ${ENH_MAX}</small>
             <div class="row"><button class="btn btn-sm btn-primary" data-act="enh-open" data-id="${id}">강화</button><button class="btn btn-sm" data-act="unequip" data-slot="${sl}">해제</button></div></div></div>`:''}</div>`;}).join('')}</div></div>
       
-      <div class="panel"><h3>${hTitle('box','인벤토리')} <span class="faint num" style="letter-spacing:0;font-weight:400">${Math.min(inv.length,30)}/30</span></h3>
+      <div class="panel"><h3>${hTitle('box','인벤토리')} <span class="faint num" style="letter-spacing:0;font-weight:400">${invSlots.length}/30</span></h3>
         <div class="mtabs invtabs" role="tablist">${[['equip','장비'],['use','소모품'],['mat','재료'],['deco','장식품']].map(([k,l])=>`<button role="tab" data-act="inv-cat" data-cat="${k}" aria-selected="${icat===k}">${l} <span class="num faint">${invAll.filter(([x])=>catOf(x)===k).length}</span></button>`).join('')}</div>
-        <div class="invgrid" role="list">${Array.from({length:30},(_,x)=>{const e=inv[x];if(!e)return '<div class="invcell empty" role="listitem"></div>';const [k,n]=e;const it=ITEMS[k];const eq=it.type==='equip';const on=eqIds.includes(k);
-          return `<button class="invcell ${on?'on':''} ${eq?'eqp':'use'}" role="listitem" data-act="inv-sel" data-id="${k}" aria-pressed="${S.sel.invSel===k}" title="${esc(it.name)} ×${n} · ${eq?SLOT[it.slot]+' · '+statText(it.stats)+' · ':typeLabel(it)+' · '}${esc(it.desc)}${eq?(on?' · 눌러서 해제':' · 눌러서 착용'):''}" aria-label="${esc(it.name)} ${n}개${on?' 착용 중':''}${shelfCount(k)?' 장식 중':''}">${it.icon?`<span class="ic-svg">${it.icon}</span>`:`<img src="${ITEM_IMG}" alt="">`}${n>1?`<span class="ic-n num">${n}</span>`:''}${on?'<span class="ic-on">E</span>':''}${shelfCount(k)?'<span class="ic-deco">장식 중</span>':''}${enhOf(k)?`<span class="ic-enh num">+${enhOf(k)}</span>`:''}</button>`;}).join('')}</div>
+        <div class="invgrid" role="list">${Array.from({length:Math.max(30,invSlots.length)},(_,x)=>{const e=invSlots[x];if(!e)return '<div class="invcell empty" role="listitem"></div>';const [k,n,tot]=e;const it=ITEMS[k];const eq=it.type==='equip';const on=eqIds.includes(k);
+          return `<button class="invcell ${on?'on':''} ${eq?'eqp':'use'}" role="listitem" data-act="inv-sel" data-id="${k}" aria-pressed="${S.sel.invSel===k}" title="${esc(it.name)} ×${n}${tot>n?` (총 ${tot})`:''} · ${eq?SLOT[it.slot]+' · '+statText(it.stats)+' · ':typeLabel(it)+' · '}${esc(it.desc)}${eq?(on?' · 눌러서 해제':' · 눌러서 착용'):''}" aria-label="${esc(it.name)} ${n}개${tot>n?` (총 ${tot}개)`:''}${on?' 착용 중':''}${shelfCount(k)?' 장식 중':''}">${it.icon?`<span class="ic-svg">${it.icon}</span>`:`<img src="${ITEM_IMG}" alt="">`}${n>1?`<span class="ic-n num">${n}</span>`:''}${on?'<span class="ic-on">E</span>':''}${shelfCount(k)?'<span class="ic-deco">장식 중</span>':''}${enhOf(k)?`<span class="ic-enh num">+${enhOf(k)}</span>`:''}</button>`;}).join('')}</div>
       ${invDetail(inv,eqIds)}</div>
       <div class="panel"><h3>${hTitle('bolt','스킬')} <span class="faint num" style="letter-spacing:0;font-weight:400">${c.skills.length}</span></h3>${skillTabs()}</div></div>`}</div>`;
 }
