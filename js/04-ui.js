@@ -820,14 +820,14 @@ const BUFFN={roar:'포효',berserk:'광전사',takedown:'테이크다운',smoke:
 function fighterCard(b,p){
   const T=b.turn,st=[];
   if(p.dead)st.push('<span class="chip bad">쓰러짐</span>');
-  if(supActive(b)&&b.sup.by===p.id)st.push('<span class="chip tank">제압</span>');
-  if(p.protect||(b.sanct&&!p.dead))st.push('<span class="chip ok">보호</span>');
-  if(p.poison)st.push(`<span class="chip bad">${esc(p.poison.name)} ${p.poison.turns}</span>`);
-  if(p.hot)st.push(`<span class="chip heal">블레스 ${p.hot.turns}</span>`);
-  if(p.bound>0)st.push(`<span class="chip warn">빛의 속박 ${p.bound}</span>`);
-  if(canDouble(p,b))st.push('<span class="chip dps">연사</span>');
-  if(p.obTurn===T)st.push('<span class="chip dps">오버 버닝 가능</span>');
-  p.buffs.filter(x=>x.from<=T&&x.to>=T).forEach(x=>st.push(`<span class="chip dps">${BUFFN[x.k]||x.k}</span>`));
+  if(supActive(b)&&b.sup.by===p.id)st.push('<span class="chip st-buff">제압</span>');
+  if(p.protect||(b.sanct&&!p.dead))st.push('<span class="chip st-buff">보호</span>');
+  if(p.poison)st.push(`<span class="chip st-debuff">${esc(p.poison.name)} ${p.poison.turns}</span>`);
+  if(p.hot)st.push(`<span class="chip st-heal">블레스 ${p.hot.turns}</span>`);
+  if(p.bound>0)st.push(`<span class="chip st-debuff">빛의 속박 ${p.bound}</span>`);
+  if(canDouble(p,b))st.push('<span class="chip st-buff">연사</span>');
+  if(p.obTurn===T)st.push('<span class="chip st-buff">오버 버닝 가능</span>');
+  p.buffs.filter(x=>x.from<=T&&x.to>=T).forEach(x=>st.push(`<span class="chip st-buff">${BUFFN[x.k]||x.k}</span>`));
   const conf=p.dead?'':p.confirmed?'<span class="chip ok">확정</span>':'<span class="chip dim">선택 중</span>';
   const targeted=b.tel&&b.tel.type!=='aoe'&&b.tel.target===p.id;
   return `<div class="fighter ${p.isMe?'me':''} ${p.dead?'dead':''} ${targeted?'targeted':''}">

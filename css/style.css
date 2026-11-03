@@ -2705,3 +2705,9 @@ body::after{display:none!important}
 .mass-card .chip.tank:not(.cls):not(.dim){background:color-mix(in srgb,var(--tank) 16%,transparent);border-color:var(--tank);color:var(--tank)}
 .mass-card .chip.dps:not(.cls):not(.dim){background:color-mix(in srgb,var(--dps) 16%,transparent);border-color:var(--dps);color:var(--dps)}
 .mass-card .chip.heal:not(.cls):not(.dim){background:color-mix(in srgb,var(--heal) 16%,transparent);border-color:var(--heal);color:var(--heal)}
+/* 전투 상태 칩(fighterCard .chip·만신전 HUD .hud-fx): 버프 금색 · 디버프 보라 · 회복 초록으로 채움 */
+:root{--st-buff:#e6bf4f;--st-debuff:#a57cf0;--st-heal:#5fcf8c}
+.chip.st-buff,.chip.st-debuff,.chip.st-heal,.hud-fx.st-buff,.hud-fx.st-debuff,.hud-fx.st-heal{border-color:transparent;font-weight:600}
+.chip.st-buff,.hud-fx.st-buff{background:var(--st-buff);color:#2a2008}
+.chip.st-debuff,.hud-fx.st-debuff{background:var(--st-debuff);color:#fff}
+.chip.st-heal,.hud-fx.st-heal{background:var(--st-heal);color:#0f2a1a}
