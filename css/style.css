@@ -2458,3 +2458,27 @@ body::after{display:none!important}
 
 /* 캐릭터 카드: 레벨 줄(테두리 없음) / 클래스·장인 줄 */
 .sc-lvl{font-size:12.5px;color:var(--steel-hi);letter-spacing:.04em;margin-top:2px}
+
+/* 전체 플랫: 패널·상자의 그라데이션·안쪽 장식선(이중 테두리)·그림자를 빼고 단색 바탕 + 1px 테두리 */
+.panel,.skybar,.skilllist{background:var(--slab);box-shadow:none;border:1px solid var(--rule)}
+.panel::after,.skybar::after,.skilllist::after{content:none}
+.ticker,.ticker.calm{background:var(--slab)!important;box-shadow:none}
+.pill{background:var(--slab)}
+.ng-row{background:var(--slab-2)}
+.adm-move{background:var(--slab-2)}
+.ph-empty{background:var(--night)}
+.bar>i,.bar.hp>i,.bar.mp>i{background-image:none}
+.bar.xp>i{background:var(--xp)}
+.modal,.pop,.rmenu{background:var(--slab);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.pop-head{background:none}
+.ng .ng-row,.ng .ng-row:hover,.ng-row:hover{background:var(--slab-2)}
+.ng .ng-row:hover,.ng-row:hover{background:var(--slab-3)}
+.list .li.clickable[aria-current="true"],.li.clickable[aria-current="true"]{background:var(--slab-3);box-shadow:inset 2px 0 0 var(--gold-hi)}
+.hpgauge>i{background:var(--hp)}
+.sh-slot.on{background:var(--slab-2)}
+.rc-art{background:var(--night)}
+.nav button,.nav button[aria-current="page"],.nav button:hover,.logo .lg-en,.panel>h3,.panel>.ph{text-shadow:none}
+
+/* 패널·상자 모서리 12px(유저 요청) */
+.panel,.skybar,.skilllist,.ticker,.rcard,.ng-row,.pop,.modal,.rmenu{border-radius:12px}
+.rc-art{border-radius:12px 12px 0 0}
