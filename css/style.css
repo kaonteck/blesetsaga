@@ -2447,6 +2447,6 @@ body{background:
 .mcard-h.locked .mname{color:var(--muted)}
 @media (max-width:640px){.mcard-h{flex-wrap:nowrap}.mh-st{width:auto}}
 
-/* 바탕: 효과 없는 단색 #1e1e1e (별·성운·그라데이션·원 무늬 없음) */
-body{background:#1e1e1e!important;background-image:none!important}
+/* 바탕: 효과 없는 단색 #161616 (별·성운·그라데이션·원 무늬 없음) */
+body{background:#161616!important;background-image:none!important}
 body::after{display:none!important}
