@@ -566,6 +566,22 @@ if(ONLINE){
     if(Date.now()-olAt>10000){olAt=Date.now();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel.pop==='online')renderPop();}catch(e){}});}
   };
   // 접속자 목록·정보 카드의 편지 보내기: 실제 블레서는 서버 우편으로
+  // 계정 삭제(017): 서버 세이브·우편·행운권·낚시 기록을 서버 함수로 먼저 지운 뒤 게임의 원래 삭제(새 상태 저장)를 한다.
+  // 서버 검사(016)는 캐릭터 없는 저장으로 예전 캐릭터를 지우지 못하게 막으므로, 삭제는 반드시 이 길로.
+  const _accDel=ACTS['acc-del-yes'];
+  ACTS['acc-del-yes']=async(d,el,e)=>{
+    if(!SB_UID)return _accDel(d,el,e);
+    if(el)el.disabled=true;
+    clearTimeout(cloudT);cloudT=null;
+    for(let i=0;i<60&&cloudBusy;i++)await new Promise(r=>setTimeout(r,100));
+    cloudBusy=true;   // 지우는 동안 예전 상태가 올라가지 않게
+    try{const {error}=await SB.rpc('reset_my_save');if(error)throw error;}
+    catch(err){console.warn(err);cloudBusy=false;cloudAgain=false;if(el)el.disabled=false;toast('계정을 삭제하지 못했습니다. 인터넷 연결을 확인해 주세요.','bad');return;}
+    cloudBusy=false;cloudAgain=false;
+    _accDel(d,el,e);
+    try{FB.rows={};}catch(x){}
+    cloudFlush();
+  };
   const _uMail=ACTS['u-mail'];
   ACTS['u-mail']=(d,el,e)=>{_uMail(d,el,e);const p=chPlayer(d.name);if(p&&!bot(d.name)&&S.sel.mc){S.sel.mc.to='@'+p.user_id;renderPop();mlLoadPlayers().then(()=>{if(S.sel.mailView==='compose')renderPop();});}};
   // 신고: 서버 메시지는 서버 reports 표로

@@ -365,4 +365,33 @@ select t.ok((select count(*) from admin_save_flags() where user_id=:'P4')=0,'운
 select t.ok((select (admin_set_level(:'P4',60,'테스트')->>'after')::int)=60,'운영자 레벨 조정은 예산과 무관(LV12→60)');
 reset role;
 select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P4')=60,'세이브 LV60');
+
+-- 016 보완 (017): 첫 업로드는 자르지 않음 · 계정 삭제는 서버 함수로
+reset role;
+insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values ('00000000-0000-0000-0000-000000000005','p5@x','{"username":"p5"}','{}');
+\set P5 '00000000-0000-0000-0000-000000000005'
+set role authenticated; select t.as(:'P5');
+insert into saves(user_id,data) values (:'P5','{"me":{"name":"하람","level":30,"exp":10,"gold":250000,"inv":{"potion":120}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'gold')::int=250000 and (data->'me'->'inv'->>'potion')::int=99 from saves where user_id=:'P5'),'첫 업로드(이 기기에서 키운 LV30·25만 골드)는 자르지 않음 · 아이템만 99개');
+select t.ok((select jsonb_array_length(guard->'flags')=2 and guard->'flags'->0->>'k'='first' from saves where user_id=:'P5'),'첫 업로드가 크면 의심 기록만 2건(레벨·골드)');
+insert into saves(user_id,data) values (:'P5','{"me":{"name":"하람","level":31,"exp":0,"gold":250500,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P5')=31,'그 뒤 저장은 평소처럼(LV31)');
+reset role;
+insert into mail(recipient,sender,sender_name,text,gold) values (:'P5',null,'운영자','선물',100);
+insert into fish_catches(user_id,land,species,size_cm) values (:'P5','frost','빙어',10);
+set role authenticated; select t.as(:'P5');
+update profiles set name='하람', level=31, job='mage', title='t_x', memo='안녕' where user_id=:'P5';
+select t.fail($q$do $x$ begin perform set_config('request.jwt.claims','{}',true); perform public.reset_my_save(); end $x$$q$,'로그인 없이 계정 삭제');
+select t.as(:'P5');
+select reset_my_save();
+reset role;
+select t.ok((select data='{}'::jsonb and (guard->>'rev') is not null and jsonb_array_length(guard->'flags')=2 from saves where user_id=:'P5'),'계정 삭제: 세이브 비움(보정 번호·의심 기록은 남김)');
+select t.ok((select count(*) from mail where recipient=:'P5')=0 and (select count(*) from fish_catches where user_id=:'P5')=0,'계정 삭제: 우편·낚시 기록도 삭제');
+select t.ok((select level=1 and job is null and title is null and memo is null from profiles where user_id=:'P5'),'계정 삭제: 공개 프로필 레벨·직업·칭호·메모 처음으로');
+set role authenticated; select t.as(:'P5');
+insert into saves(user_id,data) values (:'P5','{"v":3}') on conflict (user_id) do update set data=excluded.data;
+insert into saves(user_id,data) values (:'P5','{"me":{"name":"새싹","level":1,"exp":0,"gold":100,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int=1 and (data->'me'->>'gold')::int=100 and data->'me'->>'name'='새싹' from saves where user_id=:'P5'),'삭제 뒤 새 캐릭터는 LV1부터(예전 LV31이 안 붙음)');
+insert into saves(user_id,data) values (:'P5','{"me":{"name":"새싹","level":30,"exp":0,"gold":100,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P5')=11,'삭제로 첫 업로드 예외를 다시 쓸 수 없음(LV30 요청 → 11)');
 select 'ALL TESTS PASSED';

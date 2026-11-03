@@ -107,9 +107,9 @@ with sync_playwright() as p:
     ok('<b>송사리</b>' in fv and '12.5cm' in fv and '빙어 15cm' in fv and pg.locator('#view td b').count()==0,'낚시 랭킹 탭: 이번 주 순위·지난 주 1위(HTML은 글자로)')
     pg.click('#fs-settle');pg.wait_for_timeout(400);ok('fish_settle' in pg.evaluate("window.__RPC_CALLS"),'지난 주 정산 버튼 → fish_settle')
     # 부정 의심 (016)
-    pg.evaluate("__DB.guard_flags=[{user_id:'u3',name:'<i>벨라</i>',username:'bella',level:12,gold:100600,last_at:new Date().toISOString(),n:2,flags:[{at:Date.now()/1000,k:'gold',from:600,to:5000600,ok:100600},{at:Date.now()/1000-60,k:'level',from:4,to:99,ok:14}]}]")
+    pg.evaluate("__DB.guard_flags=[{user_id:'u3',name:'<i>벨라</i>',username:'bella',level:12,gold:100600,last_at:new Date().toISOString(),n:2,flags:[{at:Date.now()/1000,k:'gold',from:600,to:5000600,ok:100600},{at:Date.now()/1000-60,k:'level',from:4,to:99,ok:14},{at:Date.now()/1000-120,k:'first',what:'level',to:30}]}]")
     pg.click('.tab[data-tab=guard]');pg.wait_for_selector('[data-gclear]');gv=pg.inner_text('#view')
-    ok('<i>벨라</i>' in gv and '5,000,600' in gv and '100,600' in gv and '레벨' in gv and pg.locator('#view td i').count()==0,'부정 의심 탭: 요청 값·남긴 값(HTML은 글자로)')
+    ok('LV30 로 시작 (그대로 받음)' in gv and '첫 업로드' in gv and '<i>벨라</i>' in gv and '5,000,600' in gv and '100,600' in gv and '레벨' in gv and pg.locator('#view td i').count()==0,'부정 의심 탭: 요청 값·남긴 값(HTML은 글자로)')
     pg.click('[data-gclear="u3"]');pg.click('[data-ans="1"]');pg.wait_for_timeout(500)
     ok('admin_clear_flags' in pg.evaluate("window.__RPC_CALLS") and '의심 기록이 없습니다' in pg.inner_text('#view'),'의심 기록 지우기');pg.screenshot(path=OUT+'/5g-guard.png')
     # 행운권
