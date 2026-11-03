@@ -80,7 +80,7 @@ function itemLv(id){const it=ITEMS[id];return it.levelReq||Math.max(1,Math.round
 function repairRate(id){return 5+itemLv(id)*3;}
 function repairCost(id,miss){return Math.ceil(miss*repairRate(id)*10/DURA_MAX);}
 function ensureCraft(){const me=S.me;if(!me||me.craftSeed)return;me.craftSeed=1;
-  const g={haste5:3,haste10:2,haste30:1,haste60:1,haste360:1,ore:6,herb:6,grain:5,meat:2,fish:2,salt:1};for(const k in g)me.inv[k]=(me.inv[k]||0)+g[k];save();}
+  const g={haste5:3,haste10:2,haste30:1,haste60:1,haste360:1,ore:6,herb:6,grain:5,meat:2,fish:2,salt:1};for(const k in g)me.inv[k]=Math.min(itemCap(k),(me.inv[k]||0)+g[k]);save();}
 /* ── 체력 유지 ──
    던전·파티 레이드·토벌전·만신전이 끝나면 그때 남은 체력을 그대로 들고 나온다(S.me.hpPct, 0~1).
    다음 레이드는 그 체력으로 시작. 레벨 업하면 100%, 평소에는 HP_REGEN_MS 동안 0→100% 천천히 회복.
@@ -951,7 +951,7 @@ function decoSrcText(k){const x=(S.me.decoSrc||{})[k];if(!x)return '';return x.t
 function shelfCount(k){return shelf().filter(x=>x===k).length;}
 function ensureDeco(){const me=S.me;if(!me)return;const sh=shelf();let ch=false;
   if(!me.decoSeed){me.decoSeed=1;if(!sh.includes('snowglobe'))sh[0]=sh[0]||'snowglobe';ch=true;}
-  if(me.decoV!==2){me.decoV=2;const c={};sh.forEach(k=>{if(k)c[k]=(c[k]||0)+1;});for(const k in c)me.inv[k]=(me.inv[k]||0)+c[k];noteDeco('snowglobe',{t:'event',v:'오픈 기념 이벤트'});ch=true;}
+  if(me.decoV!==2){me.decoV=2;const c={};sh.forEach(k=>{if(k)c[k]=(c[k]||0)+1;});for(const k in c)me.inv[k]=Math.min(itemCap(k),(me.inv[k]||0)+c[k]);noteDeco('snowglobe',{t:'event',v:'오픈 기념 이벤트'});ch=true;}
   const seen={};sh.forEach((k,i)=>{if(!k)return;seen[k]=(seen[k]||0)+1;if(!ITEMS[k]||seen[k]>(me.inv[k]||0)){sh[i]=null;ch=true;}});
   if(ch)save();}
 function shelfPanel(){

@@ -323,7 +323,7 @@ if(ONLINE){
   ACTS['mail-claim']=async(d,el,e)=>{
     const m=(S.mail||[]).find(x=>x.id===d.id);const sid=m&&mlSrvId(m.id);
     if(!sid||!SB_UID)return A0.claim(d,el,e);
-    if(m.claimed||m._claiming)return;m._claiming=true;
+    if(m.claimed||m._claiming)return;{const w=typeof mailOver==='function'&&mailOver(m);if(w){toast(w,'warn');return;}}m._claiming=true;   // 99개 넘침은 서버에서 받기 전에 막음(메인)
     const {error}=await SB.rpc('claim_mail',{p_id:sid});delete m._claiming;
     if(error){if(/ALREADY_CLAIMED/.test(error.message||'')){m.claimed=true;save();renderPop();}toast(mlErr(error),'bad');return;}
     // 기다리는 동안 우편 목록이 새로 받아져 객체가 바뀌었을 수 있으니 지금 목록의 것으로 넣는다(빠뜨림 방지)
