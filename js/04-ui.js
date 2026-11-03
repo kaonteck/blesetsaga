@@ -114,7 +114,9 @@ function render(){
   if(r==='admin'&&!isAdmin()){v.innerHTML=`<div class="wrap page"><div class="panel"><h3>운영</h3><p>운영자 권한이 있는 계정만 열 수 있습니다.</p></div></div>`;return;}
   const fn={community:vCommunity,profile:vProfile,main:vMain,quest:vQuest,explore:vExplore,battle:vBattle,character:vChar,lore:vLore,market:vMarket,admin:vAdmin}[r]||vMain;
   /* 3단 레이아웃: 왼쪽(캐릭터)·오른쪽(퀵바·진행 중·주간 미션·채팅)은 고정, 가운데만 페이지별로 바뀜. DOM 순서는 가운데 먼저(모바일에서 위에 오도록) */
-  v.innerHTML=r==='admin'?fn():`<div class="wrap tri" data-route="${r}"><main class="tri-c">${fn()}</main><aside class="tri-l" aria-label="내 캐릭터">${sideCard()}</aside><aside class="tri-r" aria-label="바로가기와 진행 상황">${rightCol()}</aside></div>`;
+  /* 예외: 운영 페이지, 만신전 전투(10×10 전장)는 3단 없이 넓게 */
+  const wide=r==='admin'||(r==='battle'&&S.battle&&S.battle.grid);
+  v.innerHTML=wide?fn():`<div class="wrap tri" data-route="${r}"><main class="tri-c">${fn()}</main><aside class="tri-l" aria-label="내 캐릭터">${sideCard()}</aside><aside class="tri-r" aria-label="바로가기와 진행 상황">${rightCol()}</aside></div>`;
   afterRender();
   renderPop();
 }
@@ -236,12 +238,12 @@ function sideCard(){
     <div class="sc-id">${titleChip()}
       <h2 class="sc-name"><button class="me-link" data-act="nav" data-route="character" title="캐릭터 페이지로">${esc(me.name)}</button></h2>
       <div class="sc-lv"><span class="lv num">LV ${me.level}</span>${roleChip(me.job)}${profChips()}${canAdv?'<button class="chip warn" data-act="nav" data-route="character" style="cursor:pointer;background:none">전직 가능</button>':''}</div></div>
+    <div class="sc-memo">${memoHTML()}</div>
     <div class="sc-gauge xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`${me.exp} / ${need}`}"><div class="sc-gh"><span class="sc-gl">경험치</span><span class="num">${cap?'MAX':`${me.exp.toLocaleString('ko-KR')}/${need.toLocaleString('ko-KR')}`}</span></div><div class="bar xp"><i style="width:${xp}%"></i></div></div>
     <div class="sc-st"><div class="sc-sh">STATUS</div>
       <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxHp inl">${ICON.maxHp}</span>체력</span><span class="num">${cur.toLocaleString('ko-KR')}/${mx.toLocaleString('ko-KR')}</span></div><div class="bar hp"><i style="width:${Math.round(hp*100)}%"></i></div></div>
       <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
-      <div class="sc-gold">${goldHTML(me.gold)}</div></div>
-    ${memoHTML()}</div>`;
+      <div class="sc-gold">${goldHTML(me.gold)}</div></div></div>`;
 }
 /* ── 오른쪽 고정: 퀵바(바로가기 3칸) · 진행 중인 목록 · 주간 미션 · 채팅 ── */
 const QB_PAGES=[['main','메인'],['character','캐릭터'],['lore','세계관'],['quest','퀘스트'],['explore','탐색'],['battle','레이드'],['market','거래소'],['community','커뮤니티'],['profile','프로필']];

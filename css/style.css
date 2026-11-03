@@ -2405,3 +2405,15 @@ body{background:
 .top .wrap{max-width:1480px}
 @media (max-width:980px){.qb-slots{grid-template-columns:repeat(3,minmax(0,92px));justify-content:center;gap:12px}}
 .tri-r{overflow-y:auto;scrollbar-width:thin}
+
+/* 캐릭터 카드: 한줄메모는 경험치 위, 아래 구분선 */
+.sc-memo{padding-bottom:10px;border-bottom:1px solid var(--rule)}
+.sc-memo .me-memo{margin:0;padding:0;border:0}
+/* 퀵바: 세로폭 줄임(대륙 날씨 칸 정도) */
+.panel.qb{padding:10px 12px}
+.qb-h{margin-bottom:6px}
+.qb-t{font-size:12.5px}
+.qb-s{aspect-ratio:auto;height:52px;flex-direction:row;gap:7px;padding:0 8px}
+.qb-s svg{width:20px;height:20px;flex:none}
+.qb-l{font-size:12px}
+@media (max-width:980px){.qb-slots{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
