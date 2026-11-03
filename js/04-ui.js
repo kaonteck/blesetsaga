@@ -207,7 +207,7 @@ document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').
 function afterRender(){
   syncChatFab();initMapZoom();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
-  fitExlog();fitSideChat();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
+  fitExlog();fitSideChat();flogScroll();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
 }
 
@@ -778,10 +778,13 @@ function vQueue(){
 /* ───────── 전투 화면 ───────── */
 function vFight(){
   if(S.battle&&S.battle.grid&&!S.battle.over)return vGridFight();
-  return `<div class="wrap page"><div class="arena ${S.battle&&S.battle.grid?'grid-arena':''}"><div id="fightmain" class="stack" style="gap:16px">${fightMain()}</div>
-    <div class="stack" style="gap:16px"><div class="panel"><h3>전투 로그 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">읽기 전용</span></h3><div class="log" id="blog">${logHTML()}</div></div>
-    ${S.battle&&S.battle.solo?'':S.battle&&S.battle.grid?chatPanel({lock:'raid'})+`<div class="panel" id="dmgrank">${dmgRank(S.battle)}</div>`:chatPanel({lock:'party'})}</div></div></div>`;
+  const side=S.battle&&S.battle.solo?'':S.battle&&S.battle.grid?chatPanel({lock:'raid'})+`<div class="panel" id="dmgrank">${dmgRank(S.battle)}</div>`:chatPanel({lock:'party'});
+  return `<div class="wrap page"><div class="arena ${S.battle&&S.battle.grid?'grid-arena':''} ${side?'':'solo-arena'}"><div id="fightmain" class="stack" style="gap:16px">${fightMain()}</div>
+    ${side?`<div class="stack" style="gap:16px">${side}</div>`:''}</div></div>`;
 }
+/* 전투 로그: 파티 칸과 스킬 칸 사이 한 줄 · 펼치면 5줄(넘으면 스크롤) */
+function flogHTML(){const open=!!S.sel.flogOpen;
+  return `<div class="panel flog ${open?'open':''}"><button class="flog-h" data-act="flog-fold" aria-expanded="${open}"><span class="flog-t">전투 로그</span><svg class="flog-ch" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="log flog-l" id="blog">${logHTML()}</div></div>`;}
 function logHTML(){return S.battle.log.slice(-160).map(l=>`<div class="${l.t}">${esc(l.text)}</div>`).join('');}
 /* 몬스터 그림 / 대사(옛 영웅 보스 HERO_LINES): 전투 중엔 이번 턴 대사(첫 턴은 첫 대사), 승리 후엔 마지막 말.
    대사는 '다음 행동' 칸 위에 같은 모양의 붉은 칸(.tele.say)으로 */
@@ -792,7 +795,7 @@ function monSayHTML(b){const t=(monSayText(b)||'').trim();if(!t)return '';const 
 function monArtHTML(b,win){return `<div class="mon-art"><pre class="ascii" ${b.over?`style="opacity:${win?.35:1}"`:''}>${esc(ART[b.mon.art]||ART.generic)}</pre></div>`;}
 function fightMain(){
   const b=S.battle,m=b.mon,me=b.players.find(p=>p.isMe);
-  if(b.over)return outcomeHTML(b);
+  if(b.over)return outcomeHTML(b)+flogHTML();
   if(b.grid)return '';
   const tel=b.tel;
   const left=Math.max(0,Math.ceil((b.deadline-now())/1000));
@@ -807,6 +810,7 @@ function fightMain(){
       ${sup?`<p class="muted" style="font-size:12.5px">제압 중 · ${esc(sup.name)} (딜러 총 ${dps} / 유지 한도 ${Math.max(1,sup.dealt)*b.sup.mult} · ${b.sup.mult}배)</p>`:''}
     </div></div></div>
     <div class="panel"><h3>파티 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">방어·보호·지원 스킬 먼저, 이후 행운 순</span></h3><div class="fighters">${b.order.map(id=>fighterCard(b,b.players.find(p=>p.id===id))).join('')}</div></div>
+    ${flogHTML()}
     <div class="panel cmdbar">${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
     <div class="row" style="justify-content:space-between;margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">
       <span class="muted" style="font-size:12.5px">확정 ${living(b).filter(p=>p.confirmed).length}/${living(b).length} · 전원 확정 또는 시간 종료 시 처리</span>
@@ -940,6 +944,7 @@ function renderFight(){
   const lg=$('#blog');if(lg){lg.innerHTML=logHTML();lg.scrollTop=lg.scrollHeight;}
   renderTop();
 }
+function flogScroll(){const lg=document.querySelector('.flog #blog');if(lg)lg.scrollTop=lg.scrollHeight;}
 
 /* ───────── 캐릭터 ───────── */
 function vChar(){

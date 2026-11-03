@@ -2640,3 +2640,20 @@ body::after{display:none!important}
 
 /* 글자 그림자 전부 제거(유저 요청) */
 *,*::before,*::after{text-shadow:none!important}
+
+/* 던전 탐사 — 내 상태 HUD (만신전 HUD 재사용, 이동 없음) */
+.dr-hudp{padding:0;overflow:hidden}
+.dr-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:6px}
+.dr-stats>div{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.dr-stats small{font-size:11px;color:var(--muted)}
+.dr-stats b{font-size:17px;color:var(--text)}
+/* 전투 로그 — 파티와 스킬 사이 한 줄, 펼치면 5줄 */
+.solo-arena{grid-template-columns:minmax(0,1fr)!important}
+.flog{padding:0;overflow:hidden}
+.flog-h{display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px 0;background:none;border:0;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;text-align:left}
+.flog-ch{margin-left:auto;transition:transform .15s}
+.flog.open .flog-ch{transform:rotate(180deg)}
+.flog .flog-l{height:auto;display:block;max-height:22px;overflow:hidden;padding:0 14px;margin:4px 0 9px;font-size:13px;border:0;background:none;scrollbar-width:thin}
+.flog .flog-l>div{height:22px;line-height:22px;padding:0;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flog.open .flog-l{max-height:110px;overflow-y:auto}
+.flog.open .flog-l>div{height:auto;min-height:22px;white-space:normal}

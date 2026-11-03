@@ -1340,6 +1340,11 @@ html[data-theme="light"] .thsw.on{background:#95afe3}
 html[data-theme="light"] .thsw.on .thsw-k{background:#fff;color:#e0a526}
 html[data-theme="light"] .thsw:focus-visible{outline:2px solid var(--gold)}
 html[data-theme="light"] *,html[data-theme="light"] *::before,html[data-theme="light"] *::after{text-shadow:none!important}
+html[data-theme="light"] .dr-stats>div{border:1px solid var(--rule)}
+html[data-theme="light"] .dr-stats small{color:var(--muted)}
+html[data-theme="light"] .dr-stats b{color:var(--text)}
+html[data-theme="light"] .flog-h{background:none;border:0;color:var(--muted)}
+html[data-theme="light"] .flog .flog-l{border:0;background:none}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

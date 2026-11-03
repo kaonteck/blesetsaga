@@ -607,8 +607,30 @@ function vDrun(){
   return `<div class="wrap page"><div class="page-head"><div><h2>레이드<small class="en">Raid</small></h2></div></div>
     <div class="panel dr"><div class="dr-head"><div><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${esc(I.label||'인스턴스 던전')}</div><h3>${esc(boss.region)}</h3></div>${R.party&&R.party.length>1?`<div class="dr-party">${R.party.map(x=>`<span class="chip">${esc(x.name)}${x.isMe?' (나)':''}</span>`).join('')}</div>`:''}<div class="dr-hp"><span class="faint">HP</span><div class="bar"><i style="width:${Math.round(R.hp*100)}%"></i></div><span class="num">${Math.round(R.hp*100)}%</span></div></div>
       <div class="dr-track">${track}</div>${body}
-      </div></div>`;
+      </div>${R.done?'':drunHud(R,k)}</div>`;
 }
+/* 던전 탐사 중 내 상태 — 만신전 HUD 모양(이동 없음): 진행 · 아이템 · 포기 */
+function drunHud(R,k){const me=S.me,st=myStats(),maxHp=st.maxHp,hp=Math.max(0,Math.round(R.hp*maxHp)),hpP=Math.round(R.hp*100);
+  const role=roleOf(me.job),mode=S.sel.drMode==='item'?'item':'stat';
+  const face=me.portrait?`<img src="${me.portrait}" alt="">`:`<span class="uc-sig ${role}">${CLASSES[me.job].sigil}</span>`;
+  const fx=[...new Set((me.itemBuffs||[]).filter(x=>x.until>now()).map(x=>ITEMS[x.src]?ITEMS[x.src].name:'버프'))];
+  const go={monster:'전투',boss:'보스전',chest:'열기',trap:'지나가기',empty:'나아가기'}[k]||'진행';
+  const pad=`<div class="hud-cmd dr-cmd" role="group" aria-label="커맨드">${[['next',go,'c-main','drun-next',GICON.fight],['item','아이템','','dr-mode',GICON.item],['quit','포기','','drun-quit',GICON.wait]].map(([key,l,c,act,ic])=>`<button class="hcmd ${c} ${key==='item'&&mode==='item'?'on':''}" data-act="${act}" data-mode="${key==='item'?(mode==='item'?'stat':'item'):''}" ${key==='item'?`aria-pressed="${mode==='item'}"`:''}><span class="hcmd-in">${ic}<b>${l}</b></span></button>`).join('')}</div>`;
+  let body;
+  if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(x=>ITEMS[x]);
+    body=`<div class="gact-h"><span class="hud-tag">ITEM</span>아이템 <small>던전 안에서는 회복약만 쓸 수 있습니다 · HP 50 회복</small></div>
+      <div class="ginv">${items.map(x=>{const n=me.inv[x]||0;const ok=x==='potion'&&n>0&&R.hp<1;return `<button class="invcell use" data-act="dr-potion" data-item="${x}" ${ok?'':'disabled'} title="${esc(ITEMS[x].desc)}"><img src="${ITEM_IMG}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[x].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>`;}
+  else body=`<div class="gact-h"><span class="hud-tag">STATUS</span>상태</div>
+      <div class="dr-stats">${[['공격력',st.atk],['마력',st.mag],['방어력',st.def],['행운',st.luk]].map(([l,v])=>`<div><small>${l}</small><b class="num">${v}</b></div>`).join('')}</div>
+      <p class="faint" style="font-size:12px;margin:8px 0 0">던전 안에서는 체력이 자동으로 회복되지 않습니다. 나가면 남은 체력이 그대로 유지됩니다.</p>`;
+  return `<div class="panel dr-hudp"><div class="hud">
+    <div class="hud-face"><div class="hud-portrait ${role}">${face}</div></div>
+    <div class="hud-main">
+      <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${role}">${esc(CLASSES[me.job].name)}</span>${fx.map(x=>`<span class="hud-fx">${esc(x)}</span>`).join('')}</div>
+        <div class="hud-bars"><div class="hb hp ${hpP<30?'low':''}" title="${hp}/${maxHp}"><i style="width:${hpP}%"></i><span>HP</span><b class="num">${hp}<small>/${maxHp}</small></b></div>
+          <div class="hb mp"><i style="width:0%"></i><span>MP</span><b class="num">—</b></div></div></div>
+      <div class="hud-body gact-body">${body}</div></div>
+    ${pad}</div></div>`;}
 
 /* ───────── 낚시 · 어망 · 수족관 ───────── */
 const FISH_IMG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAC4jAAAuIwF4pT92AAAEKUlEQVRYhe2VX0hbVxzHP0mVxKjVaE1VVDSGRMJ6+yBbhwNnN9xDBYvDUjpwD5tse/DBPsjcXraHPQSEPrmHscoGg6JMzDpocZSNEdhlbgjd3QgassRF0aiL/5Z/osvdw/XeJJpoRh/b30vIOb9zPt/f93fOufAsnsXTHrpCkrpbG2SAR3+unJmv5haary9kwy5dmC5dOGvzHCF3tzbI1ypXGe0o4u7N82q+nDl/fNGpCrtbG+T+qpj2f3xJ5vfNnRNrVLDgbMLWaMK/HAegunafcqGc9z6Oc61yFYDb86ksbl4B3a0N8mhHkQKe1+Pf3NLmbDVVOdd81JOgXCjHarcT8Pmw2u289sZjDQ7wcKc+qzU5Bajw8XmlQzfqY1ysK1HgRxXaGk1YWqJsBMvwL8dZX0vw9WqpJmRk5hwAox1FSN4QAJ5EM0PtKVzioSYip4BLNZUywAeXDSfAaqyvJQC4WFeiza2vJfgiWKyBOzpTAIgePePzeobaU0jeUJYLRTm9zIDbGk389EtEE2FpiQJgfPs7+MNFaFLKgqfBKRZ9B0TCBiRvCLc3hdsL3a0Np7egz2mVh9pTWpUvvVCdAf1WgzZdt5KUJAA2gmUMTu1pcOOVDpJzIqJHaeGrXy3ldTunAyr4lZEXtbHQpIRlopeNYBmWlihJSWIjWEbTdSuDrscn4Iu+A8CQz2Atjr8D8o36GLfuXFUgc6I2obpgaYliFAQNHrofAMiCA0TCCry6dp8+p7UwAX1OK7fuXCU0mbaW50ZJzokYBUEbS0qS5kLmwVRDqV6BO+zFdJYs0ee05nzETrTgh7GftdPb9Mk9khO9AITuB/Av63GJewDcvXke/3KcmYdLhPWVLPpKcJCuXoWfFScE2BpNQFSxc6IX0aPHv7AL/MP0Viljr//LA/cmg1Ng31lBsJrxLMlEwgYWSUMd9mKMgsBv0/MAuL2BnAKyWuD2BpQeH/VyI1h2BE/HA/cmAOG9KILVjK2tgqFmHS7xkEjYgOjRU127j1EQSEoSkbABk74irwOnfowy+6tWf8FczgVzueJWW0XWL6T7npQk7SzMxsxQ6DXcCJZhOeqlWr2trQLEQ+KLcS7Vgclh4m/3JsOzMNSsQwpsM/ZWHQ67HijWHiAw4F/Yxe3dzlvkcQG64W+S8r3b6QFbWwUu8ZAuXRiTo4bLAy+TnBNxvF9Pj++AkZlzhPUywo9J7eqp99+/sMu7v27nrT7fhPzXh04sLVFEjx5bo4nBqT36q2K8+Y5ifeZ9B+XaDXyZYKg5e7uz4KdNyonPm5R3AOUsuMRD+qtiXOkyKic848VTKx+e3aEztcOnkTP3LyhBBvh+oBlbo4nZR2tMb5Vi31kBoN5cRE9fjQbPsLsg8P9JPPGCffa8OevkF9LrJxFQkKgn2OtZPOXxH7Y+6HiF6a2+AAAAAElFTkSuQmCC';
