@@ -421,4 +421,59 @@ insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,
 select t.ok(t.flags(:'P6') like 'gear,%' and t.flags(:'P6') not like 'items%','골드 4천을 쓰고 아이템 188개 → 구매로 인정(기록 없음)');
 insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":1000,"inv":{"potion":99,"herb":99,"ev_gem":1,"cheat_blade":1,"g8_gsword":1,"g7_staff":1,"ore":99,"salt":99,"pearl":99}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok(t.flags(:'P6') like 'items,%' and (select (data->'me'->'inv'->>'pearl')::int=99 from saves where user_id=:'P6'),'골드 안 쓰고 아이템 297개 한 번에 → 개수 증가 기록(아이템은 그대로)');
+
+-- 파티 방 (019)
+reset role; set role authenticated; select t.as(:'P1');
+select party_create('m_test','첫 파티',2,'public','{"equip":{"weapon":"sword"}}') as rid \gset
+select t.ok((select status='gather' and jsonb_array_length(members)=1 and members->0->>'name'='아린' and leader=:'P1' from party_rooms where id=:'rid'),'파티 만들기: 파티장이 첫 파티원(이름은 서버 프로필)');
+select t.fail($$insert into party_rooms(leader,monster_id,name,target) values ('00000000-0000-0000-0000-000000000001','x','x',2)$$,'방 표에 직접 넣기');
+select t.as(:'P2');
+select t.ok((select count(*) from party_rooms where id=:'rid')=1,'다른 블레서도 열린 방을 봄');
+select t.ok((select count(*) from party_state where room_id=:'rid')=0,'전투 상태는 방 사람만');
+select party_join(:'rid','{}');
+select t.ok((select jsonb_array_length(members)=2 and members->1->>'name'='벨라' from party_rooms where id=:'rid'),'참가 → 파티원 2명');
+select t.as(:'P5');
+select t.fail(format($$select party_join(%L,'{}')$$, :'rid'),'꽉 찬 방에 참가(FULL)');
+select t.as(:'P2');
+select party_ready(:'rid', true);
+select t.ok((select (members->1->>'ready')::boolean from party_rooms where id=:'rid'),'준비 완료 표시');
+select t.fail(format($$select party_start(%L)$$, :'rid'),'파티원이 출발시키기(NOT_LEADER)');
+select t.fail(format($$select party_kick(%L,'00000000-0000-0000-0000-000000000001')$$, :'rid'),'파티원이 파티장 내보내기');
+select t.as(:'P1');
+select t.fail(format($$select party_set(%L,'[{"name":"용병 카스","job":"hacker","level":5}]')$$, :'rid'),'용병 직업은 클래스만');
+select party_set(:'rid','[]');
+select party_start(:'rid');
+select t.ok((select status from party_rooms where id=:'rid')='battle','파티장이 출발 → 전투');
+select t.as(:'P2');
+select party_act(:'rid', 1, '{"action":{"kind":"defend"}}');
+select t.ok((select turn=1 and action->'action'->>'kind'='defend' from party_acts where room_id=:'rid' and uid=:'P2'),'파티원 행동 올리기');
+select t.fail(format($$select party_push(%L,'{"turn":1}',1,false)$$, :'rid'),'파티원이 전투 상태 올리기');
+select party_say(:'rid','같이 가요 <b>x</b>');
+select t.as(:'P5');
+select t.fail(format($$select party_act(%L,1,'{"x":1}')$$, :'rid'),'방 밖 사람의 행동(NOT_BATTLE)');
+select t.ok((select count(*) from party_acts where room_id=:'rid')=0 and (select count(*) from party_msgs where room_id=:'rid')=0,'방 밖 사람은 행동·채팅 못 봄');
+select t.fail(format($$select party_say(%L,'끼어들기')$$, :'rid'),'방 밖 사람 채팅');
+select t.as(:'P1');
+select party_push(:'rid','{"turn":2,"over":null}',3,false);
+select t.ok((select count(*) from party_acts where room_id=:'rid')=1 and (select name from party_msgs where room_id=:'rid')='벨라','파티장이 행동·채팅(서버가 이름 붙임)을 봄');
+select t.as(:'P2');
+select t.ok((select rev=3 and state->>'turn'='2' from party_state where room_id=:'rid'),'파티원이 전투 상태를 받음');
+select t.as(:'P1');
+select party_push(:'rid','{"turn":3,"over":"win"}',4,true);
+select t.ok((select status from party_rooms where id=:'rid')='closed','전투 끝 → 방 닫힘');
+select t.as(:'P5');
+select t.ok((select count(*) from party_rooms where id=:'rid')=0,'닫힌 방은 방 밖 사람에게 안 보임');
+select t.fail(format($$select party_join(%L,'{}')$$, :'rid'),'닫힌 방 참가(NO_ROOM)');
+select t.as(:'P1');
+select party_create('m_test','둘째',3) as rid2 \gset
+select party_create('m_test','셋째',3) as rid3 \gset
+select t.ok((select status from party_rooms where id=:'rid2')='closed' and (select status from party_rooms where id=:'rid3')='gather','새 방을 만들면 예전 방은 닫힘(한 사람 한 방)');
+select t.as(:'P2'); select party_join(:'rid3','{}');
+select t.as(:'P5'); select party_join(:'rid3','{}');
+select t.as(:'P2'); select party_leave(:'rid3');
+select t.ok((select jsonb_array_length(members) from party_rooms where id=:'rid3')=2,'파티원 나가기');
+select t.as(:'P1'); select party_kick(:'rid3', :'P5');
+select t.ok((select jsonb_array_length(members) from party_rooms where id=:'rid3')=1,'파티장이 내보내기');
+select party_leave(:'rid3');
+select t.ok((select status from party_rooms where id=:'rid3')='closed','파티장이 나가면 방 닫힘');
 select 'ALL TESTS PASSED';
