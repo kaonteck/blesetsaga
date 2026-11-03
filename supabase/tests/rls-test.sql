@@ -394,4 +394,31 @@ insert into saves(user_id,data) values (:'P5','{"me":{"name":"새싹","level":1,
 select t.ok((select (data->'me'->>'level')::int=1 and (data->'me'->>'gold')::int=100 and data->'me'->>'name'='새싹' from saves where user_id=:'P5'),'삭제 뒤 새 캐릭터는 LV1부터(예전 LV31이 안 붙음)');
 insert into saves(user_id,data) values (:'P5','{"me":{"name":"새싹","level":30,"exp":0,"gold":100,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P5')=11,'삭제로 첫 업로드 예외를 다시 쓸 수 없음(LV30 요청 → 11)');
+
+-- 부정 방지 2차(1): 아이템 검사 — 기록만 (018)
+reset role;
+insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values ('00000000-0000-0000-0000-000000000006','p6@x','{"username":"p6"}','{}');
+\set P6 '00000000-0000-0000-0000-000000000006'
+insert into content(kind,id,data) values ('item','ev_gem','{"name":"축제 보석","type":"mat"}');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":5000,"inv":{"potion":2}}}');
+create function t.flags(u uuid) returns text language sql security definer as $$ select coalesce(string_agg(f->>'k', ','), '') from public.saves s, jsonb_array_elements(s.guard->'flags') f where s.user_id = u $$;
+grant execute on function t.flags(uuid) to authenticated;
+set role authenticated; select t.as(:'P6');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":5000,"inv":{"potion":7,"herb":3,"ev_gem":1}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6')='','정상 획득(물약·약초·운영 공개 아이템)은 기록 없음');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":5000,"inv":{"potion":7,"herb":3,"ev_gem":1,"cheat_blade":1}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6')='item_unknown' and (select (data->'me'->'inv'->>'cheat_blade')::int=1 from saves where user_id=:'P6'),'게임에 없는 아이템 → 기록만(아이템은 그대로)');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":5000,"inv":{"potion":7,"herb":3,"ev_gem":1,"cheat_blade":1}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6')='item_unknown','같은 아이템은 다음 저장에서 다시 기록하지 않음');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":5000,"inv":{"potion":7,"herb":3,"ev_gem":1,"cheat_blade":1,"g8_gsword":1}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6') like 'gear,%','LV5가 LV80 장비를 얻음 → 높은 장비 기록');
+reset role;
+insert into mail(recipient,sender,sender_name,text,items,claimed_at) values (:'P6',null,'친구','선물','{"g7_staff":1}',now());
+set role authenticated; select t.as(:'P6');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":5000,"inv":{"potion":7,"herb":3,"ev_gem":1,"cheat_blade":1,"g8_gsword":1,"g7_staff":1}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6') like 'gear,%' and t.flags(:'P6') not like 'gear,gear%','우편으로 받은 높은 장비는 기록 안 함');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":1000,"inv":{"potion":99,"herb":99,"ev_gem":1,"cheat_blade":1,"g8_gsword":1,"g7_staff":1}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6') like 'gear,%' and t.flags(:'P6') not like 'items%','골드 4천을 쓰고 아이템 188개 → 구매로 인정(기록 없음)');
+insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":1000,"inv":{"potion":99,"herb":99,"ev_gem":1,"cheat_blade":1,"g8_gsword":1,"g7_staff":1,"ore":99,"salt":99,"pearl":99}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok(t.flags(:'P6') like 'items,%' and (select (data->'me'->'inv'->>'pearl')::int=99 from saves where user_id=:'P6'),'골드 안 쓰고 아이템 297개 한 번에 → 개수 증가 기록(아이템은 그대로)');
 select 'ALL TESTS PASSED';
