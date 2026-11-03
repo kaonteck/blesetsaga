@@ -2676,3 +2676,15 @@ body::after{display:none!important}
 .page-head+.qtabs,.page-head+.mtabs{margin-top:-9px}
 @media (max-width:980px){.wrap.tri{row-gap:8px}}
 .panel.flog,.panel.lore-panel{margin-top:2px}
+/* 만신전 — 스킬 아이콘 2/3 크기, 행동 확정은 커맨드 아래 */
+.hud .sks{width:44px;border-radius:8px}
+.hud .sks>img{border-radius:7px}
+.hud .sks-n{font-size:8.5px;padding:1px 1px 2px;border-radius:0 0 7px 7px}
+.hud .sks-grid{grid-template-columns:repeat(auto-fill,44px);gap:7px}
+.hud .sks.sm{width:44px}
+.hud .sks-ic svg{width:18px;height:18px}
+.hud-cmd{align-self:stretch}
+.hud .hcmd-go{margin-top:auto;width:100%;height:40px;border-radius:999px;justify-content:center}
+.hud-tgt{color:var(--bad);border-color:rgba(236,111,111,.45)}
+@media (max-width:1100px){.hud .hcmd-go{flex:1 1 100%;margin-top:4px}}
+@media (max-width:760px){.hud .sks-grid{grid-template-columns:repeat(auto-fill,44px)!important;gap:7px!important}.hud .hcmd-go{grid-column:1/-1}}

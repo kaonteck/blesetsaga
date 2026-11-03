@@ -551,7 +551,7 @@ function gfAct(b,me){
     body=`<div class="gact-h"><span class="hud-tag">MOVE</span>이동 <small>이동 범위 ${moveR(b,me)*2+1}×${moveR(b,me)*2+1}${(MOVE_BONUS[me.job]||0)+(me.mov||0)?` · 클래스·장비 보정 +${(MOVE_BONUS[me.job]||0)+(me.mov||0)}`:''}</small></div>
       <div class="gpos"><div><small>현재 위치</small><b class="num">${cellName(me.pos)}</b></div><span class="gpos-ar">→</span><div class="${ok?'on':''}"><small>이동 위치</small><b class="num">${ok?cellName(tgt):'—'}</b></div></div>
       <p class="muted" style="font-size:12.5px">전장에서 파랗게 표시된 칸을 눌러 이동할 곳을 고르세요.${b.tel&&b.tel.type==='area'&&b.tel.cells.includes(me.pos)?' <span class="reason">지금 자리는 예고 범위 안입니다.</span>':''}${ok&&b.tel&&b.tel.type==='area'&&b.tel.cells.includes(tgt)?' <span class="reason">선택한 칸도 예고 범위 안입니다.</span>':''}</p>
-      <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="move" ${ok?'':'disabled'}>${ok?`${cellName(tgt)}(으)로 이동 확정`:'칸을 선택하세요'}</button></div>`;}
+`;}
   else if(mode==='wait')body=`<div class="gact-h"><span class="hud-tag">STANDBY</span>대기</div><div class="gwait"><p>이번 턴 <b>대기</b>하시겠습니까?</p><small class="faint">움직이지도 공격하지도 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small>
       <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="wait">예, 대기합니다</button><button class="btn" data-act="g-mode" data-mode="fight">아니요</button></div></div>`;
   else if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(k=>ITEMS[k]);
@@ -566,15 +566,31 @@ function gfAct(b,me){
   return `<div class="hud ${me.dead?'is-dead':''}">
     <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div></div>
     <div class="hud-main">
-      <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${me.role}">${esc(CLASSES[me.job].name)}</span>${me.pos!=null?`<span class="hud-pos num">위치 ${cellName(me.pos)}</span>`:''}${st.map(x=>`<span class="hud-fx">${esc(x)}</span>`).join('')}</div>
+      <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${me.role}">${esc(CLASSES[me.job].name)}</span>${me.pos!=null?`<span class="hud-pos num">위치 ${cellName(me.pos)}</span>`:''}${gfTgt(b,me,mode)}${st.map(x=>`<span class="hud-fx">${esc(x)}</span>`).join('')}</div>
         <div class="hud-bars"><div class="hb hp ${hpP<30?'low':''}" title="${me.hp}/${me.maxHp}"><i style="width:${hpP}%"></i><span>HP</span><b class="num">${me.hp}<small>/${me.maxHp}</small></b></div>
           <div class="hb mp"><i style="width:0%"></i><span>MP</span><b class="num">—</b></div></div></div>
       <div class="hud-body gact-body">${body}</div></div>
-    ${pad}</div>`;
+    ${pad.replace(/<\/div>$/,gfGo(b,me,mode)+'</div>')}</div>`;
 }
+/* 행동 확정 버튼 — 커맨드(대기) 아래 */
+function gfGo(b,me,mode){if(me.dead)return '';
+  if(me.confirmed)return `<button class="btn hcmd-go" disabled>제출 완료</button>`;
+  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="move" ${ok?'':'disabled'}>${ok?'이동 확정':'칸을 선택하세요'}</button>`;}
+  if(mode==='wait')return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="wait">대기 확정</button>`;
+  if(mode==='item')return `<button class="btn btn-primary hcmd-go" disabled title="이동 · 전투 · 대기 중 하나를 골라 확정하세요">행동 확정</button>`;
+  if(GS_GO.bound)return `<button class="btn btn-primary hcmd-go" data-act="confirmdefend">방어 확정</button>`;
+  return `<button class="btn btn-primary hcmd-go" data-act="confirmact" ${GS_GO.valid?'':'disabled'}>행동 확정</button>`;}
+/* 전투 적용 대상 — 위치 옆 */
+function gfTgt(b,me,mode){if(me.dead||me.confirmed||mode!=='fight')return '';
+  const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};let n='';
+  if(a.kind==='defend')n='나';
+  else if(a.kind==='skill'&&SKILLS[a.skill]){const t=SKILLS[a.skill].target;
+    if(t==='enemy')n=b.mon.name;else if(t==='ally'||t==='dead'){const p=b.players.find(x=>x.id===a.target);n=p?(p.isMe?'나':p.name):'선택 필요';}else n=t==='all'||t==='party'?'파티 전체':'나';}
+  return n?`<span class="hud-pos hud-tgt">대상 ${esc(n)}</span>`:'';}
 const SHIELD_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.2-8 11-4.6-1.8-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 6v12" stroke="currentColor" stroke-width="1.2" opacity=".6"/></svg>';
+let GS_GO={};
 function gridSkillPanel(b,me){
-  if(me.bound>0)return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다.</p><div class="row"><button class="btn btn-primary" data-act="confirmdefend">방어 확정</button></div>`;
+  if(me.bound>0){GS_GO={bound:true};return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다. 방어만 확정할 수 있습니다.</p>`;}
   const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);const a=S.sel.act||{kind:'skill',skill:basic};
   const list=[basic,...sk.filter(k=>k!==basic&&!['addon','passive'].includes(SKILLS[k].type))];
   const tip=(title,body,extra)=>`<span class="sk-tip" role="tooltip"><b>${title}</b>${extra||''}<span>${body}</span></span>`;
@@ -587,8 +603,9 @@ function gridSkillPanel(b,me){
   const passive=sk.filter(k=>SKILLS[k].type==='passive').map(k=>`<p class="faint" style="font-size:12px">패시브 · ${SKILLS[k].name}: ${esc(SKILLS[k].desc)}</p>`).join('');
   const needT=x=>x&&((x.kind==='skill'&&SKILLS[x.skill]&&['ally','dead'].includes(SKILLS[x.skill].target)));
   const aerr=a.kind==='skill'&&SKILLS[a.skill]?checkAct(b,me,a,hooks.hasItem):null;const valid=a.kind!=='none'&&!(needT(a)&&!a.target)&&!(aerr&&!(needT(a)&&!a.target));
-  return `<div class="sks-grid">${list.map(slot).join('')}${def}</div>${addonHTML}${targetPick(b,a)}${passive}
-    <div class="row"><button class="btn btn-primary" data-act="confirmact" ${valid?'':'disabled'}>행동 확정</button><span class="muted" style="font-size:12.5px">선택: ${esc(a.kind==='defend'?'방어':actLabel(b,a))}${aerr&&!(needT(a)&&!a.target)?` · <span class="reason">${esc(aerr)}</span>`:''}</span></div>`;
+  GS_GO={valid};const tp=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].target==='enemy'?'':targetPick(b,a);  /* 적 대상은 HUD 위치 옆에 표시 */
+  return `<div class="sks-grid">${list.map(slot).join('')}${def}</div>${addonHTML}${tp}${passive}
+    <div class="row"><span class="muted" style="font-size:12.5px">선택: ${esc(a.kind==='defend'?'방어':actLabel(b,a))}${aerr&&!(needT(a)&&!a.target)?` · <span class="reason">${esc(aerr)}</span>`:''}</span></div>`;
 }
 function gridParts(){const b=S.battle,me=b.players.find(p=>p.isMe);
   const set=(id,html)=>{const el=document.getElementById(id);if(el&&el._h!==html){el.innerHTML=html;el._h=html;}};
