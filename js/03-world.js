@@ -181,6 +181,13 @@ function monCard(m,extra){const lr=levelReason(m,S.me.level)||raidBlock(m);
       <div><div class="mname">${esc(m.name)}</div><p class="muted" style="font-size:12.5px">${esc(m.region||'')}</p></div>
       <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div>
       ${extra?`<div class="row" style="gap:6px">${extra}</div>`:''}${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t" style="font-size:12.5px">입장 가능</p>'}</div>`;}
+/* 가로형 레이드 보스 카드: 그림 · 이름/지역/조건 · 입장 상태 */
+function monCardH(m){const lr=levelReason(m,S.me.level)||raidBlock(m);
+  return `<div class="panel mcard mcard-h" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
+    <pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre>
+    <div class="mh-main"><div class="mname">${esc(m.name)}</div><p class="muted" style="font-size:12.5px">${esc(m.region||'')}</p>
+      <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div></div>
+    <div class="mh-st">${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}<span class="mh-go" aria-hidden="true">›</span></div></div>`;}
 function cntRow(items){return `<div class="cntrow">${items.map(([l,v,n])=>`<span class="cnt"><small>${l}</small><b class="num">${v}</b>${n?`<em>${n}</em>`:''}</span>`).join('')}</div>`;}
 function vBattle(){
   if(S.battle)return vFight();
@@ -193,9 +200,8 @@ function vBattle(){
   let body='';
   if(tab==='daily'){
     const party=ms.filter(m=>mkind(m)==='party');const dun=ms.filter(m=>mkind(m)==='dungeon').sort((a,b)=>a.level-b.level);const tg=S.sel.dtarget||'exp';const busy=busyReason();
-    body=`${cntRow([['파티 레이드',`${d.raid} / ${RAID_MAX}`,'하루 3회'],['초기화','05:00','매일']])}
-      <section class="stack" style="gap:12px"><div class="sec-h"><h3>파티 레이드</h3><span>3~4인 · 하루 3회</span></div>
-        <div class="mgrid">${party.map(m=>monCard(m)).join('')||'<p class="empty">등록된 파티 레이드가 없습니다.</p>'}</div></section>
+    body=`<div class="raid-bar"><span class="rb-l">3~4인 · 하루 ${RAID_MAX}회</span><span class="rb-r"><span class="rb-c">파티 레이드 <b class="num">${d.raid} / ${RAID_MAX}</b><em>하루 ${RAID_MAX}회</em></span><i aria-hidden="true">·</i><span class="rb-c">초기화 <b class="num">05:00</b><em>매일</em></span></span></div>
+        <div class="mlist">${party.map(m=>monCardH(m)).join('')||'<p class="empty">등록된 파티 레이드가 없습니다.</p>'}</div>
       <div class="panel"><h3>모집 중인 파티</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='party'),true)}</div></div>`;
   }else if(tab==='dungeon'){
     body=dungeonTab();
