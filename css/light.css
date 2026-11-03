@@ -1374,6 +1374,9 @@ html[data-theme="light"] .li.pt-real{box-shadow:inset 2px 0 0 var(--ok);backgrou
 html[data-theme="light"] .li.pt-real .chip.ok{background:var(--ok);color:var(--slab);border-color:transparent}
 html[data-theme="light"] .rcard.rc-real{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
 html[data-theme="light"] .rc-real-b{background:var(--ok);color:var(--slab)}
+html[data-theme="light"] #glx-ov{background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 2px,transparent 2px 5px)}
+html[data-theme="light"] #glx-ov .glx-box{background:#0b0b0b;border:1px solid #ff3b3b;color:#ff5a5a;box-shadow:4px 0 0 rgba(0,255,255,.5),-4px 0 0 rgba(255,0,80,.5)}
+html[data-theme="light"] #glx-ov .glx-box b{color:#fff}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

@@ -307,7 +307,7 @@ const ACTS={
   'lotto-pick':d=>{const n=+d.n;let a=S.sel.lotPick||[];a=a.includes(n)?a.filter(x=>x!==n):a.length>=4?a:[...a,n];S.sel.lotPick=a;openLotto();},
   'lotto-auto':()=>{const a=[0,1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-.5).slice(0,4);S.sel.lotPick=a;openLotto();},
   'lotto-buy':()=>{const I=lottoInfo();const a=(S.sel.lotPick||[]).slice().sort((x,y)=>x-y);if(a.length!==4||!I.open||I.mine.length>=LOTTO_MAX||S.me.gold<LOTTO_PRICE)return;
-    S.me.gold-=LOTTO_PRICE;bump('goldSpent',LOTTO_PRICE);bump('casinoSpent',LOTTO_PRICE);S.me.lotto.push({id:uid('lt'),nums:a,draw:I.nd.key,at:I.nd.at,claimed:false,ts:now()});S.sel.lotPick=[];save();render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');},
+    S.me.gold-=LOTTO_PRICE;bump('goldSpent',LOTTO_PRICE);bump('casinoSpent',LOTTO_PRICE);bump('lottoBuy');S.me.lotto.push({id:uid('lt'),nums:a,draw:I.nd.key,at:I.nd.at,claimed:false,ts:now()});S.sel.lotPick=[];save();render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');},
   'lotto-claim':d=>{const x=(S.me.lotto||[]).find(y=>y.id===d.id);if(!x||x.claimed||now()<x.at)return;const rk=lottoRank(x.nums,drawNums(x.draw));x.claimed=true;if(rk){const g=LOTTO_PRIZE[rk];S.me.gold+=g;bump('goldEarned',g);if(rk===1)bump('lotto1');toast(`주간 행운권 ${rk}등 당첨! ${g.toLocaleString('ko-KR')}골드`,'good');}else toast('아쉽게도 낙첨입니다.');save();render();openLotto();},
   'fish-rank':d=>{modal(fishRankDlg(d.land));const mm=$('.modal');if(mm)mm.classList.add('narrow2');},
   'comm-do':d=>{const B=commBoard();const x=B.list.find(y=>y.id===d.id);if(!x||x.done||(S.me.inv[x.item]||0)<x.n)return;S.me.inv[x.item]-=x.n;x.done=true;const g=Math.round(x.gold*(prof(x.kind).rank?1.2:1));S.me.gold+=g;bump('goldEarned',g);bump('commissions');save();render();toast(`${x.from} 의뢰 납품 · ${g.toLocaleString('ko-KR')}골드`,'good');},
@@ -334,10 +334,11 @@ const ACTS={
   qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},
-  chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;qp.pending=+d.i;save();render();},
-  nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))){qp.pending=null;render();return;}
+  chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;if(c.glitch){qp.pending=null;logoutGlitch();return;}qp.pending=+d.i;save();render();},
+  nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))||(c.takeGold&&S.me.gold<c.takeGold)){qp.pending=null;render();return;}
     qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.advTo)doAdvance(c.advTo);
     if(c.take){for(const k in c.take){S.me.inv[k]-=c.take[k];if(S.me.inv[k]<=0)delete S.me.inv[k];}}
+    if(c.takeGold){S.me.gold-=c.takeGold;bump('goldSpent',c.takeGold);}
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}

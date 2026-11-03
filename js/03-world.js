@@ -216,7 +216,7 @@ function vBattle(){
     <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11'};
+const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15'};
 function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
@@ -843,6 +843,7 @@ function choiceReason(c){
   const r=c.req;if(!r)return null;
   if(r.flag&&!S.flags[r.flag])return `필요한 기록: ${FLAG_NAMES[r.flag]||r.flag}`;
   if(r.level&&S.me.level<r.level)return `LV${r.level} 이상 필요`;
+  if(r.gold&&S.me.gold<r.gold)return `${r.gold.toLocaleString('ko-KR')}골드 필요 (보유 ${S.me.gold.toLocaleString('ko-KR')})`;
   if(r.item&&!(S.me.inv[r.item]>0))return `필요한 아이템: ${ITEMS[r.item]?ITEMS[r.item].name:r.item}`;
   if(r.items)for(const k in r.items){const have=S.me.inv[k]||0;if(have<r.items[k])return `필요한 아이템: ${ITEMS[k]?ITEMS[k].name:k} ${have}/${r.items[k]}`;}
   return null;

@@ -221,10 +221,10 @@ const VIL_LINES={
   clinic:[['약초꾼 이브',['독으로 독을 막아요. 이상하게 들리죠? 여기선 다 그래요.','마스크 끈이 풀리면 바로 말씀하세요. …그분도 자주 풀렸거든요.','안개 속에선 얼굴이 다 비슷해 보여요. 그래서 가끔 헷갈려요.']],['늪의 약사',['…해독제다. …서두르지 마라….','…늪의 독은… 조용히 퍼진다….','…아프면… 말해라. …작게.']]],
   alley:[['그림자 속의 누군가',['……(시선만 느껴진다)','…여기 온 걸… 아무도 모르게 해라….']],['골목 고양이',['……(고양이가 소리 없이 당신을 지켜본다)','고양이가 안개 속으로 스르륵 사라진다.']],['나룻배 사공 토르',['(노를 젓는 시늉을 하며 같은 노래를 흥얼거린다.)','균열까지 가는 손님은 오랜만이야. 아니, 지난번에도 그렇게 말했나.','배는 늘 같은 데로만 가. 그래도 손님들은 다른 데로 간다고 생각하더라.']]]},
  salt:{
-  plaza:[['귀족 영애 셀레스트',['어머, 그 옷차림으로 히페리온 광장에 나오셨어요? 용기가 대단하시네요, 호호.','소금이 금값이라는 말 들어 봤죠? 여기선 반대예요. 금이 소금값이거든요.','시간 아깝게 왜 말을 거세요? 제 시간은 비싸요.']],['금박 장식의 신사',['자네, 지갑 사정은 괜찮나? 표정을 보니 아닌 것 같군. 흐흐.','히페리온에선 걷는 것도 돈이야. 농담 같지? 농담 아니라네.']]],
-  grocer:[['향신료 상인 마르셀',['이 소금 한 꼬집이 당신 하루 일당이에요. 그래도 사실래요? 흐흐.','손님 같은 분은 구경만 하셔도 돼요. 아, 구경도 유료였나?','에누리요? 그런 단어는 히페리온 사전에 없어요.']]],
+  plaza:[['금고지기 바르톨로',['히페리온 금고는 한 번도 털린 적이 없어요. 넣는 사람은 많은데 꺼내는 사람이 없거든요.','체류 기간 칸은 비워 두세요. 다들 그러니까요.','금화 세는 소리, 들리세요? 저는 밤에도 들려요.']],['귀족 영애 셀레스트',['어머, 그 옷차림으로 히페리온 광장에 나오셨어요? 용기가 대단하시네요, 호호.','소금이 금값이라는 말 들어 봤죠? 여기선 반대예요. 금이 소금값이거든요.','시간 아깝게 왜 말을 거세요? 제 시간은 비싸요.']],['금박 장식의 신사',['자네, 지갑 사정은 괜찮나? 표정을 보니 아닌 것 같군. 흐흐.','히페리온에선 걷는 것도 돈이야. 농담 같지? 농담 아니라네.']]],
+  grocer:[['소금 채굴꾼 하산',['호수가 짜질수록 이 도시는 부자가 돼. 나만 빼고. 흐흐.','소금은 거짓말을 안 해. 사람이 하지.','호숫가 성엔 가지 마. 거긴 갈증이 사는 데야.']],['향신료 상인 마르셀',['이 소금 한 꼬집이 당신 하루 일당이에요. 그래도 사실래요? 흐흐.','손님 같은 분은 구경만 하셔도 돼요. 아, 구경도 유료였나?','에누리요? 그런 단어는 히페리온 사전에 없어요.']]],
   clinic:[['개인 전담 의사',['진료는 예약제입니다. 아, 예약도 유료예요.','이 정도 상처면… 그냥 침 바르세요. 무료 처방입니다.','부자들은 아프지 않아요. 아프면 돈으로 해결하니까요.']]],
-  alley:[['카지노 호객꾼',['형님, 골든 오아시스 가 보셨어요? 거기서 인생 바뀐 사람 많아요. …어느 쪽으로든.','돈 잃은 얼굴이네? 걱정 마, 다들 처음엔 그래. 흐흐흐.']],['살찐 고양이',['금목걸이를 한 고양이가 당신을 한심하다는 듯 쳐다본다.','고양이가 비단 방석 위에서 하품을 한다. 당신보다 잘 산다.']]]},
+  alley:[['카지노 지배인 루카',['손님, 오늘 운이 좋아 보이시네요. 매일 그렇게 말하지만요.','골든 오아시스는 문을 닫은 적이 없어요. 손님이 나간 적이 없으니까요.','(웃는다. 웃음이 1초쯤 길다.)']],['카지노 호객꾼',['형님, 골든 오아시스 가 보셨어요? 거기서 인생 바뀐 사람 많아요. …어느 쪽으로든.','돈 잃은 얼굴이네? 걱정 마, 다들 처음엔 그래. 흐흐흐.']],['살찐 고양이',['금목걸이를 한 고양이가 당신을 한심하다는 듯 쳐다본다.','고양이가 비단 방석 위에서 하품을 한다. 당신보다 잘 산다.']]]},
  ember:{
   plaza:[['쉼터지기 카심',['해가 정수리에 있을 때는 움직이지 마세요. 사막은 서두르는 자부터 삼킵니다.','물은 아껴 드세요. 다음 오아시스까지 얼마나 걸릴지 아무도 모릅니다.','…오늘은 유난히 덥군요. 그늘로 오세요.']],['길잡이 나디아',['모래 언덕 너머는 함부로 넘지 마세요. 신기루를 쫓다 돌아오지 못한 사람이 많아요.','발자국은 바람이 금방 지워요. 돌아올 길을 꼭 기억해 두세요.']]],
   grocer:[['대추야자 상인',['덥죠? 이 대추야자 하나 드세요. 땀으로 잃은 걸 채워 줍니다.','물 한 통은 금보다 귀합니다. 신중하게 고르세요.','햇볕에 말린 고기예요. 사막에선 이게 제일 오래 갑니다.']]],
@@ -308,21 +308,33 @@ function qReward(q,r){if(r&&r.gearTier&&S.me){const T=r.gearTier;const w=gearOfT
 /* ───────── 메인 스토리 · 서장과 1장 (2054 재오픈) ───────── */
 Object.assign(ITEMS,{
   q_return:{name:'라니아케아로의 귀환',type:'mat',tag:'???',desc:'이 세계에 머무르시겠습니까? ▒▒▒ 귀환 대상: [데이터 없음] · 사용 기한: 영원 · 이 아이템은 버릴 수 없습▒',price:0},
-  j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 방패 두 개가 겹친 길드 문장이 찍혀 있다. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
-/* 2052년 탐사 일지: 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다(S.me.jPages, 3장에서 1쪽). 4장 이후 J2052_LATER를 한 쪽씩 연다. */
-const J2052_P1='2052.10.19\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— 아우로라';
-const J2052_LATER=['2052.09.14 — 타임어택 접수 완료. 컨빨이랑 템빨이 한 공대라니 웃기다.\n2052.09.14 — 로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','2052.09.21 — 일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','2052.10.03 — 지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.'];
-function j2052Text(){const me=S&&S.me;const n=Math.max(1,(me&&me.jPages)||1);const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
-  return pages.join('\n\n― ― ―\n\n')+(n-1<J2052_LATER.length?'\n\n(나머지 쪽은 물에 젖어 붙어 있다. 억지로 떼면 찢어질 것 같다.)':'\n\n(마지막 장은 찢겨 있다.)');}
+  j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 표지 안쪽에 영문 이름이 긁혀 있다. A■R■■A. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
+/* AURORA 탐사대의 일지(아이템 id는 j2052 그대로): 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다. 3장 1쪽, 4장 E13·E14·E15 완료 때 한 쪽씩. 날짜·템빨/컨빨 언급 없음(시간선: AURORA 탐사대가 먼저 갇혔고, 템빨·컨빨은 다음에 들어와 탈출 → 라니아케아에 기록 없음) */
+const J2052_P1='(날짜 칸은 물에 번져 읽을 수 없다)\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— AURORA';
+const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.'];
+function j2052Text(){const F=(S&&S.flags)||{};const n=1+(F.e13_vip?1:0)+(F.e14_logout?1:0)+(F.ch4_clear?1:0);const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
+  if(F.ch4_clear)pages[pages.length-1]+='\n\n(4쪽 뒤에 젖은 악보 한 장이 끼워져 있다. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」)';
+  return pages.join('\n\n― ― ―\n\n')+'\n\n(나머지 쪽은 물에 젖어 붙어 있다. 억지로 떼면 찢어질 것 같다.)';}
 Object.defineProperty(ITEMS.j2052,'readText',{get:j2052Text,enumerable:true,configurable:true});
 
 Object.assign(ITEMS,{q_mask:{name:'빈 안개 마스크',type:'mat',tag:'퀘스트 아이템',desc:'약초꾼 이브가 건넨 가죽 마스크. 늪 독샘을 먹여야 숨을 쉴 수 있다.'},q_ferry:{name:'토르의 나룻배 표',type:'mat',tag:'퀘스트 아이템',desc:'나무 조각에 배 그림이 새겨져 있다. 뒷면에는 오늘 날짜가 이미 적혀 있다.'},q_lamp:{name:'꺼진 등불',type:'mat',tag:'퀘스트 아이템',desc:'장로 하윈이 맡긴 낡은 등불. 정화의 성수를 부으면 다시 켜진다고 한다.'},q_pilgrim:{name:'순례자의 표식',type:'mat',tag:'퀘스트 아이템',desc:'에트나 안내인이 건넨 돌 표식. 손때가 묻어 반들반들하다.'},q_cavemap:{name:'동굴 지도',type:'mat',tag:'퀘스트 아이템',desc:'무너진 바위 동굴로 가는 길이 그려진 낡은 지도. 종이만 새것이다.'}});
+Object.assign(ITEMS,{q_permit:{name:'히페리온 체류 허가증',type:'mat',tag:'퀘스트 아이템',desc:'금박 테두리의 허가증. 체류 기간 칸이 비어 있다. 빈칸 아래 아주 작은 글씨: "기간은 본인이 정합니다."'},
+  q_chip:{name:'닳은 카지노 칩',type:'mat',tag:'퀘스트 아이템',desc:'골든 오아시스 금고 바닥에서 찾은 오래된 칩. 반쯤 닳은 글자가 새겨져 있다. A■R■■A.'},
+  q_vaultkey:{name:'히페리온 금고 열쇠',type:'mat',tag:'퀘스트 아이템',desc:'금고지기 바르톨로가 맡긴 무거운 열쇠. 소금 성 문에 맞는다고 한다. 왜 도시 금고 열쇠가 성 문에 맞는지는 아무도 묻지 않는다.'},
+  q_eternal:{name:'영원한 거주 허가증',type:'mat',tag:'???',desc:'히페리온 시민권. 유효기간: ∞. 발급 사유: 소원 ▒▒ 대가. 소지자는 ▒▒▒▒할 수 없습니다. 이 허가증은 반납할 수 없습▒',price:0}});
 const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',kind:'story',region:'순례자의 길',level:11,statLevel:12,tier:'story',desc:'순례자의 길 끝에서 블레서를 시험하는 거대한 석상.',singleName:'바위 주먹',aoeName:'지진',dotName:'균열',dotChance:0.2}),soloMon({id:'st_monk',name:'동굴의 은둔 무승',art:'golem',kind:'story',region:'무너진 바위 동굴',level:17,statLevel:18,tier:'story',desc:'언제부터 동굴에 있었는지 아무도 모르는 무승.',singleName:'발레티 정권',aoeName:'산을 울리는 발경',dotName:'내상',dotChance:0.3}),soloMon({id:'st_leech',name:'늪가의 독거머리 떼',art:'beast',kind:'story',region:'로타스 늪가',level:20,statLevel:21,tier:'story',desc:'마스크 없이 늪가에 나온 사람에게 한꺼번에 달라붙는 거머리 떼.',singleName:'달라붙기',aoeName:'떼로 덮치기',dotName:'흡혈',dotChance:0.35}),
   soloMon({id:'st_rift',name:'균열에서 기어 나온 것',art:'spirit',kind:'story',region:'늪 한가운데의 균열',level:22,statLevel:23,tier:'story',desc:'보랏빛 균열에서 기어 나온 무언가. 형체가 한 박자씩 늦게 따라온다.',singleName:'끌어당기기',aoeName:'균열의 파동',dotName:'잠식',dotChance:0.3}),
   soloMon({id:'st_warden',name:'수문 파수꾼',art:'golem',kind:'story',region:'물에 잠긴 등대 신전',level:25,statLevel:26,tier:'story',desc:'등대 신전의 수문을 지키는 돌 파수꾼. 이끼가 눈을 덮어도 정확히 침입자 쪽을 본다.',singleName:'수문 망치',aoeName:'역류',dotName:'이끼 독',dotChance:0.3}),
   soloMon({id:'st_serpent',name:'고대 바다뱀',art:'beast',kind:'story',region:'물에 잠긴 등대 신전 깊은 곳',level:28,statLevel:29,tier:'story',desc:'균열의 기운에 깨어나 등대 신전에 똬리를 튼 늪의 주인. 비늘 사이로 독안개가 새어 나온다. [3장 보스]',singleName:'꼬리 후려치기',aoeName:'몸통 휘감기',dotName:'독니',dotChance:0.2,
     sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 독안개',say:'바다뱀이 독안개를 내뿜는다. 중독되면 정화의 성수로 풀 수 있다',atkMul:1.3,dotName:'독안개 중독',dotChance:0.55,dotMul:1.5,aoeName:'독안개 내뿜기'},{at:25,name:'3페이즈 · 붕괴',say:'신전 바닥이 무너진다',atkMul:1.6,aoeName:'바닥 붕괴',aoeMult:0.75,aoeEvery:2,dotChance:0.25}]}),
-  soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35})];
+  soloMon({id:'st_witch',name:'풀숲의 마녀',art:'spirit',kind:'story',region:'비명 지르는 풀숲',level:8,statLevel:9,tier:'story',desc:'머리카락이 덩굴처럼 자란 여자. 노래를 부르며 사람을 풀숲으로 끌어들인다.',singleName:'덩굴 채찍',aoeName:'비명의 노래',dotName:'가시 독',dotChance:0.35}),
+  soloMon({id:'st_scorpion',name:'소금 전갈 떼',art:'beast',kind:'story',region:'사막 대상로',level:30,statLevel:31,tier:'story',desc:'대상로 모래 밑에 숨어 있다가 발소리에 맞춰 한꺼번에 솟아오르는 전갈 떼. 등껍질에 소금이 하얗게 말라붙어 있다.',singleName:'집게',aoeName:'모래 밑 기습',dotName:'마비 독침',dotChance:0.35}),
+  soloMon({id:'st_goldguard',name:'금고의 황금 파수꾼',art:'golem',kind:'story',region:'골든 오아시스 금고',level:32,statLevel:33,tier:'story',desc:'카지노 금고를 지키는 황금 골렘. 칩이 사라진 뒤로 누구든 손님으로 보지 않는다.',singleName:'황금 주먹',aoeName:'칩 회수',dotName:'금박 화상',dotChance:0.25}),
+  soloMon({id:'st_brine',name:'호숫가의 염수 정령',art:'spirit',kind:'story',region:'갈증의 호수 기슭',level:35,statLevel:36,tier:'story',desc:'지나치게 짜진 호숫물이 형체를 얻은 정령. 닿는 곳마다 하얀 소금 자국이 남는다.',singleName:'염수 채찍',aoeName:'짠물 파도',dotName:'탈수',dotChance:0.35}),
+  soloMon({id:'st_saltlord',name:'염수의 군주',art:'golem',kind:'story',region:'갈증의 호수 · 소금 성',level:38,statLevel:39,tier:'story',desc:'소금 성의 왕좌에 앉은 자. 금화로 가득한 성 안에서 끝없이 목말라한다. 사람들은 그가 원래 블레서였다고 수군거린다. [4장 보스]',singleName:'소금 채찍',aoeName:'금화 세례',dotName:'갈증',dotChance:0.2,
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 갈증',say:'군주가 갈증을 퍼뜨린다. 탈수는 정화의 성수로 풀 수 있다',atkMul:1.3,dotName:'탈수',dotChance:0.55,dotMul:1.5,aoeName:'황금 동전 세례'},{at:25,name:'3페이즈 · 염화',say:'성 안의 금화가 소금으로 굳는다',atkMul:1.6,aoeName:'염화',aoeMult:0.75,aoeEvery:2,dotChance:0.25}]})];
+/* 4장 보스 염수의 군주: 3장 바다뱀과 같은 체감(봇 시뮬 LV37 · 독안개 장비 기준 전 클래스 91% 이상) */
+{const m=STORY_MONS.find(x=>x.id==='st_saltlord');m.hp=Math.round(m.hp*1.3);m.atk=Math.round(m.atk*1.1);m.dotDmg=Math.round(m.atk*0.15);}
 const STORY_QUESTS=[
  {id:'E0',cat:'epic',title:'블레스 링크',published:true,level:1,prereq:null,repeat:null,cond:{},
   desc:'2054년, <Bleset Saga>가 다시 문을 열었다. 블레스 링크를 쓰고 처음으로 접속한다.',start:'s1',steps:{
@@ -378,7 +390,7 @@ const STORY_QUESTS=[
  {id:'E8',cat:'epic',title:'안개 마스크',published:true,level:20,prereq:'E7',repeat:null,cond:{adv:true},
   desc:'늪 한가운데 보랏빛 균열이 열린 뒤로, 독안개가 마을까지 차오른다. 늪의 마을 로타스로 향한다. [3장 「독안개 아래」]',start:'s1',steps:{
   s1:{text:'늪의 땅으로 들어서자 숨이 턱 막힌다. 말뚝 위에 선 집들 사이로 보랏빛 안개가 낮게 깔려 있다. 마을 사람들은 모두 가죽 마스크를 쓰고 있다. 치료소의 약초꾼이 마스크를 만들어 준다고 한다. (탐색 › 늪의 땅 › 마을 › 치료소)',
-    give:{land:'swamp',spot:'clinic',item:'q_mask',n:1,npc:'약초꾼 이브',text:'"돌아오셨네요, 아우로라 님." 이브가 반갑게 웃다가, 당신 얼굴을 다시 보고 멈칫한다. "…아, 죄송해요. 닮은 분이 계셨어요. 마스크가 없으시군요. 이 마스크에 늪 독샘을 먹이면 안개를 걸러 줘요."'},
+    give:{land:'swamp',spot:'clinic',item:'q_mask',n:1,npc:'약초꾼 이브',text:'"돌아오셨네요, AURORA 님." 이브가 반갑게 웃다가, 당신 얼굴을 다시 보고 멈칫한다. "…아, 죄송해요. 닮은 분이 계셨어요. 마스크가 없으시군요. 이 마스크에 늪 독샘을 먹이면 안개를 걸러 줘요."'},
     choices:[{label:'마스크를 받아 든다',req:{item:'q_mask'},result:'이브가 늪 독샘 세 개가 필요하다고 한다. 늪의 생물에게서 얻을 수 있다.',next:'s2'},
       {label:'아직 치료소에 가지 못했다',result:'로타스 치료소의 약초꾼을 찾아야 한다.',next:'s1'}]},
   s2:{text:'이브: "독샘 세 개면 충분해요. 독으로 독을 막는 거예요. 이상하게 들리죠?" (늪 독샘 3개 · 늪의 땅 필드 사냥)',choices:[
@@ -398,9 +410,9 @@ const STORY_QUESTS=[
     {label:'균열 가장자리를 살핀다',result:'갈대 사이에 가죽 표지의 무언가가 걸려 있다. 손을 뻗는 순간 균열이 활짝 열린다.',next:'s3'},
     {label:'균열이 닫힐 때까지 기다린다',result:'균열은 닫히지 않는다. 당신이 볼 때까지 기다리는 것처럼.',next:'s3'}]},
   s3:{text:'균열 속에서 무언가 기어 나온다. 움직임이 한 박자씩 늦게 따라온다.',battle:'st_rift',next:'s4',winText:'형체가 균열 속으로 끌려 들어간다. 균열이 한 번, 아주 천천히 깜빡인다.'},
-  s4:{text:'갈대 사이에서 건진 것은 낡은 탐사 일지다. 대부분의 쪽이 물에 젖어 붙어 있고, 첫 장만 겨우 읽힌다. 날짜는 2052년. 맨 아래 서명은 「아우로라」. 이브가 당신을 부른 그 이름이다.',choices:[
+  s4:{text:'갈대 사이에서 건진 것은 낡은 탐사 일지다. 대부분의 쪽이 물에 젖어 붙어 있고, 첫 장만 겨우 읽힌다. 날짜 칸은 물에 번져 읽을 수 없다. 맨 아래 서명은 「AURORA」. 이브가 당신을 부른 그 이름이다.',choices:[
     {label:'일지를 품에 넣는다',result:'돌아오는 배 위에서 토르의 노래가 처음으로 멈춘다. "그 일지, 버리지 마. 주인이 찾으러 올지도 모르니까."',next:'end',flag:'e9_journal'}]},
-  end:{end:true,text:'균열에서 2052년 일지 발견',reward:{exp:3600,gold:600,items:{j2052:1}}}}},
+  end:{end:true,text:'균열에서 낡은 탐사 일지 발견',reward:{exp:3600,gold:600,items:{j2052:1}}}}},
  {id:'E10',cat:'epic',title:'가라앉은 등불',published:true,level:24,prereq:'E9',repeat:null,cond:{},
   desc:'일지 첫 장 뒷면에 물에 잠긴 등대 신전이 그려져 있다. 장로 하윈은 그곳의 등불이 안개를 걷어 낸다고 한다. [3장 「독안개 아래」]',start:'s1',steps:{
   s1:{text:'일지 뒷면에 그려진 건물을 보여 주자 장로 하윈이 오래 말이 없다. "물에 잠긴 등대 신전이에요. 등불이 꺼진 뒤로 안개가 짙어졌죠." (탐색 › 늪의 땅 › 마을 › 광장)',
@@ -430,9 +442,9 @@ const STORY_QUESTS=[
  {id:'S3a',cat:'sub',title:'이름 없는 말뚝',published:true,level:22,prereq:null,repeat:null,cond:{quests:['E9']},
   desc:'로타스의 말뚝 집마다 문패가 걸려 있다. 몇 개는 비어 있다.',start:'s1',steps:{
   s1:{text:'로타스의 말뚝 집들을 따라 걷는다. 문패마다 이름이 새겨져 있는데, 몇 개는 텅 비어 있다. 에트나 순례자의 길, 이름이 새겨진 바위의 빈자리가 떠오른다.',choices:[
-    {label:'빈 문패를 하나씩 살펴본다',result:'맨 끝 집 빈 문패에 손톱으로 긁은 자국이 있다. 「아우…」까지만 남아 있다.',next:'s2'}]},
+    {label:'빈 문패를 하나씩 살펴본다',result:'맨 끝 집 빈 문패에 손톱으로 긁은 자국이 있다. 「AU…」까지만 남아 있다.',next:'s2'}]},
   s2:{text:'긁힌 자국은 오래되었는데, 나무는 새것이다. 누군가 이름을 새기다 멈춘 것 같다.',choices:[
-    {label:'자국을 손으로 문질러 본다',result:'나무 가루가 떨어지고 자국이 조금 더 선명해진다. 「아우…」 다음 글자는 끝내 보이지 않는다.',next:'end',flag:'s3a_post'},
+    {label:'자국을 손으로 문질러 본다',result:'나무 가루가 떨어지고 자국이 조금 더 선명해진다. 「AU…」 다음 글자는 끝내 보이지 않는다.',next:'end',flag:'s3a_post'},
     {label:'그대로 둔다',result:'돌아서는데 등 뒤에서 나무 긁는 소리가 한 번 난다. 돌아보면 아무도 없다.',next:'end',flag:'s3a_post'}]},
   end:{end:true,text:'빈 문패를 확인함',reward:{exp:900,gold:150,items:{}}}}},
  {id:'S3b',cat:'sub',title:'토르의 노래',published:true,level:25,prereq:null,repeat:null,cond:{quests:['E10']},
@@ -440,12 +452,92 @@ const STORY_QUESTS=[
   s1:{text:'나루터에서 토르가 노래를 흥얼거린다. 오늘은 배에 손님이 없다. "끝까지 들어 볼 테야? 다들 중간에 가 버리던데."',choices:[
     {label:'배에 앉아 끝까지 듣는다',result:'노래는 길고, 가사는 늪 사투리라 잘 들리지 않는다.',next:'s2'},
     {label:'다음에 듣겠다고 한다',result:'"그래. 나는 여기 계속 있으니까."',next:'s1'}]},
-  s2:{text:'후렴이 몇 번이고 반복된다. 듣다 보니 가사 한 줄이 이상하게 귀에 박힌다. "컨빨이 노를 젓고, 템빨이 등불 들고…" 어디서 들어 본 이름 같다.',choices:[
-    {label:'"그 이름들, 누구예요?"',result:'토르가 노를 멈춘다. "이름? 그냥 노래야. 아주 오래전부터 다들 이렇게 불렀어." 그리고 처음부터 다시 부르기 시작한다.',next:'end',flag:'s3b_song'},
+  s2:{text:'후렴이 몇 번이고 반복된다. 듣다 보니 가사 한 줄이 이상하게 귀에 박힌다. "여섯이 노를 젓고, 하나가 이름을 잃고…" 노래인데, 꼭 누군가의 기록 같다.',choices:[
+    {label:'"그 여섯은 누구예요?"',result:'토르가 노를 멈춘다. "여섯? 그냥 노래야. 아주 오래전부터 다들 이렇게 불렀어." 그리고 처음부터 다시 부르기 시작한다.',next:'end',flag:'s3b_song'},
     {label:'조용히 끝까지 듣는다',result:'노래가 끝나자 토르가 박수를 기다리듯 당신을 본다. 당신이 손뼉을 치자, 그는 만족스럽게 처음부터 다시 부른다.',next:'end',flag:'s3b_song'}]},
-  end:{end:true,text:'토르의 노래를 끝까지 들음',reward:{exp:1200,gold:200,items:{}}}}}];
+  end:{end:true,text:'토르의 노래를 끝까지 들음',reward:{exp:1200,gold:200,items:{}}}}},
+ {id:'E12',cat:'epic',title:'신기루의 도시',published:true,level:30,prereq:'E11',repeat:null,cond:{},
+  desc:'일지 1쪽 끝에 번진 단어 「히페리온」을 따라 소금 사막을 건넌다. [4장 「황금의 갈증」]',start:'s1',steps:{
+  s1:{text:'하얀 소금 사막 끝, 신기루처럼 금빛 도시가 떠 있다. 히페리온. 성문 앞 경비가 손바닥을 내민다. "체류 허가 없이는 못 들어갑니다. 광장의 금고지기에게 받아 오세요." (탐색 › 소금의 땅 › 마을 › 광장)',
+    give:{land:'salt',spot:'plaza',item:'q_permit',n:1,npc:'금고지기 바르톨로',text:'바르톨로가 금박 허가증에 도장을 찍다가 체류 기간 칸에서 펜을 멈춘다. "기간은 비워 두죠. 다들 결국 거기 채우지 않더라고요." 그가 손을 내민다. "수수료는 소금 결정 네 개, 아니면 1,500골드."'},
+    choices:[{label:'허가증을 받아 든다',req:{item:'q_permit'},result:'허가증은 묵직하다. 종이인데 금속처럼 차갑다.',next:'s2'},
+      {label:'아직 금고지기를 만나지 못했다',result:'히페리온 광장의 금고지기 바르톨로를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'바르톨로: "수수료를 내야 도장이 마릅니다." (소금 결정 4개 · 소금의 땅 필드 사냥, 또는 1,500골드)',choices:[
+    {label:'소금 결정 4개를 낸다',req:{items:{salt:4}},take:{salt:4},result:'바르톨로가 결정을 저울에 올린다. 저울은 움직이지 않는데 그는 만족스럽게 고개를 끄덕인다.',next:'s3'},
+    {label:'1,500골드를 낸다',req:{gold:1500},takeGold:1500,result:'금화가 금고 안으로 떨어지는 소리가 한참 동안 이어진다. 1,500개보다 훨씬 많은 소리다.',next:'s3'},
+    {label:'아직 준비하지 못했다',result:'소금 결정 4개, 또는 1,500골드가 필요하다.',next:'s2'}]},
+  s3:{text:'도장을 받고 대상로로 나서는데, 발밑 모래가 일제히 들썩인다. 발소리에 맞춰 소금 전갈 떼가 솟아오른다.',battle:'st_scorpion',next:'s4',winText:'전갈 떼가 모래 속으로 흩어진다. 성문이 소리 없이 열린다.'},
+  s4:{text:'광장에 들어서자 귀족 영애 셀레스트가 부채를 접으며 다가온다. 인사 대신 이렇게 말한다. "이번엔 오래 계실 거죠? 다들 그러시던데."',choices:[
+    {label:'"이번엔…?"',result:'셀레스트가 부채로 입을 가리고 웃는다. 웃음이 1초쯤 길다. "어머, 제가 무슨 말을 했죠? 히페리온에 오신 걸 환영해요."',next:'end',flag:'e12_permit'},
+    {label:'금방 떠날 거라고 말한다',result:'"네, 다들 그렇게 말해요." 셀레스트는 당신의 허가증 빈칸을 오래 바라본다.',next:'end',flag:'e12_permit'}]},
+  end:{end:true,text:'히페리온 체류 허가',reward:{exp:5500,gold:800,items:{potion:2}}}}},
+ {id:'E13',cat:'epic',title:'골든 오아시스',published:true,level:32,prereq:'E12',repeat:null,cond:{},
+  desc:'카지노 골든 오아시스의 금고에서 오래된 칩이 사라졌다. 지배인 루카는 손님에게만 금고 쪽 문을 연다. [4장 「황금의 갈증」]',start:'s1',steps:{
+  s1:{text:'뒷골목 카지노 뒷문에서 지배인 루카가 당신을 기다리고 있다. 처음 보는 얼굴인데 이미 당신 이름을 안다는 듯 웃는다. (탐색 › 소금의 땅 › 마을 › 뒷골목)',
+    give:{land:'salt',spot:'alley',item:'q_chip',n:1,npc:'카지노 지배인 루카',text:'루카가 웃는다. 웃음이 1초쯤 길다. "금고에서 오래된 칩이 하나 없어졌어요. 이것과 짝인데." 그가 닳은 칩 하나를 건넨다. 반쯤 닳은 글자: A■R■■A. "금고 쪽은 손님만 들어갈 수 있어요. 한 판만 하고 오세요. 이기든 지든 상관없어요. 손님이 되는 게 중요하죠."'},
+    choices:[{label:'칩을 받는다',req:{item:'q_chip'},result:'칩은 따뜻하다. 방금까지 누군가 쥐고 있던 것처럼.',next:'s2'},
+      {label:'아직 루카를 만나지 못했다',result:'히페리온 뒷골목, 카지노 뒷문의 지배인 루카를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'루카: "한 판이면 돼요. 달팽이 레이스든 주간 행운권이든." (탐색 › 소금의 땅 › 카지노 · 달팽이 레이스 1경기 또는 주간 행운권 1장)',choices:[
+    {label:'한 판 하고 왔다',req:{flag:'e13_casino'},result:'루카가 박수를 친다. "축하해요. 이제 손님이에요. 손님은 원래 오래 머물죠."',next:'s3'},
+    {label:'아직 하지 않았다',result:'골든 오아시스에서 달팽이 레이스 1경기나 주간 행운권 1장이면 된다. 결과는 상관없다.',next:'s2'}]},
+  s3:{text:'금고 문이 열리자 황금 골렘이 몸을 일으킨다. 칩이 사라진 뒤로 금고 파수꾼은 아무도 손님으로 보지 않는다.',battle:'st_goldguard',next:'s4',winText:'파수꾼이 무너지며 금화가 쏟아진다. 그 아래, 금고 바닥에 칩 하나가 박혀 있다.'},
+  s4:{text:'바닥의 칩에도 같은 글자가 새겨져 있다. A■R■■A. 금고 선반에는 VIP 명부가 펼쳐져 있다. 맨 앞 장, 이름 칸 하나만 손톱으로 긁어 낸 자국이 있다. 남은 획을 이으면 같은 글자다. 날짜 칸은 처음부터 비어 있다.',choices:[
+    {label:'명부를 덮는다',result:'그날 밤 일지를 펼치자 붙어 있던 2쪽이 저절로 떨어진다. 첫 줄에 「로그아웃」이라는 단어가 보인다.',next:'end',flag:'e13_vip'},
+    {label:'긁힌 칸을 손으로 문질러 본다',result:'금박 가루가 묻어난다. 글자는 더 선명해지지 않는다. 그날 밤, 일지의 2쪽이 저절로 떨어진다.',next:'end',flag:'e13_vip'}]},
+  end:{end:true,text:'금고 바닥의 칩과 VIP 명부',reward:{exp:6000,gold:900,items:{potion:2,holywater:1}}}}},
+ {id:'E14',cat:'epic',title:'마르지 않는 갈증',published:true,level:34,prereq:'E13',repeat:null,cond:{},
+  desc:'갈증의 호수 염분이 점점 높아진다. 소금 채굴꾼 하산은 호숫가 소금 성의 주인을 안다고 한다. [4장 「황금의 갈증」]',start:'s1',steps:{
+  s1:{text:'히페리온에서 유일하게 해진 옷을 입은 노인이 식료품점 앞에 소금 자루를 내려놓는다. 소금 채굴꾼 하산이다. (탐색 › 소금의 땅 › 마을 › 식료품점)',choices:[
+    {label:'호수 이야기를 묻는다',result:'"호숫가 성의 주인? 원래 블레서들 중에 제일 돈이 많던 사람이었다지. 소원으로 다시는 가난하지 않게 해 달라고 빌었대. 그 뒤로 이 도시가 부자가 됐고, 호수는 짜졌지."',next:'s2'}]},
+  s2:{text:'하산을 따라 갈증의 호수로 간다. 물가에 하얀 소금 자국이 사람 발자국 모양으로 이어져 있다. 물속에서 무언가 형체를 갖추며 일어선다.',battle:'st_brine',next:'s3',winText:'정령이 소금 더미로 무너진다. 호수 건너편, 하얀 성의 창문 하나에 불이 켜진다.'},
+  s3:{text:'돌아오는 길, 하산이 묻는다. "일이 끝나면 어디로 갈 건가?" 당신은 무심코 대답한다. "이 일이 끝나면 로그아웃할 거예요."',choices:[
+    {label:'로그아웃을 시도한다',glitch:true,next:'s3'},
+    {label:'하산의 대답을 기다린다',result:'하산이 잠깐 멈춘다. 숨도, 눈 깜빡임도. "로그아웃..? 새로 발견된 보석 이름인가요?" 그리고 아무 일 없었다는 듯 소금 자루를 고쳐 멘다.',next:'s4',flag:'e14_logout'},
+    {label:'로그아웃을 시도한다',glitch:true,next:'s3'}]},
+  s4:{text:'그날 밤 일지의 3쪽이 떨어진다. 잉크가 번진 한 줄이 겨우 읽힌다. "여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다."',choices:[
+    {label:'일지를 덮는다',result:'창밖으로 호수 건너 성의 불빛이 보인다. 불은 밤새 꺼지지 않는다.',next:'end'}]},
+  end:{end:true,text:'갈증의 호수 기슭 조사',reward:{exp:6800,gold:1000,items:{potion:2}}}}},
+ {id:'E15',cat:'epic',title:'황금의 갈증',published:true,level:37,prereq:'E14',repeat:null,cond:{},
+  desc:'금고지기의 열쇠로 소금 성의 문을 연다. 왕좌의 주인은 남는 대가로 부를 약속받은 옛 블레서라고 한다. 권장 LV38 · 회복약 3개, 정화의 성수 1개 이상 준비. [4장 「황금의 갈증」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'바르톨로가 금고 열쇠를 꺼낸다. "성 문에 맞을 거예요. 왜 맞는지는 묻지 마세요. 이 도시 사람들은 그런 걸 묻지 않거든요." (탐색 › 소금의 땅 › 마을 › 광장)',
+    give:{land:'salt',spot:'plaza',item:'q_vaultkey',n:1,npc:'금고지기 바르톨로',text:'바르톨로가 열쇠를 건네며 덧붙인다. "성 안의 금화는 만지지 마세요. 거기 있는 건 전부 누군가 치른 값이니까요."'},
+    choices:[{label:'열쇠를 받는다',req:{item:'q_vaultkey'},result:'열쇠는 짜다. 혀에 대지 않았는데도 그렇게 느껴진다.',next:'s2'},
+      {label:'아직 바르톨로를 만나지 못했다',result:'히페리온 광장의 금고지기 바르톨로를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'성 문이 열린다. 안은 금화로 가득한데, 전부 하얀 소금으로 굳어 있다. 가장 안쪽 왕좌에 누군가 앉아 있다. (권장 LV38 · 회복약 3개, 정화의 성수 1개 이상)',choices:[
+    {label:'왕좌로 다가간다',result:'왕좌의 주인이 고개를 든다. 입술이 소금처럼 갈라져 있다. "…손님인가. 아니면, 다음 사람인가."',next:'s3'},
+    {label:'회복약과 성수를 더 챙겨 온다',result:'성 문은 닫히지 않는다. 열려 있는 쪽이 익숙한 것처럼.',next:'s2'}]},
+  s3:{text:'염수의 군주가 일어선다. 체력이 줄면 갈증을 퍼뜨리고(60%), 끝에는 성 안의 금화를 소금으로 굳혀 쏟아붓는다(25%).',battle:'st_saltlord',next:'s4',winText:'군주가 무릎을 꿇는다. 성 안의 소금 금화가 한꺼번에 녹아 바닷물처럼 흘러내린다.'},
+  s4:{text:'군주가 마지막으로 입을 연다. "소원을… 빌지 마." 그리고 자기 이름을 말하려는데, 이름 대신 잡음이 흘러나온다. 시야 한쪽에 시스템 메시지가 떠오른다.\n\n「관람석에서 박수가 터집니다.」\n「갈증의 호수의 염분이 낮아졌습니다.」',choices:[
+    {label:'메시지를 다시 확인한다',result:'메시지 창에는 「갈증의 호수의 염분이 낮아졌습니다.」 한 줄만 남아 있다.',next:'s5'},
+    {label:'군주의 이름을 다시 묻는다',result:'대답은 없다. 탐사 기록에는 그의 이름 자리에 「■■■」만 남는다.',next:'s5'}]},
+  s5:{text:'히페리온으로 돌아온다. 광장의 금 장식이 딱 1초 동안 하얀 소금으로 보였다가 돌아온다. 셀레스트도, 루카도, 바르톨로도 아무것도 알아채지 못한다.',choices:[
+    {label:'일지를 펼친다',result:'4쪽이 떨어지고, 그 뒤에서 젖은 악보 한 장이 미끄러져 나온다. 가사는 한 줄뿐이다. 「돌아오지 마」.',next:'end',flag:'ch4_clear'}]},
+  end:{end:true,text:'4장 「황금의 갈증」 완료',reward:{exp:10000,gold:1400,items:{potion:3,q_eternal:1},gearTier:4}}}},
+ {id:'S4a',cat:'sub',title:'열쇠 구멍 없는 금고',published:true,level:33,prereq:null,repeat:null,cond:{quests:['E13']},
+  desc:'바르톨로의 금고 중 하나에는 열쇠 구멍이 없다. 안에서 동전 세는 소리가 들린다고 한다.',start:'s1',steps:{
+  s1:{text:'히페리온 금고 복도 끝, 열쇠 구멍이 없는 금고 하나. 문패 자리에 긁힌 글자가 있다. A■R■■A. 문에 귀를 대자 안에서 동전 세는 소리가 들린다. "…하나, 둘, 셋…"',choices:[
+    {label:'끝까지 들어 본다',result:'"…아흔여덟, 아흔아홉." 숫자가 멈춘다. 그리고 다시 "하나."',next:'s2'},
+    {label:'바르톨로에게 묻는다',result:'"그 금고요? 주인이 아직 돌아오지 않았어요. 돌아올 거예요. 다들 돌아오니까." 그는 대답하면서 한 번도 그 금고 쪽을 보지 않는다.',next:'s2'}]},
+  s2:{text:'숫자는 몇 번을 들어도 아흔아홉에서 처음으로 돌아간다. 강가 마을의 끊기지 않던 노래, 에트나의 끝나지 않던 수련이 떠오른다.',choices:[
+    {label:'"백." 하고 대신 세어 준다',result:'안쪽 소리가 뚝 멈춘다. 한참 뒤, 아주 작게 다시 시작된다. "…하나."',next:'end',flag:'s4a_vault'},
+    {label:'조용히 돌아선다',result:'등 뒤에서 숫자가 계속 이어진다. 복도 끝까지 걸어도 소리는 같은 크기로 들린다.',next:'end',flag:'s4a_vault'}]},
+  end:{end:true,text:'열쇠 구멍 없는 금고의 소리',reward:{exp:1800,gold:300,items:{salt:3}}}}},
+ {id:'S4b',cat:'sub',title:'매일 같은 자리',published:true,level:35,prereq:null,repeat:null,cond:{quests:['E14']},
+  desc:'골든 오아시스에는 매일 같은 시각, 같은 자리에서 같은 금액을 거는 손님이 있다.',start:'s1',steps:{
+  s1:{text:'달팽이 레이스장 맨 앞줄, 늘 같은 자리에 같은 손님이 앉아 있다. 호객꾼 말로는 매일 같은 시각에 와서 같은 금액을 건다. 이긴 적도, 진 적도 없다.',choices:[
+    {label:'옆자리에 앉아 말을 건다',result:'손님이 당신을 보더니 반갑게 입을 연다. "A… R…" 그러다 멈춘다. "아, 실례. 사람을 착각했네요."',next:'s2'},
+    {label:'멀리서 지켜본다',result:'레이스가 끝나도 손님은 일어나지 않는다. 다음 경기 종이 울리자 같은 금액을 다시 건다.',next:'s1'}]},
+  s2:{text:'손님: "여기 있으면 잃지도 따지도 않아요. 그게 얼마나 편한지 몰라요. 당신도 곧 알게 될 거예요."',choices:[
+    {label:'"언제부터 여기 있었어요?"',result:'"글쎄요. 접수 마감 전이었던가." 손님이 웃는다. 웃음이 1초쯤 길다. 그리고 다음 경기에 같은 금액을 건다.',next:'end',flag:'s4b_seat'},
+    {label:'자리에서 일어난다',result:'"또 오세요. 저는 여기 있을 테니까." 돌아보면 손님은 벌써 다음 경기를 보고 있다.',next:'end',flag:'s4b_seat'}]},
+  end:{end:true,text:'매일 같은 자리의 손님',reward:{exp:2400,gold:400,items:{}}}}}];
 /* 메인 스토리 챕터 묶음(퀘스트 목록 접기용) */
-const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']]];
+/* 4장 E14: 「로그아웃을 시도한다」 — 어느 쪽을 눌러도 1초 동안 화면이 깨졌다가 원래대로(의도된 오류) */
+function logoutGlitch(){const b=document.body;if(!b||b.classList.contains('glx'))return;
+  const el=document.createElement('div');el.id='glx-ov';el.setAttribute('aria-hidden','true');
+  el.innerHTML='<div class="glx-box"><b>LOGOUT</b><span>ERR_0x0000 ▒▒▒ 요청을 처리할 수 없습▒▒</span><span>A■R■■A.session = locked</span></div>';
+  b.appendChild(el);b.classList.add('glx');setTimeout(()=>{b.classList.remove('glx');el.remove();},1000);}
+const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']],['ch4','4장 「황금의 갈증」',['E12','E13','E14','E15']]];
 /* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
@@ -456,14 +548,15 @@ const HERO_LINES={
   pb_herald:{say:['나팔 소리가 들리나? 우리가 불었어.','신전 문은 안에서만 열려.','너도 소원을 빌겠지. 다들 그랬어.'],last:'…일곱 번째… 나팔…'},
   st_monk:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_cave:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
+  st_saltlord:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 이게 남은 대가야.','꺼내 줘.'],last:'소원을… 빌지 마.'},
   d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
   d_siren:{say:['돌아오지 마, 돌아오지 마.','이 노래는 경고야. 아무도 듣질 않지.','바다 밑에 우리 이름이 잠겨 있어.'],last:'노래를… 들어 줘서 고마워.'},
   d_mirror:{say:['거울을 봐. 그게 진짜 너야.','NPC들 얼굴, 자세히 본 적 있어?','나는 가장 오래 남은 사람이야.'],last:'다음은… 너야.'},
-  guardian:{say:['신전 문을 열지 마.','우리는 이겼어. 그리고 졌지.','소원은 하나뿐이야. 잘 골라.'],last:'2052… 9월… 14일…'}};
+  guardian:{say:['신전 문을 열지 마.','우리는 이겼어. 그리고 졌지.','소원은 하나뿐이야. 잘 골라.'],last:'…접수… 마감이… 몇 시였더라…'}};
 /* 마을 글리치 대사 */
 const VIL_GLITCH_SOFT=['어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','(대답 대신 한참 동안 웃기만 한다.)','오늘도 날씨가 좋네요. 어제도. 내일도.','…방금 저랑 얘기하셨던가요?','(고개를 돌렸다가 다시 보니, 같은 자세로 같은 곳을 보고 있다.)'];
 const VIL_GLITCH=['(메뉴를 여는 당신의 손끝을 보다가, 로그아웃 버튼 쪽을 힐끗 본다.)','여기 계속 계셔도 돼요.','돌아갈 데가 있긴 하세요?','{N}님, 오늘도 오셨네요. …아, 아니, 이름을 잘못 불렀네요.','여기 계속 계셔도 돼요. 여기 계속 계셔도 돼요.','어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','당신도 곧 익숙해질 거예요. 다들 그랬거든요.','…로그아웃? 그게 뭐죠?'];
-const GLITCH_NAMES=['진','하루','템빨대장','컨트롤장인','유니','크로노'];
+const GLITCH_NAMES=['진','하루','AURORA','A■R■■A','유니','크로노'];
 
 /* ───────── 전직 퀘스트 (LV20 · 각 클래스의 시작의 마을) ───────── */
 const ADV_ORIGIN={
@@ -500,7 +593,7 @@ function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
-  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -666,7 +759,7 @@ function aqua(){return S.me.aqua=S.me.aqua||[];}
 function dex(){return S.me.dex=S.me.dex||{};}
 const JUNK=[['j_can','녹슨 통조림',30],['j_weed','해초줄기',35],['j_net','찢어진 그물',25],['j_bottle','편지가 담긴 병',10]];
 const WATER={meadow:'강',sea:'바다',frost:'얼음 호수'};
-const BOTTLE_LINES=['"이 편지를 주운 사람은 오늘 하루 운이 좋을 거예요. …아마도."','"엄마, 저 블레서 됐어요. 밥은 잘 챙겨 먹고 있어요."','"백야의 신전 아래에서 노랫소리가 들린다. 누구도 믿어 주지 않았다."','"내 낚싯대를 훔쳐 간 고양이를 찾습니다. 줄무늬, 뚱뚱함."','"2052년 8월, 타임어택 당일. 서버가 멈추기 직전, 하늘이 하얗게 갈라지는 걸 봤다."','"신들은 이방인을 불렀다. 그런데 이방인은 누가 불렀을까?"','"컨빨 길드원 모집합니다. 자격: 손이 빠를 것. 연락은… 바다에 물어보세요."','"이건 그냥 낙서입니다. 진짜로요. 더 읽지 마세요."','"블라스파미아의 안개 속에서 나를 부르는 목소리가 있었다. 내 이름을 알고 있었다."','"오늘의 저녁 메뉴: 생선. 내일도 생선. 모레도 아마 생선."','"라니아케아의 일곱 번째 나팔이 울리기 전에, 누군가는 이 편지를 읽어야 한다."','"사랑하는 R에게. 강가의 약속을 기억해? 나는 아직 거기 있어."'];
+const BOTTLE_LINES=['"이 편지를 주운 사람은 오늘 하루 운이 좋을 거예요. …아마도."','"엄마, 저 블레서 됐어요. 밥은 잘 챙겨 먹고 있어요."','"백야의 신전 아래에서 노랫소리가 들린다. 누구도 믿어 주지 않았다."','"내 낚싯대를 훔쳐 간 고양이를 찾습니다. 줄무늬, 뚱뚱함."','"2052년 8월, 타임어택 당일. 서버가 멈추기 직전, 하늘이 하얗게 갈라지는 걸 봤다."','"신들은 이방인을 불렀다. 그런데 이방인은 누가 불렀을까?"','"탐사대원 모집합니다. 여섯 명이면 충분해요. 연락은… 바다에 물어보세요. — A■R■■A"','"이건 그냥 낙서입니다. 진짜로요. 더 읽지 마세요."','"블라스파미아의 안개 속에서 나를 부르는 목소리가 있었다. 내 이름을 알고 있었다."','"오늘의 저녁 메뉴: 생선. 내일도 생선. 모레도 아마 생선."','"라니아케아의 일곱 번째 나팔이 울리기 전에, 누군가는 이 편지를 읽어야 한다."','"사랑하는 R에게. 강가의 약속을 기억해? 나는 아직 거기 있어."'];
 Object.assign(ITEMS,{bottle:{name:'편지가 담긴 병',type:'use',tag:'잡동사니',letter:true,desc:'낚시로 건져 올린 유리병. 안에 둘둘 말린 편지가 들어 있다. 사용하면 편지를 읽는다.',price:5}});
 function castRoll(land,tier){
   const r=Math.random();bump('fishMin',CAST_MIN);bump('casts');const W=WATER[land]||'물';
@@ -1061,7 +1154,8 @@ function checkTitles(){
   if(changed){save();const card=$('.me-card');if(card){const c=card.querySelector('[data-title-chip]');if(c)c.outerHTML=titleChip();}if(S.sel.titleModal)showTitles();}
 }
 let titleT=null;
-function bump(k,n){if(!S.stats)S.stats={};S.stats[k]=(S.stats[k]||0)+(n==null?1:n);clearTimeout(titleT);titleT=setTimeout(checkTitles,300);}
+function bump(k,n){if(!S.stats)S.stats={};if((k==='snail'||k==='lottoBuy')&&S.qp&&S.qp.E13&&S.qp.E13.status==='active'){S.flags=S.flags||{};S.flags.e13_casino=true;}  /* 4장 E13: 카지노 한 판 */
+  S.stats[k]=(S.stats[k]||0)+(n==null?1:n);clearTimeout(titleT);titleT=setTimeout(checkTitles,300);}
 function noteItems(items){if(!items)return;S.stats=S.stats||{};const set=new Set(S.stats.itemKinds||[]);Object.keys(items).forEach(k=>{if(items[k]>0)set.add(k);});S.stats.itemKinds=[...set];}
 function titleById(id){return TITLES.find(t=>t.id===id);}
 function titleChip(){

@@ -390,7 +390,7 @@ if(ONLINE){
       if(!await cloudFlush())throw new Error('세이브를 서버에 올리지 못했습니다');
       const {data,error}=await SB.rpc('buy_lotto',{p_nums:a});if(error)throw error;
       const price=data.price||LOTTO_PRICE;
-      S.me.gold-=price;bump('goldSpent',price);bump('casinoSpent',price);
+      S.me.gold-=price;bump('goldSpent',price);bump('casinoSpent',price);bump('lottoBuy');   // 4장 E13 카지노 한 판(메인)
       S.me.lotto.push({id:'srv:'+data.id,nums:data.nums,draw:data.draw,at:Date.parse(data.at),claimed:false,rank:null,ts:now()});
       S.sel.lotPick=[];save();cloudSave(true);render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');
     }catch(err){console.warn(err);toast(ltErr(err),'bad');ltSync().then(()=>{if(ltOpen())openLotto();});}
