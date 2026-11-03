@@ -371,8 +371,8 @@ function roleCounts(r){const c={tank:0,dps:0,heal:0};r.members.forEach(n=>{const
 function recruitCard(r){
   const m=monster(r.monsterId);if(!m)return '';
   const c=roleCounts(r);const reason=joinReason(r);const busy=busyReason();
-  return `<article class="rcard">
-    <button class="rc-art" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기"><pre aria-hidden="true">${esc(ART[m.art]||ART.generic)}</pre><span class="rc-mon">${esc(m.name)} · LV${m.level}+</span></button>
+  return `<article class="rcard${r.real?' rc-real':''}">
+    <button class="rc-art" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기"><pre aria-hidden="true">${esc(ART[m.art]||ART.generic)}</pre>${r.real?'<span class="rc-real-b">블레서</span>':''}<span class="rc-mon">${esc(m.name)} · LV${m.level}+</span></button>
     <div class="rc-body">
       <div class="rc-top"><b class="rc-name">${esc(r.name||m.name)}</b><span class="num rc-count" aria-label="현재 ${r.members.length}명, 마감 ${r.target}명">${r.members.length}/${r.target}</span></div>
       <small class="muted">파티장 ${esc(r.leader)}</small>

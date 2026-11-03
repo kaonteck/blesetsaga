@@ -2711,3 +2711,8 @@ body::after{display:none!important}
 .chip.st-buff,.hud-fx.st-buff{background:var(--st-buff);color:#2a2008}
 .chip.st-debuff,.hud-fx.st-debuff{background:var(--st-debuff);color:#fff}
 .chip.st-heal,.hud-fx.st-heal{background:var(--st-heal);color:#0f2a1a}
+/* 실제 블레서 파티(백엔드 요청): 모집 목록 줄 .pt-real · 메인 카드 .rc-real — 초록(--ok) 선 + '블레서' 채운 칩 */
+.li.pt-real{box-shadow:inset 2px 0 0 var(--ok);background:color-mix(in srgb,var(--ok) 6%,transparent);padding-left:12px}
+.li.pt-real .chip.ok{background:var(--ok);color:var(--slab);border-color:transparent;font-weight:600;padding:0 7px;vertical-align:1px}
+.rcard.rc-real{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+.rc-real-b{position:absolute;top:8px;left:8px;font-size:10.5px;font-weight:600;line-height:1.6;padding:0 7px;border-radius:999px;background:var(--ok);color:var(--slab)}

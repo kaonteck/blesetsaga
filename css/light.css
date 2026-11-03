@@ -1370,6 +1370,10 @@ html[data-theme="light"] .chip.st-buff,html[data-theme="light"] .chip.st-debuff,
 html[data-theme="light"] .chip.st-buff,html[data-theme="light"] .hud-fx.st-buff{background:var(--st-buff)}
 html[data-theme="light"] .chip.st-debuff,html[data-theme="light"] .hud-fx.st-debuff{background:var(--st-debuff);color:#14181f}
 html[data-theme="light"] .chip.st-heal,html[data-theme="light"] .hud-fx.st-heal{background:var(--st-heal)}
+html[data-theme="light"] .li.pt-real{box-shadow:inset 2px 0 0 var(--ok);background:color-mix(in srgb,var(--ok) 6%,transparent)}
+html[data-theme="light"] .li.pt-real .chip.ok{background:var(--ok);color:var(--slab);border-color:transparent}
+html[data-theme="light"] .rcard.rc-real{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+html[data-theme="light"] .rc-real-b{background:var(--ok);color:var(--slab)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
