@@ -1383,3 +1383,5 @@ html[data-theme="light"] .list .li.clickable[aria-current="true"],html[data-them
 html[data-theme="light"] .scrim,html[data-theme="light"] body.chat-open #chatbk{background:rgba(28,34,48,.38)}
 html[data-theme="light"]{--st-buff:#e0b13a;--st-debuff:#8f63e3;--st-heal:#45bf78}
 html[data-theme="light"] .chip.st-debuff,html[data-theme="light"] .hud-fx.st-debuff{color:#fff}
+html[data-theme="light"] .gtel,html[data-theme="light"] .gtel.aoe{background:#fff;box-shadow:none}
+html[data-theme="light"] .gtel .gtel-k,html[data-theme="light"] .gtel .tk-run{color:#c62828}
