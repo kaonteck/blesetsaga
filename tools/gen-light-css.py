@@ -235,6 +235,8 @@ def main():
 {SCOPE}{{color-scheme:light}}
 {SCOPE} body{{background:#ebeef4!important;color:#2e3546}}
 {SCOPE} body::before{{background:#ebeef4}}
+/* 만신전 출현 팝업 항목 이름(출현 위치·집결 시간 등): 라이트에서 분홍 → 검정(프론트) */
+{SCOPE} .modal.evpm .evp-dl dt{{color:#1a1d24;font-weight:600}}
 /* 선택된 퀘스트 줄: 라이트 모드에서는 옅게(프론트) */
 {SCOPE} .list .li.clickable[aria-current="true"],{SCOPE} .li.clickable[aria-current="true"]{{background:#eef2fa}}
 /* 팝업·채팅 시트 뒤 가림막: 라이트에서도 흰색이 아니라 어둡게 흐리게(프론트) */
