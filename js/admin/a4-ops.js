@@ -235,3 +235,36 @@ VIEWS.chat=async(el)=>{
     if(await q(A.sb.from('chat_messages').delete().eq('id',b.dataset.del),'삭제했습니다.'))go('chat');});
   $$('[data-ban]').forEach(b=>b.onclick=()=>banDlg(b.dataset.ban));
 };
+
+/* ── 피드 (최근 글·댓글: 가리기·지우기·정지) ── */
+let FDV={kind:'post',hidden:false};
+VIEWS.feed=async(el)=>{
+  const post=FDV.kind==='post',T=post?'feed_posts':'feed_comments';
+  let qy=A.sb.from(T).select(post?'id,author,author_name,text,likes,comments,hidden,created_at':'id,post_id,parent_id,author,author_name,text,likes,hidden,created_at').order('created_at',{ascending:false}).limit(200);
+  if(FDV.hidden)qy=qy.eq('hidden',true);
+  const rows=await q(qy);
+  if(!rows){el.innerHTML='<div class="msg bad">피드를 불러오지 못했습니다.</div>';return;}
+  el.innerHTML=`<div class="two"><div class="panel" style="grid-column:1/-1"><h3><span class="row" style="gap:8px">
+      <select id="fv-kind" style="width:auto">${[['post','글'],['comment','댓글·답글']].map(([v,l])=>`<option value="${v}" ${FDV.kind===v?'selected':''}>${l}</option>`).join('')}</select>
+      <label class="chk"><input type="checkbox" id="fv-hid" ${FDV.hidden?'checked':''}> 가린 것만</label>
+      <span class="faint" style="font-weight:400">최근 ${rows.length}개</span></span>
+      <button class="btn btn-sm" id="fv-reload">새로고침</button></h3>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>시각</th><th>쓴 사람</th><th>내용</th><th>${post?'좋아요 · 댓글':'좋아요'}</th><th></th></tr></thead><tbody>
+    ${rows.map(r=>`<tr${r.hidden?' style="opacity:.55"':''}><td class="small faint" style="white-space:nowrap">${fmtTime(r.created_at)}</td>
+      <td class="small" style="white-space:nowrap">${r.author&&A.names[r.author]?who(r.author):esc(r.author_name||'—')}${!post&&r.parent_id?' <span class="chip dim">답글</span>':''}</td>
+      <td style="white-space:pre-wrap">${esc(r.text)}${r.hidden?' <span class="chip dim">가림</span>':''}</td>
+      <td class="small num">${post?`${r.likes} · ${r.comments}`:r.likes}</td>
+      <td><div class="row" style="flex-wrap:nowrap">
+        <button class="btn btn-sm" data-fhide="${r.id}" data-v="${r.hidden?0:1}">${r.hidden?'다시 보이기':'가리기'}</button>
+        <button class="btn btn-sm btn-g" data-fdel="${r.id}">삭제</button>
+        ${r.author&&r.author!==A.user.id?`<button class="btn btn-sm btn-d" data-ban="${r.author}">정지</button>`:''}</div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">아직 없습니다.</td></tr>'}
+    </tbody></table></div>
+    <p class="faint small" style="margin:10px 0 0">가리면 유저 화면에서 1분 안에 사라집니다(쓴 사람에게도 안 보임). 글을 지우면 그 글의 댓글·좋아요도 함께 지워집니다.</p></div></div>`;
+  $('#fv-kind').onchange=e=>{FDV.kind=e.target.value;go('feed');};
+  $('#fv-hid').onchange=e=>{FDV.hidden=e.target.checked;go('feed');};
+  $('#fv-reload').onclick=()=>go('feed');
+  $$('[data-fhide]').forEach(b=>b.onclick=async()=>{if(await q(A.sb.from(T).update({hidden:b.dataset.v==='1'}).eq('id',b.dataset.fhide),b.dataset.v==='1'?'가렸습니다.':'다시 보이게 했습니다.'))go('feed');});
+  $$('[data-fdel]').forEach(b=>b.onclick=async()=>{if(!await ask(post?'글 삭제':'댓글 삭제',post?'글과 그 글의 댓글·좋아요가 모두 지워지고 되돌릴 수 없습니다. 기록으로 남기려면 가리기를 쓰세요.':'댓글(과 답글)이 지워지고 되돌릴 수 없습니다.','삭제',true))return;
+    if(await q(A.sb.from(T).delete().eq('id',b.dataset.fdel),'삭제했습니다.'))go('feed');});
+  $$('[data-ban]').forEach(b=>b.onclick=()=>banDlg(b.dataset.ban));
+};

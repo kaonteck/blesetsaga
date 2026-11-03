@@ -78,6 +78,30 @@ select t.ok((select not hidden from feed_posts),'작성자가 스스로 가림 �
 select t.as(:'A',true); update feed_posts set hidden=true;
 select t.as(:'P2'); select t.ok((select count(*) from feed_posts)=0,'운영자가 가린 글은 다른 유저에게 안 보임');
 select t.as(:'P1'); select t.ok((select count(*) from feed_posts)=1,'작성자 본인은 가린 글 봄');
+-- 피드 (011): 이름·댓글 좋아요·답글·도배·사진 열 정리
+select t.ok((select author_name from feed_posts)='아린','글쓴이 이름은 서버가 채움');
+select t.ok((select author_name from feed_comments)='벨라','댓글 이름도 서버가 채움');
+insert into feed_comment_likes(comment_id) select id from feed_comments;
+select t.ok((select likes from feed_comments)=1,'댓글 좋아요 수 자동 계산');
+select t.fail($$insert into feed_comment_likes(comment_id,user_id) select id,'00000000-0000-0000-0000-000000000003' from feed_comments$$,'남 대신 댓글 좋아요');
+insert into feed_comments(post_id,parent_id,text) select post_id,id,'답글' from feed_comments where parent_id is null;
+select t.ok((select count(*) from feed_comments where parent_id is not null)=1 and (select comments from feed_posts)=2,'원댓글에 답글 · 댓글 수 2');
+select t.fail($$insert into feed_comments(post_id,parent_id,text) select post_id,id,'답글의 답글' from feed_comments where parent_id is not null$$,'답글에 답글(BAD_PARENT)');
+delete from feed_comment_likes;
+select t.ok((select likes from feed_comments where parent_id is null)=0,'댓글 좋아요 취소');
+select t.fail($$insert into feed_posts(text,img_path) values ('사진','x/y.jpg')$$,'사진 경로 열 없음(사진 기능 삭제)');
+select t.as(:'P3'); insert into feed_posts(text) values ('a'),('b'),('c');
+select t.fail($$insert into feed_posts(text) values ('d')$$,'글 1분에 4개째(TOO_FAST)');
+insert into feed_comments(post_id,text) select id,'1' from feed_posts where author=:'P3' and text='a';
+insert into feed_comments(post_id,text) select id,'2' from feed_posts where author=:'P3' and text='a';
+insert into feed_comments(post_id,text) select id,'3' from feed_posts where author=:'P3' and text='a';
+insert into feed_comments(post_id,text) select id,'4' from feed_posts where author=:'P3' and text='a';
+select t.fail($$insert into feed_comments(post_id,text) select id,'5' from feed_posts where text='a'$$,'댓글 5초에 5개째(TOO_FAST)');
+update profiles set name='카이로' where user_id=:'P3';
+select t.ok((select bool_and(author_name='카이로') from feed_posts where author=:'P3') and (select bool_and(author_name='카이로') from feed_comments where author=:'P3'),'이름 바꾸면 내 글·댓글 이름도 바뀜');
+update profiles set name='카이' where user_id=:'P3';
+select t.as(:'P2'); delete from feed_posts where text='a';
+select t.as(:'P3'); select t.ok((select count(*) from feed_posts where text='a')=1,'남이 지우려 해도 그대로');
 
 -- 채팅
 select t.as(:'P1'); insert into chat_messages(channel,name,text) values ('lobby','운영자','안녕');

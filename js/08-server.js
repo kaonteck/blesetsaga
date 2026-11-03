@@ -89,7 +89,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);
-  pfSync();mlStart();ltStart();chStart();
+  pfSync();mlStart();ltStart();chStart();fdStart();
 }
 
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
@@ -558,5 +558,130 @@ if(ONLINE){
     const {error}=await SB.from('reports').insert({target:m.uid||CH.uid[m.from]||null,target_name:m.from,kind:dm?'dm':'chat',ref_id:String(m.id).slice(4),snapshot:String(m.text).slice(0,500)});
     if(error){toast('신고를 보내지 못했습니다. 잠시 후 다시 시도해 주세요.','bad');return;}
     S.reports.unshift({id:uid('r'),msgId:m.id,from:m.from,text:m.text,ts:now(),done:false});save();toast('신고를 접수했습니다. 운영자가 확인합니다.');
+  };
+}
+
+/* ───────── 커뮤니티 피드 (feed_posts · feed_comments · 좋아요) ─────────
+   - 서버 모드에서는 피드 = 서버 글(실제 블레서)만. 이 기기의 예전 봇 글(S.feed)·봇 반응은 쓰지 않는다(세이브에는 그대로 남음).
+   - 글·댓글·답글·좋아요·삭제는 서버로. 실시간(글·댓글 바뀜) + 1분마다 + 탭으로 돌아올 때 다시 받는다.
+   - 게임 화면 함수(feed·pInfo·postHTML 등)는 그대로 쓰고, feed()가 서버 글을 같은 모양으로 돌려준다.
+     id는 화면 요소 id에 쓰이므로 콜론 없이 'sp'+글 id, 'sc'+댓글 id.
+   - 다시 그릴 때 쓰던 글·댓글 입력칸 내용과 커서는 지킨다. */
+const FD={posts:[],sig:'',t:null,poll:null,busy:false,again:false,seenC:null,sending:false};
+const fdSid=id=>/^s[pc]/.test(String(id||''))?String(id).slice(2):null;
+function fdName(uid,fallback){if(uid===SB_UID)return (S&&S.me&&S.me.name)||fallback||'나';return mlNames[uid]||fallback||'블레서';}
+async function fdFetch(){
+  if(!SB||!SB_UID||!S||!S.me)return;
+  if(FD.busy){FD.again=true;return;}FD.busy=true;
+  try{
+    const {data:ps,error}=await SB.from('feed_posts').select('id,author,author_name,text,hidden,created_at').eq('hidden',false).order('created_at',{ascending:false}).limit(60);
+    if(error||!ps)return;
+    const ids=ps.map(p=>p.id);let cs=[],pl=[],cl=[];
+    if(ids.length){
+      const [a,b]=await Promise.all([
+        SB.from('feed_comments').select('id,post_id,parent_id,author,author_name,text,hidden,created_at').in('post_id',ids).eq('hidden',false).order('created_at',{ascending:true}).limit(2000),
+        SB.from('feed_likes').select('post_id,user_id').in('post_id',ids).limit(5000)]);
+      cs=(a&&a.data)||[];pl=(b&&b.data)||[];
+      const cids=cs.map(c=>c.id);
+      if(cids.length){const r=await SB.from('feed_comment_likes').select('comment_id,user_id').in('comment_id',cids).limit(5000);cl=(r&&r.data)||[];}
+    }
+    ps.forEach(p=>{if(p.author&&p.author_name&&!mlNames[p.author])mlNames[p.author]=p.author_name;});
+    cs.forEach(c=>{if(c.author&&c.author_name&&!mlNames[c.author])mlNames[c.author]=c.author_name;});
+    const likesOf=(rows,key,id)=>rows.filter(r=>r[key]===id).map(r=>fdName(r.user_id));
+    const cmap={};
+    cs.filter(c=>!c.parent_id).forEach(c=>{cmap[c.id]={id:'sc'+c.id,author:fdName(c.author,c.author_name),uid:c.author,text:c.text,ts:Date.parse(c.created_at),likes:likesOf(cl,'comment_id',c.id),replies:[],_post:c.post_id};});
+    cs.filter(c=>c.parent_id&&cmap[c.parent_id]).forEach(c=>cmap[c.parent_id].replies.push({id:'sc'+c.id,author:fdName(c.author,c.author_name),uid:c.author,text:c.text,ts:Date.parse(c.created_at),likes:likesOf(cl,'comment_id',c.id)}));
+    const posts=ps.map(p=>({id:'sp'+p.id,author:fdName(p.author,p.author_name),uid:p.author,text:p.text,img:null,ts:Date.parse(p.created_at),likes:likesOf(pl,'post_id',p.id),
+      comments:Object.values(cmap).filter(c=>c._post===p.id).map(c=>{const o={...c};delete o._post;return o;})}));
+    // 내 글에 다른 사람이 단 새 댓글·답글 알림 (첫 불러오기는 알림 없이 기억만)
+    const mine=new Set(ps.filter(p=>p.author===SB_UID).map(p=>p.id));
+    const others=cs.filter(c=>mine.has(c.post_id)&&c.author!==SB_UID);
+    if(FD.seenC){const fresh=others.filter(c=>!FD.seenC.has(c.id));
+      if(fresh.length)notify(fresh.length===1?`${fdName(fresh[0].author,fresh[0].author_name)}님이 내 글에 댓글을 남겼습니다.`:`내 글에 새 댓글 ${fresh.length}개가 달렸습니다.`);}
+    FD.seenC=new Set(others.map(c=>c.id));
+    const sig=JSON.stringify(posts);if(sig===FD.sig)return;
+    FD.sig=sig;FD.posts=posts;fdRedraw();
+  }catch(e){console.warn(e);}
+  finally{FD.busy=false;if(FD.again){FD.again=false;fdFetch();}}
+}
+// 커뮤니티 화면만 다시 그린다. 쓰던 입력칸 내용·커서는 그대로.
+function fdRedraw(){
+  if(!S||S.route!=='community')return;
+  const keep={};$$('#view input[id],#view textarea[id]').forEach(x=>{keep[x.id]=x.value;});
+  const a=document.activeElement;const fid=a&&a.id&&Object.prototype.hasOwnProperty.call(keep,a.id)?a.id:null;const sel=fid?[a.selectionStart,a.selectionEnd]:null;
+  if(keep['fd-text']!=null)S.sel.fdDraft=keep['fd-text'];
+  try{render();}catch(e){console.warn(e);return;}
+  for(const id in keep){const x=document.getElementById(id);if(x&&x.value!==keep[id])x.value=keep[id];}
+  const c=$('#fd-count');if(c&&keep['fd-text']!=null)c.textContent=keep['fd-text'].length+'/300';
+  if(fid){const x=document.getElementById(fid);if(x){x.focus();try{x.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
+}
+function fdStart(){
+  fdFetch();
+  try{SB.channel('feed-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'feed_posts'},()=>{clearTimeout(FD.t);FD.t=setTimeout(fdFetch,600);})
+    .on('postgres_changes',{event:'*',schema:'public',table:'feed_comments'},()=>{clearTimeout(FD.t);FD.t=setTimeout(fdFetch,600);}).subscribe();}catch(e){}
+  clearInterval(FD.poll);FD.poll=setInterval(fdFetch,60000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')fdFetch();});
+}
+const fdErr=e=>{const m=(e&&e.message)||'';
+  if(/TOO_FAST/.test(m))return '너무 빠르게 올리고 있어요. 잠시 뒤 다시 시도해 주세요.';
+  if(/row-level security|permission denied/i.test(m))return '이용이 제한된 계정이라 올릴 수 없습니다.';
+  if(/BAD_PARENT/.test(m))return '답글을 달 댓글을 찾을 수 없습니다.';
+  if(/check constraint|violates/i.test(m))return '내용을 확인해 주세요(글 300자 · 댓글 150자까지).';
+  return '서버에 올리지 못했습니다. 인터넷 연결을 확인해 주세요.';};
+
+if(ONLINE){
+  const _feed=feed;
+  feed=function(){return SB_UID?FD.posts:_feed();};
+  const _vCommunity=vCommunity;
+  vCommunity=function(){const h=_vCommunity();if(!SB_UID||FD.posts.length)return h;
+    return h.replace('<div class="fd-list"></div>','<div class="fd-list"><p class="empty">아직 올라온 글이 없습니다. 블레서들에게 첫 이야기를 남겨 보세요.</p></div>');};
+  // 실제 블레서의 클래스 문양
+  const _pInfo=pInfo;
+  pInfo=function(n){if(!SB_UID||(S.me&&n===S.me.name))return _pInfo(n);const p=chPlayer(n);return p?{job:CLASSES[p.job]?p.job:'defender',img:null}:_pInfo(n);};
+  // 글·댓글·답글 쓰기: 게임의 submit 처리(document)보다 먼저(window, 잡기 단계) 받아 서버로
+  window.addEventListener('submit',async e=>{
+    if(!SB_UID||!S||!S.me)return;const f=e.target&&e.target.closest&&e.target.closest('[data-form]');if(!f)return;
+    const k=f.dataset.form;if(k!=='fd-post'&&k!=='fd-comment'&&k!=='fd-reply')return;
+    e.preventDefault();e.stopPropagation();if(FD.sending)return;
+    let row,inp,max=150;
+    if(k==='fd-post'){inp=$('#fd-text');max=300;row={};}
+    else if(k==='fd-comment'){inp=document.getElementById('fdc-'+f.dataset.post);row={post_id:fdSid(f.dataset.post)};}
+    else{inp=document.getElementById('fdi-'+f.dataset.cid);row={post_id:fdSid(f.dataset.post),parent_id:fdSid(f.dataset.cid)};}
+    const text=((inp&&inp.value)||'').trim();
+    if(!text){if(k==='fd-post')toast('내용을 적어 주세요.','warn');return;}
+    if(k!=='fd-post'&&!row.post_id)return;
+    row.text=text.slice(0,max);
+    FD.sending=true;const btn=f.querySelector('[type=submit]');if(btn)btn.disabled=true;
+    try{
+      const {error}=await SB.from(k==='fd-post'?'feed_posts':'feed_comments').insert(row);
+      if(error)throw error;
+      if(inp)inp.value='';S.sel.emoFor=null;
+      if(k==='fd-post'){S.sel.fdDraft='';bump('posts');toast('글을 게시했습니다.','good');}
+      else if(k==='fd-comment'){S.sel.fdOpen=S.sel.fdOpen||{};S.sel.fdOpen[f.dataset.post]=true;}
+      else S.sel.fdReply=null;
+      save();FD.sig='';await fdFetch();
+    }catch(err){console.warn(err);toast(fdErr(err),'bad');if(btn)btn.disabled=false;}
+    finally{FD.sending=false;}
+  },true);
+  // 좋아요: 화면에서 먼저 바꾸고 서버에 반영, 다시 받아 맞춘다
+  const _like=ACTS['fd-like'];
+  ACTS['fd-like']=async(d,el,e)=>{
+    const sid=fdSid(d.id);if(!SB_UID||!sid)return _like(d,el,e);
+    const o=fdFind(d.k,d.id);if(!o||o._busy)return;o._busy=true;
+    const on=o.likes.includes(S.me.name);
+    if(on)o.likes=o.likes.filter(n=>n!==S.me.name);else o.likes.push(S.me.name);fdRedraw();
+    const T=d.k==='p'?'feed_likes':'feed_comment_likes',K=d.k==='p'?'post_id':'comment_id';
+    const {error}=on?await SB.from(T).delete().eq(K,sid).eq('user_id',SB_UID):await SB.from(T).insert({[K]:sid});
+    if(error&&!/duplicate key/.test(error.message||''))toast(fdErr(error),'bad');
+    FD.sig='';fdFetch();
+  };
+  // 내 글 지우기
+  const _del=ACTS['fd-del'];
+  ACTS['fd-del']=async(d,el,e)=>{
+    const sid=fdSid(d.id);if(!SB_UID||!sid)return _del(d,el,e);
+    const {error}=await SB.from('feed_posts').delete().eq('id',sid);
+    if(error){toast('글을 지우지 못했습니다. 잠시 후 다시 시도해 주세요.','bad');return;}
+    FD.posts=FD.posts.filter(p=>p.id!==d.id);FD.sig='';fdRedraw();toast('글을 삭제했습니다.');fdFetch();
   };
 }
