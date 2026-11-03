@@ -527,7 +527,10 @@ function updateChats(){
     const lock=p.dataset.lock;const tab=lock||S.sel.chatTab;const shown=chatShown(p);
     if(shown){if(tab==='world')S.unread.world=0;if(tab==='lobby')S.unread.lobby=0;if(tab==='party')S.unread.party=0;
     if(tab==='dm'&&S.sel.dmWith){const t=dmState().threads[S.sel.dmWith];if(t)t.unread=0;}}
-    p.querySelector('[data-chathead]').innerHTML=chatHead(lock);
+    /* 1:1 '새 대화 상대 선택' 칸: 채팅이 올 때마다 머리줄을 다시 그려 고른 값이 사라지던 것 → 고른 값 유지, 고르는 중(포커스)이면 다시 그리지 않음 */
+    {const hd=p.querySelector('[data-chathead]');const ds=hd.querySelector('#dm-new');const dv=ds?ds.value:'';
+     if(!(ds&&document.activeElement===ds&&tab==='dm'&&!S.sel.dmWith)){hd.innerHTML=chatHead(lock);
+       const n=dv&&hd.querySelector('#dm-new');if(n&&[...n.options].some(o=>o.value===dv))n.value=dv;}}
     const box=p.querySelector('[data-msgs]');const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
     if(box.dataset.view!==tab+(S.sel.dmWith||'')){box.dataset.view=tab+(S.sel.dmWith||'');box.dataset.init='';}
     if(tab==='dm'&&!S.sel.dmWith){box.innerHTML=dmListHTML();box.scrollTop=0;}

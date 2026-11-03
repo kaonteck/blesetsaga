@@ -2446,3 +2446,8 @@ body{background:
 .mh-lock small{font-size:11px;color:var(--faint)}
 .mcard-h.locked .mname{color:var(--muted)}
 @media (max-width:640px){.mcard-h{flex-wrap:nowrap}.mh-st{width:auto}}
+/* 태블릿 폭(761~1080px): 날씨 8칸이면 지역 이름이 한 글자+…로 잘림 → 4칸 두 줄 */
+@media (min-width:761px) and (max-width:1080px){.sky-list{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* 패널 제목줄(모집 중인 파티 등): 왼쪽 세로선·옅은 바탕·빛 번짐 효과 없이 글자만 */
+.panel>h3,.panel>.ph{background:none;border:0;border-left:0;box-shadow:none;text-shadow:none;margin:0 0 10px;padding:0}
