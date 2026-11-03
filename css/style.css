@@ -2500,3 +2500,9 @@ body::after{display:none!important}
 .rec-t b{color:var(--xp);font-weight:500}
 .rec-w{color:var(--faint);font-size:11px;white-space:nowrap}
 .rec-empty{font-size:12.5px;padding:4px 0}
+
+/* 기록 검색 */
+.recp-q{display:flex;align-items:center;gap:6px;margin:10px 0 6px;padding:0 10px;height:30px;border:1px solid var(--rule-2);border-radius:var(--r);background:rgba(255,255,255,.02);color:var(--muted)}
+.recp-q svg{width:13px;height:13px;flex:none}
+.recp-q input{flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:12.5px;outline:none}
+.recp-q:focus-within{border-color:var(--gold)}
