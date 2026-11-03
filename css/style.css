@@ -2569,3 +2569,16 @@ body::after{display:none!important}
 .page-head+.qtabs,.page-head+.mtabs{margin-top:-18px;background:var(--slab);border:1px solid var(--rule);border-top:0;border-radius:0 0 12px 12px;padding:0 10px}
 .page-head+.qtabs button[aria-selected="true"]::after{bottom:0}
 @media (max-width:720px){.page-head{padding-left:62px}.page-head::before{left:10px}}
+/* 레이드 정보(.facts: 입장 레벨·참가 인원·필요 역할): 칸 표 → 알약 테두리 이름표 + 값 글자 */
+.facts{display:flex;flex-wrap:wrap;gap:10px 22px;background:none;border:0;grid-template-columns:none}
+.facts>div{display:flex;align-items:center;gap:8px;background:none;padding:0;min-width:0}
+.facts small{display:inline-flex;align-items:center;height:22px;padding:0 10px;border:1px solid var(--rule-2,var(--rule));border-radius:999px;font-size:11.5px;letter-spacing:0;color:var(--muted);white-space:nowrap;flex:none}
+.facts b{color:var(--silver);font-weight:600;white-space:nowrap}
+@media (max-width:760px){.facts{grid-template-columns:none}}
+/* 같은 모양: 레이드 던전·토벌 탭(던전 클리어·초기화 등)·탐색 지역 카운트(.cnt) */
+.cntrow,.ex-cnt .cntrow{display:flex;flex-wrap:wrap;gap:10px 22px}
+.cnt,.ex-cnt .cnt{flex:none;min-width:0;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;padding:0;border:0;background:none;border-radius:0}
+.cnt small,.ex-cnt .cnt small{display:inline-flex;align-items:center;height:22px;padding:0 10px;border:1px solid var(--rule-2,var(--rule));border-radius:999px;font-size:11.5px;letter-spacing:0;color:var(--muted);white-space:nowrap}
+.cnt b,.ex-cnt .cnt b{font-size:14px;line-height:1.4;color:var(--silver);font-weight:600;white-space:nowrap}
+.cnt em{font-size:11px;color:var(--faint);white-space:nowrap}
+@media (max-width:760px){.cnt,.ex-cnt .cnt{flex:none}}
