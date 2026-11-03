@@ -852,6 +852,7 @@ function targetPick(b,a,second){
   return `<div><div class="ph">대상 선택${b.grid&&s&&s.type==='heal'?' <span class="faint" style="font-weight:400;font-size:11.5px">회복 사거리 5×5</span>':''}</div><div class="row">${b.players.filter(p=>needDead?p.dead:!p.dead).map(p=>`<button class="btn btn-sm ${a.target===p.id?'btn-primary':''}" data-act="picktarget" data-id="${esc(p.id)}" ${second?'data-second="1"':''} ${far(p)?'disabled title="회복 사거리 밖"':''}>${esc(p.name)} <span class="num" style="opacity:.75">${p.hp}/${p.maxHp}</span></button>`).join('')||'<span class="muted">대상이 없습니다</span>'}</div></div>`;
 }
 function actionPanel(b,me){
+  addonSane(me);
   const sk=CLASSES[me.job].skills.filter(k=>!(SKILLS[k].lv&&me.level<SKILLS[k].lv));
   if(me.confirmed){
     return `<div class="row" style="justify-content:space-between"><div><div class="ph" style="margin:0 0 4px">행동 확정</div><p style="color:var(--silver)">${esc(actLabel(b,me.action))}${me.action2?' · 연사 '+esc(actLabel(b,me.action2)):''}</p></div><button class="btn" data-act="editact">행동 수정</button></div>`;

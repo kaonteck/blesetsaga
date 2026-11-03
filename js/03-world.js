@@ -594,6 +594,7 @@ GICON.defend=SHIELD_SVG;
 let GS_GO={};
 function gridSkillPanel(b,me){
   if(me.bound>0){GS_GO={bound:true};return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다. 방어만 확정할 수 있습니다.</p>`;}
+  addonSane(me);
   const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);const a=S.sel.act||{kind:'skill',skill:basic};
   const list=[basic,...sk.filter(k=>k!==basic&&!['addon','passive'].includes(SKILLS[k].type))];
   const tip=(title,body,extra)=>`<span class="sk-tip" role="tooltip"><b>${title}</b>${extra||''}<span>${body}</span></span>`;

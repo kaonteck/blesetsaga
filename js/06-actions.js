@@ -380,11 +380,11 @@ const ACTS={
     if(s&&['ally','dead'].includes(s.target)){const ok=prev.target&&b.players.find(p=>p.id===prev.target&&(s&&s.target==='dead'?p.dead:!p.dead));a.target=ok?prev.target:null;if(s&&s.target==='dead'&&!a.target){const dd=b.players.find(p=>p.dead);if(dd)a.target=dd.id;}}
     if(!d.second&&prev.addon&&s&&s.type==='dice'){const ad=SKILLS[prev.addon];if(!ad.with||ad.with.includes(a.skill))a.addon=prev.addon;}
     if(!d.second&&S.sel.addonArm&&s&&s.type==='dice'){const ad=SKILLS[S.sel.addonArm];if(ad&&(!ad.with||ad.with.includes(a.skill)))a.addon=S.sel.addonArm;}
-    S.sel[key]=a;if(!b.grid&&autoConfirm())return;renderFight();},
+    S.sel[key]=a;addonSane(b.players.find(p=>p.isMe));if(!b.grid&&autoConfirm())return;renderFight();},
   pickaddon:d=>{const b=S.battle;const a=S.sel.act;if(b&&!b.grid){S.sel.addonArm=S.sel.addonArm===d.skill?null:d.skill;if(a&&a.kind==='skill')a.addon=null;renderFight();return;}const ad=SKILLS[d.skill];const fits=a&&a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice'&&(!ad.with||ad.with.includes(a.skill));
     const on=!(a&&a.addon===d.skill)&&S.sel.addonArm!==d.skill;S.sel.addonArm=on?d.skill:null;if(a&&a.kind==='skill')a.addon=on&&fits?d.skill:null;renderFight();},
   picktarget:d=>{const key=d.second?'act2':'act';if(S.sel[key])S.sel[key].target=d.id;const b=S.battle;if(b&&!b.grid&&autoConfirm())return;renderFight();},
-  confirmact:()=>{const b=S.battle;if(!b||b.over)return;const me=b.players.find(p=>p.isMe);const a={...S.sel.act};if(!a.addon)delete a.addon;
+  confirmact:()=>{const b=S.battle;if(!b||b.over)return;const me=b.players.find(p=>p.isMe);addonSane(me);const a={...S.sel.act};if(!a.addon)delete a.addon;
     const err=checkAct(b,me,a,hooks.hasItem);if(err){toast(err,'warn');return;}
     let a2=null;if(canDouble(me,b)&&S.sel.act2){a2={...S.sel.act2};const e2=checkAct(b,me,a2,hooks.hasItem,a);if(e2){toast('연사 추가 행동: '+e2,'warn');return;}}
     me.action=a;me.action2=a2;if(b.grid)me.itemAct=gItemAct(b,me);me.confirmed=true;save();renderFight();},

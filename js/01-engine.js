@@ -283,6 +283,11 @@ function startTurn(b,rng){
   b.log.push({t:'turn',text:`${b.turn}턴`});
   b.log.push({t:'warn',text:`예고 · ${telText(b)}`});
 }
+/* 함께 쓰는 스킬(광전사 등)을 쓸 수 없게 되면(횟수 소진·조합 불가) 선택·켜 둔 상태를 자동으로 끔 */
+function addonSane(me){if(typeof S==='undefined'||!S.sel||!me)return;
+  ['act','act2'].forEach(key=>{const a=S.sel[key];if(!a||!a.addon)return;const ad=SKILLS[a.addon],s=a.skill&&SKILLS[a.skill];
+    if(!ad||usesLeft(me,a.addon)<=0||a.kind!=='skill'||!s||s.type!=='dice'||(ad.with&&!ad.with.includes(a.skill)))a.addon=null;});
+  if(S.sel.addonArm&&(!SKILLS[S.sel.addonArm]||usesLeft(me,S.sel.addonArm)<=0))S.sel.addonArm=null;}
 function usesLeft(p,k){const s=SKILLS[k];return s.uses?s.uses-(p.uses[k]||0):Infinity;}
 function buffOn(p,k,turn){return p.buffs.find(x=>x.k===k&&x.from<=turn&&x.to>=turn);}
 function addBuff(p,k,from,to,extra){p.buffs=p.buffs.filter(x=>x.k!==k);p.buffs.push({k,from,to,...(extra||{})});}
