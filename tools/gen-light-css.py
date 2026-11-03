@@ -139,7 +139,7 @@ def scope_sel(sel):
     return ','.join(parts)
 
 
-KEEP_DARK = re.compile(r'\.(thsw|wm|wmap|mapmodal)\b|\.wm-')
+KEEP_DARK = re.compile(r'\.(thsw|wm|wmap|mapmodal)\b(?!-dd)|\.wm-(?!dd)')   # 지역 보기 드롭다운(.wm-dd)은 지도 밖 UI라 라이트로 바꿈
 
 
 def keep_decls(body):

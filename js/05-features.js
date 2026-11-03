@@ -1201,9 +1201,9 @@ function nextGoalHTML(){if(!S||!S.me)return '';const rows=[ngStory(),ngHunt(),ng
 
 /* ───────── 기록 (오른쪽 고정 패널) : 모든 개별 기록을 한곳에, 카테고리로 구분 ───────── */
 const REC_CAT=[['dungeon','던전'],['quest','퀘스트'],['raid','레이드'],['market','거래소'],['mail','우편'],['explore','탐색'],['fish','낚시']];
-const REC_MAX=80;
+const REC_MAX=50;
 function rec(cat,text,got){if(!S||!S.me)return;const L=S.me.rec=S.me.rec||[];L.unshift({ts:now(),cat,text:String(text||''),got:got||''});if(L.length>REC_MAX)L.length=REC_MAX;setTimeout(refreshRec,0);}
-function ensureRec(){const me=S&&S.me;if(!me||me.recInit)return;me.recInit=1;const L=[];
+function ensureRec(){const me=S&&S.me;if(me&&me.rec&&me.rec.length>REC_MAX)me.rec.length=REC_MAX;if(!me||me.recInit)return;me.recInit=1;const L=[];
   (me.exLog||[]).forEach(e=>L.push({ts:e.ts,cat:'explore',text:`${e.region} · ${e.text}`,got:e.got||''}));
   (me.fishLog||[]).forEach(e=>L.push({ts:e.ts,cat:'fish',text:`${LANDS[e.land]||''} · ${e.text}`,got:''}));
   me.rec=L.sort((a,b)=>b.ts-a.ts).slice(0,REC_MAX);}
