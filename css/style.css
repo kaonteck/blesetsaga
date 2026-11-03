@@ -2534,3 +2534,24 @@ body::after{display:none!important}
 /* 오른쪽 열: 자체 스크롤 없음(페이지와 함께 내려감) */
 .tri-r{position:static;max-height:none;overflow:visible}
 .tri-r .panel.chat.chat-main{flex:none;height:420px}
+
+/* 캐릭터 › 장비: 인벤토리 2줄(15칸×2) */
+.invgrid{grid-template-columns:repeat(15,minmax(0,1fr));gap:4px}
+.invcell{padding:3px}
+.invcell .ic-n{font-size:10px}
+@media (max-width:640px){.invgrid{grid-template-columns:repeat(10,minmax(0,1fr))}}
+/* 캐릭터 › 도감 */
+.dex-tabs{margin-bottom:12px}
+.dex-body{display:flex;flex-direction:column;gap:14px}
+.mdex-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}
+.mdex{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border:1px solid var(--rule-2);border-radius:var(--r);text-align:center}
+.mdex .ascii{width:100%;font-size:6px;line-height:1.1;padding:6px;margin:0;text-align:center;min-height:56px;display:grid;place-items:center}
+.mdex b{font-size:12.5px;color:var(--silver);font-weight:500}
+.mdex small{font-size:11px;color:var(--muted)}
+.mdex.unk{opacity:.55}.mdex.unk .ascii{font-size:20px;color:var(--faint)}
+.ddex-list{display:flex;flex-direction:column;gap:8px}
+.ddex{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t s" "m s";gap:4px 12px;align-items:center;padding:10px 14px;border:1px solid var(--rule-2);border-radius:var(--r)}
+.ddex-t{grid-area:t;display:flex;align-items:baseline;gap:8px}.ddex-t b{color:var(--silver);font-size:14px}
+.ddex-m{grid-area:m;font-size:12.5px;color:var(--muted)}
+.ddex-s{grid-area:s}
+.ddex.unk .ddex-t b{color:var(--muted)}

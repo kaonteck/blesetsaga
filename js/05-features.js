@@ -701,7 +701,7 @@ function netListDlg(){const N=net();
     <p class="faint" style="font-size:12px;margin-top:10px">물고기를 누르면 방생 · 보관(수족관) · 재료 손질을 고를 수 있습니다. 잡동사니는 어망에 담기지 않고 낚시 기록과 도감에만 남습니다.</p>`;}
 function netDlg(i){const c=net()[i];if(!c)return '';const f=FISH_BY_ID[c.sp];
   return `<button class="ibtn sm md-x" data-act="closemodal" aria-label="닫기">✕</button><div class="sh-dlg"><div class="sh-big"><img class="px" src="${FISH_IMG}" alt="" style="width:${Math.round(64+Math.min(1,(c.size-f.min)/Math.max(1,f.max-f.min))*56)}px"></div><h3>${esc(f.name)}</h3><p class="num">${c.size}cm · ${esc(LANDS[f.land])} · ${f.tier}등급</p>
-    <div class="row" style="justify-content:center;gap:6px;margin-top:6px"><button class="btn btn-sm" data-act="net-do" data-i="${i}" data-v="release">방생</button><button class="btn btn-sm btn-primary" data-act="net-do" data-i="${i}" data-v="keep" ${aqua().length>=AQUA_MAX?'disabled':''}>보관 (수족관 ${aqua().length}/${AQUA_MAX})</button><button class="btn btn-sm" data-act="net-do" data-i="${i}" data-v="cut">재료 손질</button></div>
+    <div class="row" style="justify-content:center;gap:6px;margin-top:6px"><button class="btn btn-sm" data-act="net-do" data-i="${i}" data-v="release">방생</button><button class="btn btn-sm" data-act="net-do" data-i="${i}" data-v="cut">재료 손질</button></div>
     <p class="faint" style="font-size:12px;margin-top:8px">재료 손질 시 「손질한 ${esc(f.name)}」 ${fillets(c)}개</p></div>`;}
 function fillets(c){const f=FISH_BY_ID[c.sp];return 1+Math.floor(((c.size-f.min)/Math.max(1,f.max-f.min))*2)+(f.tier>=3?1:0);}
 function aquaPanel(){
@@ -1222,3 +1222,17 @@ function recFromGrant(reward,source,meta){if(meta&&meta.noRec)return;
   let cat={quest:'quest',dungeon:'dungeon',mass:'raid',mail:'mail'}[source];
   if(!cat&&meta&&meta.battleId&&S.battle&&S.battle.id===meta.battleId){const t=(S.battle.ctx||{}).type;cat=t==='field'?'explore':t==='quest'?'quest':(t==='drun'||t==='dungeon')?'dungeon':'raid';}
   if(!cat)return;const g=gotText(reward);rec(cat,((meta&&meta.label)||'보상')+(meta&&meta.battleId?' 처치':''),g?g:'');}
+
+/* ───────── 캐릭터 › 도감 탭: 물고기 · 생물 · 던전 ───────── */
+function dexTab(){const t=['fish','mon','dun'].includes(S.sel.dexTab)?S.sel.dexTab:'fish';
+  const D=dex(),KS=(S.stats&&S.stats.kills)||{};
+  const fishN=`${Object.keys(D).length}/${Object.keys(FISH_BY_ID).length}`;
+  const fm=S.data.monsters.filter(m=>m.published&&mkind(m)==='field');const monN=`${fm.filter(m=>KS[m.id]).length}/${fm.length}`;
+  const dm=S.data.monsters.filter(m=>m.published&&mkind(m)==='dungeon').sort((a,b)=>a.level-b.level);const dunN=`${dm.filter(m=>KS[m.id]).length}/${dm.length}`;
+  let body='';
+  if(t==='fish')body=dexDlg().replace(/^<button[^>]*>✕<\/button><h3[^>]*>.*?<\/h3>/,'');
+  else if(t==='mon'){const by={};fm.forEach(m=>{(by[m.region]=by[m.region]||[]).push(m);});
+    const order=Object.keys(by).sort((a,b)=>Math.min(...by[a].map(m=>m.level))-Math.min(...by[b].map(m=>m.level)));
+    body=order.map(rg=>{const L=by[rg].sort((a,b)=>a.level-b.level);return `<div class="dex-g"><div class="dex-h">${esc(rg)} <span class="faint num">${L.filter(m=>KS[m.id]).length}/${L.length}</span></div><div class="mdex-list">${L.map(m=>{const n=KS[m.id]||0;return `<div class="mdex ${n?'':'unk'}"><pre class="ascii" aria-hidden="true">${n?esc(ART[m.art]||ART.generic):'?'}</pre><b>${n?esc(m.name):'???'}</b><small class="num">LV${m.level}${n?` · 처치 ${n}`:''}</small></div>`;}).join('')}</div></div>`;}).join('');}
+  else body=`<div class="ddex-list">${dm.map(m=>{const n=KS[m.id]||0;const I=MAP_INFO[m.id]||{};return `<div class="ddex ${n?'':'unk'}"><div class="ddex-t"><b>${esc(m.region||'')}</b><small class="faint num">LV${m.level}+</small></div><div class="ddex-m">보스 · ${n?esc(m.name):'???'}${(m.loot||[]).length?` · 보물상자 ${lootText(m)}`:''}</div><div class="ddex-s">${n?`<span class="chip ok">공략 ${n}회</span>`:'<span class="chip dim">미공략</span>'}</div></div>`;}).join('')}</div>`;
+  return `<div class="panel dexp"><div class="mtabs dex-tabs" role="tablist">${[['fish','물고기 도감',fishN],['mon','생물 도감',monN],['dun','던전 도감',dunN]].map(([k,l,n])=>`<button role="tab" data-act="dex-tab" data-t="${k}" aria-selected="${t===k}">${l} <span class="num faint">${n}</span></button>`).join('')}</div><div class="dex-body">${body}</div></div>`;}

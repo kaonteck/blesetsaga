@@ -748,7 +748,7 @@ function huntDlg(id){
 function autoClaim(stop){
   const a=S.auto;if(!a)return;const t=now();if(!stop&&t<a.end)return;
   const k=autoKills(a,t);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const R={exp:0,gold:0,items:{}};
-  for(let i=0;i<k&&ms.length;i++){const m=ms[i%ms.length];R.exp+=m.exp*AUTO_EFF;R.gold+=m.gold*AUTO_EFF;}
+  {const KS=S.stats.kills=S.stats.kills||{};for(let i=0;i<k&&ms.length;i++){const m=ms[i%ms.length];R.exp+=m.exp*AUTO_EFF;R.gold+=m.gold*AUTO_EFF;KS[m.id]=(KS[m.id]||0)+1;}}
   R.exp=Math.round(R.exp);R.gold=Math.round(R.gold);S.auto=null;
   const label=`${a.region} 자동 사냥`;const ups=grant(R,'field',{label,region:a.region});
   const got=gotText(R);S.me.exLog=[{ts:t,region:label,land:a.land,text:`${stop?'자동 사냥을 중단했다. ':''}${durLabel(a.min)} 동안 몬스터 ${k}마리를 처치했다.`,got},...(S.me.exLog||[])].slice(0,12);rec('explore',`${label} · 자동 사냥 ${durLabel(a.min)} · ${k}마리 처치`,got);
