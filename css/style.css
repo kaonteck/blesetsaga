@@ -2516,3 +2516,9 @@ body::after{display:none!important}
 /* 상단 메뉴 바: 스크롤해도 위에 고정(바탕은 페이지와 같은 단색, 아래 얇은 선) */
 #top,#top.top,.top{position:sticky;top:0;z-index:30}
 .top{background:var(--void);border-bottom:1px solid var(--rule)}
+
+/* 기록 검색 */
+.recp-q{display:flex;align-items:center;gap:6px;margin:10px 0 6px;padding:0 10px;height:30px;border:1px solid var(--rule-2);border-radius:var(--r);background:rgba(255,255,255,.02);color:var(--muted)}
+.recp-q svg{width:13px;height:13px;flex:none}
+.recp-q input{flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:12.5px;outline:none}
+.recp-q:focus-within{border-color:var(--gold)}
