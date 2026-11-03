@@ -1358,3 +1358,5 @@ html[data-theme="light"] body{background:#ebeef4!important;color:#2e3546}
 html[data-theme="light"] body::before{background:#ebeef4}
 /* 선택된 퀘스트 줄: 라이트 모드에서는 옅게(프론트) */
 html[data-theme="light"] .list .li.clickable[aria-current="true"],html[data-theme="light"] .li.clickable[aria-current="true"]{background:#eef2fa}
+/* 팝업·채팅 시트 뒤 가림막: 라이트에서도 흰색이 아니라 어둡게 흐리게(프론트) */
+html[data-theme="light"] .scrim,html[data-theme="light"] body.chat-open #chatbk{background:rgba(28,34,48,.38)}

@@ -237,6 +237,8 @@ def main():
 {SCOPE} body::before{{background:#ebeef4}}
 /* 선택된 퀘스트 줄: 라이트 모드에서는 옅게(프론트) */
 {SCOPE} .list .li.clickable[aria-current="true"],{SCOPE} .li.clickable[aria-current="true"]{{background:#eef2fa}}
+/* 팝업·채팅 시트 뒤 가림막: 라이트에서도 흰색이 아니라 어둡게 흐리게(프론트) */
+{SCOPE} .scrim,{SCOPE} body.chat-open #chatbk{{background:rgba(28,34,48,.38)}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')
