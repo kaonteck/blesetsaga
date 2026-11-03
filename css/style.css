@@ -2327,3 +2327,81 @@ body{background:
 .cmsg-role.r-tank{color:var(--tank)} .cmsg-role.r-dps{color:var(--dps)} .cmsg-role.r-heal{color:var(--heal)}
 .cmsg-h .who,.cmsg-h .who.w-me,.cmsg-h .who[class*="w-"]{color:#fff}
 .cmsg-tt{font-weight:400}
+
+/* ───────── 3단 레이아웃 (왼쪽 캐릭터 · 가운데 페이지 · 오른쪽 퀵바/진행/주간 미션/채팅) ───────── */
+.wrap.tri{max-width:1480px;display:grid;grid-template-columns:262px minmax(0,1fr) 300px;grid-template-areas:"l c r";gap:16px;align-items:start;padding-top:16px;padding-bottom:28px}
+.tri-l{grid-area:l}.tri-c{grid-area:c;min-width:0}.tri-r{grid-area:r}
+.tri-l,.tri-r{position:sticky;top:calc(var(--top-h,64px) + 12px);display:flex;flex-direction:column;gap:14px;min-width:0;max-height:calc(100vh - var(--top-h,64px) - 24px)}
+.tri-l{overflow-y:auto;scrollbar-width:none}.tri-l::-webkit-scrollbar{display:none}
+/* 가운데 안의 페이지는 자체 .wrap 여백·폭 제한을 쓰지 않음 */
+.tri-c .wrap{max-width:none;padding-left:0;padding-right:0;margin:0}
+.tri-c>.page,.tri-c>.wrap.page{padding-top:0}
+.tri-c .page-head{margin-top:0}
+.main-c{display:flex;flex-direction:column;gap:14px}
+.main-c .ticker{margin:0}
+
+/* 왼쪽 캐릭터 카드 */
+.panel.sc{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:18px 16px 14px}
+.sc-por{display:flex;justify-content:center}
+.sc .portrait,.me-card.sc .portrait{width:132px;height:176px;aspect-ratio:auto}
+.sc-id{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.sc-id .title-chip{margin:0;align-self:center}
+.sc-name{font-family:var(--f-body);font-size:20px;font-weight:700;color:var(--silver);line-height:1.25;overflow-wrap:anywhere;margin:0}
+.sc-lv{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin-top:2px}
+.sc-gauge{display:flex;flex-direction:column;gap:5px}
+.sc-gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px}
+.sc-gl{display:inline-flex;align-items:center;gap:5px;color:var(--text);font-size:12.5px}
+.sc-gh .num{color:var(--muted);font-size:11.5px}
+.sc-st{display:flex;flex-direction:column;gap:9px;padding-top:12px;border-top:1px solid var(--rule)}
+.sc-sh{font-family:var(--f-logo);font-size:11px;letter-spacing:.18em;color:var(--gold-hi)}
+.sc-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.sc-row{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text)}
+.sc-row .si{width:15px;height:15px;flex:none}.sc-row .si svg{width:15px;height:15px}
+.sc-gl .si{width:14px;height:14px}.sc-gl .si svg{width:14px;height:14px}
+.sc-k{flex:1}
+.sc-row b{color:var(--silver);font-weight:600}
+.sc-gold{display:flex;justify-content:flex-end;padding-top:2px}
+.sc .me-memo{margin:0;padding-top:10px;border-top:1px solid var(--rule)}
+
+/* 오른쪽: 퀵바 */
+.panel.qb{padding:12px}
+.qb-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.qb-t{font-family:var(--f-display);font-size:13px;font-weight:700;color:var(--silver)}
+.qb-ed{background:none;border:0;padding:2px 4px;color:var(--muted);font:inherit;font-size:11.5px;cursor:pointer}
+.qb-ed:hover,.qb-ed[aria-pressed="true"]{color:var(--gold-hi)}
+.qb-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.qb-s{position:relative;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:6px;border:1px solid var(--rule-2);border-radius:var(--r);background:rgba(255,255,255,.02);color:var(--silver);font:inherit;cursor:pointer;transition:border-color .12s,background-color .12s}
+.qb-s svg{width:26px;height:26px}
+.qb-l{font-size:11.5px;color:var(--muted);line-height:1}
+.qb-s:hover,.qb-s:focus-visible{border-color:var(--gold-hi);background:rgba(209,224,238,.06);outline:none}
+.qb-s:hover .qb-l{color:var(--silver)}
+.qb-s.on{border-color:var(--gold);background:rgba(209,224,238,.07)}
+.qb-s.empty{border-style:dashed;color:var(--faint)}
+.qb.editing .qb-s:not(.empty){border-style:dashed;border-color:var(--gold)}
+.qb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.qb-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border:1px solid var(--rule-2);border-radius:var(--r);background:none;color:var(--silver);font:inherit;font-size:12.5px;cursor:pointer}
+.qb-opt svg{width:24px;height:24px}
+.qb-opt:hover,.qb-opt.on{border-color:var(--gold-hi);background:rgba(209,224,238,.06)}
+
+/* 오른쪽: 진행 중인 목록 · 주간 미션 · 채팅 */
+.panel.prog-p{padding:12px 14px}
+.panel.prog-p>h3{margin-bottom:8px}
+.prog-p .me-prog-wrap:empty{display:block}
+.prog-p .me-prog-wrap:empty::before{content:"진행 중인 활동이 없습니다.";display:block;font-size:12.5px;color:var(--faint);padding:2px 0}
+.tri-r .me-qp{padding:12px 14px}
+.tri-r .panel.chat.chat-main{flex:1 1 auto;min-height:300px;display:flex;flex-direction:column}
+.tri-r .chat-main .msgs{flex:1 1 0;min-height:140px;height:auto}
+
+/* 화면 폭별 */
+@media (max-width:1240px){.wrap.tri{grid-template-columns:232px minmax(0,1fr) 268px;gap:12px}.sc .portrait,.me-card.sc .portrait{width:116px;height:155px}}
+@media (max-width:980px){
+  /* 좁은 화면: 위아래로 쌓기 · 가운데(페이지) → 캐릭터 → 퀵바/진행/주간 미션/채팅 */
+  .wrap.tri{grid-template-columns:minmax(0,1fr);grid-template-areas:"c" "l" "r";padding-top:12px}
+  .tri-l,.tri-r{position:static;max-height:none;overflow:visible}
+  .tri-r .panel.chat.chat-main{min-height:0}
+}
+
+/* 상단 메뉴도 3단 폭에 맞춤 */
+.top .wrap{max-width:1480px}
+@media (max-width:980px){.qb-slots{grid-template-columns:repeat(3,minmax(0,92px));justify-content:center;gap:12px}}
+.tri-r{overflow-y:auto;scrollbar-width:thin}

@@ -1036,7 +1036,7 @@ function checkTitles(){
   for(const t of TITLES){const pr=titleProgress(t);
     if(pr.met&&!ownTitle(t.id)){S.titles.owned[t.id]=now();changed=true;notify(`새 칭호 획득 · ${t.name}`,'good');}
     else if(t.rank&&!pr.met&&ownTitle(t.id)){delete S.titles.owned[t.id];if(S.titles.equip===t.id&&!isAdmin())S.titles.equip=null;changed=true;notify(`${t.name} 칭호가 다른 블레서에게 넘어갔습니다.`,'warn');}}
-  if(changed){save();const card=$('.me-card');if(card&&S.route==='main'){const c=card.querySelector('[data-title-chip]');if(c)c.outerHTML=titleChip();}if(S.sel.titleModal)showTitles();}
+  if(changed){save();const card=$('.me-card');if(card){const c=card.querySelector('[data-title-chip]');if(c)c.outerHTML=titleChip();}if(S.sel.titleModal)showTitles();}
 }
 let titleT=null;
 function bump(k,n){if(!S.stats)S.stats={};S.stats[k]=(S.stats[k]||0)+(n==null?1:n);clearTimeout(titleT);titleT=setTimeout(checkTitles,300);}

@@ -113,8 +113,8 @@ function render(){
   const r=S.route;
   if(r==='admin'&&!isAdmin()){v.innerHTML=`<div class="wrap page"><div class="panel"><h3>운영</h3><p>운영자 권한이 있는 계정만 열 수 있습니다.</p></div></div>`;return;}
   const fn={community:vCommunity,profile:vProfile,main:vMain,quest:vQuest,explore:vExplore,battle:vBattle,character:vChar,lore:vLore,market:vMarket,admin:vAdmin}[r]||vMain;
-  const dock=['quest','explore','character','lore','market','profile','community'].includes(r);
-  v.innerHTML=dock?`<div class="wrap dock-grid" data-route="${r}"><aside class="dock-side">${charCard(true)}${chatPanel()}</aside><div class="dock-main">${fn()}</div></div>`:fn();
+  /* 3단 레이아웃: 왼쪽(캐릭터)·오른쪽(퀵바·진행 중·주간 미션·채팅)은 고정, 가운데만 페이지별로 바뀜. DOM 순서는 가운데 먼저(모바일에서 위에 오도록) */
+  v.innerHTML=r==='admin'?fn():`<div class="wrap tri" data-route="${r}"><main class="tri-c">${fn()}</main><aside class="tri-l" aria-label="내 캐릭터">${sideCard()}</aside><aside class="tri-r" aria-label="바로가기와 진행 상황">${rightCol()}</aside></div>`;
   afterRender();
   renderPop();
 }
@@ -222,12 +222,51 @@ function vCreate(){
 }
 /* ───────── 메인 ───────── */
 function vMain(){
-  return `<div class="wrap tkwrap">${ticker()}</div>
-    <div class="wrap grid2 main-grid">
-      ${charCard(true)}<div class="rtop">${skyBar()}${nextGoalHTML()}${recruitPanel()}</div>
-      ${chatPanel()}
-    </div>`;
+  return `<div class="main-c">${ticker()}${skyBar()}${nextGoalHTML()}${recruitPanel()}</div>`;
 }
+/* ── 왼쪽 고정: 캐릭터 카드(초상 · 칭호 · 이름 · 레벨 · 경험치 · STATUS) ── */
+function sideCard(){
+  const me=S.me,st=myStats(),need=expNeed(me.level),cap=me.level>=cfg().levelCap;
+  const ib=k=>(st[k]||0)+(typeof itemBonus==='function'?itemBonus(k):0);
+  const xp=cap?100:pct(me.exp,need);const canAdv=CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel;
+  const mx=ib('maxHp'),hp=hpNow(),cur=Math.round(mx*hp);
+  const row=(k,l)=>`<li class="sc-row"><span class="si si-${k} inl">${ICON[k]}</span><span class="sc-k">${l}</span><b class="num">${ib(k)}</b></li>`;
+  return `<div class="panel me-card sc">
+    <div class="sc-por">${portraitHTML(false)}</div>
+    <div class="sc-id">${titleChip()}
+      <h2 class="sc-name"><button class="me-link" data-act="nav" data-route="character" title="캐릭터 페이지로">${esc(me.name)}</button></h2>
+      <div class="sc-lv"><span class="lv num">LV ${me.level}</span>${roleChip(me.job)}${profChips()}${canAdv?'<button class="chip warn" data-act="nav" data-route="character" style="cursor:pointer;background:none">전직 가능</button>':''}</div></div>
+    <div class="sc-gauge xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`${me.exp} / ${need}`}"><div class="sc-gh"><span class="sc-gl">경험치</span><span class="num">${cap?'MAX':`${me.exp.toLocaleString('ko-KR')}/${need.toLocaleString('ko-KR')}`}</span></div><div class="bar xp"><i style="width:${xp}%"></i></div></div>
+    <div class="sc-st"><div class="sc-sh">STATUS</div>
+      <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxHp inl">${ICON.maxHp}</span>체력</span><span class="num">${cur.toLocaleString('ko-KR')}/${mx.toLocaleString('ko-KR')}</span></div><div class="bar hp"><i style="width:${Math.round(hp*100)}%"></i></div></div>
+      <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
+      <div class="sc-gold">${goldHTML(me.gold)}</div></div>
+    ${memoHTML()}</div>`;
+}
+/* ── 오른쪽 고정: 퀵바(바로가기 3칸) · 진행 중인 목록 · 주간 미션 · 채팅 ── */
+const QB_PAGES=[['main','메인'],['character','캐릭터'],['lore','세계관'],['quest','퀘스트'],['explore','탐색'],['battle','레이드'],['market','거래소'],['community','커뮤니티'],['profile','프로필']];
+const QB_ICON={
+  main:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h4.5v-5h3v5H18V9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  character:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5c.8-4.2 3.8-6.5 7.5-6.5s6.7 2.3 7.5 6.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  lore:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5c-2-1.6-4.8-2-8-1.5v13c3.2-.5 6 0 8 1.5 2-1.5 4.8-2 8-1.5V5c-3.2-.5-6-.1-8 1.5zM12 6.5v13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  quest:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10.5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2h11v2M7 3.5a2 2 0 0 0-2 2v11M9.5 8h5M9.5 11.5h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  explore:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor"/></svg>',
+  battle:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M20 4l-9.5 9.5M6.5 15.5l-2.5 2.5 2 2 2.5-2.5M17.5 15.5l2.5 2.5-2 2-2.5-2.5M4 4h3.5M4 4v3.5M20 4h-3.5M20 4v3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  market:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.5 11h-13zM8 9a4 4 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12.5v4.5M10 14.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  community:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h11v7.5H8L5 15v-2.5H3.5zM17 9h3.5v7.5H19V19l-3-2.5h-5.5V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  profile:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="11" r="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.8 16.5c.6-1.6 1.7-2.5 3.2-2.5s2.6.9 3.2 2.5M14.5 10h3.5M14.5 13.5h3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'};
+const QB_DEFAULT=['quest','explore','battle'];
+function quickSlots(){const q=S.me.quick;return Array.isArray(q)&&q.length===3?q:QB_DEFAULT.slice();}
+function quickBar(){const Q=quickSlots(),ed=!!S.sel.qbEdit;const nm=r=>(QB_PAGES.find(p=>p[0]===r)||[])[1];
+  return `<div class="panel qb ${ed?'editing':''}"><div class="qb-h"><span class="qb-t">${hTitle('bolt','퀵바')}</span><button class="qb-ed" data-act="qb-edit" aria-pressed="${ed}">${ed?'완료':'편집'}</button></div>
+    <div class="qb-slots">${Q.map((r,i)=>r&&nm(r)?`<button class="qb-s ${S.route===r?'on':''}" data-act="${ed?'qb-pick':'nav'}" data-route="${r}" data-i="${i}" data-tip="${nm(r)}" aria-label="${ed?`${i+1}번 칸 바꾸기 · 지금 ${nm(r)}`:nm(r)+' 바로가기'}">${QB_ICON[r]||''}<span class="qb-l">${nm(r)}</span></button>`:`<button class="qb-s empty" data-act="qb-pick" data-i="${i}" aria-label="${i+1}번 칸에 바로가기 추가"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="qb-l">추가</span></button>`).join('')}</div></div>`;}
+function quickPickDlg(i){const Q=quickSlots();
+  return `<div class="ndlg qb-dlg"><div class="row" style="justify-content:space-between"><h3>${i+1}번 칸 바로가기</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    <div class="qb-grid">${QB_PAGES.map(([r,l])=>`<button class="qb-opt ${Q[i]===r?'on':''}" data-act="qb-set" data-i="${i}" data-route="${r}">${QB_ICON[r]}<span>${l}</span></button>`).join('')}</div>
+    ${Q[i]?`<div class="row" style="justify-content:flex-end"><button class="btn btn-sm btn-ghost" data-act="qb-set" data-i="${i}" data-route="">이 칸 비우기</button></div>`:''}</div>`;}
+function rightCol(){
+  return `${quickBar()}<div class="panel prog-p"><h3>${hTitle('spark','진행 중인 목록')}</h3><div class="me-prog-wrap">${progInner()}</div></div>
+    <div class="panel me-qp">${weeklyPanel()}</div>${chatPanel()}`;}
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
 function progItems(){
   const t=now(),L=[];const b=S.battle;
