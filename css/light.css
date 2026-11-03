@@ -1350,3 +1350,5 @@ html[data-theme="light"] .flog .flog-l{border:0;background:none}
 html[data-theme="light"]{color-scheme:light}
 html[data-theme="light"] body{background:#ebeef4!important;color:#2e3546}
 html[data-theme="light"] body::before{background:#ebeef4}
+/* 팝업·채팅 시트 뒤 가림막: 라이트에서도 흰색이 아니라 어둡게 흐리게(프론트) */
+html[data-theme="light"] .scrim,html[data-theme="light"] body.chat-open #chatbk{background:rgba(28,34,48,.38)}
