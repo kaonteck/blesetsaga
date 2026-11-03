@@ -90,13 +90,10 @@ select t.fail($$insert into feed_comments(post_id,parent_id,text) select post_id
 delete from feed_comment_likes;
 select t.ok((select likes from feed_comments where parent_id is null)=0,'댓글 좋아요 취소');
 select t.fail($$insert into feed_posts(text,img_path) values ('사진','x/y.jpg')$$,'사진 경로 열 없음(사진 기능 삭제)');
-select t.as(:'P3'); insert into feed_posts(text) values ('a'),('b'),('c');
-select t.fail($$insert into feed_posts(text) values ('d')$$,'글 1분에 4개째(TOO_FAST)');
-insert into feed_comments(post_id,text) select id,'1' from feed_posts where author=:'P3' and text='a';
-insert into feed_comments(post_id,text) select id,'2' from feed_posts where author=:'P3' and text='a';
-insert into feed_comments(post_id,text) select id,'3' from feed_posts where author=:'P3' and text='a';
-insert into feed_comments(post_id,text) select id,'4' from feed_posts where author=:'P3' and text='a';
-select t.fail($$insert into feed_comments(post_id,text) select id,'5' from feed_posts where text='a'$$,'댓글 5초에 5개째(TOO_FAST)');
+select t.as(:'P3'); insert into feed_posts(text) values ('a'),('b'),('c'),('d'),('e');
+select t.ok((select count(*) from feed_posts where author=:'P3')=5,'피드 글 연속 작성 제한 없음(012)');
+insert into feed_comments(post_id,text) select id,n::text from feed_posts, generate_series(1,6) n where author=:'P3' and text='a';
+select t.ok((select count(*) from feed_comments where author=:'P3')=6,'피드 댓글 연속 작성 제한 없음(012)');
 update profiles set name='카이로' where user_id=:'P3';
 select t.ok((select bool_and(author_name='카이로') from feed_posts where author=:'P3') and (select bool_and(author_name='카이로') from feed_comments where author=:'P3'),'이름 바꾸면 내 글·댓글 이름도 바뀜');
 update profiles set name='카이' where user_id=:'P3';
