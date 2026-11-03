@@ -140,7 +140,7 @@ select t.fail($$select claim_mail((select id from mail))$$,'같은 첨부 두 �
 select t.fail($$update mail set claimed_at=null$$,'받음 표시 지우기');
 -- 유저끼리 선물: send_mail 로만, 보내는 사람 세이브에서 차감
 reset role;
-insert into saves(user_id,data) values (:'P1','{"me":{"name":"아린","gold":1000,"inv":{"potion":5,"sword":1},"equip":{"weapon":"sword"}}}');
+insert into saves(user_id,data) values (:'P1','{"me":{"name":"아린","level":12,"gold":1000,"inv":{"potion":5,"sword":1},"equip":{"weapon":"sword"}}}');
 set role authenticated; select t.as(:'P1');
 select t.fail($$insert into mail(recipient,text,items) values ('00000000-0000-0000-0000-000000000002','선물','{"potion":99}')$$,'표에 직접 아이템 첨부(차감 없이 복사)');
 select t.fail($$insert into mail(recipient,text,gold) values ('00000000-0000-0000-0000-000000000002','선물',99999)$$,'표에 직접 골드 첨부');
@@ -226,7 +226,7 @@ reset role;
 create table t.clock(ts timestamptz); insert into t.clock values ('2026-11-04 03:00+00');   -- 수 12:00 KST
 grant select on t.clock to authenticated;
 create or replace function private.lotto_clock() returns timestamptz language sql stable set search_path='' as $$ select ts from t.clock $$;
-insert into saves(user_id,data) values (:'P2','{"me":{"name":"벨라","gold":50,"inv":{}}}') on conflict (user_id) do nothing;
+insert into saves(user_id,data) values (:'P2','{"me":{"name":"벨라","level":12,"gold":50,"inv":{}}}') on conflict (user_id) do nothing;
 set role authenticated; select t.as(:'P1');
 select t.fail($$insert into lotto_tickets(draw_key,nums) values ('2026-11-06','{1,2,3,4}')$$,'행운권 표에 직접 넣기(돈 안 내고)');
 select buy_lotto('{3,1,2,4}'); select buy_lotto('{5,6,7,8}');
@@ -240,6 +240,9 @@ select t.fail($$select buy_lotto('{1,1,2,3}')$$,'같은 숫자 두 번');
 select t.fail($$select buy_lotto('{1,2,3,12}')$$,'0–9 밖 숫자');
 select t.fail($$select buy_lotto('{1,2,3}')$$,'숫자 3개');
 select t.as(:'P2'); select t.fail($$select buy_lotto('{1,2,3,4}')$$,'골드 부족(50G)');
+reset role; update saves set data=jsonb_set(jsonb_set(data,'{me,level}','3'),'{me,gold}','900') where user_id=:'P2'; set role authenticated;
+select t.as(:'P2'); select t.fail($$select buy_lotto('{1,2,3,4}')$$,'행운권: LV10 미만은 서버에서도 막힘(016)');
+reset role; update saves set data=jsonb_set(jsonb_set(data,'{me,level}','12'),'{me,gold}','50') where user_id=:'P2'; set role authenticated;
 select t.as(:'P3'); select t.fail($$select buy_lotto('{1,2,3,4}')$$,'세이브 없음');
 select t.as(:'P1');
 select t.ok((select jsonb_array_length(lotto_sync()->'tickets'))=2 and (select lotto_sync()->'draws')='{}','추첨 전: 내 행운권 2장 · 당첨 번호 없음');
@@ -316,4 +319,48 @@ select t.ok((select (data->'me'->>'level')::int=31 and (data->'me'->>'exp')::int
 select t.as(:'A',true);
 select t.ok((select count(*) from admin_log where action='set_level' and target=:'P3' and (detail->>'after')::int=30)=1,'운영 기록에 레벨 조정');
 reset role;
+
+-- 부정 방지: 세이브 검사 (016)
+reset role;
+insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values ('00000000-0000-0000-0000-000000000004','p4@x','{"username":"p4"}','{}');
+insert into saves(user_id,data) values ('00000000-0000-0000-0000-000000000004','{"me":{"name":"도윤","level":2,"exp":10,"gold":100,"inv":{"potion":1}}}');
+update profiles set name='도윤', level=2 where user_id='00000000-0000-0000-0000-000000000004';
+\set P4 '00000000-0000-0000-0000-000000000004'
+set role authenticated; select t.as(:'P4');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":4,"exp":50,"gold":5000,"inv":{"potion":3}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int=4 and (data->'me'->>'gold')::int=5000 and (guard->>'rev')::int=0 and jsonb_array_length(guard->'flags')=0 from saves where user_id=:'P4'),'정상 진행(LV2→4, 골드 100→5000)은 그대로 저장');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":99,"exp":500,"gold":5000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int=12 and (data->'me'->>'exp')::int=0 and (guard->>'rev')::int=1 and guard->'flags'->0->>'k'='level' from saves where user_id=:'P4'),'LV4→99 한 번에: 예산(10레벨)만큼 LV12로, 경험치 0, 의심 기록');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":13,"exp":0,"gold":5000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P4')=12,'예산을 다 쓰면 바로 다음 레벨업도 막힘(1분에 1레벨씩 참)');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":5,"exp":0,"gold":5000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P4')=12,'레벨은 내려가지 않음(예전 기기 저장)');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":9999999,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'gold')::numeric between 100000 and 100200 and guard->'flags'->0->>'k'='gold' from saves where user_id=:'P4'),'골드 5천→999만: 예산(10만)까지만, 의심 기록');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":-50,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'gold')::numeric from saves where user_id=:'P4')=0,'골드 음수 → 0');
+reset role;
+insert into mail(recipient,sender,sender_name,text,gold,claimed_at) values (:'P4',null,'운영자','보상',70000,now());
+set role authenticated; select t.as(:'P4');
+insert into saves(user_id,data) select user_id, jsonb_set(data,'{me,gold}','70000') from saves where user_id=:'P4' on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'gold')::numeric from saves where user_id=:'P4')=70000,'서버에서 받은 우편 골드(7만)는 예산과 따로 인정');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":50000,"herb":2.4}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->'inv'->>'potion')::int=9999 and (data->'me'->'inv'->>'herb')::int=2 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'인벤토리 개수 0~9999 정수로');
+insert into saves(user_id,data) values (:'P4','{"adminRev":99,"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select not (data ? 'adminRev') from saves where user_id=:'P4'),'운영 조정 번호(adminRev)는 유저가 못 올림');
+select t.fail($$update saves set guard='{}' where user_id='00000000-0000-0000-0000-000000000004'$$,'검사 상태(guard) 직접 고치기');
+select t.fail($$insert into saves(user_id,data,guard) values ('00000000-0000-0000-0000-000000000004','{}','{}') on conflict (user_id) do update set guard=excluded.guard$$,'검사 상태(guard) 넣기');
+insert into saves(user_id,data) values (:'P4','{"v":3}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P4')=12,'캐릭터 없는 저장으로 기존 캐릭터를 지우지 못함');
+update profiles set level=99 where user_id=:'P4';
+select t.ok((select level from profiles where user_id=:'P4')=12,'공개 프로필 레벨은 세이브 레벨(99로 못 부풀림)');
+select t.fail($$select admin_save_flags()$$,'유저가 의심 목록 보기');
+select t.as(:'A',true);
+select t.ok((select n from admin_save_flags() where user_id=:'P4')>=3,'운영자: 의심 목록에 레벨·골드·인벤토리');
+select admin_clear_flags(:'P4');
+select t.ok((select count(*) from admin_save_flags() where user_id=:'P4')=0,'운영자: 의심 기록 지우기');
+-- 서버 함수(운영 레벨 조정)는 검사 안 받음
+select t.ok((select (admin_set_level(:'P4',60,'테스트')->>'after')::int)=60,'운영자 레벨 조정은 예산과 무관(LV12→60)');
+reset role;
+select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P4')=60,'세이브 LV60');
 select 'ALL TESTS PASSED';

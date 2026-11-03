@@ -18,6 +18,8 @@ function upsertContent(r,restore){const i=DB.content.findIndex(x=>x.kind===r.kin
   const o=DB.content[i],n={...o,...r,rev:o.rev+1,updated_at:now()};DB.content[i]=n;log({kind:r.kind,id:r.id,op:restore?'restore':'update',before:o,after:n,rev:n.rev});return n;}
 const RPC={
   fish_settle(){return 0;},
+  admin_save_flags:()=>(DB.guard_flags||[]),
+  admin_clear_flags:a=>{DB.guard_flags=(DB.guard_flags||[]).filter(r=>r.user_id!==a.p_user);return null;},
   admin_players:()=>DB.profiles.map((p,i)=>({...p,job:'defender',level:p.level??(5+i),status:i===1?'online':'offline',last_seen:now(),banned_until:p.banned_until||null,ban_reason:p.ban_reason||null,is_admin:p.user_id===ADMIN.id,last_sign_in:now(),saved_at:now(),joined_at:now(),invite:'BLESET01'})),
   admin_player_save:a=>DB.saves[a.p_user]||null,
   admin_set_level:a=>{if(!(a.p_level>=1&&a.p_level<=99))throw {message:'BAD_LEVEL'};const d=DB.saves[a.p_user];if(!d||!d.me)throw {message:'NO_SAVE'};

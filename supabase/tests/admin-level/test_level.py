@@ -47,6 +47,15 @@ with sync_playwright() as p:
     pg.goto('http://localhost:8765/');pg.wait_for_function('typeof S!=="undefined"&&S&&S.me',timeout=20000);pg.wait_for_timeout(500)
     got=pg.evaluate("({lv:S.me.level,gold:S.me.gold,rev:S.adminRev})")
     ok(got['lv']==44 and got['gold']==7777,f'로컬이 더 최근이어도 레벨은 서버(LV44), 나머지는 로컬: {got}')
+    # 부정 방지(016): 서버가 골드를 허용치까지만 남기면 게임도 서버 값으로 맞춤
+    g0=srv()['gold']
+    pg.evaluate("window.__GUARD_GOLD=100000;S.me.gold+=5000000;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(500)
+    sv=srv();g=pg.evaluate("S.me.gold")
+    ok(sv['gold']==g0+100000 and g==sv['gold'] and pg.evaluate("S.guardRev")==1,f'골드 +500만 → 서버 허용치(+10만)로, 게임도 맞춤: 게임 {g} · 서버 {sv["gold"]}')
+    nt=pg.evaluate("[...document.querySelectorAll('.toasts > *')].map(t=>t.textContent).join(' | ')")
+    ok('서버 기준으로 맞췄습니다' in nt,'유저에게 보정 알림')
+    pg.evaluate("S.me.gold+=300;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(400)
+    ok(pg.evaluate("S.me.gold")==g0+100300 and pg.evaluate("S.guardRev")==1,'다음 정상 저장은 그대로(보정 반복 없음)')
     ok(not errs,'콘솔 오류 없음 '+'; '.join(errs[:3]))
     b.close()
 print('\n'.join(res));print('PASS' if all(r.startswith('OK') for r in res) else 'FAIL',sum(r.startswith('OK') for r in res),'/',len(res))
