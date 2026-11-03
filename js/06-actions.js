@@ -379,9 +379,10 @@ const ACTS={
     if(a.item==='potion')a.target=(b.players.find(p=>p.isMe)||{}).id;
     if(s&&['ally','dead'].includes(s.target)){const ok=prev.target&&b.players.find(p=>p.id===prev.target&&(s&&s.target==='dead'?p.dead:!p.dead));a.target=ok?prev.target:null;if(s&&s.target==='dead'&&!a.target){const dd=b.players.find(p=>p.dead);if(dd)a.target=dd.id;}}
     if(!d.second&&prev.addon&&s&&s.type==='dice'){const ad=SKILLS[prev.addon];if(!ad.with||ad.with.includes(a.skill))a.addon=prev.addon;}
-    if(!d.second&&!b.grid&&S.sel.addonArm&&s&&s.type==='dice'){const ad=SKILLS[S.sel.addonArm];if(ad&&(!ad.with||ad.with.includes(a.skill)))a.addon=S.sel.addonArm;}
+    if(!d.second&&S.sel.addonArm&&s&&s.type==='dice'){const ad=SKILLS[S.sel.addonArm];if(ad&&(!ad.with||ad.with.includes(a.skill)))a.addon=S.sel.addonArm;}
     S.sel[key]=a;if(!b.grid&&autoConfirm())return;renderFight();},
-  pickaddon:d=>{const b=S.battle;const a=S.sel.act;if(b&&!b.grid){S.sel.addonArm=S.sel.addonArm===d.skill?null:d.skill;if(a&&a.kind==='skill')a.addon=null;renderFight();return;}if(!a||a.kind!=='skill')return;a.addon=a.addon===d.skill?null:d.skill;renderFight();},
+  pickaddon:d=>{const b=S.battle;const a=S.sel.act;if(b&&!b.grid){S.sel.addonArm=S.sel.addonArm===d.skill?null:d.skill;if(a&&a.kind==='skill')a.addon=null;renderFight();return;}const ad=SKILLS[d.skill];const fits=a&&a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice'&&(!ad.with||ad.with.includes(a.skill));
+    const on=!(a&&a.addon===d.skill)&&S.sel.addonArm!==d.skill;S.sel.addonArm=on?d.skill:null;if(a&&a.kind==='skill')a.addon=on&&fits?d.skill:null;renderFight();},
   picktarget:d=>{const key=d.second?'act2':'act';if(S.sel[key])S.sel[key].target=d.id;const b=S.battle;if(b&&!b.grid&&autoConfirm())return;renderFight();},
   confirmact:()=>{const b=S.battle;if(!b||b.over)return;const me=b.players.find(p=>p.isMe);const a={...S.sel.act};if(!a.addon)delete a.addon;
     const err=checkAct(b,me,a,hooks.hasItem);if(err){toast(err,'warn');return;}
@@ -391,7 +392,7 @@ const ACTS={
   editact:()=>{const b=S.battle;const me=b.players.find(p=>p.isMe);if(b.over)return;me.confirmed=false;b.allAt=null;const a=me.action;
     if(b.grid){S.sel.gmode=a&&a.kind==='move'?'move':a&&a.kind==='wait'?'wait':'fight';S.sel.gcell=a&&a.kind==='move'?a.to:null;S.sel.gitem=me.itemAct||null;me.itemAct=null;S.sel.act=a&&['skill','defend'].includes(a.kind)?a:{kind:'skill',skill:basicSkill(me.job)};}
     else S.sel.act=a||{kind:'skill',skill:basicSkill(me.job)};S.sel.act2=me.action2;me.action2=null;renderFight();},
-  'g-mode':d=>{S.sel.gmode=d.mode;renderFight();},
+  'g-mode':d=>{S.sel.gmode=d.mode;if(d.mode==='defend')S.sel.act={kind:'defend'};else if(d.mode==='fight'&&S.sel.act&&S.sel.act.kind==='defend')S.sel.act=null;renderFight();},
   'g-cl':d=>{S.sel.gcl=d.tab;$$('.gcl-tabs [data-act="g-cl"]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===d.tab)));const c=$('.gcl-chat'),l=$('#blog');if(c)c.hidden=d.tab!=='chat';if(l){l.hidden=d.tab!=='log';l.scrollTop=l.scrollHeight;}},
   'g-log':(d,el)=>{S.sel.glog=!S.sel.glog;const lg=$('#blog');if(lg){lg.hidden=!S.sel.glog;lg.scrollTop=lg.scrollHeight;}if(el)el.setAttribute('aria-expanded',String(!!S.sel.glog));},
   'g-tok':d=>{S.sel.gtok=S.sel.gtok===d.id||!d.id?null:d.id;renderFight();},
