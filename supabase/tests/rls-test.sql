@@ -63,6 +63,11 @@ select t.ok((select (data->>'hp')::int from content where id='forest')=777 and n
 select admin_import('[{"kind":"item","id":"potion","data":{"name":"회복약"}},{"kind":"item","id":"monster_x","data":{}}]');
 select t.ok((select count(*) from content where kind='item')=2,'JSON 한꺼번에 넣기');
 
+-- 프로필 직업 (013)
+select t.as(:'P1'); update profiles set job='mage' where user_id=:'P1';
+select t.ok((select job from profiles where user_id=:'P1')='mage','프로필 직업: 클래스 id 저장');
+select t.fail($$update profiles set job='<b>x</b>' where user_id='00000000-0000-0000-0000-000000000001'$$,'프로필 직업: 없는 클래스 값 막힘(013)');
+
 -- 피드
 select t.as(:'P1'); insert into feed_posts(text) values ('첫 글');
 select t.as(:'P2');
