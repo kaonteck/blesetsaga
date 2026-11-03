@@ -345,9 +345,9 @@ set role authenticated; select t.as(:'P4');
 insert into saves(user_id,data) select user_id, jsonb_set(data,'{me,gold}','70000') from saves where user_id=:'P4' on conflict (user_id) do update set data=excluded.data;
 select t.ok((select (data->'me'->>'gold')::numeric from saves where user_id=:'P4')=70000,'서버에서 받은 우편 골드(7만)는 예산과 따로 인정');
 insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":120,"herb":2.4}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->'inv'->>'potion')::int=99 and (data->'me'->'inv'->>'herb')::int=2 and (guard->>'rev')::int=6 and guard->'flags'->0->>'k'='gold' from saves where user_id=:'P4'),'인벤토리 아이템마다 99개까지(120 → 99, 보정 번호 올림, 999 이하는 의심 기록 안 함)');
+select t.ok((select (data->'me'->'inv'->>'potion')::int=120 and (data->'me'->'inv'->>'herb')::int=2 and (guard->>'rev')::int=5 and guard->'flags'->0->>'k'='gold' from saves where user_id=:'P4'),'020: 아이템 99개 넘어도 그대로(120, 보정 번호 그대로, 의심 기록 없음)');
 insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":50000}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->'inv'->>'potion')::int=99 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'아이템 5만 개 → 99개, 의심 기록');
+select t.ok((select (data->'me'->'inv'->>'potion')::int=9999 and (guard->>'rev')::int=6 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'아이템 5만 개 → 9,999개, 보정 번호 올림, 의심 기록');
 insert into saves(user_id,data) values (:'P4','{"adminRev":99,"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok((select not (data ? 'adminRev') from saves where user_id=:'P4'),'운영 조정 번호(adminRev)는 유저가 못 올림');
 select t.fail($$update saves set guard='{}' where user_id='00000000-0000-0000-0000-000000000004'$$,'검사 상태(guard) 직접 고치기');
@@ -372,7 +372,7 @@ insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values ('0
 \set P5 '00000000-0000-0000-0000-000000000005'
 set role authenticated; select t.as(:'P5');
 insert into saves(user_id,data) values (:'P5','{"me":{"name":"하람","level":30,"exp":10,"gold":250000,"inv":{"potion":120}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'gold')::int=250000 and (data->'me'->'inv'->>'potion')::int=99 from saves where user_id=:'P5'),'첫 업로드(이 기기에서 키운 LV30·25만 골드)는 자르지 않음 · 아이템만 99개');
+select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'gold')::int=250000 and (data->'me'->'inv'->>'potion')::int=120 from saves where user_id=:'P5'),'첫 업로드(이 기기에서 키운 LV30·25만 골드·회복약 120)는 자르지 않음');
 select t.ok((select jsonb_array_length(guard->'flags')=2 and guard->'flags'->0->>'k'='first' from saves where user_id=:'P5'),'첫 업로드가 크면 의심 기록만 2건(레벨·골드)');
 insert into saves(user_id,data) values (:'P5','{"me":{"name":"하람","level":31,"exp":0,"gold":250500,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P5')=31,'그 뒤 저장은 평소처럼(LV31)');
