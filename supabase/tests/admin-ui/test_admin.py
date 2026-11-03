@@ -93,6 +93,14 @@ with sync_playwright() as p:
     ok(pg.evaluate("__DB.chat_messages.some(x=>x.channel==='world'&&x.text==='이벤트 시작!'&&x.cat==='notice')"),'운영 페이지에서 월드 공지 올리기')
     pg.screenshot(path=OUT+'/5c-chat.png');pg.select_option('#ct-ch','lobby');pg.wait_for_selector('[data-del="5"]')
     pg.click('[data-del="5"]');pg.click('[data-ans="1"]');pg.wait_for_timeout(400);ok(not pg.evaluate("__DB.chat_messages.some(x=>x.id==='5')"),'채팅 삭제')
+    # 피드
+    pg.click('.tab[data-tab=feed]');pg.wait_for_selector('[data-fhide]');fv=pg.inner_text('#view')
+    ok('<b>광고</b> 글' in fv and '좋은 아침' in fv and pg.locator('#view td b').count()==0,'피드 탭: 글 목록(HTML은 글자로)')
+    pg.click('[data-fhide="fp1"]');pg.wait_for_timeout(400);ok(pg.evaluate("__DB.feed_posts.find(x=>x.id==='fp1').hidden")==True,'피드 글 가리기')
+    pg.select_option('#fv-kind','comment');pg.wait_for_selector('[data-fdel="fc1"]');ok('신고합니다' in pg.inner_text('#view'),'피드 댓글 보기')
+    pg.click('[data-fhide="fc1"]');pg.wait_for_timeout(400);ok(pg.evaluate("__DB.feed_comments.find(x=>x.id==='fc1').hidden")==True,'피드 댓글 가리기')
+    pg.click('[data-fdel="fc1"]');pg.click('[data-ans="1"]');pg.wait_for_timeout(400);ok(not pg.evaluate("__DB.feed_comments.some(x=>x.id==='fc1')"),'피드 댓글 삭제')
+    pg.select_option('#fv-kind','post');pg.wait_for_selector('[data-ban]');pg.screenshot(path=OUT+'/5f-feed.png')
     # 행운권
     pg.click('.tab[data-tab=lotto]');pg.wait_for_selector('.tbl tbody tr');lt=pg.inner_text('#view')
     ok('1 2 3 9' in lt and '판매 중' in lt and '3,200G' in lt and '판매 7장' in lt,'행운권 회차 현황(당첨 번호·판매 중·지급 합계)');pg.screenshot(path=OUT+'/5b-lotto.png')
