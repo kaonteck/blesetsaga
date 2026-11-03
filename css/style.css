@@ -2657,3 +2657,15 @@ body::after{display:none!important}
 .flog .flog-l>div{height:22px;line-height:22px;padding:0;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .flog.open .flog-l{max-height:110px;overflow-y:auto}
 .flog.open .flog-l>div{height:auto;min-height:22px;white-space:normal}
+
+/* 패널 사이 여백 절반(유저 요청) */
+.wrap.page{gap:9px}
+.tri-l,.tri-r,.main-c,.fd-list{gap:7px}
+.split,.char-top,.bond-row,.exr-row,.mgrid{gap:8px}
+.stack:has(>.panel){gap:8px!important}
+.dun-wrap{gap:5px}
+.mkgrid{gap:6px}
+.mlist{gap:4px}
+.page-head+.qtabs,.page-head+.mtabs{margin-top:-9px}
+@media (max-width:980px){.wrap.tri{row-gap:8px}}
+.panel.flog,.panel.lore-panel{margin-top:2px}
