@@ -2665,3 +2665,14 @@ body::after{display:none!important}
 .cntrow:not(.ex-cnt .cntrow)>.cnt small{display:inline;height:auto;padding:0;border:0;border-radius:0;font-size:12.5px;color:var(--muted);letter-spacing:0}
 .cntrow:not(.ex-cnt .cntrow)>.cnt b{margin:0 4px 0 6px;font-size:15px;font-weight:500;line-height:1.2;color:var(--gold-hi)}
 .cntrow:not(.ex-cnt .cntrow)>.cnt em{font-size:11.5px;color:var(--faint)}
+/* 패널 사이 여백 절반(유저 요청) */
+.wrap.page{gap:9px}
+.tri-l,.tri-r,.main-c,.fd-list{gap:7px}
+.split,.char-top,.bond-row,.exr-row,.mgrid{gap:8px}
+.stack:has(>.panel){gap:8px!important}
+.dun-wrap{gap:5px}
+.mkgrid{gap:6px}
+.mlist{gap:4px}
+.page-head+.qtabs,.page-head+.mtabs{margin-top:-9px}
+@media (max-width:980px){.wrap.tri{row-gap:8px}}
+.panel.flog,.panel.lore-panel{margin-top:2px}
