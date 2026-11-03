@@ -2582,3 +2582,9 @@ body::after{display:none!important}
 .cnt b,.ex-cnt .cnt b{font-size:14px;line-height:1.4;color:var(--silver);font-weight:600;white-space:nowrap}
 .cnt em{font-size:11px;color:var(--faint);white-space:nowrap}
 @media (max-width:760px){.cnt,.ex-cnt .cnt{flex:none}}
+
+/* 필요 역할: 탱/딜/힐 글자 → 역할 아이콘 + 인원 */
+.ri-row{display:inline-flex;align-items:center;gap:12px}
+.ri{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.ri svg{width:15px;height:15px;flex:none}
+.ri.r-tank svg{color:var(--tank)}.ri.r-dps svg{color:var(--dps)}.ri.r-heal svg{color:var(--heal)}
