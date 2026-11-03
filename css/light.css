@@ -1339,6 +1339,7 @@ html[data-theme="light"] .thsw-k{background:#161616;color:#fff}
 html[data-theme="light"] .thsw.on{background:#95afe3}
 html[data-theme="light"] .thsw.on .thsw-k{background:#fff;color:#e0a526}
 html[data-theme="light"] .thsw:focus-visible{outline:2px solid var(--gold)}
+html[data-theme="light"] *,html[data-theme="light"] *::before,html[data-theme="light"] *::after{text-shadow:none!important}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

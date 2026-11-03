@@ -2637,3 +2637,6 @@ body::after{display:none!important}
 .thsw.on{background:#95afe3}
 .thsw.on .thsw-k{left:20px;background:#fff;color:#e0a526}
 .thsw:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* 글자 그림자 전부 제거(유저 요청) */
+*,*::before,*::after{text-shadow:none!important}
