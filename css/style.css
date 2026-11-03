@@ -2688,3 +2688,10 @@ body::after{display:none!important}
 .hud-tgt{color:var(--bad);border-color:rgba(236,111,111,.45)}
 @media (max-width:1100px){.hud .hcmd-go{flex:1 1 100%;margin-top:4px}}
 @media (max-width:760px){.hud .sks-grid{grid-template-columns:repeat(auto-fill,44px)!important;gap:7px!important}.hud .hcmd-go{grid-column:1/-1}}
+
+/* 역할 칩(탱커·딜러·힐러 인원): 역할 색으로 채우고 글자는 패널 바탕색(직업 칩 .cls는 그대로) */
+.chip.tank:not(.cls),.chip.dps:not(.cls),.chip.heal:not(.cls){color:var(--slab);border-color:transparent;font-weight:600}
+.chip.tank:not(.cls){background:var(--tank)}
+.chip.dps:not(.cls){background:var(--dps)}
+.chip.heal:not(.cls){background:var(--heal)}
+.chip.tank.dim:not(.cls),.chip.dps.dim:not(.cls),.chip.heal.dim:not(.cls){color:var(--slab)}
