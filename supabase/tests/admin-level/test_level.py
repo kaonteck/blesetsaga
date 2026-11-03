@@ -56,6 +56,12 @@ with sync_playwright() as p:
     ok('서버 기준으로 맞췄습니다' in nt,'유저에게 보정 알림')
     pg.evaluate("S.me.gold+=300;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(400)
     ok(pg.evaluate("S.me.gold")==g0+100300 and pg.evaluate("S.guardRev")==1,'다음 정상 저장은 그대로(보정 반복 없음)')
+    # 아이템은 종류마다 99개까지: 서버가 자르면 게임도 99개로
+    pg.evaluate("S.me.inv.potion=150;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(500)
+    sv=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data.me.inv.potion")
+    ok(pg.evaluate("S.me.inv.potion")==99 and sv==99 and pg.evaluate("S.guardRev")==2,'아이템 150개 → 서버·게임 모두 99개')
+    nt=pg.evaluate("[...document.querySelectorAll('.toasts > *')].map(t=>t.textContent).join(' | ')")
+    ok('99개까지' in nt,'유저에게 알림(아이템 개수)')
     ok(not errs,'콘솔 오류 없음 '+'; '.join(errs[:3]))
     b.close()
 print('\n'.join(res));print('PASS' if all(r.startswith('OK') for r in res) else 'FAIL',sum(r.startswith('OK') for r in res),'/',len(res))

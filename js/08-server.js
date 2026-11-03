@@ -24,15 +24,18 @@ function admApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.rev==n
   notify(lv===before?`운영자가 레벨을 LV${lv}로 확인했습니다.`:`운영자가 레벨을 LV${before} → LV${lv}로 조정했습니다.`,'good');}
 /* 부정 방지(016): 서버가 세이브를 검사해서 말이 안 되는 레벨·골드 변화를 허용치까지만 남기면 guard.rev가 오른다.
    저장 응답의 guard.rev가 내 것보다 크면 서버의 레벨·경험치·골드로 맞춘다(그래야 다음 저장에서 또 깎이지 않음).
+   아이템 개수는 서버가 99개까지만 남기므로 보정 번호가 오르면 이 기기도 99개로 자른다.
    다른 기기에서 생긴 보정 번호만 따라잡는 경우(값이 같음)는 조용히 번호만 맞춘다. */
+const INV_CAP=99;   // 016 saves_guard와 같아야 함
 function grdApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.gr==null||!S||!S.me)return;
   const rev=+r.gr||0;if(rev<=(S.guardRev||0))return;S.guardRev=rev;
   const lv=Math.round(+r.lv),ex=Math.max(0,+r.ex||0),gd=Math.max(0,Math.round(+r.gd||0));if(!(lv>=1)){save();return;}
-  const diff=lv!==S.me.level||Math.round(S.me.gold||0)!==gd||(S.me.exp||0)!==ex;
-  if(diff){const up=lv!==S.me.level;S.me.level=lv;S.me.exp=ex;S.me.gold=gd;if(up){hpFull();if(S.party){const m=S.party.members.find(x=>x.isMe);if(m)m.level=lv;}}}
+  let invCut=false;const inv=S.me.inv||{};for(const k in inv)if(inv[k]>INV_CAP){inv[k]=INV_CAP;invCut=true;}   // 서버는 아이템마다 99개까지
+  const other=lv!==S.me.level||Math.round(S.me.gold||0)!==gd||(S.me.exp||0)!==ex;const diff=invCut||other;
+  if(other){const up=lv!==S.me.level;S.me.level=lv;S.me.exp=ex;S.me.gold=gd;if(up){hpFull();if(S.party){const m=S.party.members.find(x=>x.isMe);if(m)m.level=lv;}}}
   save();if(!diff)return;
   const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();else renderTop();
-  notify('서버 기록과 맞지 않는 변화가 있어 레벨·골드를 서버 기준으로 맞췄습니다. 잘못된 것 같으면 1:1 문의로 알려 주세요.','warn');}
+  notify(!other?`아이템은 종류마다 ${INV_CAP}개까지 가질 수 있어 넘친 개수를 정리했습니다.`:'서버 기록과 맞지 않는 변화가 있어 레벨·골드·아이템 개수를 서버 기준으로 맞췄습니다. 잘못된 것 같으면 1:1 문의로 알려 주세요.','warn');}
 // 지금 상태를 서버에 확실히 올린다 (다른 업로드가 진행 중이면 끝날 때까지 기다림). 성공하면 true
 async function cloudFlush(){
   clearTimeout(cloudT);cloudT=null;clearTimeout(saveT);

@@ -11,7 +11,7 @@
 --     - 골드: 0~99,999,999. 늘어나는 양은 예산 안에서만 — 1분에 3,000골드씩 차고 최대 100,000까지 모임
 --       + 그 사이 서버에서 받은 우편 선물 골드(mail.claimed_at)는 따로 더해 줌(운영 우편·낚시 상금 등).
 --       참고(실측): 필드 1판 최대 약 400골드, 던전 ×4, 장비 1개 최대 판매가 약 2,300골드, 8시간 자동 사냥 약 2만 골드.
---     - 인벤토리: 개수는 0~9,999 정수(게임 화면에는 다시 받아 오지 않음 — 넘친 개수만 서버에서 잘림).
+--     - 인벤토리: 아이템마다 0~99개(정수). 넘치면 99로 자르고 보정 번호를 올림(게임도 99로 맞춤). 999개를 넘게 올리면 의심 기록.
 --     - adminRev(운영 레벨 조정 번호)는 유저가 못 올림(010의 되돌리기 방지를 우회하지 못하게).
 --     예산을 넘으면 값은 허용치까지만 남기고, guard.flags에 기록(운영 페이지 '부정 의심' 탭), guard.rev를 올린다.
 --     게임은 저장 응답의 guard.rev가 자기 것보다 크면 서버의 레벨·경험치·골드를 받아 맞춘다(08-server.js `grdApply`).
@@ -98,10 +98,11 @@ begin
     inv := '{}'::jsonb;
     for k, v in select * from jsonb_each(nm->'inv') loop
       c := case when jsonb_typeof(v) = 'number' then (v #>> '{}')::numeric else 0 end;
-      if c > 9999 then inv_bad := true; end if;
-      inv := inv || jsonb_build_object(k, greatest(0, least(9999, round(c))));
+      if c > 99 then fixed := true; end if;
+      if c > 999 then inv_bad := true; end if;
+      inv := inv || jsonb_build_object(k, greatest(0, least(99, round(c))));
     end loop;
-    if inv_bad then fl := fl || jsonb_build_object('at', t, 'k', 'inv', 'ok', 9999); end if;
+    if inv_bad then fl := fl || jsonb_build_object('at', t, 'k', 'inv', 'ok', 99); end if;
     nm := jsonb_set(nm, '{inv}', inv);
   end if;
 

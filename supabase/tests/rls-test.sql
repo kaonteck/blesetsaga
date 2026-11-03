@@ -344,8 +344,10 @@ insert into mail(recipient,sender,sender_name,text,gold,claimed_at) values (:'P4
 set role authenticated; select t.as(:'P4');
 insert into saves(user_id,data) select user_id, jsonb_set(data,'{me,gold}','70000') from saves where user_id=:'P4' on conflict (user_id) do update set data=excluded.data;
 select t.ok((select (data->'me'->>'gold')::numeric from saves where user_id=:'P4')=70000,'서버에서 받은 우편 골드(7만)는 예산과 따로 인정');
-insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":50000,"herb":2.4}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->'inv'->>'potion')::int=9999 and (data->'me'->'inv'->>'herb')::int=2 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'인벤토리 개수 0~9999 정수로');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":120,"herb":2.4}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->'inv'->>'potion')::int=99 and (data->'me'->'inv'->>'herb')::int=2 and (guard->>'rev')::int=6 and guard->'flags'->0->>'k'='gold' from saves where user_id=:'P4'),'인벤토리 아이템마다 99개까지(120 → 99, 보정 번호 올림, 999 이하는 의심 기록 안 함)');
+insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":50000}}}') on conflict (user_id) do update set data=excluded.data;
+select t.ok((select (data->'me'->'inv'->>'potion')::int=99 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'아이템 5만 개 → 99개, 의심 기록');
 insert into saves(user_id,data) values (:'P4','{"adminRev":99,"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok((select not (data ? 'adminRev') from saves where user_id=:'P4'),'운영 조정 번호(adminRev)는 유저가 못 올림');
 select t.fail($$update saves set guard='{}' where user_id='00000000-0000-0000-0000-000000000004'$$,'검사 상태(guard) 직접 고치기');
