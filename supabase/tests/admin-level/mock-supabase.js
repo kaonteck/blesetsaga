@@ -19,7 +19,7 @@ class QB{
   neq(k,v){this.f.push(r=>String(r[k])!==String(v));return this;}
   not(k,op,v){this.f.push(r=>r[k]!=null);return this;}
   in(k,arr){this.f.push(r=>arr.map(String).includes(String(r[k])));return this;}
-  or(){return this;} gte(){return this;} gt(){return this;} lt(){return this;} lte(){return this;} is(){return this;} ilike(){return this;} range(){return this;} single(){this.single=true;return this;}
+  or(){return this;} gte(){return this;} gt(k,v){this.f.push(r=>String(r[k])>String(v));return this;} gt(){return this;} lt(){return this;} lte(){return this;} is(){return this;} ilike(){return this;} range(){return this;} single(){this.single=true;return this;}
   upsert(r){this.op='upsert';this.row=r;return this;} update(r){this.op='update';this.row=r;return this;} delete(){this.op='delete';return this;}
   insert(r){this.op='insert';this.row=r;return this;}
   run(){const db=load();const T=db[this.t]||(db[this.t]=[]);const ok=r=>this.f.every(f=>f(r));

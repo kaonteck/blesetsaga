@@ -7,7 +7,7 @@ A='aaaaaaaa-0000-0000-0000-00000000000a'
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
 with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':390,'height':844});errs=[]
-    ctx.route('**/fonts.g*/**',lambda r:r.abort())
+    ctx.route('**/fonts.g*/**',lambda r:r.abort());ctx.route('**/cdn.jsdelivr.net/gh/**',lambda r:r.abort())
     ctx.add_init_script(f"window.__UID='{A}';window.__USERNAME='arin';")
     ctx.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
     def page():
