@@ -101,6 +101,11 @@ with sync_playwright() as p:
     pg.click('[data-fhide="fc1"]');pg.wait_for_timeout(400);ok(pg.evaluate("__DB.feed_comments.find(x=>x.id==='fc1').hidden")==True,'피드 댓글 가리기')
     pg.click('[data-fdel="fc1"]');pg.click('[data-ans="1"]');pg.wait_for_timeout(400);ok(not pg.evaluate("__DB.feed_comments.some(x=>x.id==='fc1')"),'피드 댓글 삭제')
     pg.select_option('#fv-kind','post');pg.wait_for_selector('[data-ban]');pg.screenshot(path=OUT+'/5f-feed.png')
+    # 낚시 랭킹
+    pg.evaluate("__DB.fish_weekly=[{land:'meadow',user_id:'u2',name:'아린',species:'<b>송사리</b>',size_cm:12.5,created_at:new Date().toISOString(),week:kstMonday()}]")
+    pg.click('.tab[data-tab=fish]');pg.wait_for_selector('#fs-settle');fv=pg.inner_text('#view')
+    ok('<b>송사리</b>' in fv and '12.5cm' in fv and '빙어 15cm' in fv and pg.locator('#view td b').count()==0,'낚시 랭킹 탭: 이번 주 순위·지난 주 1위(HTML은 글자로)')
+    pg.click('#fs-settle');pg.wait_for_timeout(400);ok('fish_settle' in pg.evaluate("window.__RPC_CALLS"),'지난 주 정산 버튼 → fish_settle')
     # 행운권
     pg.click('.tab[data-tab=lotto]');pg.wait_for_selector('.tbl tbody tr');lt=pg.inner_text('#view')
     ok('1 2 3 9' in lt and '판매 중' in lt and '3,200G' in lt and '판매 7장' in lt,'행운권 회차 현황(당첨 번호·판매 중·지급 합계)');pg.screenshot(path=OUT+'/5b-lotto.png')

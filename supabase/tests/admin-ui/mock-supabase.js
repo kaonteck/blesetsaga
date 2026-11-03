@@ -5,9 +5,9 @@ const now=()=>new Date().toISOString();
 const DB={
   content:[],content_drafts:[],content_history:[],admin_log:[],
   profiles:[{user_id:ADMIN.id,username:'admin',name:'운영자'},{user_id:'u2',username:'arin',name:'아린'},{user_id:'u3',username:'bella',name:'벨라'}],
-  inquiries:[{id:'i1',author:'u2',cat:'버그',text:'장비가 사라졌어요',answer:null,created_at:now()}],
+  inquiries:[{id:'i1',author:'u2',cat:'버그 신고',text:'장비가 사라졌어요',answer:null,created_at:now()}],
   reports:[{id:'r1',reporter:'u2',target:'u3',target_name:'벨라',kind:'chat',ref_id:'5',snapshot:'도배 메시지',reason:'도배',done:false,created_at:now()}],
-  chat_messages:[{id:'5',channel:'lobby',author:'u3',name:'벨라',text:'도배 메시지',hidden:false,created_at:now()},{id:'6',channel:'lobby',author:'u2',name:'아린',text:'안녕하세요',hidden:false,created_at:now()},{id:'7',channel:'world',author:null,name:'운영자',cat:'maint',text:'점검 안내',hidden:false,created_at:now()}],feed_posts:[{id:'fp1',author:'u3',author_name:'벨라',text:'<b>광고</b> 글',likes:2,comments:1,hidden:false,created_at:now()},{id:'fp2',author:'u2',author_name:'아린',text:'좋은 아침',likes:0,comments:0,hidden:false,created_at:now()}],feed_comments:[{id:'fc1',post_id:'fp1',parent_id:null,author:'u2',author_name:'아린',text:'신고합니다',likes:0,hidden:false,created_at:now()}],
+  chat_messages:[{id:'5',channel:'lobby',author:'u3',name:'벨라',text:'도배 메시지',hidden:false,created_at:now()},{id:'6',channel:'lobby',author:'u2',name:'아린',text:'안녕하세요',hidden:false,created_at:now()},{id:'7',channel:'world',author:null,name:'운영자',cat:'maint',text:'점검 안내',hidden:false,created_at:now()}],feed_posts:[{id:'fp1',author:'u3',author_name:'벨라',text:'<b>광고</b> 글',likes:2,comments:1,hidden:false,created_at:now()},{id:'fp2',author:'u2',author_name:'아린',text:'좋은 아침',likes:0,comments:0,hidden:false,created_at:now()}],feed_comments:[{id:'fc1',post_id:'fp1',parent_id:null,author:'u2',author_name:'아린',text:'신고합니다',likes:0,hidden:false,created_at:now()}],fish_weekly:[],fish_awards:[{week:'2026-10-26',land:'frost',user_id:'u2',species:'빙어',size_cm:15,created_at:now()}],
   invites:[{code:'BLESET01',max_uses:5,uses:2,note:'친구',created_at:now()}],
   saves:{u2:{savedAt:Date.now(),me:{level:12,gold:3400,job:'defender',inv:{potion:3,holywater:1}}}}
 };
@@ -17,6 +17,7 @@ function upsertContent(r,restore){const i=DB.content.findIndex(x=>x.kind===r.kin
   if(i<0){const n={published:true,starts_at:null,ends_at:null,sort:0,note:null,...r,rev:1,updated_by:ADMIN.id,updated_at:now()};DB.content.push(n);log({kind:r.kind,id:r.id,op:'insert',before:null,after:n,rev:1});return n;}
   const o=DB.content[i],n={...o,...r,rev:o.rev+1,updated_at:now()};DB.content[i]=n;log({kind:r.kind,id:r.id,op:restore?'restore':'update',before:o,after:n,rev:n.rev});return n;}
 const RPC={
+  fish_settle(){return 0;},
   admin_players:()=>DB.profiles.map((p,i)=>({...p,job:'defender',level:p.level??(5+i),status:i===1?'online':'offline',last_seen:now(),banned_until:p.banned_until||null,ban_reason:p.ban_reason||null,is_admin:p.user_id===ADMIN.id,last_sign_in:now(),saved_at:now(),joined_at:now(),invite:'BLESET01'})),
   admin_player_save:a=>DB.saves[a.p_user]||null,
   admin_set_level:a=>{if(!(a.p_level>=1&&a.p_level<=99))throw {message:'BAD_LEVEL'};const d=DB.saves[a.p_user];if(!d||!d.me)throw {message:'NO_SAVE'};

@@ -177,10 +177,49 @@ select t.as(:'P2'); insert into chat_messages(channel,text) values ('lobby','풀
 select t.ok(true,'해제 후 채팅 가능');
 
 -- 낚시
-select t.as(:'P1'); insert into fish_catches(land,species,size_cm) values ('swamp','메기',41.5),('swamp','메기',55.0);
-select t.as(:'P2'); insert into fish_catches(land,species,size_cm) values ('swamp','잉어',48.2);
-select t.ok((select count(*) from fish_weekly where land='swamp')=2 and (select max(size_cm) from fish_weekly)=55.0,'주간 랭킹: 한 사람당 최고 기록');
-select t.fail($$insert into fish_catches(land,species,size_cm,week) values ('swamp','메기',99,'2020-01-06')$$,'지난 주 기록 끼워넣기');
+select t.as(:'P1'); insert into fish_catches(land,species,size_cm) values ('frost','얼음 송어',41.5),('frost','얼음 송어',55.0);
+select t.as(:'P2'); insert into fish_catches(land,species,size_cm) values ('frost','얼음 송어',48.2);
+select t.ok((select count(*) from fish_weekly where land='frost')=2 and (select max(size_cm) from fish_weekly)=55.0,'주간 랭킹: 한 사람당 최고 기록');
+select t.fail($$insert into fish_catches(land,species,size_cm,week) values ('frost','얼음 송어',60,'2020-01-06')$$,'지난 주 기록 끼워넣기');
+
+-- 문의 답변 우편 · 낚시 정산 (014)
+select t.as(:'P2'); insert into inquiries(cat,text) values ('버그 신고','물고기가 안 잡혀요');
+select t.fail($$insert into inquiries(cat,text) values ('없는분류','x')$$,'문의 분류는 게임 목록만');
+select t.as(:'A',true); update inquiries set answer='확인했습니다' where text='물고기가 안 잡혀요';
+select t.as(:'P2');
+select t.ok((select count(*) from mail where recipient=:'P2' and sender is null and text like '[1:1 문의 답변] 확인했습니다%')=1,'문의 답변이 우편으로 도착');
+select t.fail($$insert into fish_catches(land,species,size_cm) values ('moon','달고기',10)$$,'낚시 기록: 없는 지역 막힘');
+reset role;
+insert into fish_catches(user_id,land,species,size_cm,week,created_at) values
+ (:'P1','meadow','피라미',12.0,public.kst_week()-7,now()-interval '7 days'),
+ (:'P2','meadow','붕어',30.0,public.kst_week()-7,now()-interval '6 days'),
+ (:'P3','meadow','메기',30.0,public.kst_week()-7,now()-interval '5 days'),
+ (:'P1','sea','고등어',40.0,public.kst_week()-7,now()-interval '6 days'),
+ (:'P3','meadow','메기',90.0,public.kst_week(),now());
+set role authenticated; select t.as(:'P1');
+select t.ok((select public.fish_settle())=2,'지난 주 지역 2곳 정산');
+select t.ok((select public.fish_settle())=0,'두 번 불러도 한 번만');
+select t.ok((select user_id from fish_awards where land='meadow')=:'P2','같은 크기면 먼저 낚은 사람이 1위(이번 주 기록은 정산 안 함)');
+select t.ok((select count(*) from fish_awards)=2 and (select count(*) from fish_awards where week=public.kst_week())=0,'이번 주는 정산하지 않음');
+select t.fail($$insert into fish_awards(week,land,user_id,species,size_cm) values (current_date,'sea','00000000-0000-0000-0000-000000000001','x',1)$$,'유저가 수상 기록 직접 쓰기');
+select t.ok((select gold from mail where recipient=:'P1' and text like '[주간 낚시 랭킹]%바다의 땅%벤테의 낚시왕%')=500,'1위 우편: 500골드·칭호 안내');
+-- 낚시 기록 제한 · 정산 막힘 방지 (015)
+select t.as(:'P1');
+select t.fail($$insert into fish_catches(land,species,size_cm) values ('frost',repeat('가',600),50)$$,'낚시 기록: 게임에 없는 물고기 이름(600자) 막힘');
+select t.fail($$insert into fish_catches(land,species,size_cm) values ('frost','얼음 송어',9999)$$,'낚시 기록: 물고기 최대 크기 넘으면 막힘');
+select t.fail($$insert into fish_catches(land,species,size_cm) values ('frost','얼음 송어',39.9)$$,'낚시 기록: 물고기 최소 크기 아래 막힘');
+select t.fail($$insert into fish_catches(land,species,size_cm) values ('frost','고등어',30)$$,'낚시 기록: 다른 지역 물고기 막힘');
+reset role;
+alter table fish_catches disable trigger fish_check;   -- 015 전에 들어간 나쁜 기록 흉내
+insert into fish_catches(user_id,land,species,size_cm,week,created_at) values
+ (:'P1','frost',repeat('가',600),9999,public.kst_week()-14,now()-interval '14 days'),
+ (:'P2','frost','빙어',15.0,public.kst_week()-14,now()-interval '13 days'),
+ (:'P3','sea','새끼 리바이어던',500.0,public.kst_week()-14,now()-interval '13 days');
+alter table fish_catches enable trigger fish_check;
+set role authenticated; select t.as(:'P2');
+select t.ok((select public.fish_settle())=2,'나쁜 기록이 있어도 정산 계속(2주 전 혹한·바다)');
+select t.ok((select user_id from fish_awards where land='frost' and week=public.kst_week()-14)=:'P2','나쁜 기록은 1위가 못 됨 → 정상 기록이 1위');
+select t.ok((select max(length(text)) from mail where text like '[주간 낚시 랭킹]%')<=500,'정산 우편 글 500자 이하');
 
 -- 행운권 (시계를 바꿔 끼워서 판매·마감·추첨·수령을 차례로 확인)
 reset role;
@@ -238,15 +277,15 @@ select t.as(:'P1');
 -- 운영 함수 · 문의 · 신고
 select t.fail($$select * from admin_players()$$,'유저가 회원 목록');
 select t.fail($$select admin_invite_create()$$,'유저가 초대코드 생성');
-insert into inquiries(cat,text) values ('버그','장비가 사라졌어요');
+insert into inquiries(cat,text) values ('버그 신고','장비가 사라졌어요');
 insert into reports(target,kind,snapshot) values (:'P2','chat','도배');
 update inquiries set answer='셀프 답변';
-select t.ok((select answer is null from inquiries),'유저가 문의에 셀프 답변 불가');
+select t.ok((select answer is null from inquiries where text='장비가 사라졌어요'),'유저가 문의에 셀프 답변 불가');
 select t.as(:'A',true);
 select t.ok((select count(*) from admin_players())=4,'운영자 회원 목록');
 select t.ok(length(admin_invite_create(null,5,'테스트'))=8,'초대코드 자동 생성');
-update inquiries set answer='복구해 드렸습니다';
-select t.ok((select answered_by is not null from inquiries),'답변자·시각 자동 기록');
+update inquiries set answer='복구해 드렸습니다' where text='장비가 사라졌어요';
+select t.ok((select answered_by is not null and answered_at is not null from inquiries where text='장비가 사라졌어요'),'답변자·시각 자동 기록');
 update reports set done=true;
 select t.ok((select handled_at is not null from reports),'신고 처리자·시각 자동 기록');
 select t.ok((select count(*) from admin_log)>=4,'운영 기록(정지·해제·우편·초대코드)');

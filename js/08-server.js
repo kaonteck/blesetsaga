@@ -89,7 +89,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);
-  pfSync();mlStart();ltStart();chStart();fdStart();
+  pfSync();mlStart();ltStart();chStart();fdStart();iqStart();fbStart();
 }
 
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
@@ -201,6 +201,8 @@ document.addEventListener('visibilitychange',()=>{if(SB_UID)pfSync(document.visi
    - 선물 받기: claim_mail(서버가 한 번만 표시) 성공 후 게임의 원래 받기 처리로 아이템·골드를 넣는다.
    - 읽음·보관·삭제는 서버에도 반영.
    화면 함수(composeHTML·mailDetail)와 동작(ACTS)은 메인·프론트 파일에 있어서, 서버 모드에서만 여기서 감싸 덧붙인다. */
+// 게임 클래스 id인지 (CLASSES 객체의 기본 속성 이름 'constructor' 등은 제외)
+const isClass=j=>typeof j==='string'&&Object.prototype.hasOwnProperty.call(CLASSES,j);
 const ML_TTL=7*24*3600e3;
 let mlPlayers=[],mlNames={},mlT=null,mlPoll=null,mlSending=false;
 const mlSrvId=id=>String(id).startsWith('srv:')?String(id).slice(4):null;
@@ -208,7 +210,7 @@ async function mlLoadPlayers(){
   if(!SB||!SB_UID)return;
   const {data}=await SB.from('profiles').select('user_id,name,username,job,level,title,memo,status,last_seen').neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
   // 모르는 직업 값은 비워 둔다(이상한 값 하나로 채팅·목록 그리기가 멈추지 않게 — 서버도 013에서 막음)
-  if(data){data.forEach(p=>{if(p.job&&!CLASSES[p.job])p.job=null;});mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
+  if(data){data.forEach(p=>{if(p.job&&!isClass(p.job))p.job=null;});mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
 }
 async function mlFetch(){
   if(!SB||!SB_UID||!S||!S.me)return;
@@ -259,7 +261,7 @@ if(ONLINE){
     const ppl=mlPlayers.filter(p=>!blocked(p.name));
     if(String(c.to).startsWith('@')&&!ppl.some(p=>'@'+p.user_id===c.to)){const u=c.to.slice(1);ppl.unshift({user_id:u,name:mlNames[u]||'블레서',job:null,level:null});}
     const bots=(S.bots||[]).filter(b=>!blocked(b.name)).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
-    const opt=`<option value="">선택하세요</option>${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="@${p.user_id}" ${c.to==='@'+p.user_id?'selected':''}>${esc(p.name)}${p.job&&CLASSES[p.job]?' · '+CLASSES[p.job].name:''}${p.level?' · LV'+p.level:''}</option>`).join('')}</optgroup>`:''}
+    const opt=`<option value="">선택하세요</option>${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="@${p.user_id}" ${c.to==='@'+p.user_id?'selected':''}>${esc(p.name)}${isClass(p.job)?' · '+CLASSES[p.job].name:''}${p.level?' · LV'+p.level:''}</option>`).join('')}</optgroup>`:''}
       ${bots.length?`<optgroup label="테스트 봇">${bots.map(b=>`<option value="${esc(b.name)}" ${c.to===b.name?'selected':''}>${esc(b.name)} · ${CLASSES[b.job].name}</option>`).join('')}</optgroup>`:''}`;
     h=h.replace(/<select id="mc-to">[\s\S]*?<\/select>/,`<select id="mc-to">${opt}</select>`);
     if(c.gift){const gold=`<label class="row" style="gap:8px;justify-content:space-between"><span style="font-size:12.5px">골드</span><span class="row" style="gap:6px"><input type="number" id="mc-gold" min="0" max="${S.me.gold}" step="1" value="${c.gold||0}" style="width:110px"><span class="faint num" style="font-size:12px">보유 ${(S.me.gold||0).toLocaleString('ko-KR')}</span></span></label>`;
@@ -465,7 +467,7 @@ function chStart(){
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`recipient=eq.${SB_UID}`},p=>chOnInsert(p.new))
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`sender=eq.${SB_UID}`},p=>chOnInsert(p.new))
       .subscribe();}catch(e){console.warn('채팅 실시간 연결 실패',e);}
-  clearInterval(CH.poll);CH.poll=setInterval(()=>{chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});},60000);
+  clearInterval(CH.poll);CH.poll=setInterval(()=>{chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel&&S.sel.pop==='online')renderPop();}catch(e){}});},60000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')chFetch();});
 }
 const chErr=e=>{const m=(e&&e.message)||'';
@@ -510,12 +512,12 @@ if(ONLINE){
   // 실제 블레서도 이름 색·정보·1:1 머리줄에 보이게
   const _playerInfo=playerInfo;
   playerInfo=function(name){const r=_playerInfo(name);if(r)return r;const p=chPlayer(name);
-    return p?{name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
+    return p?{name,job:isClass(p.job)?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',real:true,uid:p.user_id}:r;};
   const _uinfo=uinfoHTML;
   uinfoHTML=function(name){
     if((S.me&&name===S.me.name)||bot(name))return _uinfo(name);
     const p=chPlayer(name);if(!p)return _uinfo(name);
-    const job=CLASSES[p.job]?p.job:'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
+    const job=isClass(p.job)?p.job:'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
     return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${sigil(job)}<div class="rm-t">${tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="row" style="gap:6px"><b>${esc(name)}</b><span class="chip dim">블레서</span></div>
       <small><span class="num">LV${p.level||1}</span></small><div class="row" style="gap:4px">${roleChip(job)}${statusChip(st)}</div></div></div>
       ${p.memo?`<div class="u-sec u-memo">${esc(p.memo)}</div>`:''}${noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}
@@ -533,20 +535,21 @@ if(ONLINE){
     const has=n=>((dmState().threads[n]||{msgs:[]}).msgs.length>0);
     const ppl=mlPlayers.filter(p=>!has(p.name)&&S.rel[p.name]!=='blocked'&&!bot(p.name)).sort((a,b)=>(chOnline(b)-chOnline(a))||a.name.localeCompare(b.name,'ko'));
     return h.replace(/(<select id="dm-new"[^>]*>)(<option value="">[^<]*<\/option>)([\s\S]*?)(<\/select>)/,(m,open,first,bots,close)=>
-      `${open}${first}${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${p.job&&CLASSES[p.job]?' · '+CLASSES[p.job].name:''}${chOnline(p)?'':' · 오프라인'}</option>`).join('')}</optgroup>`:''}${bots?`<optgroup label="테스트 봇">${bots}</optgroup>`:''}${close}`);
+      `${open}${first}${ppl.length?`<optgroup label="블레서">${ppl.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${isClass(p.job)?' · '+CLASSES[p.job].name:''}${chOnline(p)?'':' · 오프라인'}</option>`).join('')}</optgroup>`:''}${bots?`<optgroup label="테스트 봇">${bots}</optgroup>`:''}${close}`);
   };
   // 접속 인원·접속자 목록: 테스트 봇은 빼고 나 + 실제 블레서만
   const _onlineCount=onlineCount;
   onlineCount=function(){return SB_UID?1+mlPlayers.filter(chOnline).length:_onlineCount();};
-  const realAsBot=p=>({name:p.name,job:CLASSES[p.job]?p.job:'defender',level:p.level||1,online:chOnline(p),status:p.status==='raid'&&chOnline(p)?'battle':'lobby',real:true,uid:p.user_id});
-  const _showOnline=showOnline;
+  // 실제 블레서의 상태('raid' = 파티모집 중 등)·한줄메모는 접속자 팝업의 ustat·memo로(봇 활동 표시는 '로비')
+  const realAsBot=p=>({name:p.name,job:isClass(p.job)?p.job:'defender',level:p.level||1,online:chOnline(p),status:'lobby',ustat:p.status||null,memo:p.memo||'',real:true,uid:p.user_id});
+  const _showOnline=showOnline;let olAt=0;
   showOnline=function(){
     if(!SB_UID)return _showOnline();
     const real=mlPlayers.filter(p=>p.name&&!bot(p.name)).map(realAsBot).sort((a,b)=>(b.online-a.online)||a.name.localeCompare(b.name,'ko'));
     const keep=S.bots;S.bots=real;
     try{_showOnline();}finally{S.bots=keep;}
-    const f=$$('#modal p.faint').pop();if(f)f.textContent='지금 게임에 접속한 블레서입니다. 최근 6분 안에 활동한 계정을 접속 중으로 셉니다.';
-    mlLoadPlayers().then(()=>{try{renderTopBadges();}catch(e){}});
+    // 팝업을 열 때 목록을 새로 받아 다시 그림(팝업은 자주 다시 그려지므로 10초에 한 번만)
+    if(Date.now()-olAt>10000){olAt=Date.now();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel.pop==='online')renderPop();}catch(e){}});}
   };
   // 접속자 목록·정보 카드의 편지 보내기: 실제 블레서는 서버 우편으로
   const _uMail=ACTS['u-mail'];
@@ -641,7 +644,7 @@ if(ONLINE){
     return h.replace('<div class="fd-list"></div>','<div class="fd-list"><p class="empty">아직 올라온 글이 없습니다. 블레서들에게 첫 이야기를 남겨 보세요.</p></div>');};
   // 실제 블레서의 클래스 문양
   const _pInfo=pInfo;
-  pInfo=function(n){if(!SB_UID||(S.me&&n===S.me.name))return _pInfo(n);const p=chPlayer(n);return p?{job:CLASSES[p.job]?p.job:'defender',img:null}:_pInfo(n);};
+  pInfo=function(n){if(!SB_UID||(S.me&&n===S.me.name))return _pInfo(n);const p=chPlayer(n);return p?{job:isClass(p.job)?p.job:'defender',img:null}:_pInfo(n);};
   // 글·댓글·답글 쓰기: 게임의 submit 처리(document)보다 먼저(window, 잡기 단계) 받아 서버로
   window.addEventListener('submit',async e=>{
     if(!SB_UID||!S||!S.me)return;const f=e.target&&e.target.closest&&e.target.closest('[data-form]');if(!f)return;
@@ -687,4 +690,88 @@ if(ONLINE){
     if(error){toast('글을 지우지 못했습니다. 잠시 후 다시 시도해 주세요.','bad');return;}
     FD.posts=FD.posts.filter(p=>p.id!==d.id);FD.sig='';fdRedraw();toast('글을 삭제했습니다.');fdFetch();
   };
+}
+
+/* ───────── 1:1 문의 (inquiries) ─────────
+   서버 모드: 환경설정 › 1:1 문의에서 보내면 서버로, 내 문의 목록·답변 상태도 서버에서 받는다(실시간).
+   운영자가 운영 페이지에서 답하면 서버가 답변 우편을 보낸다(014). 이 기기의 예전 문의(S.inquiries)는 세이브에 그대로. */
+const IQ={list:[],t:null,sending:false};
+async function iqFetch(){
+  if(!SB||!SB_UID||!S||!S.me)return;
+  const {data,error}=await SB.from('inquiries').select('id,cat,text,answer,answered_at,created_at').eq('author',SB_UID).order('created_at',{ascending:false}).limit(30);
+  if(error||!data)return;
+  const list=data.map(r=>({id:'srv:'+r.id,by:S.me.name,cat:r.cat,text:r.text,ts:Date.parse(r.created_at),answer:r.answer||null,answeredAt:r.answered_at?Date.parse(r.answered_at):null}));
+  if(JSON.stringify(list)===JSON.stringify(IQ.list))return;
+  IQ.list=list;try{if(S.sel&&S.sel.pop)renderPop();}catch(e){}
+}
+function iqStart(){
+  iqFetch();
+  try{SB.channel('inq-live').on('postgres_changes',{event:'*',schema:'public',table:'inquiries',filter:`author=eq.${SB_UID}`},()=>{clearTimeout(IQ.t);IQ.t=setTimeout(iqFetch,500);}).subscribe();}catch(e){}
+}
+if(ONLINE){
+  const _askBody=askBody;
+  askBody=function(){if(!SB_UID)return _askBody();const keep=S.inquiries;S.inquiries=IQ.list;try{return _askBody();}finally{S.inquiries=keep;}};
+  window.addEventListener('submit',async e=>{
+    if(!SB_UID||!S||!S.me)return;const f=e.target&&e.target.closest&&e.target.closest('[data-form="ask"]');if(!f)return;
+    e.preventDefault();e.stopPropagation();if(IQ.sending)return;
+    const inp=$('#ask-text');const t=((inp&&inp.value)||'').trim();
+    if(t.length<5){toast('문의 내용을 5자 이상 적어 주세요.','warn');return;}
+    IQ.sending=true;const btn=f.querySelector('[type=submit]');if(btn)btn.disabled=true;
+    try{const {error}=await SB.from('inquiries').insert({cat:($('#ask-cat')||{}).value||'기타',text:t.slice(0,500)});if(error)throw error;
+      if(inp)inp.value='';await iqFetch();renderPop();toast('1:1 문의를 보냈습니다. 답변은 우편함으로도 전달됩니다.','good');}
+    catch(err){console.warn(err);toast(/row-level security|permission denied/i.test((err&&err.message)||'')?'이용이 제한된 계정이라 문의를 보낼 수 없습니다.':'문의를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.','bad');if(btn)btn.disabled=false;}
+    finally{IQ.sending=false;}
+  },true);
+}
+
+/* ───────── 주간 낚시 랭킹 (fish_catches · fish_weekly · fish_awards) ─────────
+   서버 모드: 이번 주 지역별 최고 기록을 서버에 남기고, 순위는 실제 블레서 기록으로(봇 없음).
+   지난 주 1위 정산(500골드 우편)은 서버 fish_settle()이 한 번만 한다 → 게임은 수상 기록을 보고 낚시왕 칭호를 붙인다.
+   이 기기의 정산(settleFish)은 서버 모드에서 쓰지 않는다. */
+const FB={rows:{},wk:'',busy:false};
+async function fbFetch(){
+  if(!SB||!SB_UID||!S||!S.me||FB.busy)return;FB.busy=true;
+  try{const wk=weekKey();const {data,error}=await SB.from('fish_weekly').select('land,user_id,name,species,size_cm,created_at').eq('week',wk).limit(1000);
+    if(error||!data)return;const rows={};data.forEach(r=>{(rows[r.land]=rows[r.land]||[]).push(r);});FB.rows=rows;FB.wk=wk;}
+  catch(e){}finally{FB.busy=false;}
+}
+// 이번 주 내 기록 중 서버에 아직 없는(또는 더 작은) 것을 올린다 — 서버 연결 전에 낚은 것 포함
+async function fbPushMine(){
+  if(!SB_UID||!S.me||S.me.fishBestWk!==weekKey())return;
+  const mine=S.me.fishBest||{};let sent=false;
+  for(const land in mine){if(!FISH_LANDS[land])continue;const b=mine[land];const srv=(FB.rows[land]||[]).find(r=>r.user_id===SB_UID);
+    if(srv&&+srv.size_cm>=b.size)continue;
+    const {error}=await SB.from('fish_catches').insert({land,species:(FISH_BY_ID[b.sp]||{}).name||String(b.sp),size_cm:b.size});if(!error)sent=true;}
+  if(sent)await fbFetch();
+}
+async function fbAwards(){
+  if(!SB||!SB_UID||!S||!S.me)return;
+  try{await SB.rpc('fish_settle');}catch(e){}
+  const {data}=await SB.from('fish_awards').select('week,land').eq('user_id',SB_UID);if(!data)return;
+  const me=S.me;me.fishAwSeen=me.fishAwSeen||[];let won=0;
+  data.forEach(a=>{const k=a.week+':'+a.land;if(me.fishAwSeen.includes(k))return;me.fishAwSeen.push(k);
+    me.fishKingLand=me.fishKingLand||{};me.fishKingLand[a.land]=(me.fishKingLand[a.land]||0)+1;won++;});
+  if(won){me.fishKing=(me.fishKing||0)+won;save();setTimeout(checkTitles,0);}
+}
+async function fbStart(){await fbFetch();await fbPushMine();fbAwards();setInterval(()=>{fbAwards();},30*60*1000);}
+if(ONLINE){
+  const _fishBoard=fishBoard;
+  fishBoard=function(land,wkArg){
+    if(!SB_UID)return _fishBoard(land,wkArg);
+    const wk=wkArg||weekKey();if(wk!==FB.wk)return [];
+    const rows=(FB.rows[land]||[]).map(r=>({name:r.user_id===SB_UID?S.me.name:(r.name||'블레서'),sp:r.species,size:+r.size_cm,me:r.user_id===SB_UID,at:Date.parse(r.created_at)}));
+    const mine=S.me.fishBestWk===wk&&(S.me.fishBest||{})[land];const my=rows.find(x=>x.me);
+    if(mine&&(!my||mine.size>my.size)){const x={name:S.me.name,sp:FISH_BY_ID[mine.sp]?FISH_BY_ID[mine.sp].name:mine.sp,size:mine.size,me:true,at:Date.now()};if(my)Object.assign(my,x);else rows.push(x);}
+    return rows.sort((a,b)=>(b.size-a.size)||(a.at-b.at));
+  };
+  settleFish=function(){if(!SB_UID)return;};   // 서버가 정산
+  const _note=noteFishBest;
+  noteFishBest=function(c){
+    if(!SB_UID)return _note(c);
+    const wk=weekKey();const prev=S.me.fishBestWk===wk&&(S.me.fishBest||{})[c.land];
+    _note(c);
+    if(FISH_LANDS[c.land]&&(!prev||c.size>prev.size))SB.from('fish_catches').insert({land:c.land,species:(FISH_BY_ID[c.sp]||{}).name||String(c.sp),size_cm:c.size}).then(()=>fbFetch(),()=>{});
+  };
+  const _rank=ACTS['fish-rank'];
+  ACTS['fish-rank']=async(d,el,e)=>{if(!SB_UID)return _rank(d,el,e);await fbFetch();_rank(d,el,e);};
 }

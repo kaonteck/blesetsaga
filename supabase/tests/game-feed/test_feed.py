@@ -64,8 +64,15 @@ with sync_playwright() as p:
     ok(len(db()['feed_posts'])==1 and len(db()['feed_comments'])==0,'내 글 삭제(댓글도 함께)')
     bp.wait_for_timeout(700);ok(bp.locator('.fd-post').count()==1 and '오늘 첫 사냥' not in view(bp),'상대 화면에서도 사라짐')
     # 가린 글은 안 보임 (운영자가 가린 경우: 1분마다 다시 받음)
-    a.evaluate("(()=>{const d=JSON.parse(localStorage.getItem('__mockdb'));d.feed_posts[0].hidden=true;localStorage.setItem('__mockdb',JSON.stringify(d));})()")
-    bp.evaluate("fdFetch()");bp.wait_for_timeout(500);ok(bp.locator('.fd-post').count()==0,'가린 글은 안 보임')
+    # 가짜 서버는 두 탭이 localStorage를 함께 고쳐 써서 방금 넣은 값이 덮일 수 있음 → 반영될 때까지 다시 넣고 기다림(가짜 서버만의 문제)
+    hide="(()=>{const d=JSON.parse(localStorage.getItem('__mockdb'));d.feed_posts.forEach(p=>p.hidden=true);localStorage.setItem('__mockdb',JSON.stringify(d));return d.feed_posts.every(p=>p.hidden);})()"
+    for _ in range(10):
+        a.evaluate(hide);bp.wait_for_timeout(300)
+        if a.evaluate("JSON.parse(localStorage.getItem('__mockdb')).feed_posts.every(p=>p.hidden)"):break
+    bp.evaluate("fdFetch()")
+    try: bp.wait_for_function("document.querySelectorAll('.fd-post').length===0",timeout=4000)
+    except Exception: pass
+    ok(bp.locator('.fd-post').count()==0,'가린 글은 안 보임')
     # HTML 삽입
     a.fill('#fd-text','<img src=x onerror="window.__X=1"><b>굵게</b>');a.click('.fd-compose button[type=submit]');a.wait_for_timeout(900);bp.wait_for_timeout(800)
     ok(bp.locator('.fd-text img').count()==0 and '<b>굵게</b>' in view(bp) and not bp.evaluate("window.__X||0"),'글 속 HTML은 글자로만')
