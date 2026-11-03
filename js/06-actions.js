@@ -330,6 +330,7 @@ const ACTS={
   'qb-pick':d=>{modal(quickPickDlg(+d.i));},
   'qb-set':d=>{const Q=quickSlots().slice();Q[+d.i]=d.route||null;S.me.quick=Q;modal('');save();render();},
   'rec-fold':()=>{S.sel.recOpen=S.sel.recOpen===false;const el=$('[data-recp]');if(el)el.outerHTML=recPanel();},
+  'mk-fold':d=>{S.sel.mkFold=S.sel.mkFold||{};S.sel.mkFold[d.k]=!S.sel.mkFold[d.k];render();},
   qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},

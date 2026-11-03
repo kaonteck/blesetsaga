@@ -1628,15 +1628,23 @@ function market(){if(!S.data.market)S.data.market=clone(DEFAULT_MARKET);return S
 const SELL_RATE=0.8;
 function buyPrice(k){const l=market().find(x=>x.item===k);return l?l.price:((ITEMS[k]&&ITEMS[k].price)||60);}
 function sellPrice(k){return Math.round(buyPrice(k)*SELL_RATE*(1+enhOf(k)*0.15));}
+function mkCatOf(it){return it.type==='equip'?'equip':it.rod?'use':it.type==='mat'?'mat':it.type==='deco'?'deco':'use';}
+const MK_CATS=[['use','소모품'],['equip','장비'],['mat','재료'],['deco','장식품']];
+/* 거래소 단락: 종류별로 나누고 접기(S.sel.mkFold[탭:종류]) */
+function mkSections(tab,list,keyOf,render,wrapCls){const F=S.sel.mkFold||{};
+  return MK_CATS.map(([c,l])=>{const L=list.filter(x=>mkCatOf(ITEMS[keyOf(x)])===c);if(!L.length)return '';const k=tab+':'+c,open=!F[k];
+    return `<section class="mk-sec ${open?'open':''}"><button class="mk-sec-h" data-act="mk-fold" data-k="${k}" aria-expanded="${open}"><span>${l}</span><span class="num faint">${L.length}</span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>${open?`<div class="${wrapCls}">${L.map(render).join('')}</div>`:''}</section>`;}).join('');}
 function vMarket(){
   const tab=S.sel.mkTab||'buy';const adm=isAdmin();const L=market();
   const sellable=Object.entries(S.me.inv).filter(([k,n])=>n>0&&ITEMS[k]&&availItem(k)>0);
+  const buyL=L.filter(x=>ITEMS[x.item]&&!ITEMS[x.item].off);
+  const pill=(k,l)=>`<button class="mk-pill" data-act="mk-tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`;
   return `<div class="wrap page"><div class="page-head"><div><h2>거래소<small class="en">Market</small></h2><p>운영진이 올린 아이템을 사고, 가진 아이템을 거래소에 팔 수 있습니다. 유저끼리는 거래할 수 없습니다.</p></div><div class="row">${goldHTML(S.me.gold)}</div></div>
-    <div class="seg">${[['buy','구매'],['sell','판매'],...(adm?[['admin','등록 관리']]:[])].map(([k,l])=>`<button data-act="mk-tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
-    ${tab==='buy'?`<div class="mkgrid">${L.filter(x=>ITEMS[x.item]&&!ITEMS[x.item].off).length?L.map(x=>{const it=ITEMS[x.item];if(!it||it.off)return '';const out=x.stock===0;return `<div class="panel mkcard"><div class="row" style="gap:10px"><img class="mkimg" src="${ITEM_IMG}" alt=""><div class="t" style="min-width:0"><b>${esc(it.name)}</b><small class="faint">${typeLabel(it)}${x.stock!=null?` · 재고 ${x.stock}`:''}</small></div></div>
+    <div class="mk-tabs">${pill('buy','구매')}${pill('sell','판매')}${adm?`<span class="mk-tabs-r">${pill('admin','등록 관리')}</span>`:''}</div>
+    ${tab==='buy'?(buyL.length?`<div class="mk-secs">${mkSections('buy',buyL,x=>x.item,x=>{const it=ITEMS[x.item];if(!it||it.off)return '';const out=x.stock===0;return `<div class="panel mkcard"><div class="row" style="gap:10px"><img class="mkimg" src="${ITEM_IMG}" alt=""><div class="t" style="min-width:0"><b>${esc(it.name)}</b><small class="faint">${typeLabel(it)}${x.stock!=null?` · 재고 ${x.stock}`:''}</small></div></div>
         ${it.stats?`<span class="bpill eqb sm" style="align-self:flex-start">${statText(it.stats)}</span>`:''}<p class="muted" style="font-size:12.5px">${esc(it.desc)}</p>${reqText(it)?`<small class="faint">${esc(reqText(it))}</small>`:''}
-        <div class="row" style="justify-content:space-between;margin-top:auto">${goldHTML(x.price)}<button class="btn btn-sm btn-primary" data-act="mk-buy" data-id="${x.id}" ${out||S.me.gold<x.price?'disabled':''}>${out?'품절':S.me.gold<x.price?'골드 부족':'구매'}</button></div></div>`;}).join(''):'<p class="empty">판매 중인 아이템이 없습니다.</p>'}</div>`:''}
-    ${tab==='sell'?`<div class="panel"><div class="list">${sellable.length?sellable.map(([k,n])=>`<div class="li"><div class="row" style="gap:10px;flex:1;min-width:0"><img class="mkimg sm" src="${ITEM_IMG}" alt=""><div class="t"><b>${itemNameH(k)}</b> <span class="faint num">×${availItem(k)}</span><small>${typeLabel(ITEMS[k])}${enhOf(k)?' · 강화 단계만큼 매입가가 오릅니다':''}</small></div></div><span class="row" style="gap:8px">${goldHTML(sellPrice(k))}<button class="btn btn-sm" data-act="mk-sell" data-id="${k}">판매</button></span></div>`).join(''):'<p class="empty">팔 수 있는 아이템이 없습니다. 착용 중인 장비는 팔 수 없습니다.</p>'}</div></div>`:''}
+        <div class="row" style="justify-content:space-between;margin-top:auto">${goldHTML(x.price)}<button class="btn btn-sm btn-primary" data-act="mk-buy" data-id="${x.id}" ${out||S.me.gold<x.price?'disabled':''}>${out?'품절':S.me.gold<x.price?'골드 부족':'구매'}</button></div></div>`;},'mkgrid')}</div>`:'<p class="empty">판매 중인 아이템이 없습니다.</p>'):''}
+    ${tab==='sell'?(sellable.length?`<div class="mk-secs">${mkSections('sell',sellable,e=>e[0],([k,n])=>`<div class="li"><div class="row" style="gap:10px;flex:1;min-width:0"><img class="mkimg sm" src="${ITEM_IMG}" alt=""><div class="t"><b>${itemNameH(k)}</b> <span class="faint num">×${availItem(k)}</span><small>${typeLabel(ITEMS[k])}${enhOf(k)?' · 강화 단계만큼 매입가가 오릅니다':''}</small></div></div><span class="row" style="gap:8px">${goldHTML(sellPrice(k))}<button class="btn btn-sm" data-act="mk-sell" data-id="${k}">판매</button></span></div>`,'panel list mk-sell')}</div>`:'<div class="panel"><p class="empty">팔 수 있는 아이템이 없습니다. 착용 중인 장비는 팔 수 없습니다.</p></div>'):''}
     ${tab==='admin'&&adm?mkAdmin():''}</div>`;
 }
 function mkAdmin(){
