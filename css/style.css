@@ -2615,3 +2615,6 @@ body::after{display:none!important}
   .exr-row:has(>#md-land):has(>.md-sec:nth-child(4)){grid-template-columns:repeat(3,minmax(0,1fr))}
   .exr-row:has(>.md-sec:nth-child(3))>#md-land{grid-column:1/-1}
 }
+/* 월드맵 확대·축소·원래 크기 버튼: 오른쪽 아래 → 왼쪽, 범례(탐험 지역·던전·워프 게이트) 아래 */
+.wm-zoom{right:auto;bottom:auto;left:3%;top:calc(2.6% + 162px)}
+@media (max-width:760px){.wm-zoom{left:3%;top:calc(2.6% + 40px)}}
