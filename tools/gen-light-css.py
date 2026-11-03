@@ -235,6 +235,8 @@ def main():
 {SCOPE}{{color-scheme:light}}
 {SCOPE} body{{background:#ebeef4!important;color:#2e3546}}
 {SCOPE} body::before{{background:#ebeef4}}
+/* 선택된 퀘스트 줄: 라이트 모드에서는 옅게(프론트) */
+{SCOPE} .list .li.clickable[aria-current="true"],{SCOPE} .li.clickable[aria-current="true"]{{background:#eef2fa}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')
