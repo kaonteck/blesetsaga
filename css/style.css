@@ -2716,3 +2716,8 @@ body::after{display:none!important}
 .li.pt-real .chip.ok{background:var(--ok);color:var(--slab);border-color:transparent;font-weight:600;padding:0 7px;vertical-align:1px}
 .rcard.rc-real{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
 .rc-real-b{position:absolute;top:8px;left:8px;font-size:10.5px;font-weight:600;line-height:1.6;padding:0 7px;border-radius:999px;background:var(--ok);color:var(--slab)}
+/* 폰: 파티 레이드 목록 카드의 탱커·딜러·힐러 칩은 지역·LV·인원 아래 줄로 */
+@media (max-width:760px){
+  .mcard-h .mh-main>.row::after{content:"";flex-basis:100%;order:1;height:0}
+  .mcard-h .mh-main>.row>.chip.tank,.mcard-h .mh-main>.row>.chip.dps,.mcard-h .mh-main>.row>.chip.heal{order:2}
+}
