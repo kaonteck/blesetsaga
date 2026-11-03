@@ -1345,6 +1345,12 @@ html[data-theme="light"] .dr-stats small{color:var(--muted)}
 html[data-theme="light"] .dr-stats b{color:var(--text)}
 html[data-theme="light"] .flog-h{background:none;border:0;color:var(--muted)}
 html[data-theme="light"] .flog .flog-l{border:0;background:none}
+html[data-theme="light"] .cntrow:not(.ex-cnt .cntrow){color:var(--muted)}
+html[data-theme="light"] .cntrow:not(.ex-cnt .cntrow)>.cnt{border:0;background:none}
+html[data-theme="light"] .cntrow:not(.ex-cnt .cntrow)>.cnt+.cnt::before{color:var(--faint)}
+html[data-theme="light"] .cntrow:not(.ex-cnt .cntrow)>.cnt small{border:0;color:var(--muted)}
+html[data-theme="light"] .cntrow:not(.ex-cnt .cntrow)>.cnt b{color:var(--gold-hi)}
+html[data-theme="light"] .cntrow:not(.ex-cnt .cntrow)>.cnt em{color:var(--faint)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
