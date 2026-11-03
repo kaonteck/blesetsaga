@@ -1,3 +1,15 @@
+/* 본문·작은 글씨 글꼴: Pretendard (세리프 제목은 고운바탕 그대로) */
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2') format('woff2');font-weight:100;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraLight.woff2') format('woff2');font-weight:200;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Light.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Black.woff2') format('woff2');font-weight:900;font-display:swap}
+@font-face{font-family:'PretendardVariable';src:url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611030106@font-variable-694/variable-694/PretendardVariable.woff2') format('woff2');font-weight:45 930;font-display:swap}
+/* 가변: font-family:'PretendardVariable'; font-variation-settings:"wght" 400; */
 /* Layout: sticky command bar over a three-column lobby; flat midnight slabs carry text, fog and particles live only in the banner */
 :root{
   color-scheme:dark;
@@ -11,8 +23,8 @@
   --tank:#6fa8f0; --dps:#ec6f6f; --heal:#5fcf8c;
   --f-display:'Gowun Batang',Georgia,serif;
   --f-logo:'Gowun Batang',Georgia,serif;
-  --f-body:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
-  --f-mono:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --f-body:'Pretendard',system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --f-mono:'Pretendard',system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   --r:4px; --mag:#5cc8d8; --coin-dk:#6e5520; --luck:#b9a8e6; --enh:#b88cff;
 }
 html,body{height:auto;min-height:100%}
@@ -1396,7 +1408,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{bord
 .dock-main>.page{padding-block:0}
 @media (max-width:980px){.dock-grid{grid-template-columns:1fr}.dock-side{order:2}}
 
-:root{--f-sys:system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+:root{--f-sys:'Pretendard',system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif}
 .me-quests,.me-quests *,.exlog-p,.exlog-p *{font-family:var(--f-sys)!important;letter-spacing:0}
 .wm-dd{position:absolute;right:3%;top:3%;z-index:4}
 .wm-dd>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:12.5px;color:#edf3f8;background:rgba(27,27,27,.82);border:1px solid rgba(237,243,248,.45);border-radius:3px;user-select:none}

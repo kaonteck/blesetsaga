@@ -245,6 +245,8 @@
   - 참고: 아주 흐린 글자(`--faint`) 대비 2.5~3.2는 원래부터 낮음(작은 글씨 권장 4.5).
 - (메인) 2026-11-04 완료(`04-ui.js` vMarket·`style.css` — 프론트 참고): 거래소 탭을 알약 버튼(`.mk-tabs`/`.mk-pill`: 구매·판매 왼쪽, 등록 관리 오른쪽 `.mk-tabs-r`). 구매·판매 목록을 종류별 접는 단락(`mkSections`, 소모품·장비·재료·장식품, `S.sel.mkFold['buy:equip']` 등, 액션 `mk-fold`, 기본 펼침). 분류는 인벤토리와 같음(낚싯대 = 소모품).
 
+- (메인) 2026-11-04 완료(`style.css` 맨 위·`index.html` — 프론트 참고): 유저 요청으로 세리프 외 글꼴을 **Pretendard**로(`--f-body`·`--f-mono`·`--f-sys` 맨 앞에 'Pretendard', 시스템 글꼴은 뒤로 남김). `@font-face`는 유저가 준 jsDelivr 주소(100~900 + PretendardVariable) 그대로 `style.css` 맨 위. Google Fonts 링크에서 IBM Plex Sans KR 삭제(Plex Mono는 남음). **체크 요청:** 실제 브라우저에서 Pretendard가 받아지는지(이 작업 환경은 jsDelivr 접속 불가라 확인 못 함).
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.
