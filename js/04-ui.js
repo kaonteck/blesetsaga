@@ -120,6 +120,14 @@ function render(){
   afterRender();
   renderPop();
 }
+/* 메인 화면(데스크톱): 오른쪽 채팅 아래 끝을 가운데 '모집 중인 파티' 아래 끝에 맞춤 */
+function fitSideChat(){const ch=$('.tri-r .chat-main');if(!ch)return;ch.style.height='';ch.style.flex='';const last=$('.tri-c .main-c > :last-child');if(last)last.style.minHeight='';
+  if(S.route!=='main'||innerWidth<=980||!last)return;
+  const top=ch.getBoundingClientRect().top,lb=last.getBoundingClientRect();
+  /* 둘의 아래 끝을 같게: 모집 패널이 더 짧으면 채팅 최소 높이(300px)까지 모집 패널을 늘림 */
+  const target=Math.max(lb.bottom,top+300);ch.style.height=Math.round(target-top)+'px';ch.style.flex='none';
+  if(target>lb.bottom+1)last.style.minHeight=Math.round(target-lb.top)+'px';}
+addEventListener('resize',()=>{try{fitSideChat();}catch(e){}});
 function fitExlog(){
   const p=$('.exlog-p'),line=$('.dock-side .me-quests');if(!p)return;
   if(!line||innerWidth<=980){p.style.height='';return;}
@@ -198,7 +206,7 @@ document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').
 function afterRender(){
   syncChatFab();initMapZoom();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
-  fitExlog();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
+  fitExlog();fitSideChat();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
 }
 
@@ -237,7 +245,8 @@ function sideCard(){
     <div class="sc-por">${portraitHTML(false)}</div>
     <div class="sc-id">${titleChip()}
       <h2 class="sc-name"><button class="me-link" data-act="nav" data-route="character" title="캐릭터 페이지로">${esc(me.name)}</button></h2>
-      <div class="sc-lv"><span class="lv num">LV ${me.level}</span>${roleChip(me.job)}${profChips()}${canAdv?'<button class="chip warn" data-act="nav" data-route="character" style="cursor:pointer;background:none">전직 가능</button>':''}</div></div>
+      <div class="sc-lvl num">LV ${me.level}</div>
+      <div class="sc-lv">${roleChip(me.job)}${profChips()}${canAdv?'<button class="chip warn" data-act="nav" data-route="character" style="cursor:pointer;background:none">전직 가능</button>':''}</div></div>
     <div class="sc-memo">${memoHTML()}</div>
     <div class="sc-gauge xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`${me.exp} / ${need}`}"><div class="sc-gh"><span class="sc-gl">경험치</span><span class="num">${cap?'MAX':`${me.exp.toLocaleString('ko-KR')}/${need.toLocaleString('ko-KR')}`}</span></div><div class="bar xp"><i style="width:${xp}%"></i></div></div>
     <div class="sc-st"><div class="sc-sh">STATUS</div>
