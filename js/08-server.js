@@ -89,7 +89,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);
-  pfSync();mlStart();ltStart();chStart();fdStart();
+  pfSync();mlStart();ltStart();chStart();fdStart();iqStart();fbStart();
 }
 
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
@@ -687,4 +687,88 @@ if(ONLINE){
     if(error){toast('글을 지우지 못했습니다. 잠시 후 다시 시도해 주세요.','bad');return;}
     FD.posts=FD.posts.filter(p=>p.id!==d.id);FD.sig='';fdRedraw();toast('글을 삭제했습니다.');fdFetch();
   };
+}
+
+/* ───────── 1:1 문의 (inquiries) ─────────
+   서버 모드: 환경설정 › 1:1 문의에서 보내면 서버로, 내 문의 목록·답변 상태도 서버에서 받는다(실시간).
+   운영자가 운영 페이지에서 답하면 서버가 답변 우편을 보낸다(014). 이 기기의 예전 문의(S.inquiries)는 세이브에 그대로. */
+const IQ={list:[],t:null,sending:false};
+async function iqFetch(){
+  if(!SB||!SB_UID||!S||!S.me)return;
+  const {data,error}=await SB.from('inquiries').select('id,cat,text,answer,answered_at,created_at').eq('author',SB_UID).order('created_at',{ascending:false}).limit(30);
+  if(error||!data)return;
+  const list=data.map(r=>({id:'srv:'+r.id,by:S.me.name,cat:r.cat,text:r.text,ts:Date.parse(r.created_at),answer:r.answer||null,answeredAt:r.answered_at?Date.parse(r.answered_at):null}));
+  if(JSON.stringify(list)===JSON.stringify(IQ.list))return;
+  IQ.list=list;try{if(S.sel&&S.sel.pop)renderPop();}catch(e){}
+}
+function iqStart(){
+  iqFetch();
+  try{SB.channel('inq-live').on('postgres_changes',{event:'*',schema:'public',table:'inquiries',filter:`author=eq.${SB_UID}`},()=>{clearTimeout(IQ.t);IQ.t=setTimeout(iqFetch,500);}).subscribe();}catch(e){}
+}
+if(ONLINE){
+  const _askBody=askBody;
+  askBody=function(){if(!SB_UID)return _askBody();const keep=S.inquiries;S.inquiries=IQ.list;try{return _askBody();}finally{S.inquiries=keep;}};
+  window.addEventListener('submit',async e=>{
+    if(!SB_UID||!S||!S.me)return;const f=e.target&&e.target.closest&&e.target.closest('[data-form="ask"]');if(!f)return;
+    e.preventDefault();e.stopPropagation();if(IQ.sending)return;
+    const inp=$('#ask-text');const t=((inp&&inp.value)||'').trim();
+    if(t.length<5){toast('문의 내용을 5자 이상 적어 주세요.','warn');return;}
+    IQ.sending=true;const btn=f.querySelector('[type=submit]');if(btn)btn.disabled=true;
+    try{const {error}=await SB.from('inquiries').insert({cat:($('#ask-cat')||{}).value||'기타',text:t.slice(0,500)});if(error)throw error;
+      if(inp)inp.value='';await iqFetch();renderPop();toast('1:1 문의를 보냈습니다. 답변은 우편함으로도 전달됩니다.','good');}
+    catch(err){console.warn(err);toast(/row-level security|permission denied/i.test((err&&err.message)||'')?'이용이 제한된 계정이라 문의를 보낼 수 없습니다.':'문의를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.','bad');if(btn)btn.disabled=false;}
+    finally{IQ.sending=false;}
+  },true);
+}
+
+/* ───────── 주간 낚시 랭킹 (fish_catches · fish_weekly · fish_awards) ─────────
+   서버 모드: 이번 주 지역별 최고 기록을 서버에 남기고, 순위는 실제 블레서 기록으로(봇 없음).
+   지난 주 1위 정산(500골드 우편)은 서버 fish_settle()이 한 번만 한다 → 게임은 수상 기록을 보고 낚시왕 칭호를 붙인다.
+   이 기기의 정산(settleFish)은 서버 모드에서 쓰지 않는다. */
+const FB={rows:{},wk:'',busy:false};
+async function fbFetch(){
+  if(!SB||!SB_UID||!S||!S.me||FB.busy)return;FB.busy=true;
+  try{const wk=weekKey();const {data,error}=await SB.from('fish_weekly').select('land,user_id,name,species,size_cm,created_at').eq('week',wk).limit(1000);
+    if(error||!data)return;const rows={};data.forEach(r=>{(rows[r.land]=rows[r.land]||[]).push(r);});FB.rows=rows;FB.wk=wk;}
+  catch(e){}finally{FB.busy=false;}
+}
+// 이번 주 내 기록 중 서버에 아직 없는(또는 더 작은) 것을 올린다 — 서버 연결 전에 낚은 것 포함
+async function fbPushMine(){
+  if(!SB_UID||!S.me||S.me.fishBestWk!==weekKey())return;
+  const mine=S.me.fishBest||{};let sent=false;
+  for(const land in mine){if(!FISH_LANDS[land])continue;const b=mine[land];const srv=(FB.rows[land]||[]).find(r=>r.user_id===SB_UID);
+    if(srv&&+srv.size_cm>=b.size)continue;
+    const {error}=await SB.from('fish_catches').insert({land,species:(FISH_BY_ID[b.sp]||{}).name||String(b.sp),size_cm:b.size});if(!error)sent=true;}
+  if(sent)await fbFetch();
+}
+async function fbAwards(){
+  if(!SB||!SB_UID||!S||!S.me)return;
+  try{await SB.rpc('fish_settle');}catch(e){}
+  const {data}=await SB.from('fish_awards').select('week,land').eq('user_id',SB_UID);if(!data)return;
+  const me=S.me;me.fishAwSeen=me.fishAwSeen||[];let won=0;
+  data.forEach(a=>{const k=a.week+':'+a.land;if(me.fishAwSeen.includes(k))return;me.fishAwSeen.push(k);
+    me.fishKingLand=me.fishKingLand||{};me.fishKingLand[a.land]=(me.fishKingLand[a.land]||0)+1;won++;});
+  if(won){me.fishKing=(me.fishKing||0)+won;save();setTimeout(checkTitles,0);}
+}
+async function fbStart(){await fbFetch();await fbPushMine();fbAwards();setInterval(()=>{fbAwards();},30*60*1000);}
+if(ONLINE){
+  const _fishBoard=fishBoard;
+  fishBoard=function(land,wkArg){
+    if(!SB_UID)return _fishBoard(land,wkArg);
+    const wk=wkArg||weekKey();if(wk!==FB.wk)return [];
+    const rows=(FB.rows[land]||[]).map(r=>({name:r.user_id===SB_UID?S.me.name:(r.name||'블레서'),sp:r.species,size:+r.size_cm,me:r.user_id===SB_UID,at:Date.parse(r.created_at)}));
+    const mine=S.me.fishBestWk===wk&&(S.me.fishBest||{})[land];const my=rows.find(x=>x.me);
+    if(mine&&(!my||mine.size>my.size)){const x={name:S.me.name,sp:FISH_BY_ID[mine.sp]?FISH_BY_ID[mine.sp].name:mine.sp,size:mine.size,me:true,at:Date.now()};if(my)Object.assign(my,x);else rows.push(x);}
+    return rows.sort((a,b)=>(b.size-a.size)||(a.at-b.at));
+  };
+  settleFish=function(){if(!SB_UID)return;};   // 서버가 정산
+  const _note=noteFishBest;
+  noteFishBest=function(c){
+    if(!SB_UID)return _note(c);
+    const wk=weekKey();const prev=S.me.fishBestWk===wk&&(S.me.fishBest||{})[c.land];
+    _note(c);
+    if(FISH_LANDS[c.land]&&(!prev||c.size>prev.size))SB.from('fish_catches').insert({land:c.land,species:(FISH_BY_ID[c.sp]||{}).name||String(c.sp),size_cm:c.size}).then(()=>fbFetch(),()=>{});
+  };
+  const _rank=ACTS['fish-rank'];
+  ACTS['fish-rank']=async(d,el,e)=>{if(!SB_UID)return _rank(d,el,e);await fbFetch();_rank(d,el,e);};
 }

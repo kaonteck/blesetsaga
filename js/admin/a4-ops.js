@@ -118,7 +118,7 @@ VIEWS.inbox=async(el)=>{
   if(!iq||!rp){el.innerHTML='<div class="msg bad">불러오지 못했습니다.</div>';return;}
   const iqs=[...iq.filter(x=>!x.answer),...iq.filter(x=>x.answer)],rps=[...rp.filter(x=>!x.done),...rp.filter(x=>x.done)];
   el.innerHTML=`<div class="two">
-    <div class="panel"><h3>1:1 문의 <span class="faint" style="font-weight:400">답변 대기 ${iq.filter(x=>!x.answer).length}</span></h3>
+    <div class="panel"><h3>1:1 문의 <span class="faint" style="font-weight:400">답변 대기 ${iq.filter(x=>!x.answer).length} · 답하면 유저 우편함으로도 전달</span></h3>
       ${iqs.map(x=>`<div class="hi" style="padding:10px 0"><div class="row" style="justify-content:space-between"><span><b>${who(x.author)}</b> <span class="chip">${esc(x.cat)}</span></span><span class="faint small">${fmtTime(x.created_at)}</span></div>
         <div style="margin:4px 0;white-space:pre-wrap">${esc(x.text)}</div>
         ${x.answer?`<div class="msg ok small" style="margin-top:6px">답변 · ${who(x.answered_by)} · ${fmtTime(x.answered_at)}<br>${esc(x.answer)}</div>`:
@@ -131,7 +131,7 @@ VIEWS.inbox=async(el)=>{
           ${x.ref_id&&['chat','feed','comment'].includes(x.kind)?`<button class="btn btn-sm" data-hide="${x.kind}:${esc(x.ref_id)}">${x.kind==='chat'?'메시지':'글'} 가리기</button>`:''}
           ${x.target?`<button class="btn btn-sm btn-d" data-ban="${x.target}">정지</button>`:''}</div>`}</div>`).join('')||'<p class="empty">신고가 없습니다.</p>'}</div></div>`;
   $$('[data-ans]').forEach(b=>b.onclick=async()=>{const v=$(`[data-ans-in="${b.dataset.ans}"]`).value.trim();if(!v)return toast('답변을 적어 주세요.','bad');
-    if(await q(A.sb.from('inquiries').update({answer:v}).eq('id',b.dataset.ans),'답변했습니다.')){refreshBadges();go('inbox');}});
+    if(await q(A.sb.from('inquiries').update({answer:v}).eq('id',b.dataset.ans),'답변했습니다. 유저에게 답변 우편이 갑니다.')){refreshBadges();go('inbox');}});
   $$('[data-done]').forEach(b=>b.onclick=async()=>{if(await q(A.sb.from('reports').update({done:true}).eq('id',b.dataset.done),'처리했습니다.')){refreshBadges();go('inbox');}});
   $$('[data-hide]').forEach(b=>b.onclick=async()=>{const [kind,ref]=b.dataset.hide.split(/:(.*)/);
     const tbl={chat:'chat_messages',feed:'feed_posts',comment:'feed_comments'}[kind];
@@ -267,4 +267,29 @@ VIEWS.feed=async(el)=>{
   $$('[data-fdel]').forEach(b=>b.onclick=async()=>{if(!await ask(post?'글 삭제':'댓글 삭제',post?'글과 그 글의 댓글·좋아요가 모두 지워지고 되돌릴 수 없습니다. 기록으로 남기려면 가리기를 쓰세요.':'댓글(과 답글)이 지워지고 되돌릴 수 없습니다.','삭제',true))return;
     if(await q(A.sb.from(T).delete().eq('id',b.dataset.fdel),'삭제했습니다.'))go('feed');});
   $$('[data-ban]').forEach(b=>b.onclick=()=>banDlg(b.dataset.ban));
+};
+
+
+/* ── 낚시 랭킹 (이번 주 지역별 순위 · 지난 주 1위 정산 기록) ── */
+const FISH_LAND={meadow:'초원의 땅 · 에우도라',sea:'바다의 땅 · 벤테',frost:'혹한의 땅 · 칼리로에'};
+function kstMonday(t){const d=new Date((t||Date.now())+9*3600e3);const back=(d.getUTCDay()+6)%7;return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back)).toISOString().slice(0,10);}
+VIEWS.fish=async(el)=>{
+  const wk=kstMonday();
+  const [rows,aw]=await Promise.all([
+    q(A.sb.from('fish_weekly').select('land,user_id,name,species,size_cm,created_at').eq('week',wk).limit(1000)),
+    q(A.sb.from('fish_awards').select('week,land,user_id,species,size_cm,created_at').order('week',{ascending:false}).limit(60))]);
+  if(!rows||!aw){el.innerHTML='<div class="msg bad">낚시 기록을 불러오지 못했습니다.</div>';return;}
+  const board=l=>rows.filter(r=>r.land===l).sort((a,b)=>(b.size_cm-a.size_cm)||a.created_at.localeCompare(b.created_at));
+  el.innerHTML=`<div class="two">
+    <div class="panel" style="grid-column:1/-1"><h3>이번 주 순위 <span class="faint" style="font-weight:400">${wk} 주간 · 월요일 00:00 초기화</span>
+      <span class="row" style="gap:6px"><button class="btn btn-sm" id="fs-settle">지난 주 정산하기</button><button class="btn btn-sm" id="fs-reload">새로고침</button></span></h3>
+      <div class="two">${Object.entries(FISH_LAND).map(([l,n])=>{const B=board(l);return `<div><b>${esc(n)}</b> <span class="faint small">참가 ${B.length}명</span>
+        <table class="tbl" style="margin-top:6px"><tbody>${B.slice(0,10).map((r,i)=>`<tr><td class="num">${i+1}</td><td>${who(r.user_id)}</td><td class="small">${esc(r.species)}</td><td class="num">${r.size_cm}cm</td></tr>`).join('')||'<tr><td class="empty">기록 없음</td></tr>'}</tbody></table></div>`;}).join('')}</div>
+      <p class="faint small" style="margin:10px 0 0">지난 주 1위 정산(500골드 우편 + 낚시왕 칭호)은 게임에 누가 접속하면 자동으로 한 번 됩니다. 바로 하려면 '지난 주 정산하기'.</p></div>
+    <div class="panel" style="grid-column:1/-1"><h3>지난 주 1위 기록</h3>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>주간</th><th>지역</th><th>1위</th><th>기록</th><th>정산 시각</th></tr></thead><tbody>
+      ${aw.map(a=>`<tr><td class="small">${esc(a.week)}</td><td class="small">${esc(FISH_LAND[a.land]||a.land)}</td><td>${who(a.user_id)}</td><td class="small">${esc(a.species)} ${a.size_cm}cm</td><td class="small faint">${fmtTime(a.created_at)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">아직 정산된 주가 없습니다.</td></tr>'}
+      </tbody></table></div></div></div>`;
+  $('#fs-reload').onclick=()=>go('fish');
+  $('#fs-settle').onclick=async()=>{const n=await q(A.sb.rpc('fish_settle'));if(n!=null){toast(n?`${n}곳 정산했습니다(1위에게 우편 발송).`:'정산할 지난 주 기록이 없습니다.','good');go('fish');}};
 };
