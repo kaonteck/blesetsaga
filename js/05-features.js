@@ -589,10 +589,10 @@ function drunEvent(){
   const R=S.drun;const boss=monster(R.mid);const L=boss.level;const k=R.phases[R.idx];let text='';
   if(k==='chest'){const g=Math.round(20+L*3+Math.random()*L*2);const it={};let line=`${g}골드`;
     if(Math.random()<0.4&&(boss.loot||[]).length){const x=pickLoot(boss);it[x]=1;line+=` · ${ITEMS[x]?ITEMS[x].name:x}`;}else if(Math.random()<0.5){it.potion=1;line+=' · 회복약';}
-    grant({exp:0,gold:g,items:it},'dungeon',{label:boss.region+' 보물상자',region:boss.region});text=`낡은 보물상자를 열었다 · ${line}`;}
+    grant({exp:0,gold:g,items:it},'dungeon',{label:boss.region+' 보물상자',region:boss.region,noRec:1});text=`낡은 보물상자를 열었다 · ${line}`;}
   else if(k==='trap'){const dmg=0.15+Math.random()*0.15;const before=R.hp;R.hp=Math.max(0.1,R.hp-dmg);hpSet(R.hp);text=`함정이 발동했다! HP ${Math.round((before-R.hp)*100)}% 감소`;}
   else {const heal=Math.random()<0.5;if(heal){R.hp=Math.min(1,R.hp+0.1);text='고요한 방이다. 잠시 숨을 고르며 HP 10%를 회복했다.';}else text='아무 일도 일어나지 않았다.';}
-  R.log.push(`${R.idx+1}페이즈 · ${DRUN_KIND[k][0]} · ${text}`);R.last=text;R.idx++;save();render();
+  R.log.push(`${R.idx+1}페이즈 · ${DRUN_KIND[k][0]} · ${text}`);rec('dungeon',`${boss.region} ${R.idx+1}페이즈 · ${text}`);R.last=text;R.idx++;save();render();
 }
 function vDrun(){
   const R=S.drun;const boss=monster(R.mid);const k=R.phases[R.idx];const I=MAP_INFO[R.mid]||{};
@@ -607,7 +607,7 @@ function vDrun(){
   return `<div class="wrap page"><div class="page-head"><div><h2>레이드<small class="en">Raid</small></h2></div></div>
     <div class="panel dr"><div class="dr-head"><div><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${esc(I.label||'인스턴스 던전')}</div><h3>${esc(boss.region)}</h3></div>${R.party&&R.party.length>1?`<div class="dr-party">${R.party.map(x=>`<span class="chip">${esc(x.name)}${x.isMe?' (나)':''}</span>`).join('')}</div>`:''}<div class="dr-hp"><span class="faint">HP</span><div class="bar"><i style="width:${Math.round(R.hp*100)}%"></i></div><span class="num">${Math.round(R.hp*100)}%</span></div></div>
       <div class="dr-track">${track}</div>${body}
-      ${R.log.length?`<details class="dr-log"><summary>탐사 기록 ${R.log.length}</summary>${R.log.map(x=>`<p>${esc(x)}</p>`).join('')}</details>`:''}</div></div>`;
+      </div></div>`;
 }
 
 /* ───────── 낚시 · 어망 · 수족관 ───────── */
@@ -657,7 +657,7 @@ function castRoll(land,tier){
   if(land==='frost')miss.push('얼음 구멍이 다시 얼어붙어 버렸다.','손이 곱아서 줄을 놓쳤다.');if(land==='sea')miss.push('갈매기가 미끼를 채 갔다.');
   return {kind:'miss',text:pick(miss)};
 }
-function fishLog(land,text,kind){const me=S.me;me.fishLog=[{ts:now(),land,text,kind},...(me.fishLog||[])].slice(0,20);}
+function fishLog(land,text,kind){const me=S.me;me.fishLog=[{ts:now(),land,text,kind},...(me.fishLog||[])].slice(0,20);rec('fish',`${LANDS[land]||''} · ${text}`);}
 function castOnce(land,tier){
   const t=tier||rodTier();
   const pool=FISH[land].filter(f=>f[5]<=t);const tot=pool.reduce((a,f)=>a+f[4],0);let r=Math.random()*tot,f=pool[0];for(const x of pool){r-=x[4];if(r<=0){f=x;break;}}
@@ -676,7 +676,7 @@ function fishCard(land){
   return `<section class="md-sec panel fishc" id="md-fishing"><div class="md-lbl fish-lbl"><span><i class="lbl-d" aria-hidden="true">◆</i>낚시 · ${FISH_LANDS[land]}</span><button class="fr-btn" data-act="fish-rank" data-land="${land}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2h7v3.8a3.5 3.5 0 0 1-7 0z" fill="currentColor"/><path d="M4.5 3.4H2.4v1.2a2.4 2.4 0 0 0 2.4 2.4M11.5 3.4h2.1v1.2a2.4 2.4 0 0 1-2.4 2.4" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7.2 9.2h1.6v2.3H7.2z" fill="currentColor"/><path d="M5 13.8h6v-1.1a1.2 1.2 0 0 0-1.2-1.2H6.2A1.2 1.2 0 0 0 5 12.7z" fill="currentColor"/></svg>랭킹</button></div>
     <div class="fish-top">${R.length?`<label class="fish-rod"><span class="faint">낚싯대</span><select data-act-change="rodsel" ${af?'disabled':''}>${R.map(r=>`<option value="${r.uid}" ${sr&&sr.uid===r.uid?'selected':''}>${esc(rodLabel(r))}</option>`).join('')}</select></label>${sr?`<span class="rod-dura"><span class="dura-bar ${sr.dura<=sr.max*0.2?'low':''}">${Array.from({length:10},(_,i)=>`<i class="${i<Math.ceil(sr.dura/sr.max*10)?'on':''}"></i>`).join('')}</span><span class="num">${sr.dura}/${sr.max}</span></span>`:''}`:'<span class="reason">낚싯대가 없습니다 · 거래소에서 사거나 공방에서 제작하세요</span>'}</div>
     <p class="faint fish-sp">이곳의 물고기 · ${sp.map(f=>`<span class="${f[5]>t?'fsp-lock':''}" title="${f[5]}등급 낚싯대 이상">${f[1]}</span>`).join(' · ')}</p>
-    ${(()=>{const Lg=(S.me.fishLog||[]).filter(x=>x.land===land).slice(0,5);return `<div class="flog">${Lg.length?Lg.map((x,i)=>`<p class="fl-${x.kind} ${i===0&&now()-x.ts<8000?'fresh':''}"><span>${esc(x.text)}</span><small class="faint">${fmtWhen(x.ts)}</small></p>`).join(''):'<p class="faint">아직 낚시 기록이 없습니다. 낚싯대를 던져 보세요.</p>'}</div>`;})()}
+
     <button class="netbtn" data-act="net-list"><span class="net-l">어망 <b class="num">${N.length}/${NET_MAX}</b></span><span class="net-mini">${Array.from({length:NET_MAX},(_,i)=>N[i]?`<img class="px" src="${FISH_IMG}" alt="">`:'<i></i>').join('')}</span><span class="net-open">열기 ›</span></button>
     ${autoBox}${S.fishCast?(()=>{const F=S.fishCast;const dn=tt>=F.end;return `<div class="cj ${dn?'done':''}"><div class="cj-t"><span class="mp-ic">${dn?'':SPIN_IC}</span><b>${dn?'찌가 움직인다!':'찌를 지켜보는 중'} · ${esc(LANDS[F.land])}</b><span class="cj-left num" data-fc-left>${dn?'확인 가능':'남은 시간 '+fmtLong(F.end-tt)}</span></div><div class="bar"><i data-fc-p style="width:${Math.min(100,(tt-F.start)/(F.end-F.start)*100)}%"></i></div>${dn?`<div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="fish-reel">낚싯대 걷어 올리기</button></div>`:''}</div>`;})():''}
     <div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="fish-cast" data-land="${land}" ${!t||af||S.fishCast||N.length>=NET_MAX?'disabled':''}>${N.length>=NET_MAX?'어망이 가득 찼습니다':`낚싯대 던지기 · ${CAST_MIN}분`}</button><button class="btn btn-sm" data-act="af-open" data-land="${land}" ${!t||af||S.fishCast?'disabled':''}>자동 낚시</button></div></section>`;
@@ -1198,3 +1198,22 @@ function ngGear(){const L=S.me.level;const cur=GEAR_TIER.map((g,i)=>({g,T:i+1}))
 const LV_LEFT=n=>`${Math.max(0,n-S.me.level)}레벨 남음`;
 function nextGoalHTML(){if(!S||!S.me)return '';const rows=[ngStory(),ngHunt(),ngGear()].filter(Boolean);
   return `<div class="panel ng"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>다음 목표</div><div class="ng-list">${rows.map(r=>`<${r.act?'button':'div'} class="ng-row ${r.lock?'lock':''}" ${r.act||''}><span class="ng-t">${esc(r.t)}</span><b class="ng-v">${esc(r.v)}</b><small class="ng-s">${esc(r.s)}</small></${r.act?'button':'div'}>`).join('')}</div></div>`;}
+
+/* ───────── 기록 (오른쪽 고정 패널) : 모든 개별 기록을 한곳에, 카테고리로 구분 ───────── */
+const REC_CAT=[['dungeon','던전'],['quest','퀘스트'],['raid','레이드'],['market','거래소'],['mail','우편'],['explore','탐색'],['fish','낚시']];
+const REC_MAX=80;
+function rec(cat,text,got){if(!S||!S.me)return;const L=S.me.rec=S.me.rec||[];L.unshift({ts:now(),cat,text:String(text||''),got:got||''});if(L.length>REC_MAX)L.length=REC_MAX;setTimeout(refreshRec,0);}
+function ensureRec(){const me=S&&S.me;if(!me||me.recInit)return;me.recInit=1;const L=[];
+  (me.exLog||[]).forEach(e=>L.push({ts:e.ts,cat:'explore',text:`${e.region} · ${e.text}`,got:e.got||''}));
+  (me.fishLog||[]).forEach(e=>L.push({ts:e.ts,cat:'fish',text:`${LANDS[e.land]||''} · ${e.text}`,got:''}));
+  me.rec=L.sort((a,b)=>b.ts-a.ts).slice(0,REC_MAX);}
+function recPanel(){ensureRec();const f=S.sel.recCat||'all',open=S.sel.recOpen!==false;const L=(S.me.rec||[]).filter(x=>f==='all'||x.cat===f);const nm=k=>(REC_CAT.find(c=>c[0]===k)||[])[1]||'';
+  return `<div class="panel recp ${open?'':'folded'}" data-recp><div class="recp-h"><button class="cq-tog" data-act="rec-fold" aria-expanded="${open}">${hTitle('scroll','기록')}<span class="cq-n num">${(S.me.rec||[]).length}</span><svg class="cq-ar" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    ${open?`<div class="recp-cats" role="tablist">${[['all','전체'],...REC_CAT].map(([k,l])=>`<button role="tab" data-act="rec-cat" data-c="${k}" aria-selected="${f===k}">${l}</button>`).join('')}</div>
+    <div class="recp-list">${L.length?L.map(x=>`<div class="rec-r"><span class="rec-c rc-${x.cat}">${nm(x.cat)}</span><span class="rec-t">${esc(x.text)}${x.got?` <b>${esc(x.got)}</b>`:''}</span><small class="rec-w num">${fmtWhen(x.ts)}</small></div>`).join(''):'<p class="faint rec-empty">아직 기록이 없습니다.</p>'}</div>`:''}</div>`;}
+function refreshRec(){const el=$('[data-recp]');if(el&&el.outerHTML!==undefined){const sc=(el.querySelector('.recp-list')||{}).scrollTop||0;el.outerHTML=recPanel();const n=$('[data-recp] .recp-list');if(n&&sc)n.scrollTop=sc;}}
+/* 보상 지급 → 기록 (탐색·자동 사냥은 탐색 기록 문장으로 따로 남김) */
+function recFromGrant(reward,source,meta){if(meta&&meta.noRec)return;
+  let cat={quest:'quest',dungeon:'dungeon',mass:'raid',mail:'mail'}[source];
+  if(!cat&&meta&&meta.battleId&&S.battle&&S.battle.id===meta.battleId){const t=(S.battle.ctx||{}).type;cat=t==='field'?'explore':t==='quest'?'quest':(t==='drun'||t==='dungeon')?'dungeon':'raid';}
+  if(!cat)return;const g=gotText(reward);rec(cat,((meta&&meta.label)||'보상')+(meta&&meta.battleId?' 처치':''),g?g:'');}

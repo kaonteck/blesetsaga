@@ -2482,3 +2482,21 @@ body::after{display:none!important}
 /* 패널·상자 모서리 12px(유저 요청) */
 .panel,.skybar,.skilllist,.ticker,.rcard,.ng-row,.pop,.modal,.rmenu{border-radius:12px}
 .rc-art{border-radius:12px 12px 0 0}
+
+/* 기록 패널(오른쪽 맨 위): 카테고리 탭 · 6줄 넘으면 스크롤 · 접기 */
+.panel.recp{padding:12px 14px}
+.recp-h .cq-tog{display:flex;align-items:center;gap:6px;width:100%;background:none;border:0;padding:0;color:var(--silver);font:inherit;cursor:pointer;text-align:left}
+.recp-h .cq-tog .htitle{font-family:var(--f-display);font-size:13px;font-weight:700}
+.recp-h .cq-ar{width:10px;height:10px;margin-left:auto;color:var(--muted);transition:transform .15s}
+.recp.folded .cq-ar{transform:rotate(-90deg)}
+.recp-cats{display:flex;flex-wrap:wrap;gap:4px;margin:10px 0 8px}
+.recp-cats button{padding:2px 8px;border:1px solid var(--rule-2);border-radius:999px;background:none;color:var(--muted);font:inherit;font-size:11.5px;line-height:18px;cursor:pointer}
+.recp-cats button[aria-selected="true"]{border-color:var(--gold);color:var(--silver);background:rgba(209,224,238,.07)}
+.recp-list{display:flex;flex-direction:column;max-height:calc(6 * 38px);overflow-y:auto;scrollbar-width:thin}
+.rec-r{flex:none;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:baseline;gap:8px;min-height:38px;padding:6px 0;border-top:1px solid var(--rule);font-size:12.5px;line-height:1.45;box-sizing:border-box}
+.rec-r:first-child{border-top:0}
+.rec-c{font-size:10.5px;color:var(--gold-hi);border:1px solid var(--rule-2);border-radius:3px;padding:0 5px;line-height:16px;white-space:nowrap}
+.rec-t{color:var(--text);overflow-wrap:anywhere}
+.rec-t b{color:var(--xp);font-weight:500}
+.rec-w{color:var(--faint);font-size:11px;white-space:nowrap}
+.rec-empty{font-size:12.5px;padding:4px 0}

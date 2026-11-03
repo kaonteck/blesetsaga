@@ -275,7 +275,6 @@ function spotsHTML(cur){
 }
 function vExploreHome(d,log,spots){
   return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>
-    <div class="panel exlog-p"><h3>${hTitle('scroll','탐색 기록')}</h3><div class="exlog">${log.length?log.map((e,i)=>`<div class="exe ${i===0&&now()-e.ts<8000?'fresh':''}"><b>${esc(e.region)}</b><p>${esc(e.text)}</p>${e.got?`<span class="exgot">${esc(e.got)}</span>`:''}<small class="faint">${fmtWhen(e.ts)}</small></div>`).join(''):'<p class="empty">아직 탐색 기록이 없습니다. 지도에서 지역을 골라 탐색해 보세요.</p>'}</div></div>
     <div class="stack" style="gap:12px">
       <div class="ex-cnt">${cntRow([['오늘 탐색',`${d.explore} / ${EXPLORE_MAX}`],['초기화','05:00']])}</div>
       <div class="wmap"><img src="${MAP_IMG}" alt="라니아케아 대륙 지도" draggable="false"><div class="wm-head"><b>WORLD MAP</b><small>지역 이름이나 핀을 눌러 보세요</small>
@@ -752,7 +751,7 @@ function autoClaim(stop){
   for(let i=0;i<k&&ms.length;i++){const m=ms[i%ms.length];R.exp+=m.exp*AUTO_EFF;R.gold+=m.gold*AUTO_EFF;}
   R.exp=Math.round(R.exp);R.gold=Math.round(R.gold);S.auto=null;
   const label=`${a.region} 자동 사냥`;const ups=grant(R,'field',{label,region:a.region});
-  const got=gotText(R);S.me.exLog=[{ts:t,region:label,land:a.land,text:`${stop?'자동 사냥을 중단했다. ':''}${durLabel(a.min)} 동안 몬스터 ${k}마리를 처치했다.`,got},...(S.me.exLog||[])].slice(0,12);
+  const got=gotText(R);S.me.exLog=[{ts:t,region:label,land:a.land,text:`${stop?'자동 사냥을 중단했다. ':''}${durLabel(a.min)} 동안 몬스터 ${k}마리를 처치했다.`,got},...(S.me.exLog||[])].slice(0,12);rec('explore',`${label} · 자동 사냥 ${durLabel(a.min)} · ${k}마리 처치`,got);
   save();render();toast(`${label} 보상 · ${k}마리${got?' · '+got:''}${ups?` · 레벨 업!`:''}`,'good');
 }
 function autoGain(a,t){const e=autoEst(a.mons,0);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const k=autoKills(a,t);if(!ms.length)return {exp:0,gold:0};let ex=0,gd=0;for(let i=0;i<k;i++){const m=ms[i%ms.length];ex+=m.exp*AUTO_EFF;gd+=m.gold*AUTO_EFF;}return {exp:Math.round(ex),gold:Math.round(gd)};}
@@ -787,6 +786,7 @@ function grant(reward,source,meta){
   S.rewardLog.unshift({ts:now(),source,...meta,exp:reward.exp||0,gold:reward.gold||0,items:{...(reward.items||{})}});
   S.rewardLog=S.rewardLog.slice(0,200);
   if(ups)toast(`레벨 업! LV${S.me.level}`,'good');
+  try{recFromGrant(reward,source,meta);}catch(e){}
   if(!(meta&&meta.battleId))wearNowToast(reward.items);
   return ups;
 }

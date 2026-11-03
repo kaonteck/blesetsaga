@@ -276,7 +276,7 @@ function quickPickDlg(i){const Q=quickSlots();
     <div class="qb-grid">${QB_PAGES.map(([r,l])=>`<button class="qb-opt ${Q[i]===r?'on':''}" data-act="qb-set" data-i="${i}" data-route="${r}">${QB_ICON[r]}<span>${l}</span></button>`).join('')}</div>
     ${Q[i]?`<div class="row" style="justify-content:flex-end"><button class="btn btn-sm btn-ghost" data-act="qb-set" data-i="${i}" data-route="">이 칸 비우기</button></div>`:''}</div>`;}
 function rightCol(){
-  return `${quickBar()}<div class="panel prog-p"><h3>${hTitle('spark','진행 중인 목록')}</h3><div class="me-prog-wrap">${progInner()}</div></div>
+  return `${recPanel()}<div class="panel prog-p"><h3>${hTitle('spark','진행 중인 목록')}</h3><div class="me-prog-wrap">${progInner()}</div></div>
     <div class="panel me-qp">${weeklyPanel()}</div>${chatPanel()}`;}
 const SPIN_IC='<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 1 0 19" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2.6 1.6" stroke-dashoffset="-29.8" pathLength="59.7" style="clip-path:inset(0 50% 0 0)"/></svg>';
 function progItems(){
@@ -1312,7 +1312,7 @@ function finishBattle(b){
   }
   if(me.direct>=1){bump('damage',me.dealt||0);bump('crits',me.crits||0);bump('healing',me.healed||0);bump('revives',me.revives||0);
     if(b.over==='win'){bump('raidsWon');const k=S.stats.kills=S.stats.kills||{};k[b.monsterId]=(k[b.monsterId]||0)+1;if(b.eventBonus)bump('bossWins');if(me.dead)bump('fallenWins');}else bump('raidsLost');}
-  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);}}
+  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);rec({drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type]||'raid',`${b.mon.name}의 마지막 말 · “${H.last}”`);}}
   b.result=r;
   if(ctx.drun)drunAfter(b,me);
   sysParty(b.over==='win'?'승리! 보상은 각자 지급됩니다.':'전투가 끝났습니다.');
@@ -1517,7 +1517,7 @@ function mailList(tab,sort){
 function fmtWhen(t){const d=now()-t;if(d<60000)return '방금';if(d<3600000)return Math.floor(d/60000)+'분 전';if(d<86400000)return Math.floor(d/3600000)+'시간 전';return new Date(t+9*3600e3).toISOString().slice(5,10).replace('-','.');}
 function availItem(k){if(isQuestItem(k))return 0;const n=S.me.inv[k]||0;return n-(Object.values(S.me.equip||{}).includes(k)?1:0);}
 function deliverMail(from,text,items,extra){
-  S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
+  S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});try{rec('mail',`${from}님에게서 ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착`);}catch(e){}bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
   if(S.mail.length>120){const drop=S.mail.filter(m=>!m.archived).sort((a,b)=>a.ts-b.ts)[0];S.mail=S.mail.filter(m=>m!==drop);}
   notify(`${from}님에게서 ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착했습니다.`);renderTop();renderPop();save();
 }
