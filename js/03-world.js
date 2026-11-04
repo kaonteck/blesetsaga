@@ -548,7 +548,7 @@ function pFxList(b,p){const st=[];if(p.poison)st.push([`${p.poison.name} ${p.poi
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>
-    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span>${(fx=>fx.length?`<span class="gl-fx">${fx.map(([x,t])=>`<span class="hud-fx st-${t}">${esc(x)}</span>`).join('')}</span>`:'')(pFxList(b,p))}</div>`).join('')
+    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span>${(fx=>`<span class="gl-fx" title="${esc(fx.map(x=>x[0]).join(' · '))}">${fx.map(([x,t])=>`<span class="hud-fx st-${t}">${esc(x.replace(/ \d+(턴)?$/,''))}</span>`).join('')}</span>`)(pFxList(b,p))}</div>`).join('')
       :(()=>{const dead=b.players.filter(p=>p.dead);const canRev=!me.dead&&!me.confirmed&&CLASSES[me.job].skills.includes('sinsayer');
         return dead.length?dead.map(p=>{const far=me.pos!=null&&p.pos!=null&&cheb(me.pos,p.pos)>HEAL_R;return `<div class="gl dead-row"><span class="tok ${p.role} dead">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="faint" style="font-size:11px">${className(p.job)} · LV${p.level}</span>
           ${canRev?`<button class="btn btn-sm gl-rev" data-act="g-revive" data-id="${esc(p.id)}" ${far?'disabled':''} title="${far?'회복 사거리(5×5) 밖':'스킬 탭에서 신세이어 대상으로 지정'}">${far?'사거리 밖':'부활 지정'}</button>`:''}</div>`;}).join('')+`<p class="faint" style="font-size:11.5px;margin-top:6px">${canRev?'부활 지정을 누르면 전투 › 스킬에 신세이어가 선택됩니다. 자신의 차례에 행동 확정을 눌러야 사용됩니다.':'신세이어를 가진 힐러만 부활시킬 수 있습니다.'}</p>`:'<p class="empty" style="padding:8px 2px">쓰러진 참가자가 없습니다.</p>';})()}</div>`;}
@@ -589,15 +589,15 @@ function gfAct(b,me){
     ${pad.replace(/<\/div>$/,gfGo(b,me,mode)+'</div>')}</div>`;
 }
 /* 행동 확정 버튼 — 커맨드(대기) 아래 */
+function gfGoInfo(b,me,mode){if(me.dead||me.confirmed)return {on:false,attrs:''};
+  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return {on:ok,attrs:'data-act="g-confirm" data-kind="move"'};}
+  if(mode==='defend')return {on:true,attrs:`data-act="${me.bound>0?'confirmdefend':'confirmact'}"`};
+  if(mode==='item')return {on:false,attrs:''};
+  if(GS_GO.bound)return {on:true,attrs:'data-act="confirmdefend"'};
+  return {on:!!GS_GO.valid,attrs:'data-act="confirmact"'};}
 function gfGo(b,me,mode){if(me.dead)return '';
   /* 행동 확정: 글자는 항상 '행동 확정', 확정할 수 없으면 회색(비활성) */
-  const btn=(on,attrs)=>`<button class="btn ${on?'btn-primary':''} hcmd-go" ${on?attrs:'disabled'}><span class="go-l">행동 확정</span></button>`;
-  if(me.confirmed)return btn(false);
-  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return btn(ok,'data-act="g-confirm" data-kind="move"');}
-  if(mode==='defend')return btn(true,`data-act="${me.bound>0?'confirmdefend':'confirmact'}"`);
-  if(mode==='item')return btn(false);
-  if(GS_GO.bound)return btn(true,'data-act="confirmdefend"');
-  return btn(!!GS_GO.valid,'data-act="confirmact"');}
+  const g=gfGoInfo(b,me,mode);return `<button class="btn ${g.on?'btn-primary':''} hcmd-go" ${g.on?g.attrs:'disabled'}><span class="go-l">행동 확정</span></button>`;}
 /* 전투 적용 대상 — 위치 옆 */
 function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')return '<span class="hud-pos hud-tgt">대상 나</span>';if(mode!=='fight')return '';
   const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};let n='';
@@ -630,7 +630,7 @@ function gridSkillPanel(b,me){
 }
 function gridParts(){const b=S.battle,me=b.players.find(p=>p.isMe);
   const set=(id,html)=>{const el=document.getElementById(id);if(el&&el._h!==html){el.innerHTML=html;el._h=html;}};
-  set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('gf-qs',gfQs(b,me));set('dmgrank',dmgRank(b));
+  set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('gf-qs',gfQs(b,me));set('gf-rank2',gfRank(b));set('dmgrank',dmgRank(b));
   const lg=$('#blog');if(lg){lg.innerHTML=logHTML();lg.scrollTop=lg.scrollHeight;}}
 /* 만신전 전체 화면(≥1101px): 지도 확대·축소·맞춤 — 휠(커서 기준)·끌어서 이동·더블클릭 맞춤. 값은 #gf-map 의 CSS 변수(다시 그려도 유지) */
 const GMZ={z:1,x:0,y:0};
@@ -671,7 +671,7 @@ function gfQs(b,me){const q=qsCfg();const opts=qsOptions(me);const lock=me.confi
     if(t==='sk'){const s=SKILLS[k];on=mode==='fight'&&a.kind==='skill'&&a.skill===k||(s.type==='addon'&&(a.addon===k||S.sel.addonArm===k));if(s.uses!=null){const u=usesLeft(me,k);cnt=`<i class="num">${u}</i>`;if(u<=0)dis=true;}}
     else{const n=S.me.inv[k]||0;on=!!(S.sel.gitem&&S.sel.gitem.item===k);cnt=`<i class="num">${n}</i>`;if(!n)dis=true;}
     return `<button class="gqs-s ${on?'on':''}" data-act="qs-use" data-i="${i}" ${dis?'disabled':''} title="${esc(o.name)}" aria-label="${esc(o.name)}"><img src="${o.img}" alt="">${cnt}<b>${i+1}</b></button>`;};
-  return `<div class="gqs ${q.dir==='v'?'v':'h'}"><span class="gqs-grip" title="끌어서 옮기기" aria-hidden="true">⋮⋮</span>${q.s.map(cell).join('')}<span class="gqs-tools"><button type="button" data-act="qs-dir" title="${q.dir==='v'?'가로로':'세로로'} 바꾸기" aria-label="배열 바꾸기">${q.dir==='v'?'↔':'↕'}</button><button type="button" data-act="qs-edit" data-i="0" title="퀵슬롯 구성" aria-label="퀵슬롯 구성">⚙</button></span></div>`;}
+  return `<div class="gqs ${q.dir==='v'?'v':'h'}"><span class="gqs-grip" title="끌어서 옮기기" aria-hidden="true">⋮⋮</span>${q.s.map(cell).join('')}${me.dead?'':(g=>`<button class="gqs-go ${g.on?'on':''}" ${g.on?g.attrs:'disabled'} title="행동 확정">확정</button>`)(gfGoInfo(b,me,mode))}<span class="gqs-tools"><button type="button" data-act="qs-dir" title="${q.dir==='v'?'가로로':'세로로'} 바꾸기" aria-label="배열 바꾸기">${q.dir==='v'?'↔':'↕'}</button><button type="button" data-act="qs-edit" data-i="0" title="퀵슬롯 구성" aria-label="퀵슬롯 구성">⚙</button></span></div>`;}
 function qsEditModal(focus){const b=S.battle;if(!b)return;const me=b.players.find(p=>p.isMe);const q=qsCfg();const opts=qsOptions(me);
   modal(`<div class="row" style="justify-content:space-between"><h3>퀵슬롯 구성</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
     <p class="faint" style="font-size:12px;margin:0 0 10px">칸마다 스킬이나 아이템을 고르세요. 퀵슬롯은 손잡이(⋮⋮)를 끌어 화면 어디로든 옮길 수 있습니다.</p>
@@ -683,10 +683,19 @@ function qsEditModal(focus){const b=S.battle;if(!b)return;const me=b.players.fin
     const x=Math.round(Math.max(0,Math.min(h.width-w.offsetWidth,e.clientX-h.left-st.dx))),y=Math.round(Math.max(0,Math.min(h.height-w.offsetHeight,e.clientY-h.top-st.dy)));
     w.style.left=x+'px';w.style.top=y+'px';w.style.right='auto';w.style.bottom='auto';const q=qsCfg();q.x=x;q.y=y;});
   const end=()=>{if(st){st=null;save();}};document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
+/* 만신전 PC: 대미지 순위(오른쪽 아래, 4위까지 + 내 순위, 접기) · 커맨드 창 투명도 */
+function gfRank(b){const L=b.players.slice().sort((x,y)=>(y.dealt||0)-(x.dealt||0)||x.name.localeCompare(y.name,'ko'));const fold=!!S.sel.rankFold;const mi=L.findIndex(p=>p.isMe);
+  const row=(p,i)=>`<li class="${p.isMe?'me':''} ${p.dead?'dead':''}"><span class="dr-n num">${i+1}</span><span class="dr-nm w-${p.role}">${esc(p.name)}</span><b class="num">${(p.dealt||0).toLocaleString('ko-KR')}</b></li>`;
+  return `<button type="button" class="gr-h" data-act="rank-fold" aria-expanded="${!fold}"><b>대미지 순위</b>${fold&&mi>=0?`<span class="num faint">내 순위 ${mi+1}위</span>`:''}<span class="gr-ar" aria-hidden="true">${fold?'▴':'▾'}</span></button>
+    ${fold?'':`<ol class="gr-list">${L.slice(0,4).map(row).join('')}${mi>=4?`<li class="gr-sep" aria-hidden="true"></li>${row(L[mi],mi)}`:''}</ol>`}`;}
+function hudOp(){const v=S.me&&S.me.hudOp;return typeof v==='number'&&v>=0.15&&v<=1?v:1;}
+(function(){if(typeof document==='undefined')return;
+  document.addEventListener('input',e=>{const r=e.target.closest&&e.target.closest('.hud-op input');if(!r)return;const v=Math.max(15,Math.min(100,+r.value))/100;S.me.hudOp=v;const pn=r.closest('.gf-act');if(pn)pn.style.setProperty('--hud-a',v);});
+  document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.hud-op input'))save();});})();
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
   return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
     <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
-      <div class="panel gf-act" id="gf-act">${gfAct(b,me)}</div><div class="gqs-wrap" id="gf-qs" style="${qsPosStyle()}">${gfQs(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
+      <div class="panel gf-act" style="--hud-a:${hudOp()}"><label class="hud-op" title="커맨드 창 투명도"><input type="range" min="15" max="100" step="5" value="${Math.round(hudOp()*100)}" aria-label="커맨드 창 투명도"></label><div id="gf-act">${gfAct(b,me)}</div></div><div class="panel gf-rank2" id="gf-rank2">${gfRank(b)}</div><div class="gqs-wrap" id="gf-qs" style="${qsPosStyle()}">${gfQs(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
     </div>`;}
 
 /* ───────── 운영 · 만신전 ───────── */

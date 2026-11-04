@@ -3045,3 +3045,44 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 .qs-modal .qs-opt small{font-size:10px;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .qs-modal .qs-opt.on{border-color:#dcc489;color:var(--text);background:rgba(220,196,137,.12)}
 .qs-modal .qs-opt:hover{border-color:var(--gold)}
+/* 만신전 PC 6차(유저 요청): 제출 현황 대미지 → 버프·디버프 · 생존/사망 탭 글자 작게 · 대미지 순위 오른쪽 아래(4위+내 순위, 접기) · 커맨드 창 투명도 바 · 퀵슬롯 확정 버튼 */
+.hud-op,.gf-rank2{display:none}
+@media (min-width:1101px){
+  .gfx .gf-sub{width:276px}
+  .gfx .gf-sub h3::after{content:"상태"}
+  .gfx .gl:not(.dead-row){grid-template-columns:16px minmax(0,1fr) 22px 40px 12px 74px}
+  .gfx .gl-dmg{display:none}
+  .gfx .gl .gl-fx{grid-column:auto;display:flex;flex-wrap:nowrap;gap:2px;padding:0;overflow:hidden;justify-content:flex-end;min-width:0}
+  .gfx .gl .gl-fx .hud-fx{flex:none;font-size:9.5px;padding:0 4px;line-height:14px;border-radius:999px;white-space:nowrap}
+  .gfx .gf-sub .gsubtabs [role=tab]{font-size:12.5px!important;padding:3px 0!important;min-height:0}
+  .gfx .gf-act{background:rgba(18,18,18,calc(.92*var(--hud-a,1)))!important;border-color:rgba(255,255,255,calc(.1*var(--hud-a,1)))}
+  .gfx .gf-act{padding-left:42px}
+  .gfx .hud-op{display:flex;position:absolute;left:10px;top:50%;transform:translateY(-50%);width:22px;height:130px;padding:8px 0;align-items:center;justify-content:center;border-radius:999px;background:rgba(18,18,18,.85);border:1px solid var(--rule-2);cursor:pointer}
+  .gfx .hud-op input{writing-mode:vertical-lr;direction:rtl;width:6px;height:112px;margin:0;accent-color:#dcc489;cursor:pointer}
+  .gfx .gf-rank2{display:block;position:absolute;right:12px;bottom:12px;width:210px;z-index:3;padding:0;background:rgba(18,18,18,.9);overflow:hidden}
+  .gfx .gr-h{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:0;background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer;text-align:left}
+  .gfx .gr-h b{font-weight:600}
+  .gfx .gr-h .faint{font-size:11.5px}
+  .gfx .gr-ar{margin-left:auto;color:var(--muted);font-size:11px}
+  .gfx .gr-list{list-style:none;margin:0;padding:0 8px 8px;display:flex;flex-direction:column;gap:2px}
+  .gfx .gr-list li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:6px;align-items:center;font-size:12px;padding:3px 4px;border-radius:6px}
+  .gfx .gr-list li.me{background:rgba(220,196,137,.14)}
+  .gfx .gr-list li.dead{opacity:.5}
+  .gfx .gr-list .dr-n{color:var(--faint);text-align:right;font-size:11px}
+  .gfx .gr-list li:nth-child(-n+3) .dr-n{color:var(--gold-hi);font-weight:700}
+  .gfx .gr-list .dr-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gfx .gr-list b{font-weight:500;color:var(--silver)}
+  .gfx .gr-sep{height:1px;padding:0!important;margin:2px 4px;background:var(--rule-2)}
+  .gfx .gqs-go{height:30px;padding:0 10px;border-radius:999px;border:1px solid var(--rule-2);background:var(--slab-3);color:var(--faint);font-size:11.5px;font-weight:600;cursor:default;white-space:nowrap}
+  .gfx .gqs-go.on{background:#dcc489;border-color:#dcc489;color:#1a1a1a;cursor:pointer}
+  .gfx .gqs.v .gqs-go{width:48px;padding:0}
+}
+@media (min-width:1101px) and (max-width:1400px){.gfx .gf-act{width:calc(100% - 720px);min-width:560px}}
+@media (min-width:1101px){
+  .gfx .hud-op{background:transparent;border:0;width:16px}
+  .gfx .hud-op input{-webkit-appearance:none;appearance:none;background:transparent;width:14px}
+  .gfx .hud-op input::-webkit-slider-runnable-track{width:3px;height:100%;margin:0 auto;border-radius:2px;background:linear-gradient(0deg,#dcc489,rgba(220,196,137,.15))}
+  .gfx .hud-op input::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-left:-4.5px;border-radius:50%;background:#dcc489;border:2px solid #181818}
+  .gfx .hud-op input::-moz-range-track{width:3px;background:rgba(220,196,137,.4);border-radius:2px}
+  .gfx .hud-op input::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:#dcc489;border:2px solid #181818}
+}

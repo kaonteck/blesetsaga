@@ -1442,6 +1442,24 @@ html[data-theme="light"] .qs-modal .qs-row.focus>b{color:var(--gold)}
 html[data-theme="light"] .qs-modal .qs-opt{border:1px solid var(--rule);background:transparent;color:var(--muted)}
 html[data-theme="light"] .qs-modal .qs-opt.on{color:var(--text);background:rgba(220,196,137,0.12)}
 html[data-theme="light"] .qs-modal .qs-opt:hover{border-color:var(--gold)}
+@media (min-width:1101px){html[data-theme="light"] .gfx .gf-act{background:rgba(18,18,18,calc(.92*var(--hud-a,1)))!important;border-color:rgba(255,255,255,calc(.1*var(--hud-a,1)))}
+html[data-theme="light"] .gfx .hud-op{background:rgba(255,255,255,1);border:1px solid var(--rule-2)}
+html[data-theme="light"] .gfx .gf-rank2{background:rgba(255,255,255,1)}
+html[data-theme="light"] .gfx .gr-h{border:0;background:none;color:var(--text)}
+html[data-theme="light"] .gfx .gr-ar{color:var(--muted)}
+html[data-theme="light"] .gfx .gr-list li.me{background:rgba(220,196,137,0.14)}
+html[data-theme="light"] .gfx .gr-list .dr-n{color:var(--faint)}
+html[data-theme="light"] .gfx .gr-list li:nth-child(-n+3) .dr-n{color:var(--gold-hi)}
+html[data-theme="light"] .gfx .gr-list b{color:var(--silver)}
+html[data-theme="light"] .gfx .gr-sep{background:var(--rule-2)}
+html[data-theme="light"] .gfx .gqs-go{border:1px solid var(--rule-2);background:var(--slab-3);color:var(--faint)}
+html[data-theme="light"] .gfx .gqs-go.on{color:#ebeef4}}
+@media (min-width:1101px){html[data-theme="light"] .gfx .hud-op{background:transparent;border:0}
+html[data-theme="light"] .gfx .hud-op input{background:transparent}
+html[data-theme="light"] .gfx .hud-op input::-webkit-slider-runnable-track{background:linear-gradient(0deg,#dcc489,rgba(220,196,137,0.15))}
+html[data-theme="light"] .gfx .hud-op input::-webkit-slider-thumb{border:2px solid #ebeef4}
+html[data-theme="light"] .gfx .hud-op input::-moz-range-track{background:rgba(220,196,137,0.4)}
+html[data-theme="light"] .gfx .hud-op input::-moz-range-thumb{border:2px solid #ebeef4}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
@@ -1459,3 +1477,5 @@ html[data-theme="light"] .gtel,html[data-theme="light"] .gtel.aoe{background:#ff
 html[data-theme="light"] .gtel .gtel-k,html[data-theme="light"] .gtel .tk-run{color:#c62828}
 html[data-theme="light"] .hud-lvl,html[data-theme="light"] .hud-tag{color:#8a6a1c}
 html[data-theme="light"] .sks-n{color:#fff;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent)}
+/* 만신전 커맨드 창 투명도(메인): 라이트에서는 흰 바탕에 투명도 */
+@media (min-width:1101px){html[data-theme="light"] .gfx .gf-act{background:rgba(255,255,255,calc(.95*var(--hud-a,1)))!important;border-color:rgba(28,34,48,calc(.14*var(--hud-a,1)))}}
