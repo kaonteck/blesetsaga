@@ -671,7 +671,8 @@ function questDetail(q){
         ${qp.lost?'<p class="reason">지난 전투에서 쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.</p>':''}
         <div class="row"><button class="btn btn-primary" data-act="qfight" data-id="${q.id}" ${busy||!m?'disabled':''}>${qp.lost?'다시 도전':'전투 시작'}</button>${busy?`<span class="reason">${esc(busy)}</span>`:''}</div>`;
     }else{
-      h+=`${qTextHTML(step.text)}<div class="stack" style="gap:8px">${step.choices.map((c,i)=>{const r=choiceReason(c);return `<button class="choice" data-act="chooseq" data-id="${q.id}" data-i="${i}" ${r?'disabled':''}><span>${esc(c.label)}</span>${r?`<small>${esc(r)}</small>`:''}</button>`;}).join('')}</div>`;
+      const fx=typeof stepFx==='function'?stepFx(q,qp,step):null;
+      if(fx&&fx.hold)h+=fx.html;else h+=`${fx&&fx.text!=null?fx.text:qTextHTML(step.text)}${fx?fx.html:''}<div class="stack" style="gap:8px">${step.choices.map((c,i)=>{const r=choiceReason(c);return `<button class="choice" data-act="chooseq" data-id="${q.id}" data-i="${i}" ${r?'disabled':''}><span>${esc(c.label)}</span>${r?`<small>${esc(r)}</small>`:''}</button>`;}).join('')}</div>`;
     }
     if(st==='active')h+=`<div><button class="btn btn-sm btn-ghost" data-act="abandonq" data-id="${q.id}">퀘스트 포기</button></div>`;
   }
@@ -1493,12 +1494,12 @@ function blip(freq,dur,v,type,when){const c=SND.ctx;if(!c||v<=0)return;try{const
 function playClick(){blip(1500,0.05,0.10*sndVol('click'),'triangle');}
 function playAlarm(){const v=0.16*sndVol('alarm');blip(880,0.28,v);blip(1318.5,0.42,v,'sine',0.13);}
 function updateBgm(){
-  const c=SND.ctx;if(!c)return;const target=S&&S.me&&!S.loggedOut?sndVol('bgm')*0.07:0;
-  if(!SND.bgm){if(target<=0)return;try{const out=c.createGain();out.gain.value=0;const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=520;lp.connect(out);out.connect(c.destination);
+  const c=SND.ctx;if(!c)return;const target=(S&&S.me&&!S.loggedOut?sndVol('bgm')*0.07:0)*(typeof bgmMul==='function'?bgmMul():1);
+  if(!SND.bgm){if(target<=0)return;try{const out=c.createGain();out.gain.value=0;const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=520;SND.lp=lp;lp.connect(out);out.connect(c.destination);
     [[110,0],[164.81,3],[220.6,-4],[329.6,2]].forEach(([f,d],i)=>{const o=c.createOscillator();o.type=i%2?'triangle':'sine';o.frequency.value=f;o.detune.value=d;const g=c.createGain();g.gain.value=i===3?0.18:0.45;
       const l=c.createOscillator(),lg=c.createGain();l.frequency.value=0.05+i*0.03;lg.gain.value=0.22;l.connect(lg).connect(g.gain);l.start();o.connect(g).connect(lp);o.start();});
     SND.bgm=out;}catch(e){return;}}
-  SND.bgm.gain.setTargetAtTime(target,c.currentTime,0.4);
+  SND.bgm.gain.setTargetAtTime(target,c.currentTime,typeof bgmFade==='function'?bgmFade():0.4);if(SND.lp&&typeof bgmLp==='function')SND.lp.frequency.setTargetAtTime(bgmLp(),c.currentTime,0.6);
 }
 document.addEventListener('pointerdown',()=>{if(audio())updateBgm();},{capture:true});
 
@@ -1567,9 +1568,9 @@ function mailDetail(m){
       <p class="mbody">${esc(m.text||'(내용 없음)')}</p>
       ${gift?`<div class="mitems"><div class="ph" style="margin-bottom:6px">${TICON.gift.replace('<svg','<svg class="gi"')} 첨부 선물</div>${Object.entries(m.items).map(([k,n])=>`<div class="row" style="justify-content:space-between"><span>${k==='_gold'?'골드':ITEMS[k]?ITEMS[k].name:k}</span><span class="num">×${n}</span></div>`).join('')}
         <button class="btn btn-sm ${m.claimed?'':'btn-primary'}" data-act="mail-claim" data-id="${m.id}" ${m.claimed?'disabled':''} style="margin-top:8px">${m.claimed?'받기 완료':'선물 받기'}</button></div>`:''}
-      <div class="row">${m.from!=='운영자'&&bot(m.from)?`<button class="btn btn-sm" data-act="mail-reply" data-to="${esc(m.from)}">답장</button>`:''}
+      ${m.noBtns?'':`<div class="row">${m.from!=='운영자'&&bot(m.from)?`<button class="btn btn-sm" data-act="mail-reply" data-to="${esc(m.from)}">답장</button>`:''}
         <button class="btn btn-sm" data-act="mail-archive" data-id="${m.id}" ${m.noArchive?'disabled title="보관할 수 없는 메시지입니다"':''}>${m.archived?'보관 해제':'보관'}</button>
-        <button class="btn btn-sm btn-ghost btn-danger" data-act="m-delask" data-id="${m.id}">삭제</button></div>
+        <button class="btn btn-sm btn-ghost btn-danger" data-act="m-delask" data-id="${m.id}">삭제</button></div>`}
     </div>`;
 }
 function composeHTML(){

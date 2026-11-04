@@ -311,7 +311,7 @@ Object.assign(ITEMS,{
   j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 표지 안쪽에 영문 이름이 긁혀 있다. A■R■■A. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
 /* AURORA 탐사대의 일지(아이템 id는 j2052 그대로): 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다. 3장 1쪽, 4장 E13·E14·E15 완료 때 한 쪽씩. 날짜·템빨/컨빨 언급 없음(시간선: AURORA 탐사대가 먼저 갇혔고, 템빨·컨빨은 다음에 들어와 탈출 → 라니아케아에 기록 없음) */
 const J2052_P1='(날짜 칸은 물에 번져 읽을 수 없다)\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— AURORA';
-const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.','신전 지하 벽화에 우리가 있었다. 머리띠를 쓰고, 빛나는 네모 앞에 앉아 있는 사람들. 수천 년 된 벽화라고 했다.','문서고에서 기획서를 봤다. 우리가 플레이하던 게임의 첫 기획서. 왜 여기에. 의뢰인 칸이 지워져 있었다.','게임이 이 세계를 베낀 게 아니었다. 이 세계가 자기를 베끼게 했다. 우리는 손님이 아니라 출연자였다.'];
+const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.','신전 지하 벽화에 우리가 있었다. 머리띠를 쓰고, 빛나는 네모 앞에 앉아 있는 사람들. 수천 년 된 벽화라고 했다. 해시계는 우리가 들어간 시각을 가리키고 있었다.','문서고에서 기획서를 봤다. 우리가 플레이하던 게임의 첫 기획서. 첨부된 지도는 지금 내 지도와 똑같다. 의뢰인 칸에 신전에서 본 문양이 있었다.','게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜.'];
 function j2052Text(){const F=(S&&S.flags)||{};const n=1+['e13_vip','e14_logout','ch4_clear','e17_score','e18_bottle','ch5_clear','e21_mural','e22_plan','ch6_clear'].filter(f=>F[f]).length;const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
   const NOTE={4:'(4쪽 뒤에 젖은 악보 한 장이 끼워져 있다. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」)',7:'(7쪽 뒤에 금빛 문양을 문질러 뜬 탁본 한 장이 끼워져 있다. 처음 보는 고대 문자다.)',10:'(10쪽 뒤에 깨진 거울 조각 하나가 끼워져 있다. 비친 얼굴이 내 얼굴이 아니다.)'};
   if(n>=7&&F.e19_listen)pages[6]+='\n그 사람이 바다에서 노래한다. 돌아오지 말라고.';
@@ -332,7 +332,7 @@ Object.assign(ITEMS,{q_score:{name:'젖은 악보',type:'mat',tag:'퀘스트 아
 if(ITEMS.q_return)ITEMS.q_return.readText='이 세계에 머무르시겠습니까?\n\n…\n\n이미 돌아와 있습니다.';
 Object.assign(ITEMS,{q_rubbing:{name:'금빛 탁본',type:'mat',tag:'퀘스트 아이템',desc:'일지 7쪽 뒤에 끼워져 있던 탁본. 셀로나의 글자 세 개가 뒤섞여 있다. ☉ ≈ 人'},
   q_celona:{name:'셀로나 신전 출입패',type:'mat',tag:'퀘스트 아이템',desc:'신전 기술사 미라가 건넨 놋쇠 출입패. 태엽 문양이 새겨져 있다.'},
-  q_plan:{name:'빛바랜 기획서',type:'mat',tag:'기념품',desc:'알라로사 문서고 깊은 곳에서 나온 종이 묶음. 사용하면 읽는다.',price:0,readText:'<Bleset Saga> 기획서 v0.1\n\n1. 세계: 대륙 라니아케아. 지역 8곳(초원·바위·늪·소금·바다·작열·혹한·블라스파미아).\n2. 최종 콘텐츠: 백야의 신전. 클리어 보상 — 소원 1회.\n3. 접속: 생체 인식 머리띠(가칭 블레스 링크).\n\n의뢰: ■■■\n메모: 실제 지형을 참고할 것. 관람석은 넉넉하게.'},
+  q_plan:{name:'낡은 기획서 한 묶음',type:'mat',tag:'기념품',desc:'알라로사 문서고 깊은 곳에서 나온 종이 묶음. 사용하면 펼쳐 본다. 1쪽만 넘겨진다.',price:0,viewer:'plan'},
   q_ticket:{name:'신들의 관람석 입장권',type:'mat',tag:'???',desc:'금박 입장권. 사용하면 읽는다.',price:0,readText:'공연: <Bleset Saga>\n좌석: ■열 ■번\n회차: 2054\n입장 대상: [관람객]\n\n— 블레서는 무대에 오릅니다.'}});
 const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',kind:'story',region:'순례자의 길',level:11,statLevel:12,tier:'story',desc:'순례자의 길 끝에서 블레서를 시험하는 거대한 석상.',singleName:'바위 주먹',aoeName:'지진',dotName:'균열',dotChance:0.2}),soloMon({id:'st_monk',name:'동굴의 은둔 무승',art:'golem',kind:'story',region:'무너진 바위 동굴',level:17,statLevel:18,tier:'story',desc:'언제부터 동굴에 있었는지 아무도 모르는 무승.',singleName:'발레티 정권',aoeName:'산을 울리는 발경',dotName:'내상',dotChance:0.3}),soloMon({id:'st_leech',name:'늪가의 독거머리 떼',art:'beast',kind:'story',region:'로타스 늪가',level:20,statLevel:21,tier:'story',desc:'마스크 없이 늪가에 나온 사람에게 한꺼번에 달라붙는 거머리 떼.',singleName:'달라붙기',aoeName:'떼로 덮치기',dotName:'흡혈',dotChance:0.35}),
   soloMon({id:'st_rift',name:'균열에서 기어 나온 것',art:'spirit',kind:'story',region:'늪 한가운데의 균열',level:22,statLevel:23,tier:'story',desc:'보랏빛 균열에서 기어 나온 무언가. 형체가 한 박자씩 늦게 따라온다.',singleName:'끌어당기기',aoeName:'균열의 파동',dotName:'잠식',dotChance:0.3}),
@@ -353,7 +353,7 @@ const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',ki
   soloMon({id:'st_sandsala',name:'모래폭풍 속 화염 도롱뇽 떼',art:'beast',kind:'story',region:'붉은 모래사막',level:50,statLevel:51,tier:'story',desc:'모래폭풍이 불 때마다 모래 위로 올라오는 도롱뇽 떼. 지나간 자리에 유리처럼 녹은 모래가 남는다.',singleName:'불꽃 혀',aoeName:'모래폭풍',dotName:'화상',dotChance:0.35}),
   soloMon({id:'st_clock',name:'셀로나의 태엽 파수병',art:'golem',kind:'story',region:'셀로나 신전 지하',level:53,statLevel:54,tier:'story',desc:'신전 지하 벽화를 지키는 놋쇠 병사. 태엽이 다 풀려도 멈추지 않는다.',singleName:'태엽 창',aoeName:'톱니 회전',dotName:'녹',dotChance:0.25}),
   soloMon({id:'st_archivist',name:'문서고의 석상 사서',art:'golem',kind:'story',region:'알라로사 고대 문서고',level:56,statLevel:57,tier:'story',desc:'알라로사 문서고를 지키는 돌 사서. 책장을 넘기듯 침입자의 이름을 넘겨 본다.',singleName:'돌판 내려치기',aoeName:'서가 무너뜨리기',dotName:'먼지',dotChance:0.25}),
-  soloMon({id:'st_rootguard',name:'황금 뿌리 수호자',art:'golem',kind:'story',region:'황금 뿌리 제단 가장 깊은 곳',level:62,statLevel:63,tier:'story',desc:'고대 셀로나 문명이 만든 황금 골렘. 신들의 관람석을 지키라는 명령을 아직 수행 중이다. [6장 보스]',singleName:'황금 주먹',aoeName:'모래 분출',dotName:'금가루',dotChance:0.2,
+  soloMon({id:'st_rootguard',name:'황금 뿌리 수호자',art:'golem',kind:'story',region:'황금 뿌리 제단 가장 깊은 곳',level:62,statLevel:63,tier:'story',desc:'고대 셀로나 문명이 만든 황금 골렘. 문서고의 원본을 지키라는 오래된 명령을 아직 수행 중이다. [6장 보스]',singleName:'황금 주먹',aoeName:'모래 분출',dotName:'금가루',dotChance:0.2,
     sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 뿌리 감기',say:'황금 뿌리가 땅을 뚫고 올라온다. 뿌리 속박에 걸리면 다음 턴 스킬을 쓸 수 없다(정화의 성수·디스펠로 해제)',atkMul:1.3,singleName:'뿌리 감기',rootChance:0.4,aoeName:'모래 분출',aoeEvery:3},{at:25,name:'3페이즈 · 황금 붕괴',say:'제단이 무너지기 시작한다',atkMul:1.6,aoeName:'황금 붕괴',aoeMult:0.75,aoeEvery:2,rootChance:0.2}]})];
 /* 4장 보스 염수의 군주: 3장 바다뱀과 같은 체감(봇 시뮬 LV37 · 독안개 장비 기준 전 클래스 91% 이상) */
 {const m=STORY_MONS.find(x=>x.id==='st_saltlord');m.hp=Math.round(m.hp*1.3);m.atk=Math.round(m.atk*1.1);m.dotDmg=Math.round(m.atk*0.15);}
@@ -630,14 +630,14 @@ const STORY_QUESTS=[
     {label:'"……네, 바다 소리네요."',result:'마린이 고개를 끄덕인다. 소라를 내려놓아도 귀에 그 소리가 조금 남아 있다.',next:'end',flag:'s5b_conch'},
     {label:'"방금 그거, 바다 소리 아니었어요."',result:'"네?" 마린이 소라를 귀에 대 본다. "바다 소리인데요?" 정말 모르겠다는 얼굴이다.',next:'end',flag:'s5b_conch'}]},
   end:{end:true,text:'소라 껍데기 속 소리',reward:{exp:3200,gold:400,items:{q_conch:1}}}}},
- {id:'E20',cat:'epic',title:'붉은 사막의 탁본',published:true,level:50,prereq:'E19',repeat:null,cond:{},
+ {id:'E20',cat:'epic',title:'앞서간 발자국',published:true,level:50,prereq:'E19',repeat:null,cond:{},
   desc:'일지 7쪽 뒤에 끼워져 있던 금빛 탁본을 들고 작열의 땅으로 간다. 처음 보는 고대 문자다. [6장 「고대 문명의 기억」]',start:'s1',steps:{
   s1:{text:'작열의 땅, 사막 쉼터. 해가 정수리에 있다. 뒷골목 천막 그늘 아래 노인이 당신이 꺼낸 탁본을 보고 몸을 일으킨다. (탐색 › 작열의 땅 › 마을 › 뒷골목)',
     give:{land:'ember',spot:'alley',item:'q_rubbing',n:1,npc:'천막 아래 노인',text:'노인이 탁본을 받아 햇빛에 비춰 보다가 돌려준다. "셀로나의 글자로군. 문명의 신 셀로나. 모래 밑에 그 신을 모시던 도시가 통째로 묻혀 있다네. 이걸 읽을 줄 아는 사람은 오아시스 신전의 기술사뿐이지."'},
     choices:[{label:'탁본을 받아 든다',req:{item:'q_rubbing'},result:'노인이 붉은 모래사막 쪽을 가리킨다. "길잡이 없이 가면 안 되네. 광장의 나디아를 찾게."',next:'s2'},
       {label:'아직 노인을 만나지 못했다',result:'사막 쉼터 뒷골목의 천막 아래 노인을 찾아야 한다.',next:'s1'}]},
-  s2:{text:'길잡이 나디아와 붉은 모래사막을 건넌다. 나디아가 말한다. "발자국은 바람이 금방 지워요. 돌아올 길을 꼭 기억해 두세요." 그런데 모래 위에 이미 발자국이 앞서 나 있다.',choices:[
-    {label:'발자국에 발을 대 본다',result:'크기도, 걸음 폭도, 왼발을 조금 끄는 버릇까지 당신 것과 똑같다. 나디아는 아무것도 못 본 척한다.',next:'s3'},
+  s2:{text:'길잡이 나디아와 붉은 모래사막을 건넌다. 나디아가 말한다. "발자국은 바람이 금방 지워요. 돌아올 길을 꼭 기억해 두세요." 모래 위, 앞쪽에 발자국 한 줄이 먼저 나 있다.',walk:5,choices:[
+    {label:'겹친 발자국을 내려다본다',result:'크기도, 걸음 폭도, 왼발을 조금 끄는 버릇까지 당신 것과 똑같다. 나디아는 아무것도 못 본 척한다.',next:'s3'},
     {label:'나디아에게 묻는다',result:'"발자국이요? 바람이 지웠을 텐데요." 그녀는 발자국을 밟지 않으려고 조심스럽게 돌아간다.',next:'s3'}]},
   s3:{text:'바람 냄새가 바뀐다. 모래폭풍과 함께 불타는 도롱뇽 떼가 모래 위로 올라온다.',battle:'st_sandsala',next:'s4',winText:'도롱뇽 떼가 모래 속으로 사라진다. 폭풍이 지나간 자리, 발자국은 그대로 남아 있다.'},
   s4:{text:'오아시스가 보인다. 나디아: "셀로나 신전 기술사님은 요즘 쉼터에 자주 내려오세요. 고대 문자 이야기만 나오면 눈이 반짝이시거든요."',choices:[
@@ -655,7 +655,7 @@ const STORY_QUESTS=[
     {label:'≈ → ☉ → 人',result:'문이 꿈쩍도 하지 않는다. "물을 데우는 건 해예요."',next:'s2'},
     {label:'☉ → 人 → ≈',result:'문 안에서 톱니가 헛돈다. "사람을 기르는 건 물이에요."',next:'s2'}]},
   s3:{text:'지하 회랑 끝, 벽화 앞을 놋쇠 병사가 지키고 있다. 태엽이 다 풀렸는데도 고개를 돌려 당신을 본다.',battle:'st_clock',next:'s4',winText:'파수병이 무릎을 꿇는다. 벽화가 드러난다.'},
-  s4:{text:'벽화 속 사람들은 머리에 가는 띠를 두르고, 빛나는 네모 앞에 나란히 앉아 있다. 수천 년 된 벽화다. 미라가 당신 이마를 본다. "이 머리띠… 블레서님 것과 닮았네요."',choices:[
+  s4:{text:'벽화 속 사람들은 머리에 가는 띠를 두르고, 빛나는 네모 앞에 나란히 앉아 있다. 수천 년 된 벽화다. 한쪽에는 셀로나식 해시계가 새겨져 있다. 미라가 해시계를 들여다본다. "이 해시계… 지하라 해가 안 드는데, 지금 시각이네요." 그리고 당신 이마를 본다. "이 머리띠… 블레서님 것과 닮았네요."',sundial:true,amb:'typing',choices:[
     {label:'"…그냥 장식이에요."',result:'"그렇겠죠." 미라는 벽화를 오래 바라본다. 그날 밤 일지의 8쪽이 떨어진다.',next:'end',flag:'e21_mural'},
     {label:'벽화를 손으로 짚어 본다',result:'돌이 미지근하다. 화면처럼. 그날 밤 일지의 8쪽이 떨어진다.',next:'end',flag:'e21_mural'}]},
   end:{end:true,text:'셀로나 신전 지하 벽화',reward:{exp:11900,gold:1600,items:{potion:2,holywater:1}}}}},
@@ -665,37 +665,38 @@ const STORY_QUESTS=[
     {label:'안으로 들어간다',result:'서가가 끝없이 이어진다. 책장 사이에서 무언가 무거운 것이 걸어 다닌다.',next:'s2'},
     {label:'"다른 세계의 장인?"',result:'미라가 어깨를 으쓱한다. "옛사람들 표현이에요. 신들이 꿈을 빌려줬다는 뜻이래요." 서가 안쪽에서 무거운 발소리가 들린다.',next:'s2'}]},
   s2:{text:'돌 사서가 앞을 막는다. 책장을 넘기듯 당신 얼굴을 한 장씩 넘겨 본다.',battle:'st_archivist',next:'s3',winText:'사서가 무너지며 서가 하나가 쓰러진다. 그 뒤에서 종이 한 묶음이 미끄러져 나온다.'},
-  s3:{text:'돌과 양피지뿐인 문서고에 종이 묶음이 하나 있다. 인쇄된 글자다. 첫 장: 「<Bleset Saga> 기획서 v0.1」. 맨 아래: 「의뢰: ■■■ · 메모: 실제 지형을 참고할 것」.',choices:[
-    {label:'기획서를 챙긴다',result:'미라가 종이를 만져 본다. "이 재료, 처음 봐요. 이 세계 것이 아니에요." 그날 밤 일지의 9쪽이 떨어진다.',next:'end',flag:'e22_plan'},
-    {label:'의뢰인 칸을 문질러 본다',result:'잉크가 번지지도 않는다. 처음부터 그 칸만 비어 있던 것처럼. 그날 밤 일지의 9쪽이 떨어진다.',next:'end',flag:'e22_plan'}]},
+  s3:{text:'돌과 양피지뿐인 문서고에 종이 묶음이 하나 있다. 인쇄된 글자다. 첫 장: 「<Bleset Saga> 기획서 v0.1」. 미라가 의뢰인 칸을 가리킨다. 비어 있는 칸에 잉크 자국 하나가 남아 있다.',planView:true,choices:[
+    {label:'기획서를 챙긴다',result:'미라가 종이를 만져 본다. "이 재료, 처음 봐요. 이 세계 것이 아니에요." 그리고 의뢰인 칸의 문양을 오래 본다.',next:'s4'},
+    {label:'의뢰인 칸의 자국을 들여다본다',result:'번진 잉크가 아니다. 문양이다. 전직 시련 때, 신전 제단에서 본 것과 같은 모양이다. 미라도 그 문양을 본다.',next:'s4'}]},
+  s4:{text:'미라: "…오늘은 여기까지 해요." 그날 밤 일지의 9쪽이 떨어진다.',silence:3000,choices:[
+    {label:'고개를 끄덕인다',result:'미라는 문양에 대해 아무것도 묻지 않는다. 당신도 묻지 않는다.',next:'end',flag:'e22_plan'}]},
   end:{end:true,text:'알라로사 문서고의 기획서',reward:{exp:13000,gold:1700,items:{potion:2,q_plan:1}}}}},
  {id:'E23',cat:'epic',title:'고대 문명의 기억',published:true,level:60,prereq:'E22',repeat:null,cond:{},
   desc:'황금 뿌리 제단 가장 깊은 곳에서 고대 셀로나 문명이 만든 수호자가 아직 무언가를 지키고 있다. 권장 LV62 · 회복약 3개, 정화의 성수 1개 이상 준비. [6장 「고대 문명의 기억」 마지막 이야기]',start:'s1',steps:{
-  s1:{text:'황금 뿌리 제단. 바닥을 뚫고 올라온 황금 뿌리들이 계단처럼 아래로 이어진다. 가장 깊은 곳에 반원형 돌 객석이 있다. 객석은 비어 있는데, 누군가 앉아 있던 온기가 남아 있다. (권장 LV62 · 회복약 3개, 정화의 성수 1개 이상)',choices:[
-    {label:'준비를 마치고 무대로 내려간다',result:'객석 아래 무대 한가운데에서 황금 골렘이 눈을 뜬다.',next:'s2'},
-    {label:'회복약과 성수를 더 챙겨 온다',result:'객석은 기다린다. 공연은 늘 제시간에 시작하지 않으니까.',next:'s1'}]},
-  s2:{text:'황금 뿌리 수호자가 일어선다. "접근 권한을 확인합니다." 체력이 줄면 뿌리로 묶고(60%), 끝에는 제단을 무너뜨린다(25%).',battle:'st_rootguard',next:'s3',winText:'수호자가 무너지고 제단의 불이 꺼진다. 어둠 속에서 탁본의 마지막 줄만 금빛으로 빛난다.'},
-  s3:{text:'미라가 마지막 줄을 읽는다. 목소리가 떨린다.\n\n「이 세계를 본뜬 놀이를 만들게 하라. 놀이에 들어온 자를 우리가 보리라.」\n\n시야 한쪽에 시스템 메시지가 떠오른다.\n\n「관람석에서 누군가 다음 회차를 예약합니다.」\n「제단의 불이 꺼졌습니다.」',choices:[
-    {label:'메시지를 다시 확인한다',result:'메시지 창에는 「제단의 불이 꺼졌습니다.」 한 줄만 남아 있다.',next:'s4'},
-    {label:'객석을 올려다본다',result:'빈 객석. 그런데 맨 앞줄 한 자리에 금박 종이 한 장이 놓여 있다.',next:'s4'}]},
-  s4:{text:'쉼터로 돌아온다. 미라가 말한다. "놀이라니. 그럼 블레서님들이 하던 게…" 그녀는 말을 맺지 못한다. 그날 밤 일지의 10쪽이 떨어진다.',choices:[
-    {label:'10쪽을 읽는다',result:'"게임이 이 세계를 베낀 게 아니었다. 이 세계가 자기를 베끼게 했다. 우리는 손님이 아니라 출연자였다." 10쪽 뒤에는 깨진 거울 조각 하나가 끼워져 있다. 비친 얼굴이 내 얼굴이 아니다.',next:'end',flag:'ch6_clear'}]},
-  end:{end:true,text:'6장 「고대 문명의 기억」 완료',reward:{exp:19000,gold:2400,items:{potion:3,q_ticket:1},gearTier:6}}}},
+  s1:{text:'황금 뿌리 제단. 바닥을 뚫고 올라온 황금 뿌리들이 계단처럼 아래로 이어진다. 가장 깊은 곳에 돌문이 닫힌 방이 하나 있다. 문 앞에서 태엽 감기는 소리가 난다. (권장 LV62 · 회복약 3개, 정화의 성수 1개 이상)',choices:[
+    {label:'준비를 마치고 문 앞으로 간다',result:'돌문 앞에 웅크리고 있던 황금 골렘이 눈을 뜬다.',next:'s2'},
+    {label:'회복약과 성수를 더 챙겨 온다',result:'태엽 소리는 당신이 돌아올 때까지 같은 박자로 이어진다.',next:'s1'}]},
+  s2:{text:'황금 뿌리 수호자가 일어선다. "출입 기록이 없습니다." 체력이 줄면 뿌리로 묶고(60%), 끝에는 제단을 무너뜨린다(25%).',battle:'st_rootguard',next:'s3',winText:'수호자가 무너진다. 태엽 소리가 한 번 더 나고, 멈춘다.'},
+  s3:{text:'돌문이 열려 있다. 방 안쪽에 돌판 한 장이 서 있다. 기획서 1쪽과 줄 간격까지 같은 셀로나 글자. 맨 아래, 의뢰인 자리에 같은 문양이 새겨져 있다.',silence:3000,lock:true,tablet:true,choices:[
+    {label:'돌판의 문양을 본다',result:'바람 소리가 돌아온다. 시야 한쪽에 평범한 메시지 한 줄이 떠오른다. 「제단의 불이 꺼졌습니다.」',next:'s4'}]},
+  s4:{text:'쉼터로 돌아온다. 미라는 아무것도 묻지 않는다. 그날 밤 일지의 10쪽이 떨어진다.',choices:[
+    {label:'10쪽을 읽는다',result:'"게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜." 10쪽 뒤에는 깨진 거울 조각 하나가 끼워져 있다. 비친 얼굴이 내 얼굴이 아니다.',next:'end',flag:'ch6_clear'}]},
+  end:{end:true,text:'6장 「고대 문명의 기억」 완료',reward:{exp:19000,gold:2400,items:{potion:3},gearTier:6}}}},
  {id:'S6a',cat:'sub',title:'지워지지 않는 발자국',published:true,level:52,prereq:null,repeat:null,cond:{quests:['E20']},
   desc:'길잡이 나디아가 보여 줄 것이 있다고 한다.',start:'s1',steps:{
   s1:{text:'나디아가 쉼터 뒤 모래언덕으로 데려간다. 모래 위에 발자국이 여섯 쌍. 바람이 세게 부는데 하나도 지워지지 않는다. "몇 년째 이래요. 아무도 밟지 않아요."',choices:[
-    {label:'발자국을 따라가 본다',result:'여섯 쌍이 나란히 걷다가, 한 쌍이 언덕 중간에서 뚝 끊긴다. 그 자리에서 다섯 쌍만 계속 걸어간다.',next:'s2'}]},
+    {label:'발자국을 따라가 본다',result:'여섯 쌍이 나란히 걷다가, 한 쌍이 언덕 중간에서 뚝 끊긴다. 그 자리에서 다섯 쌍만 계속 걸어간다. 끊긴 자리의 개수가 내가 걸어온 횟수와 비슷해 보이는 건 착각일까?',next:'s2'}]},
   s2:{text:'끊긴 발자국 끝에 모래가 조금 파여 있다. 누군가 거기서 멈춰 섰던 것처럼.',choices:[
     {label:'끊긴 자리에 서 본다',result:'바람이 멎는다. 나디아가 당신을 부르는 소리가 아주 멀리서 들린다. 한 걸음 물러서자 바람이 다시 분다.',next:'end',flag:'s6a_steps'},
     {label:'돌아간다',result:'돌아보니 끊긴 발자국 옆에 새 발자국 한 쌍이 생겨 있다. 당신 것과 같은 크기다.',next:'end',flag:'s6a_steps'}]},
   end:{end:true,text:'지워지지 않는 발자국',reward:{exp:3600,gold:450,items:{ember:3}}}}},
  {id:'S6b',cat:'sub',title:'꺼지지 않는 불',published:true,level:58,prereq:null,repeat:null,cond:{quests:['E22']},
   desc:'붉은 모래사막 아발라가 신전의 불의 무녀 세라가 불 속에서 이상한 장면을 본다고 한다.',start:'s1',steps:{
-  s1:{text:'아발라가 신전. 불의 무녀 세라가 꺼지지 않는 불 앞에 앉아 있다. "요즘 불 속에 같은 장면이 보여요. 블레서님이라면 알지도 몰라서요."',choices:[
-    {label:'무엇이 보이는지 묻는다',result:'"네모난 빛이 수십 개요. 그 앞에 사람들이 밤새 앉아 있어요. 다들 눈 밑이 검어요. 가끔 한 사람이 일어나서 벽에 붙은 종이에 무언가를 적어요. 지역 이름 같았어요. 초원, 바위, 늪…"',next:'s2'}]},
-  s2:{text:'세라가 불을 들여다본다. "지금은 한 사람이 혼자 남았어요. 빛나는 네모를 보면서 웃고 있어요. 그런데 그 네모 안에… 블레서님이 있어요."',choices:[
+  s1:{text:'아발라가 신전. 불의 무녀 세라가 꺼지지 않는 불 앞에 앉아 있다. "요즘 불 속에 같은 장면이 보여요. 블레서님이라면 알지도 몰라서요."',amb:'office',choices:[
+    {label:'무엇이 보이는지 묻는다',result:'"네모난 빛이 수십 개요. 그 앞에 사람들이 밤새 앉아 있어요. 다들 눈 밑이 검어요. 가끔 한 사람이 일어나서 벽에 붙은 종이에 무언가를 적어요. 지역 이름 같았어요. 초원, 바위, 늪… 누가 시킨 일인지는 그 사람들도 모르는 것 같았어요."',next:'s2'}]},
+  s2:{text:'세라가 불을 들여다본다. "지금은 한 사람이 혼자 남았어요. 빛나는 네모를 보면서 웃고 있어요. 그런데 그 네모 안에… 블레서님이 있어요."',amb:'office',choices:[
     {label:'불을 들여다본다',result:'불꽃만 보인다. 세라가 고개를 갸웃한다. "방금은 분명히 있었는데."',next:'end',flag:'s6b_fire'},
-    {label:'"그 사람, 어떤 표정이에요?"',result:'"재미있어 해요. 아주." 세라가 불에서 눈을 뗀다. "…신들이 보는 얼굴이랑 똑같아요."',next:'end',flag:'s6b_fire'}]},
+    {label:'"그 사람, 어떤 표정이에요?"',result:'"재미있어 해요. 아주." 세라가 불에서 눈을 뗀다. "…그런데 자기가 뭘 만들고 있는지는 모르는 얼굴이에요."',next:'end',flag:'s6b_fire'}]},
   end:{end:true,text:'꺼지지 않는 불 속의 장면',reward:{exp:4400,gold:500,items:{}}}}}];
 /* 메인 스토리 챕터 묶음(퀘스트 목록 접기용) */
 /* 4장 E14: 「로그아웃을 시도한다」 — 어느 쪽을 눌러도 1초 동안 화면이 깨졌다가 원래대로(의도된 오류) */
@@ -718,7 +719,7 @@ const HERO_LINES={
   pb_herald:{say:['나팔 소리가 들리나? 우리가 불었어.','신전 문은 안에서만 열려.','너도 소원을 빌겠지. 다들 그랬어.'],last:'…일곱 번째… 나팔…'},
   st_monk:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_cave:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
-  st_rootguard:{say:['접근 권한을 확인합니다.','블레서 등급: 관람 대상.','기록 열람 불가. 기록 열람 불가.'],last:'…관람 종료. 다음 회차를 준비합니다.'},
+  st_rootguard:{say:['출입 기록이 없습니다.','원본은 반출할 수 없습니다.','참고만 허락되었습니다.'],last:'…기록을, 지킵니다.'},
   st_siren:{say:['돌아오지 마.','여기 남으면, 밖에서는 아무도 네 이름을 몰라.','엄마가 내 이름을 부르지 않아. 처음부터 없던 것처럼.'],last:'나는… 누구였더라.',plugSay:['돌아오지 ……','여기 남으면, …… 아무도 ……','엄마가 …… 부르지 않아.'],plugLast:'나는… ……'},
   st_saltlord:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 이게 남은 대가야.','꺼내 줘.'],last:'소원을… 빌지 마.'},
   d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
@@ -1524,3 +1525,83 @@ function dexTab(){const t=['fish','mon','dun'].includes(S.sel.dexTab)?S.sel.dexT
     body=order.map(rg=>{const L=by[rg].sort((a,b)=>a.level-b.level);return `<div class="dex-g"><div class="dex-h">${esc(rg)} <span class="faint num">${L.filter(m=>KS[m.id]).length}/${L.length}</span></div><div class="mdex-list">${L.map(m=>{const n=KS[m.id]||0;return `<div class="mdex ${n?'':'unk'}"><pre class="ascii" aria-hidden="true">${n?esc(ART[m.art]||ART.generic):'?'}</pre><b>${n?esc(m.name):'???'}</b><small class="num">LV${m.level}${n?` · 처치 ${n}`:''}</small></div>`;}).join('')}</div></div>`;}).join('');}
   else body=`<div class="ddex-list">${dm.map(m=>{const n=KS[m.id]||0;const I=MAP_INFO[m.id]||{};return `<div class="ddex ${n?'':'unk'}"><div class="ddex-t"><b>${esc(m.region||'')}</b><small class="faint num">LV${m.level}+</small></div><div class="ddex-m">보스 · ${n?esc(m.name):'???'}${(m.loot||[]).length?` · 보물상자 ${lootText(m)}`:''}</div><div class="ddex-s">${n?`<span class="chip ok">공략 ${n}회</span>`:'<span class="chip dim">미공략</span>'}</div></div>`;}).join('')}</div>`;
   return `<div class="panel dexp"><div class="mtabs dex-tabs" role="tablist">${[['fish','물고기 도감',fishN],['mon','생물 도감',monN],['dun','던전 도감',dunN]].map(([k,l,n])=>`<button role="tab" data-act="dex-tab" data-t="${k}" aria-selected="${t===k}">${l} <span class="num faint">${n}</span></button>`).join('')}</div><div class="dex-body">${body}</div></div>`;}
+
+/* ───────── 6장 v2 연출 (기획 2026-11-04 v2 · 글리치 없이: 입력 반응·실제 시각·소리·화면 밖 틀) ─────────
+   퀘스트 단계 표시: walk(발자국 걷기) · sundial(해시계) · amb(소리) · planView(기획서 보기) · silence(정적, lock=입력 잠금) · tablet(원본 돌판) */
+const SELONA_SIGIL='<svg class="sigil-ink" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="20" fill="none" stroke="currentColor" stroke-width="3"/><path d="M18 26h28L32 50z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="34" r="3.2" fill="currentColor"/><path d="M32 4v8M20 8l4 7M44 8l-4 7" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+const WALK_N=5;
+function walkHTML(k){const cells=[];for(let i=0;i<=9;i++){const mine=i<=k&&i>0,ah=i>=WALK_N&&i<=WALK_N+Math.min(k,4);const both=mine&&ah;
+    cells.push(`<span class="wk-c ${mine?'me':''} ${ah?'ah':''} ${both?'both':''} ${ah&&i===WALK_N+Math.min(k,4)&&k<WALK_N?'tip':''}">${mine||ah?'<i class="fp l"></i><i class="fp r"></i>':''}</span>`);}
+  return `<div class="walk ${k>=WALK_N?'done':''}" role="img" aria-label="모래 위 발자국 · 내 걸음 ${k}/${WALK_N}">${cells.join('')}</div>`;}
+let WALK_IDLE=0;
+function walkIdleArm(){clearTimeout(WALK_IDLE);const w=document.querySelector('.walk');if(w)w.classList.remove('still');WALK_IDLE=setTimeout(()=>{const x=document.querySelector('.walk');if(x)x.classList.add('still');},10000);}
+function sundialHTML(){const d=new Date(),h=d.getHours(),mi=d.getMinutes();const ang=((h%12)+mi/60)/12*360;const p=n=>String(n).padStart(2,'0');
+  const ticks=Array.from({length:12},(_,i)=>{const a=i/12*Math.PI*2;return `<line x1="${50+Math.sin(a)*38}" y1="${50-Math.cos(a)*38}" x2="${50+Math.sin(a)*44}" y2="${50-Math.cos(a)*44}"/>`;}).join('');
+  return `<div class="sundial"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" class="sd-face"/><g class="sd-tick">${ticks}</g><g class="sd-glyph"><text x="50" y="20">☉</text><text x="82" y="54">≈</text><text x="50" y="88">人</text><text x="18" y="54">☉</text></g><line class="sd-shadow" x1="50" y1="50" x2="${50+Math.sin(ang/180*Math.PI)*36}" y2="${50-Math.cos(ang/180*Math.PI)*36}"/><circle cx="50" cy="50" r="3" class="sd-pin"/></svg><small class="sd-now num">${p(h)}:${p(mi)}</small></div>`;}
+function stepFx(q,qp,step){if(!step)return null;let html='',hold=false,text=null;const key=q.id+':'+qp.step;S.sel.fxSeen=S.sel.fxSeen||{};
+  if(step.silence){S.sel.silAt=S.sel.silAt||{};if(!S.sel.silAt[key]){S.sel.silAt[key]=now();silenceStart(step.silence,!!step.lock);setTimeout(()=>{if(S.route==='quest')render();},step.silence+30);}
+    if(now()-S.sel.silAt[key]<step.silence)return {hold:true,html:'<div class="qsilence" aria-hidden="true"></div>'};
+    if(step.tablet)html+=`<div class="qtablet"><div class="qt-lines" aria-hidden="true">${'<i></i>'.repeat(7)}</div><div class="qt-sig">${SELONA_SIGIL}</div></div>`;}
+  if(step.walk){const k=Math.min(step.walk,qp.walk||0);
+    if(k<step.walk){setTimeout(walkIdleArm,0);return {hold:true,html:`${qTextHTML(step.text)}${walkHTML(k)}<div class="row"><button class="btn btn-primary" data-act="walk-step" data-id="${q.id}">앞으로 걷는다 <span class="num faint">${k}/${step.walk}</span></button></div>`};}
+    html+=walkHTML(k)+'<p class="muted" style="font-size:12.5px">마지막 걸음에서 앞 발자국이 끊긴다. 당신 발자국이 그 위에 정확히 겹쳐 있다.</p>';}
+  if(step.sundial){html+=sundialHTML();if(!S.sel.fxSeen[key]&&typeof navigator!=='undefined'&&navigator.vibrate){try{navigator.vibrate([80,120,80]);}catch(e){}}}
+  if(step.amb)html+=`<i class="q-amb" data-amb="${step.amb}" hidden></i>`;
+  if(step.planView)html+=`<div class="row"><button class="btn btn-sm" data-act="view-plan">기획서를 펼쳐 본다</button></div>`;
+  S.sel.fxSeen[key]=1;
+  return html||hold?{html,hold,text}:null;}
+/* 정적: 배경음 끄고(잠깐) 입력 잠금 */
+const SIL={until:0};
+function silenceStart(ms,lock){SIL.until=now()+ms;clockTick(0.9);try{updateBgm();}catch(e){}
+  if(lock&&typeof document!=='undefined'){const o=document.createElement('div');o.id='sil-ov';o.setAttribute('aria-hidden','true');document.body.appendChild(o);setTimeout(()=>o.remove(),ms);}
+  setTimeout(()=>{try{updateBgm();}catch(e){}},ms+20);}
+/* 소리: 합성음만(음원 없음). 배경음 볼륨 설정을 따름, 0이면 아무 소리도 안 남 */
+let NOISE_BUF=null;
+function noiseBuf(c){if(NOISE_BUF)return NOISE_BUF;const b=c.createBuffer(1,c.sampleRate*1,c.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return NOISE_BUF=b;}
+function keyClick(v){const c=SND.ctx;if(!c||v<=0)return;try{const s=c.createBufferSource();s.buffer=noiseBuf(c);const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=1800+Math.random()*2200;f.Q.value=2.5;const g=c.createGain();const t=c.currentTime;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.035);s.connect(f).connect(g).connect(c.destination);s.start(t,Math.random()*0.9,0.05);}catch(e){}}
+function clockTick(mul){const v=0.05*sndVol('bgm')*(mul||1);if(!audio())return;blip(2700,0.025,v,'square');blip(1900,0.03,v*0.7,'square',0.24);}
+const AMB={on:null,next:0,hum:null};
+function ambHum(on){const c=SND.ctx;if(!c)return;if(on&&!AMB.hum){try{const s=c.createBufferSource();s.buffer=noiseBuf(c);s.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=220;const g=c.createGain();g.gain.value=0.018*sndVol('bgm');s.connect(f).connect(g).connect(c.destination);s.start();AMB.hum={s,g};}catch(e){}}
+  if(!on&&AMB.hum){try{AMB.hum.s.stop();}catch(e){}AMB.hum=null;}}
+/* 6장 보스 소리: 2페이즈 배경음 낮고 탁하게 + 중간중간 끊김, 3페이즈 배경음 멈추고 태엽 소리만 */
+const RGFX={mode:null,turn:-1,dropUntil:0,nextDrop:0,lastTick:0};
+function bgmMul(){if(now()<SIL.until)return 0;if(RGFX.mode==='clock')return 0;if(AMB.on==='office')return 0;if(RGFX.mode==='muddy')return now()<RGFX.dropUntil?0:0.85;return 1;}
+function bgmLp(){return RGFX.mode==='muddy'?150:520;}
+function bgmFade(){return (now()<SIL.until||RGFX.mode)?0.05:0.4;}
+setInterval(()=>{if(typeof document==='undefined'||!S||!S.me)return;const c=SND.ctx;
+  // 퀘스트 장면 소리
+  const m=document.querySelector('.q-amb');const want=m?m.dataset.amb:null;
+  if(want!==AMB.on){AMB.on=want;ambHum(want==='office');try{updateBgm();}catch(e){}}
+  if(want&&c&&now()>=AMB.next){const v=(want==='office'?0.035:0.025)*sndVol('bgm');keyClick(v);AMB.next=now()+(Math.random()<0.18?600+Math.random()*1400:70+Math.random()*130);}
+  // 보스 소리
+  const b=S.battle;const rg=b&&!b.over&&b.monsterId==='st_rootguard'&&b.mon;const ph=rg?(b.mon.sph||0):-1;
+  const mode=ph>=2?'clock':ph===1?'muddy':null;
+  if(mode!==RGFX.mode){RGFX.mode=mode;RGFX.turn=b?b.turn:-1;try{updateBgm();}catch(e){}}
+  if(mode==='muddy'&&now()>=RGFX.nextDrop){RGFX.dropUntil=now()+250+Math.random()*450;RGFX.nextDrop=now()+1600+Math.random()*2600;try{updateBgm();}catch(e){}setTimeout(()=>{try{updateBgm();}catch(e){}},RGFX.dropUntil-now()+10);}
+  if(mode==='clock'){if(now()-RGFX.lastTick>=1000){RGFX.lastTick=now();clockTick(0.35);}if(b.turn!==RGFX.turn){RGFX.turn=b.turn;clockTick(1.2);}}
+  // 접속자 목록의 미라(E22 완료 직후 1분, 이 화면에서만)
+  const list=document.querySelector('#pop .pop-online .list');const ghost=document.querySelector('.ol-ghost');const live=(S.sel.miraUntil||0)>now();
+  if(list&&live&&!ghost)list.insertAdjacentHTML('afterbegin',`<div class="li ol-ghost"><div class="row" style="gap:10px;flex:1;min-width:0"><span class="ol-face ghost" aria-hidden="true"></span><div class="t"><div class="row" style="gap:2px"><button class="who-btn" data-act="ghost-mira">미라</button></div><small>자리비움</small></div></div></div>`);
+  if(ghost&&!live)ghost.remove();
+},250);
+/* 기획서 뷰어: 양피지 위에 현대 문서 서식 */
+function planViewerHTML(){const att=!!S.sel.pvAtt;
+  const LBL=[['혹한',37,22],['소금',44,43],['바다',73,42],['늪',68,51],['바위',25,54],['초원',53,56],['작열',46,74],['',59,35]];const GL='☉≈人⊼⋔⌖⍜⟁';
+  const glyph=i=>[...GL].filter((_,j)=>(j*3+i)%2===0||j===i%8).slice(0,3).join('');
+  return `<div class="pv" role="document" aria-label="낡은 기획서 한 묶음">
+    <div class="pv-bar"><span class="pv-file">Bleset_Saga_기획서_v0.1</span><span class="pv-sp"></span><button type="button" class="pv-nav" disabled aria-label="이전 쪽">‹</button><span class="pv-page num">1 / 37</span><button type="button" class="pv-nav" data-act="pv-next" aria-label="다음 쪽">›</button><button type="button" class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    ${att?`<div class="pv-att"><div class="pv-map"><img src="${MAP_IMG}" alt="" draggable="false">${LBL.map(([n,x,y],i)=>`<span class="pv-gl" style="left:${x}%;top:${y}%">${glyph(i)}</span>`).join('')}</div><div class="row" style="justify-content:space-between"><small class="faint">첨부 1 · 실제 지형</small><button type="button" class="btn btn-sm" data-act="pv-att">1쪽으로</button></div></div>`
+    :`<div class="pv-sheet"><div class="pv-ruler" aria-hidden="true"></div>
+      <p class="pv-h">프로젝트명: <b>Bleset Saga</b></p><p>작성일: <span class="pv-blank"></span></p>
+      <ol><li>세계: 대륙 <u class="sp">라니아케아</u>. 지역 8곳(초원·바위·늪·소금·바다·작열·혹한·<u class="sp">블라스파미아</u>).</li>
+        <li>최종 콘텐츠: 백야의 신전. 클리어 보상 — 소원 1회.</li>
+        <li>접속: 생체 인식 머리띠(가칭 <u class="sp">블레스링크</u>).</li></ol>
+      <p>메모: 실제 지형을 참고할 것. <button type="button" class="pv-link" data-act="pv-att">첨부 1</button> 참조.</p>
+      <p class="pv-req">의뢰: <span class="pv-ink">${SELONA_SIGIL}</span></p></div>`}
+  </div>`;}
+function openViewer(kind){if(kind!=='plan')return;S.sel.pvAtt=false;modal(planViewerHTML());const mm=$('.modal');if(mm)mm.classList.add('wide','pv-modal');}
+function storyClaimFx(id){
+  if(id==='E22')S.sel.miraUntil=now()+60000;
+  if(id==='E23')setTimeout(()=>{deliverMail('Bless Link 고객지원','[장시간 접속 안내]\n\n안녕하세요, 블레서님. 게임 장시간 접속에 따라 안내드립니다.\n「환영합니다!」\n「환ㅁ합니다!」\n「환영합니다?」',{},{noArchive:true,noBtns:true});save();},1500);}
+/* 기존 세이브: 수호자 설명 v2로 */
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{const m=S.data&&S.data.monsters&&S.data.monsters.find(x=>x.id==='st_rootguard');if(m&&/관람석/.test(m.desc||'')){m.desc=STORY_MONS.find(x=>x.id==='st_rootguard').desc;save();}}catch(e){}};})();
