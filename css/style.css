@@ -2994,3 +2994,18 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 }
 @media (min-width:1101px) and (max-width:1400px){.gfx .gf-cl{width:var(--gcl-w,300px);height:var(--gcl-h,230px)}}
 @keyframes telFlash{0%{opacity:0;transform:translateY(-8px)}8%{opacity:1;transform:none}80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-8px);visibility:hidden}}
+/* 만신전 보스 대사(유저 요청): 다음 공격 전광판 대신 좌우로 흐려지는 상자에 보스 대사(패턴마다 같은 대사), PC 전체 화면만 */
+.gsay{display:none}
+@media (min-width:1101px){
+  .gfx>#gf-tel .gtel{display:none}
+  .gfx>#gf-tel .gsay{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 18% 10px;text-align:center;
+    background:linear-gradient(90deg,transparent 0%,rgba(10,10,10,.88) 22%,rgba(10,10,10,.88) 78%,transparent 100%);
+    animation:telFlash 5s ease forwards;animation-delay:var(--tel-d,0ms);pointer-events:none;position:relative}
+  .gfx>#gf-tel .gsay::before,.gfx>#gf-tel .gsay::after{content:"";position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(236,214,160,.55) 30%,rgba(236,214,160,.55) 70%,transparent)}
+  .gfx>#gf-tel .gsay::before{top:0}.gfx>#gf-tel .gsay::after{bottom:0}
+  .gfx>#gf-tel .gsay.aoe::before,.gfx>#gf-tel .gsay.aoe::after{background:linear-gradient(90deg,transparent,rgba(236,111,111,.7) 30%,rgba(236,111,111,.7) 70%,transparent)}
+  .gfx>#gf-tel .gsay small{font-size:11px;letter-spacing:.08em;color:var(--gold-hi)}
+  .gfx>#gf-tel .gsay.aoe small{color:#ff9a9a}
+  .gfx>#gf-tel .gsay p{margin:0;font-family:var(--f-display);font-size:17px;color:#fff;white-space:nowrap}
+  .gfx>#gf-tel .gsay.tel-gone{display:none}
+}

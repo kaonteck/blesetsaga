@@ -532,9 +532,16 @@ function telLine(b){const tel=b.tel,m=b.mon;if(!tel)return '';const dmg=Math.rou
   return `${tel.name}｜대미지 ${dmg}｜광역`;}
 // 다음 공격 예고: PC 전체 화면(.gfx)에서는 턴마다 잠깐 떴다 사라짐(전투 로그에는 '예고 · …'로 남음). 다시 그려도 처음부터 다시 뜨지 않게 처음 보인 시각을 기억.
 const TEL_SEEN={k:'',at:0};
+// 만신전 보스 대사: 패턴마다 늘 같은 대사 → 대사만 듣고 다음 공격을 알아챌 수 있게. 몬스터에 mass.lines{패턴:대사}가 있으면 그걸 씀({t}=대상 이름).
+const BOSS_SAY={single:'{t}… 너부터 꺾어 주마.',dot:'{t}, 이 독을 견뎌 보아라.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
+function bossSay(b){const tel=b.tel;if(!tel)return '';const k=tel.type==='dot'?'dot':(tel.pat||'single');
+  const own=b.mon&&b.mon.mass&&b.mon.mass.lines;let line=(own&&own[k])||BOSS_SAY[k]||'';
+  if(line.includes('{t}')){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);line=line.replace(/\{t\}/g,t?t.name:'');}
+  return line;}
 function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=='dot';const t=esc(telLine(b));
   const k=b.id+'|'+b.turn+'|'+(tel?tel.name:'');if(TEL_SEEN.k!==k){TEL_SEEN.k=k;TEL_SEEN.at=now();}const el=now()-TEL_SEEN.at;
-  return `<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
+  const say=tel?bossSay(b):'';
+  return `${say?`<div class="gsay ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><small>${esc(b.mon.name)}</small><p>“${esc(say)}”</p></div>`:''}<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
 function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지도 확대·축소"><button type="button" data-gmz="in" aria-label="확대">+</button><span class="gmz-r num">${Math.round(GMZ.z*100)}%</span><button type="button" data-gmz="out" aria-label="축소">−</button><button type="button" data-gmz="fit" aria-label="맞춤">맞춤</button></div>${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
