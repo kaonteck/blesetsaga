@@ -2740,3 +2740,11 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 }
 /* 일반 전투 파티 카드: 버프·디버프 칩을 클래스·LV 옆 한 줄에(만신전 HUD처럼) */
 .fighter .fx-row{flex-wrap:wrap;row-gap:4px}
+
+/* 5장: 지워지는 이름(퀘스트 글) · 캐릭터 카드 이름 1초 ■■■ */
+.qerase{display:inline-flex;gap:.12em;font-weight:700;letter-spacing:.08em;color:var(--text)}
+.qerase>span{animation:qerase .5s ease forwards;animation-delay:calc(1.4s + var(--d)*.6s)}
+@keyframes qerase{to{color:transparent;background:var(--faint)}}
+.sc-name .nm-glx{letter-spacing:.05em}
+.sc-name .nm-real{display:none}
+@media (prefers-reduced-motion:reduce){.qerase>span{animation-duration:.01s}}

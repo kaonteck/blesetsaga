@@ -216,7 +216,7 @@ function vBattle(){
     <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15'};
+const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19'};
 function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
@@ -562,7 +562,7 @@ function gfAct(b,me){
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
   else body=`<div class="gact-h"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
   const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${JOBS[me.job].sigil}</span>`;
-  const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`빛의 속박 ${me.bound}`,'debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
+  const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`빛의 속박 ${me.bound}`,'debuff']);if(me.charm>0)st.push(['매혹','debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
   const hpP=pct(me.hp,me.maxHp);
   return `<div class="hud ${me.dead?'is-dead':''}">
     <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div></div>
@@ -836,8 +836,9 @@ function lockReason(q){
   const c=condReason(q);if(c)r.push(c);
   return r.join(' · ');
 }
+function eraseHTML(h){return h.replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>`<span class="qerase" aria-label="지워진 이름">${[...n].map((c,i)=>`<span style="--d:${i}">${c}</span>`).join('')}</span>`);}
 function qTextHTML(t){const m=/\s*\((탐색 › [^)]+)\)\s*$/.exec(t||'');const body=m?t.slice(0,m.index):t;
-  return `<p class="qtext">${esc(body)}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
+  return `<p class="qtext">${eraseHTML(esc(body))}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
 const QSTAT={hidden:['오늘 목록 아님','dim'],locked:['잠김','dim'],available:['수락 가능','ok'],active:['진행 중','warn'],claim:['보상 대기','warn'],done:['완료','dim'],doneToday:['오늘 완료','dim']};
 function choiceReason(c){
   const r=c.req;if(!r)return null;

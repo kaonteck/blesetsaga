@@ -85,6 +85,7 @@ const SKILL_FX={
   pray:[['heal','대상 HP 전부 회복'],['dn','자신 HP −15%']],
   utopia:[['heal','전체 · 마력 40%×판정 +40%']],
   vindicate:[['dn','아군 받는 대미지 −20%']],
+  purify:[['heal','독·매혹 해제'],['buff','먼저 처리']],
   blind:[['buff','아군 전체 대미지 +25%']],
   downworld:[['debuff','몬스터 대미지 −30%']],
   dystopia:[['dmg','대미지 ×3'],['dn','아군 전체 HP −3%']],
@@ -245,7 +246,7 @@ function sideCard(){
   return `<div class="panel me-card sc">
     <div class="sc-por">${portraitHTML(false)}</div>
     <div class="sc-id">${titleChip()}
-      <h2 class="sc-name"><button class="me-link" data-act="nav" data-route="character" title="캐릭터 페이지로">${esc(me.name)}</button></h2>
+      <h2 class="sc-name"><button class="me-link" data-act="nav" data-route="character" title="캐릭터 페이지로">${S.sel.nameGlx&&now()<S.sel.nameGlx?`<span class="nm-glx" aria-hidden="true">${'■'.repeat(Math.max(3,[...me.name].length))}</span><span class="nm-real">${esc(me.name)}</span>`:esc(me.name)}</button></h2>
       <div class="sc-lvl num">LV ${me.level}</div>
       <div class="sc-lv">${roleChip(me.job)}${profChips()}${canAdv?'<button class="chip warn" data-act="nav" data-route="character" style="cursor:pointer;background:none">전직 가능</button>':''}</div></div>
     <div class="sc-memo">${memoHTML()}</div>
@@ -655,7 +656,7 @@ function questDetail(q){
     h+=`<p class="ok-t">${st==='doneToday'?'오늘 주기의 보상을 받았습니다. 오전 5시 이후 다시 수락할 수 있습니다.':'완료한 퀘스트입니다.'}${log?` 선택한 경로: ${esc(log.path||'')}`:''}</p>`;
   }
   if(qp&&(st==='active'||st==='claim')){
-    if(qp.history.length)h+=`<div class="qhist">${qp.history.map(x=>`<div><p>${esc(x.text)}</p><p style="margin-top:4px"><b>▸ ${esc(x.label)}</b> — ${esc(x.result)}</p></div>`).join('')}</div>`;
+    if(qp.history.length)h+=`<div class="qhist">${qp.history.map(x=>`<div><p>${esc(String(x.text).replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>'■'.repeat([...n].length)))}</p><p style="margin-top:4px"><b>▸ ${esc(x.label)}</b> — ${esc(x.result)}</p></div>`).join('')}</div>`;
     const step=q.steps[qp.step];
     if(step.end){
       h+=`<div class="result"><div class="ph" style="margin-bottom:6px">완료 · ${esc(step.text)}</div>${rewardHTML(qReward(q,step.reward))}</div>
@@ -788,7 +789,7 @@ function flogHTML(){const open=!!S.sel.flogOpen;
 function logHTML(){return S.battle.log.slice(-160).map(l=>`<div class="${l.t}">${esc(l.text)}</div>`).join('');}
 /* 몬스터 그림 / 대사(옛 영웅 보스 HERO_LINES): 전투 중엔 이번 턴 대사(첫 턴은 첫 대사), 승리 후엔 마지막 말.
    대사는 '다음 행동' 칸 위에 같은 모양의 붉은 칸(.tele.say)으로 */
-function monSayText(b){const H=HERO_LINES[b.monsterId||b.mon.id];if(!H)return '';
+function monSayText(b){const H=heroLinesOf(b);if(!H)return '';
   if(b.over)return b.over==='win'?H.last:'';if(b.heroSay&&b.heroSay.turn===b.turn)return b.heroSay.text;return b.turn===1?H.say[0]:'';}
 function monSayHTML(b){const t=(monSayText(b)||'').trim();if(!t)return '';const paren=/^\(.*\)$/s.test(t);  /* (지문)은 따옴표 없이 */
   return `<div class="tele say" role="status">${esc(paren?t:`“${t}”`)}</div>`;}
@@ -811,7 +812,7 @@ function fightMain(){
     </div></div></div>
     <div class="panel"><h3>파티 <span class="faint" style="letter-spacing:0;text-transform:none;font-weight:400">방어·보호·지원 스킬 먼저, 이후 행운 순</span></h3><div class="fighters">${b.order.map(id=>fighterCard(b,b.players.find(p=>p.id===id))).join('')}</div></div>
     ${flogHTML()}
-    <div class="panel cmdbar">${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
+    <div class="panel cmdbar">${!me.dead&&me.charm>0?'<p class="reason" style="margin:0 0 8px">매혹 상태 · 이번 턴은 아이템만 쓸 수 있습니다. 정화의 성수로 풀 수 있습니다.</p>':''}${me.dead?`<p class="muted">전투 불능 상태입니다. 프리스트 계열의 신세이어로 부활할 수 있습니다. 이번 전투에서 직접 행동한 기록이 있으면 승리 보상을 받습니다.</p>`:actionPanel(b,me)}
     <div class="row" style="justify-content:space-between;margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">
       <span class="muted" style="font-size:12.5px">확정 ${living(b).filter(p=>p.confirmed).length}/${living(b).length} · 전원 확정 또는 시간 종료 시 처리</span>
       <span class="timer ${left<=10?'low':''}" data-timer>${left}초</span></div></div>`;
@@ -825,6 +826,7 @@ function fighterCard(b,p){
   if(p.poison)st.push(`<span class="chip st-debuff">${esc(p.poison.name)} ${p.poison.turns}</span>`);
   if(p.hot)st.push(`<span class="chip st-heal">블레스 ${p.hot.turns}</span>`);
   if(p.bound>0)st.push(`<span class="chip st-debuff">빛의 속박 ${p.bound}</span>`);
+  if(p.charm>0)st.push('<span class="chip st-debuff">매혹 · 행동 불가</span>');
   if(canDouble(p,b))st.push('<span class="chip st-buff">연사</span>');
   if(p.obTurn===T)st.push('<span class="chip st-buff">오버 버닝 가능</span>');
   p.buffs.filter(x=>x.from<=T&&x.to>=T).forEach(x=>st.push(`<span class="chip st-buff">${BUFFN[x.k]||x.k}</span>`));
@@ -1293,7 +1295,7 @@ function planBots(b){b.players.forEach(p=>{if(!p.isMe&&!p.dead)p.planAt=now()+rn
 const hooks={hasItem:(pid,k)=>pid==='me'?(S.me.inv[k]||0)>0&&!itemBlock(k):false,useItem:(pid,k)=>{if(pid==='me'&&S.me.inv[k]>0)S.me.inv[k]--;}};
 function doResolve(){
   const b=S.battle;if(b.bless&&!b.bless.pick)applyBless(b,pick(b.bless.cards));if(b.grid)gridPre(b,Math.random,hooks);resolveTurn(b,Math.random,hooks);
-  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&!b.over&&Math.random()<0.4){const pool=H.say.filter(x=>x!==b.heroLast);const l=pick(pool.length?pool:H.say);b.heroLast=l;b.heroSay={text:l,turn:b.turn};b.log.push({t:'warn',text:`${b.mon.name} · “${l}”`});}}
+  {const H=heroLinesOf(b);if(H&&!b.over&&Math.random()<0.4){const pool=H.say.filter(x=>x!==b.heroLast);const l=pick(pool.length?pool:H.say);b.heroLast=l;b.heroSay={text:l,turn:b.turn};b.log.push({t:'warn',text:`${b.mon.name} · “${l}”`});}}
   if(b.over)finishBattle(b);
   else{b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);resetAct();
     if(Math.random()<(b.grid?0.3:0.25)){const bm=b.players.filter(p=>!p.isMe&&!p.dead);if(bm.length)later(rnd(800,2500),()=>botSay(b.grid?'raid':'party',pick(bm).name,pick(b.grid?MASS_LINES:PARTY_LINES)));}}
@@ -1311,7 +1313,7 @@ function finishBattle(b){
     if(ctx.type==='event'&&ctx.ev&&!blocked){S.eventDone=S.eventDone||{};S.eventDone[ctx.ev]=true;}
     if(ctx.type==='dungeon'){daily().dungeon[b.monsterId]=true;bump('dunClear');}
     if(ctx.type==='quest'){const q=quest(ctx.qid),qp=S.qp[ctx.qid];const st=q&&q.steps[ctx.step];if(qp&&st&&qp.step===ctx.step){qp.history.push({step:ctx.step,text:st.text,label:`개인 레이드 · ${b.mon.name} 처치`,result:st.winText||'적을 쓰러뜨렸다.'});qp.step=st.next;qp.lost=false;}}
-  }else if(ctx.type==='quest'){const qp=S.qp[ctx.qid];if(qp)qp.lost=true;}
+  }else if(ctx.type==='quest'){const qp=S.qp[ctx.qid];if(qp){qp.lost=true;const q=quest(ctx.qid);const st=q&&q.steps[ctx.step];if(st&&st.loseTo&&q.steps[st.loseTo]&&qp.step===ctx.step)qp.step=st.loseTo;}}
   if(ctx.type==='mass'){const C={reward:b.reward||massCfg().reward},w=b.over==='win';r.eligible=me.direct>=1;r.mass=true;
     if(r.eligible){r.exp=C.reward.join.exp+(w?C.reward.kill.exp:0);r.gold=C.reward.join.gold+(w?C.reward.kill.gold:0);const it={...(C.reward.join.items||{})};
       if(w){for(const k in (C.reward.kill.items||{}))it[k]=(it[k]||0)+C.reward.kill.items[k];const pk=(C.reward.kill.pick||[]).filter(k=>ITEMS[k]);if(pk.length){const k=pick(pk);it[k]=(it[k]||0)+1;}}
@@ -1323,7 +1325,7 @@ function finishBattle(b){
   }
   if(me.direct>=1){bump('damage',me.dealt||0);bump('crits',me.crits||0);bump('healing',me.healed||0);bump('revives',me.revives||0);
     if(b.over==='win'){bump('raidsWon');const k=S.stats.kills=S.stats.kills||{};k[b.monsterId]=(k[b.monsterId]||0)+1;if(b.eventBonus)bump('bossWins');if(me.dead)bump('fallenWins');}else bump('raidsLost');}
-  {const H=HERO_LINES[b.monsterId||b.mon.id];if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);rec({drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type]||'raid',`${b.mon.name}의 마지막 말 · “${H.last}”`);}}
+  {const H=heroLinesOf(b);if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);rec({drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type]||'raid',`${b.mon.name}의 마지막 말 · “${H.last}”`);}}
   b.result=r;
   if(ctx.drun)drunAfter(b,me);
   sysParty(b.over==='win'?'승리! 보상은 각자 지급됩니다.':'전투가 끝났습니다.');
@@ -1529,7 +1531,7 @@ function mailList(tab,sort){
 function fmtWhen(t){const d=now()-t;if(d<60000)return '방금';if(d<3600000)return Math.floor(d/60000)+'분 전';if(d<86400000)return Math.floor(d/3600000)+'시간 전';return new Date(t+9*3600e3).toISOString().slice(5,10).replace('-','.');}
 function availItem(k){if(isQuestItem(k))return 0;const n=S.me.inv[k]||0;return n-(Object.values(S.me.equip||{}).includes(k)?1:0);}
 function deliverMail(from,text,items,extra){
-  S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});try{rec('mail',`${from}님에게서 ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착`);}catch(e){}bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
+  S.mail=S.mail||[];S.mail.push({id:uid('ml'),from,text,items:items||{},ts:now(),read:false,claimed:false,archived:false,...(extra||{})});try{rec('mail',`${from?from+'님에게서':'보낸 이 없는'} ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착`);}catch(e){}bump('lettersRecv');if(items&&Object.keys(items).length)bump('giftsRecv');
   if(S.mail.length>120){const drop=S.mail.filter(m=>!m.archived).sort((a,b)=>a.ts-b.ts)[0];S.mail=S.mail.filter(m=>m!==drop);}
   notify(`${from}님에게서 ${items&&Object.keys(items).length?'선물이':'메시지가'} 도착했습니다.`);renderTop();renderPop();save();
 }
@@ -1564,7 +1566,7 @@ function mailDetail(m){
       ${gift?`<div class="mitems"><div class="ph" style="margin-bottom:6px">${TICON.gift.replace('<svg','<svg class="gi"')} 첨부 선물</div>${Object.entries(m.items).map(([k,n])=>`<div class="row" style="justify-content:space-between"><span>${k==='_gold'?'골드':ITEMS[k]?ITEMS[k].name:k}</span><span class="num">×${n}</span></div>`).join('')}
         <button class="btn btn-sm ${m.claimed?'':'btn-primary'}" data-act="mail-claim" data-id="${m.id}" ${m.claimed?'disabled':''} style="margin-top:8px">${m.claimed?'받기 완료':'선물 받기'}</button></div>`:''}
       <div class="row">${m.from!=='운영자'&&bot(m.from)?`<button class="btn btn-sm" data-act="mail-reply" data-to="${esc(m.from)}">답장</button>`:''}
-        <button class="btn btn-sm" data-act="mail-archive" data-id="${m.id}">${m.archived?'보관 해제':'보관'}</button>
+        <button class="btn btn-sm" data-act="mail-archive" data-id="${m.id}" ${m.noArchive?'disabled title="보관할 수 없는 메시지입니다"':''}>${m.archived?'보관 해제':'보관'}</button>
         <button class="btn btn-sm btn-ghost btn-danger" data-act="m-delask" data-id="${m.id}">삭제</button></div>
     </div>`;
 }

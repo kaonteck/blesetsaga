@@ -236,7 +236,7 @@ const VIL_LINES={
   clinic:[['의무관 세린',['동상은 늦게 알아차릴수록 위험해요. 손가락 좀 볼게요.','천천히 숨 쉬세요. 찬 공기도 익숙해지면 괜찮아져요.','몸이 기억하는 추위는… 오래 남아요. 조심하세요.']]],
   alley:[['얼음 조각가',['이 조각은 내일이면 녹아요. 그래도 만들어요. 왜냐고요? …글쎄요.','길 끝에 연구소에서 금지한 구역이 있어요. 거긴… 가지 않는 게 좋아요.']],['골목 고양이',['털이 두툼한 고양이가 당신 발치에 조용히 앉아 온기를 나눈다.','고양이가 눈송이를 앞발로 톡톡 건드린다.']]]},
  sea:{
-  plaza:[['선장 바르보사',['하하하! 벤테에 온 걸 환영하네! 바다 냄새 좀 맡아 봐, 이게 사는 맛이지!','오늘 그물에 대어가 걸렸다네! 저녁은 내가 쏘지!','파도가 높을수록 심장이 뛰지 않나? 하하!']],['어부 토마스',['어이, 블레서! 낚싯대 좀 다룰 줄 아나? 모르면 내가 가르쳐 주지!','바다는 거짓말을 안 해. 성실하게 던지면 언젠간 물어!']]],
+  plaza:[['선장 바르보사',['…밤엔 잠을 안 자. 자면 노래가 들리거든. 하하! 농담이야, 농담.','하하하! 벤테에 온 걸 환영하네! 바다 냄새 좀 맡아 봐, 이게 사는 맛이지!','오늘 그물에 대어가 걸렸다네! 저녁은 내가 쏘지!','파도가 높을수록 심장이 뛰지 않나? 하하!']],['어부 토마스',['어이, 블레서! 낚싯대 좀 다룰 줄 아나? 모르면 내가 가르쳐 주지!','바다는 거짓말을 안 해. 성실하게 던지면 언젠간 물어!']]],
   grocer:[['어시장 아줌마 벨라',['싱싱한 고등어 있어요~! 오늘 아침에 들어온 거예요!','블레서 양반, 회 한 접시 먹고 가! 기운이 펄펄 날 거야!','꽃게가 살이 꽉 찼어! 안 사면 후회한다니까!']]],
   clinic:[['항구 치료사 마린',['낚싯바늘에 찔렸어요? 어부들은 하루에 열 번은 와요, 하하!','멀미약 필요해요? 배 타기 전에 미리 먹어 둬요!','바닷바람 맞으면 상처가 금방 아물어요. 진짜예요!']]],
   alley:[['술 취한 선원',['내가 말이야~ 리바이어던을 봤다니까! 이~만했어! 히끅!','바다 노래 하나 불러 줄까? 요호호~!']],['항구 고양이',['고양이가 생선 대가리를 물고 의기양양하게 지나간다.','고양이가 어부의 바구니를 노리며 꼬리를 흔든다.']]]},
@@ -311,9 +311,11 @@ Object.assign(ITEMS,{
   j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 표지 안쪽에 영문 이름이 긁혀 있다. A■R■■A. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
 /* AURORA 탐사대의 일지(아이템 id는 j2052 그대로): 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다. 3장 1쪽, 4장 E13·E14·E15 완료 때 한 쪽씩. 날짜·템빨/컨빨 언급 없음(시간선: AURORA 탐사대가 먼저 갇혔고, 템빨·컨빨은 다음에 들어와 탈출 → 라니아케아에 기록 없음) */
 const J2052_P1='(날짜 칸은 물에 번져 읽을 수 없다)\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— AURORA';
-const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.'];
-function j2052Text(){const F=(S&&S.flags)||{};const n=1+(F.e13_vip?1:0)+(F.e14_logout?1:0)+(F.ch4_clear?1:0);const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
-  if(F.ch4_clear)pages[pages.length-1]+='\n\n(4쪽 뒤에 젖은 악보 한 장이 끼워져 있다. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」)';
+const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.'];
+function j2052Text(){const F=(S&&S.flags)||{};const n=1+['e13_vip','e14_logout','ch4_clear','e17_score','e18_bottle','ch5_clear'].filter(f=>F[f]).length;const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
+  const NOTE={4:'(4쪽 뒤에 젖은 악보 한 장이 끼워져 있다. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」)',7:'(7쪽 뒤에 금빛 문양을 문질러 뜬 탁본 한 장이 끼워져 있다. 처음 보는 고대 문자다.)'};
+  if(n>=7&&F.e19_listen)pages[6]+='\n그 사람이 바다에서 노래한다. 돌아오지 말라고.';
+  pages.forEach((x,i)=>{const nt=NOTE[i+1];if(nt&&(i+1<n||(i+1===n&&(n===4?F.ch4_clear:F.ch5_clear))))pages[i]=x+'\n\n'+nt;});
   return pages.join('\n\n― ― ―\n\n')+'\n\n(나머지 쪽은 물에 젖어 붙어 있다. 억지로 떼면 찢어질 것 같다.)';}
 Object.defineProperty(ITEMS.j2052,'readText',{get:j2052Text,enumerable:true,configurable:true});
 
@@ -322,6 +324,12 @@ Object.assign(ITEMS,{q_permit:{name:'히페리온 체류 허가증',type:'mat',t
   q_chip:{name:'닳은 카지노 칩',type:'mat',tag:'퀘스트 아이템',desc:'골든 오아시스 금고 바닥에서 찾은 오래된 칩. 반쯤 닳은 글자가 새겨져 있다. A■R■■A.'},
   q_vaultkey:{name:'히페리온 금고 열쇠',type:'mat',tag:'퀘스트 아이템',desc:'금고지기 바르톨로가 맡긴 무거운 열쇠. 소금 성 문에 맞는다고 한다. 왜 도시 금고 열쇠가 성 문에 맞는지는 아무도 묻지 않는다.'},
   q_eternal:{name:'영원한 거주 허가증',type:'mat',tag:'???',desc:'히페리온 시민권. 유효기간: ∞. 발급 사유: 소원 ▒▒ 대가. 소지자는 ▒▒▒▒할 수 없습니다. 이 허가증은 반납할 수 없습▒',price:0}});
+Object.assign(ITEMS,{q_score:{name:'젖은 악보',type:'mat',tag:'퀘스트 아이템',desc:'일지 4쪽 뒤에 끼워져 있던 악보. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」.'},
+  q_bottle:{name:'병 속의 편지',type:'mat',tag:'퀘스트 아이템',desc:'벤테 어시장 그물에 걸려 올라온 병 편지. 받는 사람 주소가 이 세계의 글자가 아니다.'},
+  q_wax:{name:'밀랍 귀마개',type:'mat',tag:'퀘스트 아이템',desc:'선장 바르보사가 건넨 밀랍 귀마개. 손때가 잔뜩 묻어 있다. 그가 한 번도 쓰지 못한 것이라고 한다.'},
+  q_photo:{name:'젖은 사진',type:'mat',tag:'기념품',desc:'벤테 해변에서 주운 단체 사진. 사용하면 자세히 본다.',price:0,readText:'여섯 명이 웃고 있다. 얼굴은 모두 물에 번져 알아볼 수 없다.\n가운데 한 자리는 처음부터 비어 있다. 누군가 빠진 게 아니라, 원래 그 자리에 아무도 서지 않았던 것처럼.\n\n뒷면: A■R■■A'},
+  q_conch:{name:'소라 껍데기',type:'mat',tag:'기념품',desc:'벤테 치료소에서 받은 소라 껍데기. 사용하면 귀에 대 본다.',price:0,readText:'쏴아— 파도 소리.\n그 사이로 아주 작게:\n「이번 역은… 역입니다. 내리실 문은 오른쪽입니다.」\n「띠링. 새 메시지 1개.」\n\n…다시 파도 소리뿐이다.'}});
+if(ITEMS.q_return)ITEMS.q_return.readText='이 세계에 머무르시겠습니까?\n\n…\n\n이미 돌아와 있습니다.';
 const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',kind:'story',region:'순례자의 길',level:11,statLevel:12,tier:'story',desc:'순례자의 길 끝에서 블레서를 시험하는 거대한 석상.',singleName:'바위 주먹',aoeName:'지진',dotName:'균열',dotChance:0.2}),soloMon({id:'st_monk',name:'동굴의 은둔 무승',art:'golem',kind:'story',region:'무너진 바위 동굴',level:17,statLevel:18,tier:'story',desc:'언제부터 동굴에 있었는지 아무도 모르는 무승.',singleName:'발레티 정권',aoeName:'산을 울리는 발경',dotName:'내상',dotChance:0.3}),soloMon({id:'st_leech',name:'늪가의 독거머리 떼',art:'beast',kind:'story',region:'로타스 늪가',level:20,statLevel:21,tier:'story',desc:'마스크 없이 늪가에 나온 사람에게 한꺼번에 달라붙는 거머리 떼.',singleName:'달라붙기',aoeName:'떼로 덮치기',dotName:'흡혈',dotChance:0.35}),
   soloMon({id:'st_rift',name:'균열에서 기어 나온 것',art:'spirit',kind:'story',region:'늪 한가운데의 균열',level:22,statLevel:23,tier:'story',desc:'보랏빛 균열에서 기어 나온 무언가. 형체가 한 박자씩 늦게 따라온다.',singleName:'끌어당기기',aoeName:'균열의 파동',dotName:'잠식',dotChance:0.3}),
   soloMon({id:'st_warden',name:'수문 파수꾼',art:'golem',kind:'story',region:'물에 잠긴 등대 신전',level:25,statLevel:26,tier:'story',desc:'등대 신전의 수문을 지키는 돌 파수꾼. 이끼가 눈을 덮어도 정확히 침입자 쪽을 본다.',singleName:'수문 망치',aoeName:'역류',dotName:'이끼 독',dotChance:0.3}),
@@ -332,9 +340,16 @@ const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',ki
   soloMon({id:'st_goldguard',name:'금고의 황금 파수꾼',art:'golem',kind:'story',region:'골든 오아시스 금고',level:32,statLevel:33,tier:'story',desc:'카지노 금고를 지키는 황금 골렘. 칩이 사라진 뒤로 누구든 손님으로 보지 않는다.',singleName:'황금 주먹',aoeName:'칩 회수',dotName:'금박 화상',dotChance:0.25}),
   soloMon({id:'st_brine',name:'호숫가의 염수 정령',art:'spirit',kind:'story',region:'갈증의 호수 기슭',level:35,statLevel:36,tier:'story',desc:'지나치게 짜진 호숫물이 형체를 얻은 정령. 닿는 곳마다 하얀 소금 자국이 남는다.',singleName:'염수 채찍',aoeName:'짠물 파도',dotName:'탈수',dotChance:0.35}),
   soloMon({id:'st_saltlord',name:'염수의 군주',art:'golem',kind:'story',region:'갈증의 호수 · 소금 성',level:38,statLevel:39,tier:'story',desc:'소금 성의 왕좌에 앉은 자. 금화로 가득한 성 안에서 끝없이 목말라한다. 사람들은 그가 원래 블레서였다고 수군거린다. [4장 보스]',singleName:'소금 채찍',aoeName:'금화 세례',dotName:'갈증',dotChance:0.2,
-    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 갈증',say:'군주가 갈증을 퍼뜨린다. 탈수는 정화의 성수로 풀 수 있다',atkMul:1.3,dotName:'탈수',dotChance:0.55,dotMul:1.5,aoeName:'황금 동전 세례'},{at:25,name:'3페이즈 · 염화',say:'성 안의 금화가 소금으로 굳는다',atkMul:1.6,aoeName:'염화',aoeMult:0.75,aoeEvery:2,dotChance:0.25}]})];
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 갈증',say:'군주가 갈증을 퍼뜨린다. 탈수는 정화의 성수로 풀 수 있다',atkMul:1.3,dotName:'탈수',dotChance:0.55,dotMul:1.5,aoeName:'황금 동전 세례'},{at:25,name:'3페이즈 · 염화',say:'성 안의 금화가 소금으로 굳는다',atkMul:1.6,aoeName:'염화',aoeMult:0.75,aoeEvery:2,dotChance:0.25}]}),
+  soloMon({id:'st_crab',name:'밤 부두의 암초 게 떼',art:'beast',kind:'story',region:'벤테 밤 부두',level:40,statLevel:41,tier:'story',desc:'바다로 걸어 들어가는 선원을 뒤따라 부두로 기어오르는 암초 게 떼. 집게 끝에 따개비가 잔뜩 붙어 있다.',singleName:'집게',aoeName:'떼로 덮치기',dotName:'따개비 상처',dotChance:0.3}),
+  soloMon({id:'st_wraith',name:'해무 속 홀린 망령',art:'spirit',kind:'story',region:'벤테 뒷골목 술집',level:42,statLevel:43,tier:'story',desc:'노래를 따라 바다로 걸어간 선원들. 해무와 함께 술집 안까지 밀려든다. 입은 계속 같은 소절을 따라 부른다.',singleName:'젖은 손',aoeName:'해무',dotName:'한기',dotChance:0.3}),
+  soloMon({id:'st_kraken',name:'난파 해역의 크라켄 촉수',art:'beast',kind:'story',region:'난파 해역',level:45,statLevel:46,tier:'story',desc:'바다 한가운데에서 배를 붙잡는 거대한 촉수. 본체는 끝내 수면 위로 올라오지 않는다.',singleName:'휘감기',aoeName:'배 흔들기',dotName:'먹물',dotChance:0.3}),
+  soloMon({id:'st_siren',name:'심해의 세이렌',art:'spirit',kind:'story',region:'심해 신전',level:48,statLevel:49,tier:'story',desc:'노래가 가장 크게 들리는 심해 신전의 주인. 남기를 택했던 블레서라고 한다. 다음 사람이 오지 않도록 계속 노래한다. [5장 보스]',singleName:'물살 채찍',aoeName:'물보라',dotName:'바닷물',dotChance:0.2,
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 부름',say:'세이렌이 노래한다. 매혹되면 1턴 동안 행동할 수 없다(정화의 성수·퓨리파이로 해제)',atkMul:1.3,singleName:'부름',charmChance:0.35,aoeName:'물보라',aoeEvery:3},{at:25,name:'3페이즈 · 심해 수압',say:'신전이 바다 밑으로 가라앉는다',atkMul:1.6,aoeName:'심해 수압',aoeMult:0.75,aoeEvery:2,charmChance:0.2}]})];
 /* 4장 보스 염수의 군주: 3장 바다뱀과 같은 체감(봇 시뮬 LV37 · 독안개 장비 기준 전 클래스 91% 이상) */
 {const m=STORY_MONS.find(x=>x.id==='st_saltlord');m.hp=Math.round(m.hp*1.3);m.atk=Math.round(m.atk*1.1);m.dotDmg=Math.round(m.atk*0.15);}
+/* 5장 보스 심해의 세이렌: 기획 HP ×1.35 · 공격 ×1.15에 시뮬로 한 번 더(×1.2 · ×1.08) — LV47 백염 장비 기준 귀마개 92%+, 노래 듣기 80%+(샐래맨더 최저, 성수 미사용 봇) */
+{const m=STORY_MONS.find(x=>x.id==='st_siren');m.hp=Math.round(m.hp*1.35*1.2);m.atk=Math.round(m.atk*1.15*1.08);m.dotDmg=Math.round(m.atk*0.15);}
 const STORY_QUESTS=[
  {id:'E0',cat:'epic',title:'블레스 링크',published:true,level:1,prereq:null,repeat:null,cond:{},
   desc:'2054년, <Bleset Saga>가 다시 문을 열었다. 블레스 링크를 쓰고 처음으로 접속한다.',start:'s1',steps:{
@@ -530,14 +545,90 @@ const STORY_QUESTS=[
   s2:{text:'손님: "여기 있으면 잃지도 따지도 않아요. 그게 얼마나 편한지 몰라요. 당신도 곧 알게 될 거예요."',choices:[
     {label:'"언제부터 여기 있었어요?"',result:'"글쎄요. 접수 마감 전이었던가." 손님이 웃는다. 웃음이 1초쯤 길다. 그리고 다음 경기에 같은 금액을 건다.',next:'end',flag:'s4b_seat'},
     {label:'자리에서 일어난다',result:'"또 오세요. 저는 여기 있을 테니까." 돌아보면 손님은 벌써 다음 경기를 보고 있다.',next:'end',flag:'s4b_seat'}]},
-  end:{end:true,text:'매일 같은 자리의 손님',reward:{exp:2400,gold:400,items:{}}}}}];
+  end:{end:true,text:'매일 같은 자리의 손님',reward:{exp:2400,gold:400,items:{}}}}},
+ {id:'E16',cat:'epic',title:'귀를 막은 항구',published:true,level:40,prereq:'E15',repeat:null,cond:{},
+  desc:'일지 4쪽 뒤에 끼워져 있던 젖은 악보 「돌아오지 마」를 따라 바다의 땅 벤테로 간다. [5장 「세이렌의 부름」]',start:'s1',steps:{
+  s1:{text:'항구도시 벤테. 부두에 배가 가득한데, 한 척도 나가지 않는다. 지나가는 사람들은 모두 귀에 솜을 틀어막고 있다. 광장에서 선장 바르보사가 여전히 크게 웃고 있다. 웃음 끝이 조금 갈라져 있다. (탐색 › 바다의 땅 › 마을 › 광장)',choices:[
+    {label:'바르보사에게 배가 왜 안 나가는지 묻는다',result:'"하하! 노래 때문이지!" 웃음이 뚝 멈춘다. "몇 달 전부터 밤마다 바다에서 노래가 들려. 인어의 속삭임 쪽에서. 들은 녀석들은 배를 버리고 바다로 걸어 들어가. 우린 그걸 \'부름\'이라고 부르네. 나도 한 번 들었어. 돌아온 건 나 하나뿐이고." 그는 그 뒤로 밤에 잠을 자지 않는다고 덧붙인다.',next:'s2'}]},
+  s2:{text:'밤 부두. 귀마개를 빼 버린 선원 하나가 웃으며 바다 쪽으로 걸어간다. 무릎까지, 허리까지. 노래가 들린다. 아주 작게.',choices:[
+    {label:'선원을 붙잡는다',result:'선원을 끌어내자 물속에서 무언가 우르르 기어오른다. 선원을 뒤따라오던 것들이다.',next:'s3'},
+    {label:'노래가 어디서 나는지 귀를 기울인다',result:'바다 저 멀리, 아는 노래 같기도 하다. 정신을 차리니 선원이 가슴까지 잠겨 있다. 급히 끌어낸다.',next:'s3'}]},
+  s3:{text:'부두 판자 사이로 암초 게 떼가 쏟아져 올라온다.',battle:'st_crab',next:'s4',winText:'게 떼가 바다로 흩어진다. 선원은 젖은 채로 웃고 있다. "좋은 노래였는데…"'},
+  s4:{text:'선원을 치료소로 데려가자 항구 치료사 마린이 담요를 덮어 준다. 그리고 당신을 가만히 보더니 묻는다. "블레서님은요. 돌아갈 데가 있긴 하세요?"',choices:[
+    {label:'"당연히 있죠."',result:'마린이 웃는다. "다들 그렇게 말하더라고요." 그날 밤 일지 뒤에 끼워 두었던 젖은 악보를 꺼내 본다.',next:'end',flag:'e16_port'},
+    {label:'"……글쎄요."',result:'마린이 웃는다. "다들 그렇게 말하더라고요." 그날 밤 일지 뒤에 끼워 두었던 젖은 악보를 꺼내 본다.',next:'end',flag:'e16_port'}]},
+  end:{end:true,text:'벤테 밤 부두',reward:{exp:7500,gold:1100,items:{potion:2,q_score:1}}}}},
+ {id:'E17',cat:'epic',title:'돌아오지 마',published:true,level:42,prereq:'E16',repeat:null,cond:{},
+  desc:'젖은 악보를 읽을 줄 아는 사람이 벤테 뒷골목 술집에 있다고 한다. [5장 「세이렌의 부름」]',start:'s1',steps:{
+  s1:{text:'뒷골목 술집. 늘 취해 있는 선원이 바다 노래를 흥얼거리다가 당신 손에 든 악보를 본다. 갑자기 눈빛이 맑아진다. "그거, 악보지? 나 읽을 줄 알아. 배 타기 전엔 악사였거든." (탐색 › 바다의 땅 › 마을 › 뒷골목)',choices:[
+    {label:'젖은 악보를 건넨다',req:{item:'q_score'},take:{q_score:1},result:'선원이 낡은 손풍금을 무릎에 올리고 첫 소절을 누른다.',next:'s2'},
+    {label:'아직 악보가 없다',result:'4장 일지 뒤에 끼워져 있던 젖은 악보가 필요하다. (5장 「귀를 막은 항구」 보상)',next:'s1'}]},
+  s2:{text:'선율이 흘러나온다. 바다에서 들리던 바로 그 노래다. 선원이 가사를 읽는다. "돌아오지 마." 연주하던 손이 멈칫한다. "이상하네. 이 노래, 처음 보는데 끝 소절을 알아."',choices:[
+    {label:'끝까지 연주해 달라고 한다',result:'끝 소절에 다다르자 문틈으로 바다 안개가 밀려든다. 안개 속에서 젖은 사람 그림자들이 같은 소절을 따라 부른다.',next:'s3'},
+    {label:'연주를 멈추게 한다',result:'손을 떼도 노래는 멈추지 않는다. 문틈으로 바다 안개가 밀려든다.',next:'s3'}]},
+  s3:{text:'해무 속에서 홀린 선원들의 망령이 술집 안으로 걸어 들어온다. 입은 계속 같은 소절을 부른다.',battle:'st_wraith',next:'s4',winText:'망령들이 안개와 함께 물러난다. 마지막 하나가 문턱에서 돌아본다. 입 모양이 「돌아오지 마」다.'},
+  s4:{text:'선원이 악보를 돌려준다. 젖어 있던 종이가 어느새 말라 있다. 그날 밤 일지의 5쪽이 저절로 떨어진다.',choices:[
+    {label:'5쪽을 읽는다',result:'"바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다."',next:'end',flag:'e17_score'}]},
+  end:{end:true,text:'젖은 악보의 노래',reward:{exp:8200,gold:1200,items:{potion:2,holywater:1}}}}},
+ {id:'E18',cat:'epic',title:'병 속의 편지',published:true,level:44,prereq:'E17',repeat:null,cond:{},
+  desc:'벤테 어시장 그물에는 가끔 병 편지가 걸려 올라온다. 아무도 주소를 읽지 못한다. [5장 「세이렌의 부름」]',start:'s1',steps:{
+  s1:{text:'어시장 아줌마 벨라가 고등어 상자 밑에서 병을 한 무더기 꺼낸다. "그물에 자꾸 걸려 올라와요. 버리기도 그렇고." (탐색 › 바다의 땅 › 마을 › 식료품점)',
+    give:{land:'sea',spot:'grocer',item:'q_bottle',n:1,npc:'어시장 아줌마 벨라',text:'벨라가 병 하나를 건넨다. "이 글자, 처음 보는데요. 그런데 왜 다들 이걸 쓰다 갔을까요." 병 속 종이에 적힌 받는 사람 주소는 이 세계의 글자가 아니다. 낯익은 모양이다. 「■■시 ■■구 ■■로 12, 302호」.'},
+    choices:[{label:'병 편지를 펼친다',req:{item:'q_bottle'},result:'"엄마, 나 여기 좀 더 있을게. 걱정하지 마. 금방 갈게." 맨 아래 이름 자리는 비어 있다. 종이 귀퉁이에 「답장은 이 병에」라고 적혀 있다.',next:'s2'},
+      {label:'아직 벨라를 만나지 못했다',result:'벤테 어시장(식료품점)의 벨라를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'편지 뒷면은 비어 있다. 답장을 쓸 수 있을 것 같다.',choices:[
+    {label:'답장을 쓴다',reply:true,result:'답장을 병에 넣어 바다에 띄운다. 병은 금방 보이지 않게 된다.',next:'s3'},
+    {label:'그대로 둔다',result:'병을 다시 막는다. 벨라가 고개를 끄덕인다. "그래요. 다들 그렇게 두고 가더라고요."',next:'s3'}]},
+  s3:{text:'노래의 근원을 찾으려면 바다 한가운데까지 나가야 한다. 광장의 바르보사가 처음으로 웃지 않고 말한다. "배는 내주지. 대신 이걸 가져가." (탐색 › 바다의 땅 › 마을 › 광장)',
+    give:{land:'sea',spot:'plaza',item:'q_wax',n:1,npc:'선장 바르보사',text:'바르보사가 손때 묻은 밀랍 귀마개를 내민다. "난 그때 이걸 못 꼈어. 그래서 들었지. 들어서… 돌아왔고. 낄지 말지는 자네가 정하게. 다만 끝까지 듣고 나면, 다시는 예전처럼 잠을 못 자."'},
+    choices:[{label:'귀마개를 받아 출항한다',req:{item:'q_wax'},result:'배가 부두를 떠난다. 항구 사람들이 귀를 막은 채 손을 흔든다.',next:'s4'},
+      {label:'아직 바르보사를 만나지 못했다',result:'벤테 광장의 선장 바르보사를 찾아야 한다.',next:'s3'}]},
+  s4:{text:'바다 한가운데, 난파선들이 떠다니는 해역. 배 밑에서 무언가 거대한 것이 선체를 움켜쥔다.',battle:'st_kraken',next:'s5',winText:'촉수가 바다 밑으로 끌려 내려간다. 멀리서 노래가 또렷하게 들리기 시작한다.'},
+  s5:{text:'배 위에서 일지의 6쪽이 떨어진다.',choices:[
+    {label:'6쪽을 읽는다',result:'"한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다."',next:'end',flag:'e18_bottle'}]},
+  end:{end:true,text:'병 속의 편지와 난파 해역',reward:{exp:9000,gold:1300,items:{potion:2}}}}},
+ {id:'E19',cat:'epic',title:'세이렌의 부름',published:true,level:47,prereq:'E18',repeat:null,cond:{},
+  desc:'노래가 가장 크게 들리는 심해 신전으로 내려간다. 노래의 주인은 남기를 택했던 블레서라고 한다. 권장 LV48 · 회복약 3개, 정화의 성수 1개 이상 준비. [5장 「세이렌의 부름」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'노래를 따라 심해 신전으로 내려간다. 물속인데 숨이 막히지 않는다. 노래가 점점 커진다. (권장 LV48 · 회복약 3개, 정화의 성수 1개 이상)',choices:[
+    {label:'준비를 마치고 나아간다',result:'신전 가장 깊은 곳, 노래하는 그림자가 보인다.',next:'s2'},
+    {label:'회복약과 성수를 더 챙겨 온다',result:'노래는 기다려 준다. 늘 그래 왔던 것처럼.',next:'s1'}]},
+  s2:{text:'노래가 귀를 파고든다. 바르보사의 밀랍 귀마개가 손에 쥐어져 있다. 귀를 막으면 노래에 홀리지 않지만, 그녀의 말도 반쯤만 들린다. 귀를 열면 홀릴 수 있다. 대신 전부 들린다.',choices:[
+    {label:'밀랍 귀마개로 귀를 막는다',req:{item:'q_wax'},result:'세상이 먹먹해진다. 노래는 물결 소리처럼 멀어진다. (매혹에 걸리지 않음 · 대사 일부만 들림)',next:'s3',flag:'e19_plug',unflag:'e19_listen'},
+    {label:'귀를 열고 노래를 듣는다',result:'노래가 온몸으로 들어온다. 가사가 또렷하다. (매혹에 걸릴 수 있음 · 정화의 성수로 해제)',next:'s3',flag:'e19_listen',unflag:'e19_plug'}]},
+  s3:{text:'심해의 세이렌이 노래를 멈추고 당신을 본다. 체력이 줄면 부름으로 홀리고(60%), 끝에는 신전을 바다 밑으로 끌어내린다(25%). 지면 귀마개를 다시 고를 수 있다.',battle:'st_siren',noCharmFlag:'e19_plug',loseTo:'s2',next:'s4',winText:'세이렌이 쓰러지고 노래가 멈춘다. 바다가 처음으로 조용해진다.'},
+  s4:{text:'세이렌이 자기 이름을 말한다. 이름이 눈앞에 또렷이 떠오른다. {{erase:IRIS}} 그리고 글자가 하나씩 지워진다. 다 지워지자 빈칸만 남는다. 시야 한쪽에 시스템 메시지가 떠오른다.\n\n「관람석에서 누군가 하품을 합니다.」\n「바다의 노래가 멈췄습니다.」',choices:[
+    {label:'메시지를 다시 확인한다',result:'메시지 창에는 「바다의 노래가 멈췄습니다.」 한 줄만 남아 있다.',next:'s5'},
+    {label:'방금 그 이름을 떠올려 본다',result:'떠오르지 않는다. 방금 봤는데. 탐사 기록의 이름 칸도 비어 있다.',next:'s5'}]},
+  s5:{text:'벤테로 돌아온다. 사람들이 귀마개를 빼고 바다를 본다. 바르보사가 오랜만에 하품을 한다. 그날 밤 일지의 7쪽이 떨어진다.',choices:[
+    {label:'7쪽을 읽는다',result:'"밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다." 7쪽 뒤에는 금빛 문양을 문질러 뜬 탁본 한 장이 끼워져 있다.',next:'end',flag:'ch5_clear'}]},
+  end:{end:true,text:'5장 「세이렌의 부름」 완료',reward:{exp:13000,gold:1800,items:{potion:3,q_return:1},gearTier:5}}}},
+ {id:'S5a',cat:'sub',title:'젖은 사진',published:true,level:43,prereq:null,repeat:null,cond:{quests:['E17']},
+  desc:'벤테 해변 모래톱에 무언가 반짝인다.',start:'s1',steps:{
+  s1:{text:'썰물이 빠진 해변에서 사진 한 장을 줍는다. 여섯 명의 단체 사진인데 얼굴이 모두 물에 번져 있다.',choices:[
+    {label:'사진을 자세히 본다',result:'가운데 한 자리가 비어 있다. 누가 빠진 게 아니라, 처음부터 아무도 서지 않았던 자리 같다.',next:'s2'}]},
+  s2:{text:'사진을 뒤집는다. 뒷면에 번진 잉크로 글자가 남아 있다. A■R■■A.',choices:[
+    {label:'사진을 챙긴다',result:'젖은 사진은 이상하게 마르지 않는다.',next:'end',flag:'s5a_photo'},
+    {label:'바다에 돌려보낸다',result:'파도가 사진을 가져간다. 다음 썰물에 같은 자리에 또 놓여 있다. 결국 챙긴다.',next:'end',flag:'s5a_photo'}]},
+  end:{end:true,text:'해변의 젖은 사진',reward:{exp:2600,gold:350,items:{pearl:3,q_photo:1}}}}},
+ {id:'S5b',cat:'sub',title:'소라 껍데기',published:true,level:45,prereq:null,repeat:null,cond:{quests:['E18']},
+  desc:'벤테 치료사 마린이 아이들이 주워 온 소라 껍데기를 나눠 준다.',start:'s1',steps:{
+  s1:{text:'치료소에서 마린이 소라 껍데기를 하나 내민다. "아이들이 주워 왔어요. 귀에 대면 바다 소리 들려요."',choices:[
+    {label:'귀에 대 본다',result:'쏴아— 파도 소리. 그 사이로 아주 작게 들린다. 「이번 역은… 역입니다. 내리실 문은 오른쪽입니다.」 「띠링. 새 메시지 1개.」',next:'s2'}]},
+  s2:{text:'마린이 웃는다. "그쵸? 바다 소리죠?"',choices:[
+    {label:'"……네, 바다 소리네요."',result:'마린이 고개를 끄덕인다. 소라를 내려놓아도 귀에 그 소리가 조금 남아 있다.',next:'end',flag:'s5b_conch'},
+    {label:'"방금 그거, 바다 소리 아니었어요."',result:'"네?" 마린이 소라를 귀에 대 본다. "바다 소리인데요?" 정말 모르겠다는 얼굴이다.',next:'end',flag:'s5b_conch'}]},
+  end:{end:true,text:'소라 껍데기 속 소리',reward:{exp:3200,gold:400,items:{q_conch:1}}}}}];
 /* 메인 스토리 챕터 묶음(퀘스트 목록 접기용) */
 /* 4장 E14: 「로그아웃을 시도한다」 — 어느 쪽을 눌러도 1초 동안 화면이 깨졌다가 원래대로(의도된 오류) */
 function logoutGlitch(){const b=document.body;if(!b||b.classList.contains('glx'))return;
   const el=document.createElement('div');el.id='glx-ov';el.setAttribute('aria-hidden','true');
   el.innerHTML='<div class="glx-box"><b>LOGOUT</b><span>ERR_0x0000 ▒▒▒ 요청을 처리할 수 없습▒▒</span><span>A■R■■A.session = locked</span></div>';
   b.appendChild(el);b.classList.add('glx');setTimeout(()=>{b.classList.remove('glx');el.remove();},1000);}
-const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']],['ch4','4장 「황금의 갈증」',['E12','E13','E14','E15']]];
+/* 옛 영웅 대사: 귀마개를 낀 전투(b.noCharm)는 일부만 들림(plugSay·plugLast) */
+function heroLinesOf(b){const H=HERO_LINES[b.monsterId||b.mon.id];if(!H)return null;return b.noCharm&&H.plugSay?{say:H.plugSay,last:H.plugLast||H.last}:H;}
+/* 5장 E18 병 편지 답장 → 바로 반송(보낸 이 빈칸 · 보관 불가) */
+function replyDlg(qid,i){modal(`<button class="ibtn sm md-x" data-act="closemodal" aria-label="닫기">✕</button><h3 class="sh-ttl">답장 쓰기</h3><p class="muted" style="font-size:12.5px">받는 사람 · ■■시 ■■구 ■■로 12, 302호</p><textarea id="reply-text" rows="5" maxlength="300" placeholder="병에 넣을 답장을 적으세요." style="width:100%"></textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="closemodal">그만두기</button><button class="btn btn-primary" data-act="reply-send" data-id="${qid}" data-i="${i}">병에 넣어 띄우기</button></div>`);}
+const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']],['ch4','4장 「황금의 갈증」',['E12','E13','E14','E15']],['ch5','5장 「세이렌의 부름」',['E16','E17','E18','E19']]];
 /* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
@@ -548,6 +639,7 @@ const HERO_LINES={
   pb_herald:{say:['나팔 소리가 들리나? 우리가 불었어.','신전 문은 안에서만 열려.','너도 소원을 빌겠지. 다들 그랬어.'],last:'…일곱 번째… 나팔…'},
   st_monk:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
   d_cave:{say:['…아직 수련이 끝나지 않았다.','몇 번째 해가 뜨는지 잊었다.','(무승의 눈이 잠시 당신 뒤의 허공을 본다.)'],last:'…드디어, 쉴 수 있겠군.'},
+  st_siren:{say:['돌아오지 마.','여기 남으면, 밖에서는 아무도 네 이름을 몰라.','엄마가 내 이름을 부르지 않아. 처음부터 없던 것처럼.'],last:'나는… 누구였더라.',plugSay:['돌아오지 ……','여기 남으면, …… 아무도 ……','엄마가 …… 부르지 않아.'],plugLast:'나는… ……'},
   st_saltlord:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 이게 남은 대가야.','꺼내 줘.'],last:'소원을… 빌지 마.'},
   d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
   d_siren:{say:['돌아오지 마, 돌아오지 마.','이 노래는 경고야. 아무도 듣질 않지.','바다 밑에 우리 이름이 잠겨 있어.'],last:'노래를… 들어 줘서 고마워.'},
@@ -593,7 +685,7 @@ function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
-  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14',E16:'E15',E17:'E16',E18:'E17',E19:'E18'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}

@@ -155,7 +155,7 @@ const ACTS={
   'mail-reply':d=>{S.sel.mc={to:d.to,text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();const t=$('#mc-text');if(t)t.focus();},
   'mail-claim':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m||m.claimed||!hasItems(m))return;{const w=mailOver(m);if(w){toast(w,'warn');return;}}m.claimed=true;for(const k in m.items)if(ITEMS[k]&&ITEMS[k].type==='deco')noteDeco(k,{t:'gift',v:m.from});for(const k in m.items){if(k==='_gold'){S.me.gold+=m.items[k];bump('goldEarned',m.items[k]);continue;}addItem(k,m.items[k]);}{const it={...m.items};delete it._gold;noteItems(it);}
     S.rewardLog.unshift({ts:now(),source:'mail',label:`${m.from}의 선물`,exp:0,gold:0,items:{...m.items}});rec('mail',`${m.from}의 선물 받음`,itemsText(m.items));save();renderPop();toast(`선물을 받았습니다 · ${itemsText(m.items)}`,'good');},
-  'mail-archive':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;if(!m.archived&&S.mail.filter(x=>x.archived).length>=10){toast('보관함은 최대 10개까지입니다. 보관한 메시지를 먼저 정리하세요.','warn');return;}
+  'mail-archive':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;if(m.noArchive){toast('보관할 수 없는 메시지입니다.','warn');return;}if(!m.archived&&S.mail.filter(x=>x.archived).length>=10){toast('보관함은 최대 10개까지입니다. 보관한 메시지를 먼저 정리하세요.','warn');return;}
     m.archived=!m.archived;m.archivedAt=m.archived?now():null;S.sel.mailView=null;S.sel.mailTab=m.archived?'archive':'all';save();renderPop();toast(m.archived?'보관함으로 옮겼습니다.':'보관을 해제했습니다.');},
   'm-pickon':()=>{S.sel.mpick=true;S.sel.msel=[];renderPop();},
   'm-pickoff':()=>{S.sel.mpick=false;S.sel.msel=[];renderPop();},
@@ -217,7 +217,7 @@ const ACTS={
     if(S.reports.some(r=>r.msgId===m.id)){toast('이미 신고한 메시지입니다.');return;}S.reports.unshift({id:uid('r'),msgId:m.id,from:m.from,text:m.text,ts:now(),done:false});save();toast('신고를 접수했습니다. 운영자가 확인합니다.');},
   openquest:d=>{const q=quest(d.id);go('quest',{quest:d.id,qtab:q?q.cat:(S.sel.qtab||'epic')});},
   qtab:d=>{S.sel.qtab=d.tab;S.sel.quest=null;save();render();},
-  qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});},
+  qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});if(st.noCharmFlag&&S.flags[st.noCharmFlag]&&S.battle){S.battle.noCharm=true;S.battle.log.push({t:'sys',text:'밀랍 귀마개 · 노래가 먹먹하게 들린다 (매혹에 걸리지 않음)'});if(typeof renderFight==='function')renderFight();}},
   rtab:d=>{S.sel.rtab=d.tab;S.sel.monster=null;save();render();},
   dtarget:d=>{S.sel.dtarget=d.v;S.sel.dtargets={};render();},
   dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
@@ -334,15 +334,15 @@ const ACTS={
   qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},
-  chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;if(c.glitch){qp.pending=null;logoutGlitch();return;}qp.pending=+d.i;save();render();},
+  chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;if(c.glitch){qp.pending=null;logoutGlitch();return;}if(c.reply){replyDlg(q.id,+d.i);return;}qp.pending=+d.i;save();render();},
   nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))||(c.takeGold&&S.me.gold<c.takeGold)){qp.pending=null;render();return;}
-    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.advTo)doAdvance(c.advTo);
+    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.unflag){delete S.flags[c.unflag];qp.flagsSet=qp.flagsSet.filter(f=>f!==c.unflag);}if(c.advTo)doAdvance(c.advTo);
     if(c.take){for(const k in c.take){S.me.inv[k]-=c.take[k];if(S.me.inv[k]<=0)delete S.me.inv[k];}}
     if(c.takeGold){S.me.gold-=c.takeGold;bump('goldSpent',c.takeGold);}
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}
-    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');const RW=clone(qReward(q,step.reward));grant(RW,'quest',{questId:q.id,label:q.title,path:step.text});
+    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='E19'){S.sel.nameGlx=now()+1100;setTimeout(()=>{if(S.route!=='battle')render();},1200);}if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');const RW=clone(qReward(q,step.reward));grant(RW,'quest',{questId:q.id,label:q.title,path:step.text});
     save();render();toast(`보상 수령 · EXP ${RW.exp||0} · ${RW.gold||0}골드${itemsText(RW.items)?' · '+itemsText(RW.items):''}`,'good');},
   abandonq:d=>{const qp=S.qp[d.id];if(!qp)return;(qp.flagsSet||[]).forEach(f=>{const still=Object.entries(S.qp).some(([id,x])=>id!==d.id&&x.status==='done'&&(x.flagsSet||[]).includes(f));if(!still)delete S.flags[f];});delete S.qp[d.id];save();render();toast('퀘스트를 포기했습니다. 다시 수락할 수 있습니다.');},
   backmon:()=>{const m=monster(S.sel.monster);S.sel.monster=null;go('battle',{rtab:m&&mkind(m)==='weekly'?'weekly':m&&mkind(m)==='event'?'event':m&&mkind(m)==='dungeon'?'dungeon':'daily'});},
@@ -496,3 +496,7 @@ ACTS['dr-mode']=d=>{S.sel.drMode=d.mode||'stat';render();};
 ACTS['dr-potion']=()=>{const R=S.drun;if(!R||R.done)return;if(!(S.me.inv.potion>0)){toast('회복약이 없습니다.','warn');return;}if(R.hp>=1){toast('체력이 가득 차 있습니다.');return;}
   const mx=myStats().maxHp;const before=R.hp;R.hp=Math.min(1,R.hp+50/mx);S.me.inv.potion--;if(!S.me.inv.potion)delete S.me.inv.potion;
   const healed=Math.round((R.hp-before)*mx);R.last=`회복약을 마셨다. HP ${healed} 회복`;if(typeof rec==='function')rec('dungeon',`회복약 사용 · HP ${healed} 회복`);save();render();toast(`HP ${healed} 회복`,'good');};
+
+ACTS['reply-send']=d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const t=(($('#reply-text')||{}).value||'').trim();if(!t){toast('답장을 적어 주세요.','warn');return;}
+  modal('');qp.pending=+d.i;ACTS.nextq({id:d.id});
+  setTimeout(()=>{deliverMail('','수취인이 존재하지 않습니다.',{},{noArchive:true});save();renderTop();toast('병이 금방 되돌아왔다. 우편함을 확인하세요.');},1500);};
