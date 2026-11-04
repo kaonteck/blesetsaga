@@ -413,6 +413,13 @@ const ACTS={
     if(!(C.gatherMinutes>=1&&C.battleMinutes>=1&&C.turnSeconds>=10))e.push('시간 값');if(e.length){toast('규칙 오류: '+e.join(' · '),'bad');return;}
     logChange('만신전 규칙',diff(massCfg(),C).map(x=>({...x,before:short(x.before),after:short(x.after)})));S.data.mass=C;save();render();toast('공통 규칙을 저장했습니다.','good');},
   'g-cell':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;S.sel.gtok=null;const me=b.players.find(p=>p.isMe);if(me.confirmed||me.dead)return;const i=+d.i;if((S.sel.gmode||'fight')!=='move'){S.sel.gmode='move';}if(canMoveTo(b,me,i))S.sel.gcell=i;else toast(cellCount(b,i,me)>=CELL_CAP?'이 칸은 정원(2명)이 찼습니다.':'이동 범위 밖입니다.','warn');renderFight();},
+  'qs-edit':d=>{qsEditModal(+d.i||0);},
+  'qs-set':d=>{const q=qsCfg();q.s[+d.i]=d.v||null;save();qsEditModal(+d.i);if(S.battle&&S.battle.grid)renderFight();},
+  'qs-dir':()=>{const q=qsCfg();q.dir=q.dir==='v'?'h':'v';save();renderFight();requestAnimationFrame(()=>{const w=document.getElementById('gf-qs'),h=w&&w.offsetParent;if(!w||!h||q.x==null)return;q.x=Math.min(q.x,h.clientWidth-w.offsetWidth);q.y=Math.min(q.y,h.clientHeight-w.offsetHeight);w.style.left=q.x+'px';w.style.top=q.y+'px';save();});},
+  'qs-use':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;const me=b.players.find(p=>p.isMe);if(!me||me.confirmed||me.dead)return;const v=qsCfg().s[+d.i];if(!v)return;const [t,k]=v.split(':');
+    if(t==='it'){ACTS['g-item']({item:S.sel.gitem&&S.sel.gitem.item===k?'':k});return;}
+    const s=SKILLS[k];if(!s)return;if(s.type==='addon'){if((S.sel.gmode||'fight')!=='fight'){gmAnimMark(S.sel.gmode,'fight');S.sel.gmode='fight';}ACTS.pickaddon({skill:k});return;}
+    if((S.sel.gmode||'fight')!=='fight'){gmAnimMark(S.sel.gmode,'fight');S.sel.gmode='fight';}ACTS.pickact({kind:'skill',skill:k});},
   'g-item':d=>{S.sel.gitem=d.item?{item:d.item,target:null}:null;renderFight();},
   'g-itemt':d=>{if(S.sel.gitem)S.sel.gitem.target=d.id;renderFight();},
   'g-confirm':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;const me=b.players.find(p=>p.isMe);if(me.dead)return;

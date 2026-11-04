@@ -533,7 +533,7 @@ function telLine(b){const tel=b.tel,m=b.mon;if(!tel)return '';const dmg=Math.rou
 // 다음 공격 예고: PC 전체 화면(.gfx)에서는 턴마다 잠깐 떴다 사라짐(전투 로그에는 '예고 · …'로 남음). 다시 그려도 처음부터 다시 뜨지 않게 처음 보인 시각을 기억.
 const TEL_SEEN={k:'',at:0};
 // 만신전 보스 대사: 패턴마다 늘 같은 대사 → 대사만 듣고 다음 공격을 알아챌 수 있게. 몬스터에 mass.lines{패턴:대사}가 있으면 그걸 씀({t}=대상 이름).
-const BOSS_SAY={single:'{t}… 너부터 꺾어 주마.',dot:'{t}, 이 독을 견뎌 보아라.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
+const BOSS_SAY={single:'가장 거슬리는 놈부터 꺾어 주마.',dot:'가장 거슬리는 놈에게 독을 먹여 주지.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
 function bossSay(b){const tel=b.tel;if(!tel)return '';const k=tel.type==='dot'?'dot':(tel.pat||'single');
   const mm=typeof monster==='function'&&b.monsterId?monster(b.monsterId):null;const own=mm&&mm.mass&&mm.mass.lines;let line=(own&&own[k])||BOSS_SAY[k]||'';
   if(line.includes('{t}')){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);line=line.replace(/\{t\}/g,t?t.name:'');}
@@ -541,12 +541,14 @@ function bossSay(b){const tel=b.tel;if(!tel)return '';const k=tel.type==='dot'?'
 function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=='dot';const t=esc(telLine(b));
   const k=b.id+'|'+b.turn+'|'+(tel?tel.name:'');if(TEL_SEEN.k!==k){TEL_SEEN.k=k;TEL_SEEN.at=now();}const el=now()-TEL_SEEN.at;
   const say=tel?bossSay(b):'';
-  return `${say?`<div class="gsay ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><small>${esc(b.mon.name)}</small><p>“${esc(say)}”</p></div>`:''}<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
+  return `${say?`<div class="gsay ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><p>“${esc(say)}”</p></div>`:''}<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
 function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지도 확대·축소"><button type="button" data-gmz="in" aria-label="확대">+</button><span class="gmz-r num">${Math.round(GMZ.z*100)}%</span><button type="button" data-gmz="out" aria-label="축소">−</button><button type="button" data-gmz="fit" aria-label="맞춤">맞춤</button></div>${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
+// 전투원 상태(버프·디버프) 목록 [글자, 종류] — HUD·제출 현황 공통
+function pFxList(b,p){const st=[];if(p.poison)st.push([`${p.poison.name} ${p.poison.turns}턴`,'debuff']);if(p.bound>0)st.push([`${p.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${p.bound}`,'debuff']);if(p.charm>0)st.push(['매혹','debuff']);if(p.hot)st.push([`블레스 ${p.hot.turns}턴`,'heal']);if(p.protect)st.push(['보호','buff']);(p.buffs||[]).filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));return st;}
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>
-    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span></div>`).join('')
+    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span>${(fx=>fx.length?`<span class="gl-fx">${fx.map(([x,t])=>`<span class="hud-fx st-${t}">${esc(x)}</span>`).join('')}</span>`:'')(pFxList(b,p))}</div>`).join('')
       :(()=>{const dead=b.players.filter(p=>p.dead);const canRev=!me.dead&&!me.confirmed&&CLASSES[me.job].skills.includes('sinsayer');
         return dead.length?dead.map(p=>{const far=me.pos!=null&&p.pos!=null&&cheb(me.pos,p.pos)>HEAL_R;return `<div class="gl dead-row"><span class="tok ${p.role} dead">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="faint" style="font-size:11px">${className(p.job)} · LV${p.level}</span>
           ${canRev?`<button class="btn btn-sm gl-rev" data-act="g-revive" data-id="${esc(p.id)}" ${far?'disabled':''} title="${far?'회복 사거리(5×5) 밖':'스킬 탭에서 신세이어 대상으로 지정'}">${far?'사거리 밖':'부활 지정'}</button>`:''}</div>`;}).join('')+`<p class="faint" style="font-size:11.5px;margin-top:6px">${canRev?'부활 지정을 누르면 전투 › 스킬에 신세이어가 선택됩니다. 자신의 차례에 행동 확정을 눌러야 사용됩니다.':'신세이어를 가진 힐러만 부활시킬 수 있습니다.'}</p>`:'<p class="empty" style="padding:8px 2px">쓰러진 참가자가 없습니다.</p>';})()}</div>`;}
@@ -575,7 +577,7 @@ function gfAct(b,me){
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
   else body=`<div class="gact-h is-fight"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
   const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${JOBS[me.job].sigil}</span>`;
-  const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`${me.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${me.bound}`,'debuff']);if(me.charm>0)st.push(['매혹','debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
+  const st=pFxList(b,me);
   const hpP=pct(me.hp,me.maxHp);
   return `<div class="hud ${me.dead?'is-dead':''}">
     <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div><div class="hud-nm"><b>${esc(me.name)}</b><span class="num">LV.${me.level}</span></div></div>
@@ -628,7 +630,7 @@ function gridSkillPanel(b,me){
 }
 function gridParts(){const b=S.battle,me=b.players.find(p=>p.isMe);
   const set=(id,html)=>{const el=document.getElementById(id);if(el&&el._h!==html){el.innerHTML=html;el._h=html;}};
-  set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('dmgrank',dmgRank(b));
+  set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('gf-qs',gfQs(b,me));set('dmgrank',dmgRank(b));
   const lg=$('#blog');if(lg){lg.innerHTML=logHTML();lg.scrollTop=lg.scrollHeight;}}
 /* 만신전 전체 화면(≥1101px): 지도 확대·축소·맞춤 — 휠(커서 기준)·끌어서 이동·더블클릭 맞춤. 값은 #gf-map 의 CSS 변수(다시 그려도 유지) */
 const GMZ={z:1,x:0,y:0};
@@ -655,10 +657,36 @@ const GCL={w:0,h:0};
     const el=document.querySelector('.gfx .gf-cl');if(el){el.style.setProperty('--gcl-w',GCL.w+'px');el.style.setProperty('--gcl-h',GCL.h+'px');}});
   const end=()=>{if(st){st=null;const m=document.querySelector('.gfx .gf-cl .msgs');if(m)m.scrollTop=m.scrollHeight;}};
   document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
+/* 만신전 퀵슬롯(PC ≥1101px): 4칸, 가로/세로, 끌어서 자유 배치, 칸마다 스킬·아이템을 직접 지정. 저장: S.me.qslot={s:[4],dir:'h'|'v',x,y} */
+const QS_ITEMS=['potion','holywater','swiftdraft'];
+function qsCfg(){const q=S.me.qslot||(S.me.qslot={s:[null,null,null,null],dir:'h',x:null,y:null});if(!Array.isArray(q.s)||q.s.length!==4)q.s=[0,1,2,3].map(i=>(q.s||[])[i]||null);return q;}
+function qsPosStyle(){const q=qsCfg();return q.x!=null&&q.y!=null?`left:${q.x}px;top:${q.y}px;right:auto;bottom:auto`:'';}
+function qsOptions(me){const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);
+  const skills=[basic,...sk.filter(k=>k!==basic&&SKILLS[k]&&SKILLS[k].type!=='passive'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv))];
+  return [...skills.map(k=>({v:'sk:'+k,name:k===basic?'기본 공격':SKILLS[k].name,img:skillImg(k)})),...QS_ITEMS.filter(k=>ITEMS[k]).map(k=>({v:'it:'+k,name:ITEMS[k].name,img:ITEM_IMG}))];}
+function gfQs(b,me){const q=qsCfg();const opts=qsOptions(me);const lock=me.confirmed||me.dead;const a=S.sel.act||{};const mode=S.sel.gmode||'fight';
+  const cell=(v,i)=>{const o=v&&opts.find(x=>x.v===v);
+    if(!o)return `<button class="gqs-s empty" data-act="qs-edit" data-i="${i}" title="눌러서 스킬·아이템 지정"><span>+</span></button>`;
+    const [t,k]=v.split(':');let on=false,dis=lock,cnt='';
+    if(t==='sk'){const s=SKILLS[k];on=mode==='fight'&&a.kind==='skill'&&a.skill===k||(s.type==='addon'&&(a.addon===k||S.sel.addonArm===k));if(s.uses!=null){const u=usesLeft(me,k);cnt=`<i class="num">${u}</i>`;if(u<=0)dis=true;}}
+    else{const n=S.me.inv[k]||0;on=!!(S.sel.gitem&&S.sel.gitem.item===k);cnt=`<i class="num">${n}</i>`;if(!n)dis=true;}
+    return `<button class="gqs-s ${on?'on':''}" data-act="qs-use" data-i="${i}" ${dis?'disabled':''} title="${esc(o.name)}" aria-label="${esc(o.name)}"><img src="${o.img}" alt="">${cnt}<b>${i+1}</b></button>`;};
+  return `<div class="gqs ${q.dir==='v'?'v':'h'}"><span class="gqs-grip" title="끌어서 옮기기" aria-hidden="true">⋮⋮</span>${q.s.map(cell).join('')}<span class="gqs-tools"><button type="button" data-act="qs-dir" title="${q.dir==='v'?'가로로':'세로로'} 바꾸기" aria-label="배열 바꾸기">${q.dir==='v'?'↔':'↕'}</button><button type="button" data-act="qs-edit" data-i="0" title="퀵슬롯 구성" aria-label="퀵슬롯 구성">⚙</button></span></div>`;}
+function qsEditModal(focus){const b=S.battle;if(!b)return;const me=b.players.find(p=>p.isMe);const q=qsCfg();const opts=qsOptions(me);
+  modal(`<div class="row" style="justify-content:space-between"><h3>퀵슬롯 구성</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    <p class="faint" style="font-size:12px;margin:0 0 10px">칸마다 스킬이나 아이템을 고르세요. 퀵슬롯은 손잡이(⋮⋮)를 끌어 화면 어디로든 옮길 수 있습니다.</p>
+    ${q.s.map((v,i)=>`<div class="qs-row ${i===focus?'focus':''}"><b class="num">${i+1}</b><div class="qs-opts">${[{v:'',name:'비우기',img:''},...opts].map(o=>`<button type="button" class="qs-opt ${(v||'')===o.v?'on':''}" data-act="qs-set" data-i="${i}" data-v="${o.v}" title="${esc(o.name)}">${o.img?`<img src="${o.img}" alt="">`:'<span>✕</span>'}<small>${esc(o.name)}</small></button>`).join('')}</div></div>`).join('')}`);const mm=$('.modal');if(mm)mm.classList.add('wide','qs-modal');}
+(function(){if(typeof document==='undefined')return;let st=null;
+  document.addEventListener('pointerdown',e=>{const g=e.target.closest&&e.target.closest('.gqs-grip');if(!g)return;const w=document.getElementById('gf-qs'),host=w&&w.offsetParent;if(!w||!host)return;
+    const r=w.getBoundingClientRect(),h=host.getBoundingClientRect();st={dx:e.clientX-r.left,dy:e.clientY-r.top,h};e.preventDefault();try{g.setPointerCapture(e.pointerId);}catch(_){}});
+  document.addEventListener('pointermove',e=>{if(!st)return;const w=document.getElementById('gf-qs');if(!w)return;const h=st.h;
+    const x=Math.round(Math.max(0,Math.min(h.width-w.offsetWidth,e.clientX-h.left-st.dx))),y=Math.round(Math.max(0,Math.min(h.height-w.offsetHeight,e.clientY-h.top-st.dy)));
+    w.style.left=x+'px';w.style.top=y+'px';w.style.right='auto';w.style.bottom='auto';const q=qsCfg();q.x=x;q.y=y;});
+  const end=()=>{if(st){st=null;save();}};document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
   return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
     <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
-      <div class="panel gf-act" id="gf-act">${gfAct(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
+      <div class="panel gf-act" id="gf-act">${gfAct(b,me)}</div><div class="gqs-wrap" id="gf-qs" style="${qsPosStyle()}">${gfQs(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
     </div>`;}
 
 /* ───────── 운영 · 만신전 ───────── */
