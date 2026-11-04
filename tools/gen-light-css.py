@@ -247,6 +247,10 @@ def main():
 {SCOPE} .gtel .gtel-k,{SCOPE} .gtel .tk-run{{color:#c62828}}
 {SCOPE} .hud-lvl,{SCOPE} .hud-tag{{color:#8a6a1c}}
 {SCOPE} .sks-n{{color:#fff;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent)}}
+/* 만신전 보스 칸: 라이트에서 그라데이션 없이 짙은 붉은 단색(프론트) */
+{SCOPE} .gboss{{background:#9b2c2c;border-color:#7a1f1f}}
+{SCOPE} .gboss b{{color:#fff}}
+{SCOPE} .gboss small{{color:#ffd6d6}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')
