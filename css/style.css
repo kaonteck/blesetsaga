@@ -2748,3 +2748,6 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 .sc-name .nm-glx{letter-spacing:.05em}
 .sc-name .nm-real{display:none}
 @media (prefers-reduced-motion:reduce){.qerase>span{animation-duration:.01s}}
+
+/* 캐릭터 › 장비: 장착 중인 장비 제목줄 오른쪽 '최적 장비 착용' */
+.panel>h3 .eq-best{margin-left:auto;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none}
