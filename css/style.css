@@ -2969,3 +2969,28 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 @keyframes hcmdGrow{from{width:44px}to{width:104px}}
 @keyframes hcmdTxt{0%,35%{opacity:0;transform:translateX(-6px)}100%{opacity:1;transform:none}}
 @keyframes hcmdShrink{from{width:104px}to{width:44px}}
+/* 만신전 HUD 5차(유저 요청): 방어 칸 잘림 · HP/MP 상자 제거+아래 구분선 · 보스 칸 타겟/도발 제거 · 다음 공격 잠깐 표시 · 채팅 창 크기 조절 */
+@media (min-width:1101px){
+  .gfx .hud-body .gwait{padding:8px 12px;gap:2px}
+  .gfx .hud-body .gwait p{font-size:14px}
+  .gfx .hud .hb{padding:0;border:0;border-radius:0;background:none;cursor:default}
+  .gfx .hud .hb:hover{background:none}
+  .gfx .hud-bars{padding-bottom:8px;border-bottom:1px solid var(--rule-2)}
+  .gfx>#gf-top .gf-topin{grid-template-columns:minmax(0,1fr) auto}
+  .gfx>#gf-top .gf-topin>:nth-child(2){display:none}
+  .gfx>#gf-tel .gtel{animation:telFlash 5s ease forwards;animation-delay:var(--tel-d,0ms);pointer-events:none}
+  .gfx>#gf-tel .gtel.tel-gone{display:none}
+  .gfx>#gf-top{padding-bottom:8px}
+  .gfx>#gf-tel{top:var(--tel-top,106px);pointer-events:none}
+  .gfx>#gf-tel .gtel{height:34px}
+  .gfx>#gf-tel .tk-run{animation:none!important;transform:none!important;padding-left:0}
+  .gfx .gf-cl{width:var(--gcl-w,380px);height:var(--gcl-h,280px);max-width:calc(100vw - 40px);max-height:calc(100% - 40px)}
+  .gfx .gcl-rz{position:absolute;right:0;top:0;width:18px;height:18px;z-index:4;cursor:nesw-resize;touch-action:none;
+    background:linear-gradient(45deg,transparent 45%,var(--muted) 45%,var(--muted) 52%,transparent 52%,transparent 66%,var(--muted) 66%,var(--muted) 73%,transparent 73%);opacity:.55}
+  .gfx .gcl-rz:hover{opacity:1}
+  .gfx .gf-cl .gcl-tabs{padding-right:18px}
+  .gfx .gf-cl{z-index:4;background:rgba(18,18,18,.97)}
+  .gfx>#gf-tel .tk-view{-webkit-mask-image:none;mask-image:none}
+}
+@media (min-width:1101px) and (max-width:1400px){.gfx .gf-cl{width:var(--gcl-w,300px);height:var(--gcl-h,230px)}}
+@keyframes telFlash{0%{opacity:0;transform:translateY(-8px)}8%{opacity:1;transform:none}80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-8px);visibility:hidden}}

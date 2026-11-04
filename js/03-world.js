@@ -530,8 +530,11 @@ function gfTop(b){
 function telLine(b){const tel=b.tel,m=b.mon;if(!tel)return '';const dmg=Math.round(m.atk*(tel.mult||1));
   if(tel.type==='single'||tel.type==='dot'){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);return `${tel.name}｜대미지 ${dmg}｜(타겟:${t?t.name:'-'})`;}
   return `${tel.name}｜대미지 ${dmg}｜광역`;}
+// 다음 공격 예고: PC 전체 화면(.gfx)에서는 턴마다 잠깐 떴다 사라짐(전투 로그에는 '예고 · …'로 남음). 다시 그려도 처음부터 다시 뜨지 않게 처음 보인 시각을 기억.
+const TEL_SEEN={k:'',at:0};
 function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=='dot';const t=esc(telLine(b));
-  return `<div class="gtel ${aoe?'aoe':''}" role="status"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
+  const k=b.id+'|'+b.turn+'|'+(tel?tel.name:'');if(TEL_SEEN.k!==k){TEL_SEEN.k=k;TEL_SEEN.at=now();}const el=now()-TEL_SEEN.at;
+  return `<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
 function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지도 확대·축소"><button type="button" data-gmz="in" aria-label="확대">+</button><span class="gmz-r num">${Math.round(GMZ.z*100)}%</span><button type="button" data-gmz="out" aria-label="축소">−</button><button type="button" data-gmz="fit" aria-label="맞춤">맞춤</button></div>${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
@@ -635,9 +638,19 @@ function initGridZoom(){const m=document.getElementById('gf-map');if(!m||m._gmz)
   m.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
   m.addEventListener('dblclick',e=>{if(e.target.closest('.gmz-btns'))return;gmzFit();});
   m.addEventListener('click',e=>{const b=e.target.closest('[data-gmz]');if(!b)return;const k=b.dataset.gmz;if(k==='in')gmzZoom(1.25);else if(k==='out')gmzZoom(0.8);else gmzFit();});}
+// 만신전 채팅·로그 창 크기(PC): 오른쪽 위 모서리를 끌어 조절, 다시 그려도 유지
+const GCL={w:0,h:0};
+(function(){if(typeof document==='undefined')return;let st=null;
+  document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.gcl-rz');if(!h)return;const box=h.parentElement.getBoundingClientRect();
+    st={x:e.clientX,y:e.clientY,w:box.width,h:box.height};e.preventDefault();try{h.setPointerCapture(e.pointerId);}catch(_){}});
+  document.addEventListener('pointermove',e=>{if(!st)return;const maxW=innerWidth-40,maxH=innerHeight-140;
+    GCL.w=Math.round(Math.min(maxW,Math.max(260,st.w+e.clientX-st.x)));GCL.h=Math.round(Math.min(maxH,Math.max(140,st.h-(e.clientY-st.y))));
+    const el=document.querySelector('.gfx .gf-cl');if(el){el.style.setProperty('--gcl-w',GCL.w+'px');el.style.setProperty('--gcl-h',GCL.h+'px');}});
+  const end=()=>{if(st){st=null;const m=document.querySelector('.gfx .gf-cl .msgs');if(m)m.scrollTop=m.scrollHeight;}};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
   return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
-    <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl"><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
+    <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
       <div class="panel gf-act" id="gf-act">${gfAct(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
     </div>`;}
 

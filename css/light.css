@@ -1415,6 +1415,11 @@ html[data-theme="light"] .gfx .hud .hcmd{background:rgba(255,255,255,1);border:1
 html[data-theme="light"] .gfx .hud .hcmd.on{background:#dcc489;border-color:#dcc489}
 html[data-theme="light"] .gfx .hud .hcmd:not(.on):hover{border-color:var(--gold)}
 html[data-theme="light"] .gfx .hud .hcmd-go:disabled{background:var(--slab-3);border-color:var(--rule-2);color:var(--faint)}}
+@media (min-width:1101px){html[data-theme="light"] .gfx .hud .hb{border:0;background:none}
+html[data-theme="light"] .gfx .hud .hb:hover{background:none}
+html[data-theme="light"] .gfx .hud-bars{border-bottom:1px solid var(--rule-2)}
+html[data-theme="light"] .gfx .gcl-rz{background:linear-gradient(45deg,transparent 45%,var(--muted) 45%,var(--muted) 52%,transparent 52%,transparent 66%,var(--muted) 66%,var(--muted) 73%,transparent 73%)}
+html[data-theme="light"] .gfx .gf-cl{background:rgba(255,255,255,1)}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
