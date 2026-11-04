@@ -565,7 +565,7 @@ function gfAct(b,me){
   const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`${me.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${me.bound}`,'debuff']);if(me.charm>0)st.push(['매혹','debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
   const hpP=pct(me.hp,me.maxHp);
   return `<div class="hud ${me.dead?'is-dead':''}">
-    <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div></div>
+    <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div><div class="hud-nm"><b>${esc(me.name)}</b><span class="num">LV.${me.level}</span></div></div>
     <div class="hud-main">
       <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${me.role}">${esc(CLASSES[me.job].name)}</span>${me.pos!=null?`<span class="hud-pos num">위치 ${cellName(me.pos)}</span>`:''}${gfTgt(b,me,mode)}${st.map(([x,k])=>`<span class="hud-fx st-${k}">${esc(x)}</span>`).join('')}</div>
         <div class="hud-bars"><div class="hb hp ${hpP<30?'low':''}" title="${me.hp}/${me.maxHp}"><i style="width:${hpP}%"></i><span>HP</span><b class="num">${me.hp}<small>/${me.maxHp}</small></b></div>

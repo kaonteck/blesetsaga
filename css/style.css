@@ -2895,3 +2895,30 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
   .gfx>#gf-top .gf-topin{grid-template-columns:minmax(0,1fr) auto}.gfx>#gf-top .gf-topin>:nth-child(2){display:none}
   .gfx .gf-sub{width:230px}.gfx .gf-cl{width:330px;height:240px}.gfx .gf-act{left:354px;right:64px}
 }
+
+/* 만신전 HUD 2차(유저 요청): 보스 카드·HUD 화면 가로 정중앙 · 왼쪽 사진+이름+레벨 · 줄 순서 = 상태 → HP/MP → 커맨드 → 내용 · 행동 확정 오른쪽 아래(초 없음) */
+.hud-nm{display:none}
+@media (min-width:1101px){
+  .gfx .gf-act{left:50%;right:auto;transform:translateX(-50%);width:min(860px,calc(100% - 820px));max-width:none;margin:0}
+  .gfx>#gf-top{width:min(980px,calc(100% - 560px))}.gfx>#gf-tel{width:min(952px,calc(100% - 588px))}
+  .gfx .hud{display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-rows:auto auto auto auto;gap:8px 14px;position:relative;padding:0;min-height:0}
+  .gfx .hud-main,.gfx .hud-top{display:contents}
+  .gfx .hud-face{display:flex;grid-column:1;grid-row:1/5;flex-direction:column;align-items:center;gap:6px;width:96px;align-self:start}
+  .gfx .hud-portrait{width:88px;height:110px;border-radius:12px}
+  .gfx .hud-portrait .uc-sig{font-size:40px}
+  .gfx .hud-nm{display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;max-width:96px}
+  .gfx .hud-nm b{font-size:14px;color:var(--text);max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gfx .hud-nm span{font-size:12px;color:var(--gold)}
+  .gfx .hud-id{grid-column:2;grid-row:1;flex-wrap:wrap;white-space:normal;gap:5px;min-height:22px}
+  .gfx .hud-id>b,.gfx .hud-id>.hud-lvl{display:none}
+  .gfx .hud-id>.hud-fx{display:inline-flex}
+  .gfx .hud-bars{grid-column:2;grid-row:2;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:10px}
+  .gfx .hud-cmd{grid-column:2;grid-row:3;margin:0}
+  .gfx .hud-body{grid-column:2;grid-row:4;padding-right:118px;min-height:76px}
+  .gfx .hud .hcmd-go{position:absolute;right:0;bottom:0;top:auto;width:108px;min-height:44px;height:auto;padding:8px 10px}
+  .gfx .hcmd-go .go-tm{display:none!important}
+}
+@media (min-width:1101px) and (max-width:1400px){
+  .gfx .gf-cl{width:300px;height:230px}.gfx .gf-sub{width:220px}
+  .gfx .gf-act{width:calc(100% - 660px);min-width:600px}
+}

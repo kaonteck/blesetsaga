@@ -1408,6 +1408,8 @@ html[data-theme="light"] .gmz-r{color:var(--muted)}
 html[data-theme="light"] .gfx .gf-sub{background:rgba(255,255,255,1)}
 html[data-theme="light"] .gfx .gf-cl{background:rgba(255,255,255,1)}
 html[data-theme="light"] .gfx .gf-act{background:rgba(255,255,255,1)}}
+@media (min-width:1101px){html[data-theme="light"] .gfx .hud-nm b{color:var(--text)}
+html[data-theme="light"] .gfx .hud-nm span{color:var(--gold)}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
