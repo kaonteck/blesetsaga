@@ -424,7 +424,7 @@ select t.ok(t.flags(:'P6') like 'items,%' and (select (data->'me'->'inv'->>'pear
 
 -- 파티 방 (019)
 reset role; set role authenticated; select t.as(:'P1');
-select party_create('m_test','첫 파티',2,'public','{"equip":{"weapon":"sword"}}') as rid \gset
+select party_create('m_test','첫 파티',2,'public','{"hp":1}') as rid \gset
 select t.ok((select status='gather' and jsonb_array_length(members)=1 and members->0->>'name'='아린' and leader=:'P1' from party_rooms where id=:'rid'),'파티 만들기: 파티장이 첫 파티원(이름은 서버 프로필)');
 select t.fail($$insert into party_rooms(leader,monster_id,name,target) values ('00000000-0000-0000-0000-000000000001','x','x',2)$$,'방 표에 직접 넣기');
 select t.as(:'P2');
@@ -476,4 +476,27 @@ select t.as(:'P1'); select party_kick(:'rid3', :'P5');
 select t.ok((select jsonb_array_length(members) from party_rooms where id=:'rid3')=1,'파티장이 내보내기');
 select party_leave(:'rid3');
 select t.ok((select status from party_rooms where id=:'rid3')='closed','파티장이 나가면 방 닫힘');
+
+-- 파티 보완 (022): 초대 전용 · card 값 검사
+reset role;
+update saves set data=jsonb_set(data,'{me,inv}',coalesce(data->'me'->'inv','{}'::jsonb)||'{"sword":1}') where user_id=:'P5';
+update profiles set level=5 where user_id=:'P5';
+set role authenticated; select t.as(:'P1');
+select party_create('m_test','초대방',4,'invite','{}') as rid4 \gset
+select t.as(:'P5');
+select t.fail(format($$select party_join(%L,'{}')$$, :'rid4'),'초대 전용 방에 초대 없이 참가(NOT_INVITED)');
+select t.fail(format($$select party_invite(%L,'00000000-0000-0000-0000-000000000002')$$, :'rid4'),'파티원 아닌 사람이 초대(NOT_LEADER)');
+select t.as(:'P1');
+select party_invite(:'rid4', :'P5');
+select t.as(:'P5');
+select t.fail(format($$select party_join(%L,'{"bonus":{"atk":99999}}')$$, :'rid4'),'card 보너스 99999 막힘(BAD_CARD)');
+select t.fail(format($$select party_join(%L,'{"equip":{"weapon":"g8_gsword"}}')$$, :'rid4'),'card 레벨보다 높은 장비 막힘');
+select t.fail(format($$select party_join(%L,'{"equip":{"weapon":"cheat_blade"}}')$$, :'rid4'),'card 게임에 없는 장비 막힘');
+select t.fail(format($$select party_join(%L,'{"equip":{"weapon":"staff"}}')$$, :'rid4'),'card 세이브에 없는 장비 막힘');
+select t.fail(format($$select party_join(%L,'{"enh":{"sword":50}}')$$, :'rid4'),'card 강화 50 막힘');
+select t.fail(format($$select party_join(%L,'{"hp":5}')$$, :'rid4'),'card 체력 5 막힘');
+select t.fail(format($$select party_join(%L,'{"x":1}')$$, :'rid4'),'card 모르는 항목 막힘');
+select party_join(:'rid4','{"equip":{"weapon":"sword"},"enh":{"sword":3},"bonus":{"atk":8},"hp":0.5}');
+select t.ok((select jsonb_array_length(members)=2 and members->1->'card'->'equip'->>'weapon'='sword' from party_rooms where id=:'rid4'),'초대받은 사람은 초대 전용 방에 참가 · 정상 card');
+select t.as(:'P1'); select party_leave(:'rid4');
 select 'ALL TESTS PASSED';

@@ -62,6 +62,7 @@ const RPC={
     const r={id:'pr'+Math.random().toString(36).slice(2,10),leader:UID,monster_id:a.p_monster,name:(a.p_name||'파티').slice(0,16),target:a.p_target,visibility:a.p_vis==='invite'?'invite':'public',status:'gather',members:[pmem(me,a.p_card,false)],extra:[],created_at:now(),updated_at:now()};
     db.party_rooms.push(r);store(db);notifyRT('party_rooms',r,'INSERT');return r.id;},
   party_join(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room);if(!r||r.status==='closed')throw {message:'NO_ROOM'};
+    if(r.visibility==='invite'&&!r.members.some(x=>x.uid===UID)&&!(r.invited||[]).includes(UID))throw {message:'NOT_INVITED'};
     if(r.members.some(x=>x.uid===UID))return r;if(r.status!=='gather')throw {message:'NOT_GATHER'};
     if(r.members.length+r.extra.length>=r.target)throw {message:'FULL'};
     r.members.push(pmem(prof(db,UID),a.p_card,false));touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return r;},
@@ -73,6 +74,8 @@ const RPC={
     r.extra=(a.p_extra||[]).map(x=>({name:x.name,job:x.job,level:x.level}));if(a.p_vis)r.visibility=a.p_vis;if(a.p_target)r.target=a.p_target;touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
   party_kick(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.leader===UID&&x.status==='gather');if(!r)throw {message:'NOT_LEADER'};
     r.members=r.members.filter(x=>x.uid!==a.p_uid);touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
+  party_invite(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.leader===UID&&x.status==='gather');if(!r)throw {message:'NOT_LEADER'};
+    r.invited=[...new Set([...(r.invited||[]),a.p_uid])];touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
   party_start(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.leader===UID&&x.status==='gather');if(!r)throw {message:'NOT_LEADER'};
     r.status='battle';touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
   party_push(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.leader===UID&&x.status==='battle');if(!r)throw {message:'NOT_BATTLE'};
