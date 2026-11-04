@@ -2765,3 +2765,73 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 .exr-bar [data-act="ex-back"]{border:0;background:none;padding-left:0;padding-right:4px}
 .exr-bar [data-act="ex-back"]:hover{background:none;color:var(--gold-hi)}
 @media (max-width:760px){.exr-bar>.wm-dd{margin-left:auto}}
+
+/* ── 만신전 데스크톱 한 화면 배치(≥1101px): 왼쪽 정사각 지도 · 오른쪽 HUD + 원정대(대미지 포함)·채팅 ── */
+.gl-dmg,.hcmd-go .go-tm{display:none}
+@media (min-width:1101px){
+  .wrap.page.gfight{max-width:1680px;height:calc(100vh - 59px);min-height:640px;display:flex;flex-direction:column;gap:8px;padding-top:8px;padding-bottom:8px}
+  .gfight>#gf-top{flex:none;padding:10px 16px 52px}
+  .gfight .gf-topin{gap:20px}
+  .gfight .gf-topin>.stack:first-child{gap:4px!important}
+  .gfight .gf-clock .timer{font-size:22px}
+  .gfight>#gf-tel{flex:none;margin:-50px 16px 0;position:relative;z-index:1}
+  .gfight>#gf-tel .gtel{height:32px}
+  .gfight .gf-grid{flex:1;min-height:0;gap:8px;grid-template-columns:minmax(0,min(calc((100vh - 245px)*1.03),calc(100% - 668px))) minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto minmax(170px,1fr);grid-template-areas:"map act act" "map sub chat"}
+  .gfight .gf-rank{display:none}
+  .gfight .gf-map{min-height:0;padding:10px}
+  .gfight .gf-map .gboard{width:100%;aspect-ratio:1;flex:none}
+  .gfight .gf-sub,.gfight .gf-cl{min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  .gfight .gf-sub{padding:12px}
+  .gfight .gf-sub h3{font-size:14px;margin:0 0 6px;display:flex;align-items:baseline;gap:6px}
+  .gfight .gf-sub h3::after{content:"대미지";margin-left:auto;font-size:11px;font-weight:400;color:var(--faint)}
+  .gfight .gf-sub .gsubtabs{margin-bottom:4px}
+  .gfight .gf-sub .glist{flex:1 1 0;min-height:0;max-height:none;overflow:auto;gap:2px}
+  .gfight .gl:not(.dead-row){grid-template-columns:18px 52px 26px minmax(0,1fr) 14px 46px;grid-template-rows:auto;gap:6px;padding:4px 6px}
+  .gfight .gl:not(.dead-row) b{overflow:hidden;text-overflow:ellipsis}
+  .gfight .gl:not(.dead-row) .ga{grid-column:auto;font-size:0;text-align:center;overflow:visible}
+  .gfight .gl:not(.dead-row) .ga::before{content:"…";font-size:12px;color:var(--faint)}
+  .gfight .gl:not(.dead-row) .ga.ok::before{content:"✓";color:var(--ok)}
+  .gfight .gl-dmg{display:block;font-size:12px;text-align:right;color:var(--muted)}
+  .gfight .gf-cl .msgs{flex:1 1 0;min-height:0}
+  /* HUD */
+  .gfight .gf-act{padding:14px 18px}
+  .gfight .hud{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto auto auto;gap:10px 14px;padding:0;min-height:0;align-items:start}
+  .gfight .hud::after{content:none}
+  .gfight .hud-main{display:contents}
+  .gfight .hud-face{grid-column:1;grid-row:1/4;width:64px}
+  .gfight .hud-portrait{width:64px;height:80px;border-radius:10px}
+  .gfight .hud-portrait .uc-sig{font-size:30px}
+  .gfight .hud-top{grid-column:2;grid-row:1;gap:8px;padding-bottom:10px}
+  .gfight .hud-id{gap:6px 8px;align-items:center}
+  .gfight .hud-id>b,.gfight .hud-id>.hud-lvl,.gfight .hud-id>.hud-cls{order:0}
+  .gfight .hud-id::after{content:"";order:1;flex-basis:100%;height:0}
+  .gfight .hud-id>.hud-pos,.gfight .hud-id>.hud-fx{order:2}
+  .gfight .hud-bars{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+  .gfight .hb.mp b{font-size:0;min-width:0}
+  .gfight .hb.mp b::after{content:"준비 중";font-size:11px;color:var(--faint)}
+  .gfight .hud-cmd{grid-column:2;grid-row:2;position:static;width:auto;height:auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:4px;margin:0;border-radius:12px;background:var(--slab-2);border:1px solid var(--rule);align-self:auto}
+  .gfight .hud .hcmd{height:34px;width:auto;border-radius:9px;justify-content:center;padding:0 10px;background:transparent;box-shadow:none}
+  .gfight .hud .hcmd.on{background:#dcc489}
+  .gfight .hud-body{grid-column:2;grid-row:3;min-width:0;padding-right:122px;min-height:84px;gap:6px}
+  .gfight .hud-body>.reason{font-size:12px!important;margin:0}
+  .gfight .hud-body .gact-h.is-fight{display:none}
+  .gfight .hud-tag{display:none}
+  .gfight .hud-body>.row .muted{font-size:12px!important}
+  /* 행동 확정: 작게, 남은 시간 안에 */
+  .gfight .hud .hcmd-go{position:absolute;right:0;bottom:0;width:110px;height:auto;min-height:64px;margin:0;padding:8px 10px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;clip-path:none}
+  .gfight .hcmd-go .go-l{font-size:13px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+  .gfight .hcmd-go .go-tm{display:block;font-size:18px;font-weight:700;line-height:1.1}
+  .gfight .hcmd-go .go-tm.low{color:var(--bad)}
+  /* 스킬: 아이콘 56px + 이름 아래, 한 줄에 6개 이상 */
+  .gfight .hud .sks-grid{display:flex;flex-wrap:wrap;gap:8px 6px}
+  .gfight .hud .sks{width:58px;aspect-ratio:auto;height:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding:0;border:0;background:none;box-shadow:none;overflow:visible}
+  .gfight .hud .sks>img{position:static;width:52px;height:52px;border-radius:12px;border:1px solid var(--rule-2);object-fit:cover}
+  .gfight .hud .sks.basic>img{border-color:rgba(236,111,111,.6)}
+  .gfight .hud .sks.basic::after{top:3px;left:6px}
+  .gfight .hud .sks.on,.gfight .hud .sks:hover:not(:disabled){box-shadow:none;transform:none}
+  .gfight .hud .sks.on>img{outline:2px solid #dcc489;outline-offset:2px}
+  .gfight .hud .sks:hover:not(:disabled)>img{border-color:#cfe6ff}
+  .gfight .hud .sks-n{position:static;width:62px;padding:0;background:none;color:var(--text);font-size:10.5px;line-height:1.25;white-space:normal;border-radius:0;overflow:visible;word-break:keep-all}
+  .gfight .hud .sks.addon>img{border-color:rgba(236,111,111,.8)}
+  .gfight .hud .sks-plus{align-self:flex-start;margin-top:14px}
+}

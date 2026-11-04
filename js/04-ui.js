@@ -1386,7 +1386,7 @@ function tick(){
     if(al.every(p=>p.confirmed)){if(!b.allAt)b.allAt=t;}else b.allAt=null;
     if((b.allAt&&t-b.allAt>=1500)||t>=b.deadline){doResolve();return;}
     if(dirty&&S.route==='battle'){renderFight();save();}
-    const el=$('[data-timer]');if(el){const left=Math.max(0,Math.ceil((b.deadline-t)/1000));el.textContent=left+'초';el.classList.toggle('low',left<=10);}
+    {const left=Math.max(0,Math.ceil((b.deadline-t)/1000));document.querySelectorAll('[data-timer]').forEach(el=>{el.textContent=left+'초';el.classList.toggle('low',left<=10);});}
   }
   // 매칭 수락
   if(S.match){

@@ -1380,6 +1380,22 @@ html[data-theme="light"] #glx-ov .glx-box b{color:#fff}
 html[data-theme="light"] .qerase{color:var(--text)}
 html[data-theme="light"] .exr-bar [data-act="ex-back"]{border:0;background:none}
 html[data-theme="light"] .exr-bar [data-act="ex-back"]:hover{background:none;color:var(--gold-hi)}
+@media (min-width:1101px){html[data-theme="light"] .gfight .gf-sub h3::after{color:var(--faint)}
+html[data-theme="light"] .gfight .gl:not(.dead-row) .ga::before{color:var(--faint)}
+html[data-theme="light"] .gfight .gl:not(.dead-row) .ga.ok::before{color:var(--ok)}
+html[data-theme="light"] .gfight .gl-dmg{color:var(--muted)}
+html[data-theme="light"] .gfight .hb.mp b::after{color:var(--faint)}
+html[data-theme="light"] .gfight .hud-cmd{background:var(--slab-2);border:1px solid var(--rule)}
+html[data-theme="light"] .gfight .hud .hcmd{background:transparent;box-shadow:none}
+html[data-theme="light"] .gfight .hud .hcmd.on{background:#dcc489}
+html[data-theme="light"] .gfight .hcmd-go .go-tm.low{color:var(--bad)}
+html[data-theme="light"] .gfight .hud .sks{border:0;background:none;box-shadow:none}
+html[data-theme="light"] .gfight .hud .sks>img{border:1px solid var(--rule-2)}
+html[data-theme="light"] .gfight .hud .sks.basic>img{border-color:rgba(236,111,111,0.6)}
+html[data-theme="light"] .gfight .hud .sks.on,html[data-theme="light"] .gfight .hud .sks:hover:not(:disabled){box-shadow:none}
+html[data-theme="light"] .gfight .hud .sks:hover:not(:disabled)>img{border-color:#95afe3}
+html[data-theme="light"] .gfight .hud .sks-n{background:none;color:var(--text)}
+html[data-theme="light"] .gfight .hud .sks.addon>img{border-color:rgba(236,111,111,0.8)}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

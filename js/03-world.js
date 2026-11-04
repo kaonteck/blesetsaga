@@ -536,7 +536,7 @@ function gfMap(b,me){return `${gridBoard(b,me)}<div class="glegend one"><span><i
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>
-    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}">${esc(gActLabel(b,p))}</span></div>`).join('')
+    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span></div>`).join('')
       :(()=>{const dead=b.players.filter(p=>p.dead);const canRev=!me.dead&&!me.confirmed&&CLASSES[me.job].skills.includes('sinsayer');
         return dead.length?dead.map(p=>{const far=me.pos!=null&&p.pos!=null&&cheb(me.pos,p.pos)>HEAL_R;return `<div class="gl dead-row"><span class="tok ${p.role} dead">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="faint" style="font-size:11px">${className(p.job)} · LV${p.level}</span>
           ${canRev?`<button class="btn btn-sm gl-rev" data-act="g-revive" data-id="${esc(p.id)}" ${far?'disabled':''} title="${far?'회복 사거리(5×5) 밖':'스킬 탭에서 신세이어 대상으로 지정'}">${far?'사거리 밖':'부활 지정'}</button>`:''}</div>`;}).join('')+`<p class="faint" style="font-size:11.5px;margin-top:6px">${canRev?'부활 지정을 누르면 전투 › 스킬에 신세이어가 선택됩니다. 자신의 차례에 행동 확정을 눌러야 사용됩니다.':'신세이어를 가진 힐러만 부활시킬 수 있습니다.'}</p>`:'<p class="empty" style="padding:8px 2px">쓰러진 참가자가 없습니다.</p>';})()}</div>`;}
@@ -560,7 +560,7 @@ function gfAct(b,me){
       <div class="ginv">${items.map(k=>{const n=S.me.inv[k]||0;return `<button class="invcell use ${gi&&gi.item===k?'on':''}" data-act="g-item" data-item="${gi&&gi.item===k?'':k}" ${n?'':'disabled'} title="${esc(ITEMS[k].desc)}"><img src="${ITEM_IMG}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[k].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>
       ${gi?`<p class="gact-sum" style="font-size:13px">선택 · ${esc(ITEMS[gi.item].name)} → 나</p>`:'<p class="muted" style="font-size:12.5px">사용할 아이템을 누르세요. 다시 누르면 선택이 풀립니다. 아이템은 자신에게만 쓸 수 있습니다.</p>'}
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
-  else body=`<div class="gact-h"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
+  else body=`<div class="gact-h is-fight"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
   const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${JOBS[me.job].sigil}</span>`;
   const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`${me.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${me.bound}`,'debuff']);if(me.charm>0)st.push(['매혹','debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
   const hpP=pct(me.hp,me.maxHp);
@@ -574,14 +574,14 @@ function gfAct(b,me){
     ${pad.replace(/<\/div>$/,gfGo(b,me,mode)+'</div>')}</div>`;
 }
 /* 행동 확정 버튼 — 커맨드(대기) 아래 */
-function gfGo(b,me,mode){if(me.dead)return '';
-  if(me.confirmed)return `<button class="btn hcmd-go" disabled>제출 완료</button>`;
-  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="move" ${ok?'':'disabled'}>${ok?'이동 확정':'칸을 선택하세요'}</button>`;}
-  if(mode==='wait')return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="wait">대기 확정</button>`;
-  if(mode==='defend')return `<button class="btn btn-primary hcmd-go" data-act="${me.bound>0?'confirmdefend':'confirmact'}">방어 확정</button>`;
-  if(mode==='item')return `<button class="btn btn-primary hcmd-go" disabled title="이동 · 전투 · 대기 중 하나를 골라 확정하세요">행동 확정</button>`;
-  if(GS_GO.bound)return `<button class="btn btn-primary hcmd-go" data-act="confirmdefend">방어 확정</button>`;
-  return `<button class="btn btn-primary hcmd-go" data-act="confirmact" ${GS_GO.valid?'':'disabled'}>행동 확정</button>`;}
+function gfGo(b,me,mode){if(me.dead)return '';const tm=`<span class="go-tm num" data-timer>${Math.max(0,Math.ceil((b.deadline-now())/1000))}초</span>`;
+  if(me.confirmed)return `<button class="btn hcmd-go" disabled><span class="go-l">제출 완료</span></button>`;
+  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="move" ${ok?'':'disabled'}><span class="go-l">${ok?'이동 확정':'칸을 선택하세요'}</span>${tm}</button>`;}
+  if(mode==='wait')return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="wait"><span class="go-l">대기 확정</span>${tm}</button>`;
+  if(mode==='defend')return `<button class="btn btn-primary hcmd-go" data-act="${me.bound>0?'confirmdefend':'confirmact'}"><span class="go-l">방어 확정</span>${tm}</button>`;
+  if(mode==='item')return `<button class="btn btn-primary hcmd-go" disabled title="이동 · 전투 · 대기 중 하나를 골라 확정하세요"><span class="go-l">행동 확정</span>${tm}</button>`;
+  if(GS_GO.bound)return `<button class="btn btn-primary hcmd-go" data-act="confirmdefend"><span class="go-l">방어 확정</span>${tm}</button>`;
+  return `<button class="btn btn-primary hcmd-go" data-act="confirmact" ${GS_GO.valid?'':'disabled'}><span class="go-l">행동 확정</span>${tm}</button>`;}
 /* 전투 적용 대상 — 위치 옆 */
 function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')return '<span class="hud-pos hud-tgt">대상 나</span>';if(mode!=='fight')return '';
   const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};let n='';
