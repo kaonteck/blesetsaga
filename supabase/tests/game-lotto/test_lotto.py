@@ -8,7 +8,7 @@ def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
 with sync_playwright() as p:
     b=p.chromium.launch();pg=b.new_page();errs=[]
     pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:m.type=='error' and 'ERR_FAILED' not in m.text and errs.append(m.text))
-    pg.route('**/fonts.g*/**',lambda r:r.abort())
+    pg.route('**/fonts.g*/**',lambda r:r.abort());pg.route('**/cdn.jsdelivr.net/gh/**',lambda r:r.abort())
     pg.clock.install(time=datetime.datetime(2026,11,4,12,0,tzinfo=KST))   # 수 12:00
     pg.add_init_script(f"window.__UID='{U}';window.__USERNAME='arin';window.__FORCE_NUMS=[1,2,3,9];")
     pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))

@@ -5,7 +5,7 @@ A='aaaaaaaa-0000-0000-0000-00000000000a';B='bbbbbbbb-0000-0000-0000-00000000000b
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
 with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':1280,'height':860});errs=[]
-    ctx.route('**/fonts.g*/**',lambda r:r.abort())
+    ctx.route('**/fonts.g*/**',lambda r:r.abort());ctx.route('**/cdn.jsdelivr.net/gh/**',lambda r:r.abort())
     def player(uid,user,name):
         pg=ctx.new_page();pg.on('pageerror',lambda e:errs.append(name+': '+str(e)))
         pg.on('console',lambda m:m.type=='error' and 'ERR_FAILED' not in m.text and errs.append(name+': '+m.text))

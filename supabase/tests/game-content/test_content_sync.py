@@ -6,7 +6,7 @@ with sync_playwright() as p:
     b=p.chromium.launch();pg=b.new_page();errs=[]
     pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:m.type=='error' and 'ERR_FAILED' not in m.text and errs.append(m.text))
     pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
-    pg.route('**/fonts.g*/**',lambda r:r.abort())
+    pg.route('**/fonts.g*/**',lambda r:r.abort());pg.route('**/cdn.jsdelivr.net/gh/**',lambda r:r.abort())
     pg.goto('http://localhost:8765/');pg.wait_for_function('typeof S!=="undefined"&&S&&S.data&&S.data._srv',timeout=20000)
     g=lambda js:pg.evaluate(js)
     base_hp=g("S.data._srv.monster.forest.base.hp")   # 서버 값을 덮기 전 게임의 값 (게임 밸런스가 바뀌어도 테스트가 맞게)

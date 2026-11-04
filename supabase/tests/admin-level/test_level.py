@@ -7,7 +7,7 @@ A='aaaaaaaa-0000-0000-0000-00000000000a'
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
 with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':390,'height':844});errs=[]
-    ctx.route('**/fonts.g*/**',lambda r:r.abort())
+    ctx.route('**/fonts.g*/**',lambda r:r.abort());ctx.route('**/cdn.jsdelivr.net/gh/**',lambda r:r.abort())
     ctx.add_init_script(f"window.__UID='{A}';window.__USERNAME='arin';")
     ctx.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
     def page():
@@ -56,12 +56,15 @@ with sync_playwright() as p:
     ok('서버 기준으로 맞췄습니다' in nt,'유저에게 보정 알림')
     pg.evaluate("S.me.gold+=300;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(400)
     ok(pg.evaluate("S.me.gold")==g0+100300 and pg.evaluate("S.guardRev")==1,'다음 정상 저장은 그대로(보정 반복 없음)')
-    # 아이템은 종류마다 99개까지: 서버가 자르면 게임도 99개로
+    # 020: 아이템 99개 넘어도 그대로(화면에서 칸을 나눠 쌓음) · 9,999개 넘는 값만 서버가 자름
     pg.evaluate("S.me.inv.potion=150;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(500)
     sv=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data.me.inv.potion")
-    ok(pg.evaluate("S.me.inv.potion")==99 and sv==99 and pg.evaluate("S.guardRev")==2,'아이템 150개 → 서버·게임 모두 99개')
+    ok(pg.evaluate("S.me.inv.potion")==150 and sv==150 and pg.evaluate("S.guardRev")==1,'아이템 150개 → 서버·게임 모두 150개(자르지 않음)')
+    pg.evaluate("S.me.inv.potion=20000;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(500)
+    sv=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data.me.inv.potion")
+    ok(pg.evaluate("S.me.inv.potion")==9999 and sv==9999 and pg.evaluate("S.guardRev")==2,'아이템 2만 개 → 서버·게임 모두 9,999개')
     nt=pg.evaluate("[...document.querySelectorAll('.toasts > *')].map(t=>t.textContent).join(' | ')")
-    ok('99개까지' in nt,'유저에게 알림(아이템 개수)')
+    ok('9,999개까지' in nt,'유저에게 알림(아이템 개수)')
     # 계정 삭제(017): 서버 함수로 지운 뒤 새 캐릭터는 LV1부터
     pg.evaluate("ACTS['acc-del-yes']()");pg.wait_for_timeout(800)
     ok('reset_my_save' in pg.evaluate("window.__RPC") and pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data.me")==None,'계정 삭제 → 서버 세이브 비움(reset_my_save)')

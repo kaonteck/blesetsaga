@@ -26,16 +26,16 @@ function admApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.rev==n
    저장 응답의 guard.rev가 내 것보다 크면 서버의 레벨·경험치·골드로 맞춘다(그래야 다음 저장에서 또 깎이지 않음).
    아이템 개수는 서버가 99개까지만 남기므로 보정 번호가 오르면 이 기기도 99개로 자른다.
    다른 기기에서 생긴 보정 번호만 따라잡는 경우(값이 같음)는 조용히 번호만 맞춘다. */
-const INV_CAP=99;   // 016 saves_guard와 같아야 함
+const INV_CAP=9999;   // 020 saves_guard와 같아야 함(99개 넘으면 화면에서 칸을 나눠 쌓음)
 function grdApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.gr==null||!S||!S.me)return;
   const rev=+r.gr||0;if(rev<=(S.guardRev||0))return;S.guardRev=rev;
   const lv=Math.round(+r.lv),ex=Math.max(0,+r.ex||0),gd=Math.max(0,Math.round(+r.gd||0));if(!(lv>=1)){save();return;}
-  let invCut=false;const inv=S.me.inv||{};for(const k in inv)if(inv[k]>INV_CAP){inv[k]=INV_CAP;invCut=true;}   // 서버는 아이템마다 99개까지
+  let invCut=false;const inv=S.me.inv||{};for(const k in inv)if(inv[k]>INV_CAP){inv[k]=INV_CAP;invCut=true;}   // 서버는 아이템마다 9,999개까지(020)
   const other=lv!==S.me.level||Math.round(S.me.gold||0)!==gd||(S.me.exp||0)!==ex;const diff=invCut||other;
   if(other){const up=lv!==S.me.level;S.me.level=lv;S.me.exp=ex;S.me.gold=gd;if(up){hpFull();if(S.party){const m=S.party.members.find(x=>x.isMe);if(m)m.level=lv;}}}
   save();if(!diff)return;
   const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();else renderTop();
-  notify(!other?`아이템은 종류마다 ${INV_CAP}개까지 가질 수 있어 넘친 개수를 정리했습니다.`:'서버 기록과 맞지 않는 변화가 있어 레벨·골드·아이템 개수를 서버 기준으로 맞췄습니다. 잘못된 것 같으면 1:1 문의로 알려 주세요.','warn');}
+  notify(!other?`아이템은 종류마다 ${INV_CAP.toLocaleString()}개까지 가질 수 있어 넘친 개수를 정리했습니다.`:'서버 기록과 맞지 않는 변화가 있어 레벨·골드·아이템 개수를 서버 기준으로 맞췄습니다. 잘못된 것 같으면 1:1 문의로 알려 주세요.','warn');}
 // 지금 상태를 서버에 확실히 올린다 (다른 업로드가 진행 중이면 끝날 때까지 기다림). 성공하면 true
 async function cloudFlush(){
   clearTimeout(cloudT);cloudT=null;clearTimeout(saveT);
@@ -103,7 +103,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);
-  pfSync();mlStart();ltStart();chStart();fdStart();iqStart();fbStart();
+  pfSync();mlStart();ltStart();chStart();fdStart();iqStart();fbStart();ptStart();
 }
 
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
@@ -804,4 +804,340 @@ if(ONLINE){
   };
   const _rank=ACTS['fish-rank'];
   ACTS['fish-rank']=async(d,el,e)=>{if(!SB_UID)return _rank(d,el,e);await fbFetch();_rank(d,el,e);};
+}
+
+/* ───────── 파티 레이드 공유 (019) ─────────
+   서버 모드에서 파티 레이드·토벌전 파티를 실제 블레서끼리 함께한다.
+   · 모집: 파티를 만들면 서버 방(party_rooms)이 생기고, 다른 블레서의 모집 목록에 '실제 블레서 파티'로 보인다(봇 파티와 함께).
+   · 참가·준비·내보내기·나가기·용병 목록은 서버 함수로. 공유 파티에는 봇이 저절로 들어오지 않는다(빈자리는 용병으로).
+   · 전투: 파티장 화면이 전투를 돌린다. 파티장은 상태를 party_state에 올리고(턴마다 + 누가 행동을 정할 때),
+     파티원은 자기 행동만 party_acts에 올린다. 파티원 화면은 받은 상태를 그대로 그린다. 시간 안에 안 정하면 자동 방어(원래 규칙).
+   · 보상: 전투가 끝나면 각자 자기 화면에서 받는다(원래 '보상은 각자 지급').
+   · 파티 채팅: 서버(party_msgs)로. 공유 파티에서는 봇이 실제 블레서 이름으로 말하지 않는다.
+   · 던전 파티·만신전·랜덤 매칭은 아직 이 기기 안에서만. */
+const PT={rooms:[],room:null,ch:null,chRoom:null,listCh:null,rev:0,lastState:0,pushT:null,pushing:false,again:false,sent:null,setSig:'',setAt:0,msgIds:new Set(),loop:null};
+const ptKindOk=m=>!!m&&['party','weekly'].includes(mkind(m));
+function ptCard(){const bo={};['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v)bo[k]=v;});return {equip:effEquip(),enh:S.me.enh||{},bonus:bo,hp:Math.round(hpNow()*1000)/1000};}
+async function ptRpc(fn,args){const {data,error}=await SB.rpc(fn,args);if(error)throw error;return data;}
+// card를 보내는 호출: 서버 세이브가 늦어 장비 확인(022)에 걸리면 저장을 마친 뒤 한 번 더, 그래도 안 되면 장비 없이
+async function ptRpcCard(fn,args){
+  try{return await ptRpc(fn,args);}
+  catch(e){if(!/BAD_CARD/.test((e&&e.message)||''))throw e;}
+  try{await cloudFlush();}catch(e){}
+  try{return await ptRpc(fn,{...args,p_card:ptCard()});}
+  catch(e){if(!/BAD_CARD/.test((e&&e.message)||''))throw e;}
+  toast('장비 정보를 서버에서 확인하지 못해 이번 파티에는 장비 없이 참가합니다.','warn');
+  return await ptRpc(fn,{...args,p_card:{hp:ptCard().hp}});
+}
+function ptErr(e){const m=(e&&e.message)||'';return /FULL/.test(m)?'자리가 꽉 찼습니다.':/NOT_INVITED/.test(m)?'초대 전용 파티입니다. 파티장의 초대를 받아야 들어갈 수 있습니다.':/BAD_CARD/.test(m)?'장비 정보가 서버 기록과 맞지 않습니다. 잠시 후 다시 해 주세요.':/NO_ROOM/.test(m)?'이미 사라진 파티입니다.':/NOT_GATHER/.test(m)?'이미 출발한 파티입니다.':/NOT_ACTIVE/.test(m)?'이용이 제한된 계정입니다.':/NOT_LEADER/.test(m)?'파티장만 할 수 있습니다.':'파티 서버에 연결하지 못했습니다. 잠시 후 다시 해 주세요.';}
+const ptShared=()=>!!(S&&S.party&&S.party.shared&&S.party.roomId);
+const ptBattle=()=>{const b=S&&S.battle;return b&&b.shared&&b.shared.room?b:null;};
+const ptHost=b=>!!(b&&b.shared&&b.shared.host===SB_UID);
+
+// 서버 방 → 게임 파티(S.party). 파티장은 자기 용병을 그대로 두고, 파티원은 방의 용병 목록을 받는다
+function ptPartyFrom(r,prev){
+  const iLead=r.leader===SB_UID;const lead=(r.members||[]).find(x=>x.uid===r.leader)||{};
+  const real=(r.members||[]).map(x=>({name:x.name,job:isClass(x.job)?x.job:'defender',level:x.level||1,isMe:x.uid===SB_UID,ready:!!x.ready,uid:x.uid,real:true}));
+  const mercs=iLead?((prev&&prev.members)||[]).filter(x=>x.merc):(r.extra||[]).map(x=>({name:x.name,job:isClass(x.job)?x.job:'defender',level:x.level||1,isMe:false,ready:true,merc:true}));
+  const p=prev&&prev.roomId===r.id?prev:{id:'room:'+r.id,chat:[],invites:[]};
+  const m=monster(r.monster_id);
+  return Object.assign(p,{shared:true,roomId:r.id,name:r.name,monsterId:r.monster_id,leader:lead.name||'파티장',leaderUid:r.leader,visibility:r.visibility,target:r.target,
+    members:[...real,...mercs],rev:m?m.rev:p.rev,changed:false,nextJoin:Infinity,invites:[],chat:p.chat||[]});
+}
+function ptRedraw(){if(S.route!=='battle')return renderTop();const ae=document.activeElement;if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)&&!$('#pop')?.contains(ae)){renderTop();return;}if(S.battle)renderFight();else render();}
+
+// 모집 목록: 실제 블레서 방을 S.recruits 맨 앞에(봇 시뮬레이션이 고쳐도 1초마다 다시 맞춤)
+async function ptFetchRooms(){
+  if(!SB||!SB_UID)return;
+  try{const since=new Date(Date.now()-15*60000).toISOString();
+    const {data,error}=await SB.from('party_rooms').select('id,leader,monster_id,name,target,visibility,status,members,extra,invited,updated_at')
+      .eq('status','gather').or(`visibility.eq.public,invited.cs.{${SB_UID}}`).gt('updated_at',since).order('updated_at',{ascending:false}).limit(20);
+    if(error||!data)return;PT.rooms=data;ptMerge();}
+  catch(e){console.warn(e);}
+}
+function ptEntries(){
+  return PT.rooms.filter(r=>r.leader!==SB_UID&&(r.visibility!=='invite'||(r.invited||[]).includes(SB_UID))&&!(r.members||[]).some(x=>x.uid===SB_UID)&&monster(r.monster_id)).map(r=>{
+    const lead=(r.members||[]).find(x=>x.uid===r.leader)||{};
+    const people=[...(r.members||[]).map(x=>({name:x.name,job:isClass(x.job)?x.job:'defender',level:x.level||1,real:true,leader:x.uid===r.leader})),...(r.extra||[]).map(x=>({name:x.name,job:isClass(x.job)?x.job:'defender',level:x.level||1,merc:true}))];
+    return {id:'room:'+r.id,real:true,roomId:r.id,name:r.name,monsterId:r.monster_id,leader:lead.name||'파티장',members:people.map(x=>x.name),people,target:r.target,createdAt:Date.parse(r.updated_at)};});
+}
+function ptMerge(){if(!S||!Array.isArray(S.recruits))return;S.recruits=[...ptEntries(),...S.recruits.filter(r=>!r.real)];}
+
+// 방 하나 실시간(방 정보·전투 상태·행동·채팅)
+function ptSubscribe(roomId){
+  if(PT.chRoom===roomId)return;ptUnsub();PT.chRoom=roomId;PT.rev=0;PT.lastState=now();
+  const f=`room_id=eq.${roomId}`;
+  try{PT.ch=SB.channel('party-'+roomId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'party_rooms',filter:`id=eq.${roomId}`},pl=>{if(pl.new&&pl.new.id)ptRoomEvent(pl.new);})
+    .on('postgres_changes',{event:'*',schema:'public',table:'party_state',filter:f},pl=>{if(pl.new&&pl.new.state)ptApplyState(pl.new.state,pl.new.rev);})
+    .on('postgres_changes',{event:'*',schema:'public',table:'party_acts',filter:f},pl=>{if(pl.new&&pl.new.uid)ptApplyAct(pl.new);})
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'party_msgs',filter:f},pl=>{if(pl.new)ptMsg(pl.new);})
+    .subscribe();}catch(e){console.warn(e);}
+  ptRefresh();
+}
+function ptUnsub(){if(PT.ch){try{SB.removeChannel(PT.ch);}catch(e){}}PT.ch=null;PT.chRoom=null;PT.room=null;}
+async function ptRefresh(){try{await ptRefresh0();}catch(e){console.warn(e);}}
+async function ptRefresh0(){
+  const id=PT.chRoom;if(!id)return;
+  const {data:r}=await SB.from('party_rooms').select('*').eq('id',id).maybeSingle();
+  if(PT.chRoom!==id)return;
+  if(!r){ptRoomGone('파티가 사라졌습니다.');return;}
+  ptRoomEvent(r);
+  if(r.status!=='gather'){const {data:st}=await SB.from('party_state').select('rev,state').eq('room_id',id).maybeSingle();if(st)ptApplyState(st.state,st.rev);}
+  const {data:ms}=await SB.from('party_msgs').select('id,uid,name,text,created_at').eq('room_id',id).order('id',{ascending:false}).limit(40);
+  (ms||[]).reverse().forEach(ptMsg);
+}
+function ptRoomGone(text){
+  const b=ptBattle();
+  if(b&&!b.over&&!ptHost(b)){ptAbort('파티장이 전투를 끝냈습니다.');return;}
+  if(S.party&&S.party.shared&&!S.battle){S.party=null;toast(text,'warn');if(S.route==='battle')render();else renderTop();save();}
+  ptUnsub();
+}
+function ptRoomEvent(r){
+  PT.room=r;
+  const inRoom=r.leader===SB_UID||(r.members||[]).some(x=>x.uid===SB_UID);
+  if(!inRoom){ptRoomGone(r.status==='closed'?'파티가 해산되었습니다.':'파티에서 나가게 되었습니다.');return;}
+  if(r.status==='closed'){const b=ptBattle();if(b&&!b.over&&!ptHost(b))ptRefreshStateOnce();else if(!S.battle)ptRoomGone('파티가 해산되었습니다.');return;}
+  if(S.party&&S.party.roomId===r.id&&!S.battle){S.party=ptPartyFrom(r,S.party);save();ptRedraw();}
+  if(r.status==='battle'&&r.leader!==SB_UID&&!ptBattle())ptRefreshStateOnce();
+}
+async function ptRefreshStateOnce(){const id=PT.chRoom;if(!id)return;const {data:st}=await SB.from('party_state').select('rev,state').eq('room_id',id).maybeSingle();if(st)ptApplyState(st.state,st.rev);}
+
+// ── 전투: 파티장 ──
+function ptSnapshot(b){
+  const s=JSON.parse(JSON.stringify(b,(k,v)=>k==='result'?undefined:v));
+  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;
+  return s;
+}
+function ptPushSoon(){const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=setTimeout(()=>ptPush(),500);}
+async function ptPush(){
+  const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=null;
+  if(PT.pushing){PT.again=true;return;}PT.pushing=true;
+  try{b.srev=(b.srev||0)+1;await ptRpc('party_push',{p_room:b.shared.room,p_state:ptSnapshot(b),p_rev:b.srev,p_over:!!b.over});}
+  catch(e){console.warn(e);}
+  finally{PT.pushing=false;if(PT.again){PT.again=false;ptPush();}}
+}
+function ptApplyAct(row){
+  const b=ptBattle();if(!ptHost(b)||b.over||row.turn!==b.turn)return;
+  const f=b.players.find(p=>p.uid===row.uid&&!p.isMe);if(!f||f.dead)return;
+  if(!row.action){f.action=null;f.action2=null;f.confirmed=false;b.allAt=null;}
+  else{const a=row.action.action||{kind:'defend'};const a2=row.action.action2||null;
+    const err=checkAct(b,f,a,hooks.hasItem);if(err){b.log.push({t:'sys',text:`${f.name} · 행동을 쓸 수 없어 방어 (${err})`});f.action={kind:'defend'};f.action2=null;}
+    else{f.action=a;f.action2=a2&&!checkAct(b,f,a2,hooks.hasItem,a)?a2:null;}
+    f.confirmed=true;}
+  save();if(S.route==='battle')renderFight();ptPushSoon();
+}
+
+// ── 전투: 파티원 ──
+function ptApplyState(state,rev){
+  if(!state||!S.me)return;
+  if(rev!=null&&rev<=PT.rev)return;if(rev!=null)PT.rev=rev;PT.lastState=now();
+  if(state.shared&&state.shared.host===SB_UID)return;   // 내가 파티장이면 내 화면이 원본
+  const prev=S.battle&&S.battle.shared&&S.battle.shared.room===(state.shared||{}).room?S.battle:null;
+  if(S.battle&&!prev&&!S.battle.over)return;            // 다른 전투 중
+  const rid=(state.shared||{}).room;if(!rid||rid!==PT.chRoom)return;
+  // 보상·진행에 쓰이는 값은 파티장이 보낸 것을 믿지 않고 내 게임 기준으로 다시 정한다(몬스터는 내가 참가한 방의 몬스터)
+  const mid=(PT.room&&PT.room.id===rid&&PT.room.monster_id)||(S.party&&S.party.roomId===rid&&S.party.monsterId)||(prev&&prev.monsterId);
+  const m=monster(mid);if(!ptKindOk(m))return;
+  const b=JSON.parse(JSON.stringify(state));
+  if(!Array.isArray(b.players)||!b.mon)return;
+  ptTrust(b,m,rid);
+  b.players.forEach(p=>{p.isMe=p.uid===SB_UID;if(!p.isMe)p.planAt=Infinity;});
+  const me=b.players.find(p=>p.isMe);if(!me)return;
+  // 보낸 행동이 아직 파티장 화면에 안 닿았으면 내 화면에서는 정한 그대로
+  if(PT.sent&&PT.sent.turn===b.turn&&PT.sent.room===b.shared.room&&!me.confirmed&&PT.sent.action){me.action=PT.sent.action.action;me.action2=PT.sent.action.action2||null;me.confirmed=true;}
+  b.deadline=now()+(+state.deadlineIn||0);b.allAt=null;delete b.deadlineIn;
+  const first=!prev,newTurn=!prev||prev.turn!==b.turn;
+  if(prev&&prev.result)b.result=prev.result;
+  S.battle=b;
+  if(first){if(mkind(monster(b.monsterId))==='party')daily().raid++;S.route='battle';S.sel.monster=null;toast(`${b.mon.name} 전투 시작 · 파티장 ${state.hostName||''} 화면에서 진행됩니다`,'good');}
+  if(newTurn)resetAct();
+  if(b.over&&!S.claimedB[b.id]){finishBattle(b);ptUnsub();}
+  save();if(S.route==='battle'){if(first)render();else renderFight();}
+}
+// 파티원: 받은 전투 상태 중 보상·진행 값(rules·ctx·reward·이벤트·전투 id)을 내 게임의 몬스터 규칙으로 덮어씀
+function ptTrust(b,m,rid){
+  const ts=Math.min(120,Math.max(5,+((b.rules||{}).turnSeconds)||cfg().turnSeconds));
+  b.id='PT'+rid;b.monsterId=m.id;
+  b.rules={exp:m.exp,gold:m.gold,drops:(m.drops||[]).map(d=>d.slice()),turnSeconds:ts};
+  b.ctx={type:mkind(m)};delete b.eventBonus;delete b.reward;delete b.bless;delete b.grid;
+  const ev=eventFor(m.id);if(ev){b.ctx.ev=ev.id;b.rules.exp=Math.round(b.rules.exp*1.5);b.rules.gold=Math.round(b.rules.gold*1.5);b.eventBonus=ev.title;}
+  b.mon.name=m.name;b.mon.art=m.art;b.mon.region=m.region;
+  b.over=b.over==='win'||b.over==='lose'?b.over:null;
+  b.players.forEach(p=>{p.direct=Math.max(0,Math.min(999,+p.direct||0));});
+}
+// 파티장: 파티원이 보낸 장비·강화·보너스(card)를 그 사람의 레벨·직업으로 가질 수 있는 범위로 거름
+const PT_BONUS_CAP=(()=>{const c={maxHp:0,atk:0,def:0,luk:0};try{for(const id in ITEMS){const it=ITEMS[id];[it.buff,it.buff2].forEach(x=>{if(x&&c[x.stat]!=null)c[x.stat]+=Math.max(0,+x.val||0);});}}catch(e){}return c;})();
+function ptSanCard(c,job,level){
+  c=c&&typeof c==='object'?c:{};const eq={},enh={},bo={};
+  const ce=c.equip&&typeof c.equip==='object'?c.equip:{};
+  for(const sl in SLOT){const id=ce[sl];const it=typeof id==='string'&&ITEMS.hasOwnProperty(id)?ITEMS[id]:null;
+    if(it&&it.type==='equip'&&it.slot===sl&&(it.levelReq||0)<=level&&classAllowed(it,job))eq[sl]=id;}
+  const ch=c.enh&&typeof c.enh==='object'?c.enh:{};
+  Object.values(eq).forEach(id=>{const v=Math.floor(+ch[id]||0);if(v>0)enh[id]=Math.min(ENH_MAX,v);});
+  const cb=c.bonus&&typeof c.bonus==='object'?c.bonus:{};
+  for(const k in PT_BONUS_CAP){const v=+cb[k]||0;if(v>0)bo[k]=Math.min(PT_BONUS_CAP[k],v);}
+  const hp=Math.min(1,Math.max(0.05,+c.hp||1));
+  return {equip:eq,enh,bonus:bo,hp};
+}
+function ptAbort(text){
+  const b=ptBattle();if(!b||b.over)return;
+  b.over='lose';b.log.push({t:'lose',text});finishBattle(b);ptUnsub();save();if(S.route==='battle')render();notify(text,'warn');
+}
+async function ptSendAct(){
+  const b=ptBattle();if(!b||ptHost(b)||b.over)return;
+  const me=b.players.find(p=>p.isMe);if(!me)return;
+  const act=me.confirmed?{action:me.action,action2:me.action2||null}:null;
+  PT.sent={room:b.shared.room,turn:b.turn,action:act};
+  // 아이템은 내 인벤토리에서 정할 때 빼고, 행동을 바꾸면 돌려준다(파티장 화면은 내 인벤토리를 모름)
+  const it=act&&[act.action,act.action2].find(a=>a&&a.kind==='item');const hold=PT.itemHold;
+  if(hold&&(hold.turn!==b.turn||hold.room!==b.shared.room)){PT.itemHold=null;}
+  else if(hold&&(!it||it.item!==hold.item)){S.me.inv[hold.item]=(S.me.inv[hold.item]||0)+1;PT.itemHold=null;}
+  if(it&&!PT.itemHold&&(S.me.inv[it.item]||0)>0){S.me.inv[it.item]--;if(!S.me.inv[it.item])delete S.me.inv[it.item];PT.itemHold={room:b.shared.room,turn:b.turn,item:it.item};}
+  try{await ptRpc('party_act',{p_room:b.shared.room,p_turn:b.turn,p_action:act});}
+  catch(e){console.warn(e);toast('행동을 파티장에게 보내지 못했습니다. 다시 정해 주세요.','bad');me.confirmed=false;PT.sent=null;renderFight();}
+}
+
+// 파티 채팅
+function ptMsg(row){
+  if(!S.party||S.party.roomId!==row.room_id&&row.room_id)return;
+  const id='srv:'+row.id;if(PT.msgIds.has(id))return;PT.msgIds.add(id);
+  const ch=S.party.chat=S.party.chat||[];if(ch.some(m=>m.id===id))return;
+  ch.push({id,from:row.uid===SB_UID?S.me.name:row.name,text:row.text,ts:Date.parse(row.created_at)||now()});S.party.chat=ch.slice(-150);
+  if(row.uid!==SB_UID&&typeof visibleTab==='function'&&!visibleTab('party'))S.unread.party=(S.unread.party||0)+1;
+  try{updateChats();renderTop();}catch(e){}
+}
+
+// 1초마다: 모집 목록 맞추기 · 파티장 살아 있음/용병 목록 · 끊긴 파티장 감지
+function ptLoop(){
+  if(!SB_UID||!S||!S.me)return;
+  ptMerge();
+  const p=S.party;
+  if(p&&p.shared){p.nextJoin=Infinity;if(PT.chRoom!==p.roomId)ptSubscribe(p.roomId);
+    if(p.leaderUid===SB_UID&&!S.battle){const mercs=p.members.filter(x=>x.merc).map(x=>({name:x.name,job:x.job,level:x.level}));
+      const sig=JSON.stringify([mercs,p.visibility,p.target]);
+      if(sig!==PT.setSig||now()-PT.setAt>120000){PT.setSig=sig;PT.setAt=now();ptRpc('party_set',{p_room:p.roomId,p_extra:mercs,p_vis:p.visibility,p_target:p.target}).catch(e=>console.warn(e));}}}
+  const b=ptBattle();
+  if(b&&!b.over){
+    if(PT.chRoom!==b.shared.room)ptSubscribe(b.shared.room);
+    if(ptHost(b)){b.players.forEach(f=>{if(f.real&&!f.isMe&&!f.confirmed)f.planAt=Infinity;});}
+    else{b.players.forEach(f=>{if(!f.isMe)f.planAt=Infinity;});
+      const limit=(b.rules.turnSeconds||30)*1000+45000;if(now()-PT.lastState>limit)ptAbort('파티장과 연결이 끊겨 전투가 끝났습니다.');}
+  }
+  if(PT.chRoom&&!(S.party&&S.party.roomId===PT.chRoom)&&!(b&&b.shared.room===PT.chRoom&&!b.over))ptUnsub();
+}
+async function ptStart(){
+  ptFetchRooms();
+  try{PT.listCh=SB.channel('party-list').on('postgres_changes',{event:'*',schema:'public',table:'party_rooms'},()=>{clearTimeout(PT.listT);PT.listT=setTimeout(ptFetchRooms,700);}).subscribe();}catch(e){}
+  setInterval(ptFetchRooms,30000);
+  clearInterval(PT.loop);PT.loop=setInterval(ptLoop,1000);
+  const b=ptBattle();
+  if(S.party&&S.party.shared)ptSubscribe(S.party.roomId);
+  else if(b&&!b.over)ptSubscribe(b.shared.room);
+  if(b&&!b.over&&ptHost(b)){b.players.forEach(f=>{if(f.real&&!f.isMe&&!f.confirmed)f.planAt=Infinity;});ptPush();}
+}
+
+if(ONLINE){
+  // 아이템 사용: 공유 전투에서 '나'의 전투원 id는 'me'가 아닐 수 있음. 파티장 화면은 파티원 아이템을 믿고(각자 차감) 처리
+  const _has=hooks.hasItem,_use=hooks.useItem;
+  const myFid=()=>{const b=S.battle;const me=b&&b.players.find(p=>p.isMe);return me?me.id:'me';};
+  hooks.hasItem=(pid,k)=>{const b=ptBattle();if(!b)return _has(pid,k);if(pid===myFid())return _has('me',k);if(ptHost(b)){const f=b.players.find(p=>p.id===pid);return !!(f&&f.real);}return false;};
+  hooks.useItem=(pid,k)=>{const b=ptBattle();if(!b)return _use(pid,k);if(pid===myFid())return _use('me',k);};
+
+  // 모집 목록에 실제 블레서 방 그리기(봇 파티는 원래 함수)
+  const _roleCounts=roleCounts;
+  roleCounts=function(r){if(!r.real)return _roleCounts(r);const c={tank:0,dps:0,heal:0};r.people.forEach(x=>c[roleOf(x.job)]++);return c;};
+  const _joinReason=joinReason;
+  joinReason=function(r){if(!r.real)return _joinReason(r);const m=monster(r.monsterId);if(!m)return '몬스터 정보가 없습니다';const lr=levelReason(m,S.me.level)||raidBlock(m);if(lr)return lr;return slotReason(m,r.people,roleOf(S.me.job),r.target);};
+  const _rmemHTML=rmemHTML;
+  rmemHTML=function(r){if(!r.real)return _rmemHTML(r);const m=monster(r.monsterId);
+    return `<div class="rmenu" role="menu" aria-label="${esc(r.name)} 참가 인원"><div class="rm-head"><b>${esc(r.name)}</b><span class="num faint">${r.people.length}/${r.target}</span></div>
+      ${r.people.map(x=>`<div class="rm-row">${sigil(x.job,'sm')}<div class="rm-t"><div class="row" style="gap:6px"><b>${esc(x.name)}</b>${x.leader?'<span class="chip dim">파티장</span>':''}${x.merc?'<span class="chip merc">용병</span>':''}</div><small>${className(x.job)} · <span class="num">LV${x.level}</span></small></div></div>`).join('')}
+      <div class="rm-foot faint">${m?esc(m.name):''} · 실제 블레서 파티 · 남은 자리 ${Math.max(0,r.target-r.people.length)}</div></div>`;};
+  const _recruitRows=recruitRows;
+  recruitRows=function(rs,withJoin){
+    const real=(rs||[]).filter(r=>r.real),rest=(rs||[]).filter(r=>!r.real);
+    if(!real.length)return _recruitRows(rest,withJoin);
+    const rows=real.map(r=>{const m=monster(r.monsterId);if(!m)return '';const need=missingRoles(m,r.people.map(x=>roleOf(x.job)));const reason=joinReason(r);
+      return `<div class="li pt-real"><div class="t"><b>${esc(r.name||m.name)}</b> <span class="chip ok" style="font-size:10.5px">블레서</span> <span class="faint" style="font-size:12px">${esc(m.name)}</span><small>파티장 ${esc(r.leader)} · <span class="num">${r.people.length}/${r.target}</span>${sumR(need)?' · 필요 '+missText(need):''}</small>${withJoin&&reason?`<small class="reason">${esc(reason)}</small>`:''}</div>
+        ${withJoin?`<button class="btn btn-sm" data-act="joinrecruit" data-id="${r.id}" ${reason||busyReason()?'disabled':''}>참가</button>`:`<button class="btn btn-sm btn-ghost" data-act="link" data-link="monster:${m.id}">보기</button>`}</div>`;}).join('');
+    return rows+(rest.length?_recruitRows(rest,withJoin):'');
+  };
+
+  // 파티 만들기·참가·준비·내보내기·나가기·봇 초대
+  const _create=ACTS.createparty;
+  ACTS.createparty=async(d,el,e)=>{
+    const before=S.party;_create(d,el,e);const p=S.party;
+    if(!SB_UID||!p||p===before||!ptKindOk(monster(p.monsterId)))return;
+    p.nextJoin=Infinity;
+    try{const id=await ptRpcCard('party_create',{p_monster:p.monsterId,p_name:p.name||'파티',p_target:p.target,p_vis:p.visibility,p_card:ptCard()});
+      if(S.party!==p)return;Object.assign(p,{shared:true,roomId:id,id:'room:'+id,leaderUid:SB_UID});PT.setSig='';ptSubscribe(id);save();
+      sysParty('실제 블레서 모집 목록에 올렸습니다. 다른 블레서가 들어오면 바로 보입니다.');if(S.route==='battle')render();}
+    catch(err){console.warn(err);toast('서버에 파티를 올리지 못했습니다. 이 기기 안에서만 모집합니다.','warn');}
+  };
+  const _join=ACTS.joinrecruit;
+  ACTS.joinrecruit=async(d,el,e)=>{
+    if(!SB_UID||!String(d.id||'').startsWith('room:'))return _join(d,el,e);
+    const r=S.recruits.find(x=>x.id===d.id);const why=busyReason()||(r?joinReason(r):'');if(why){toast(why,'warn');return;}
+    if(el)el.disabled=true;
+    try{const room=await ptRpcCard('party_join',{p_room:d.id.slice(5),p_card:ptCard()});
+      S.party=ptPartyFrom(room,null);PT.room=room;sysParty(`${S.me.name}님이 파티에 참가했습니다.`);S.sel.chatTab='party';ptSubscribe(room.id);save();go('battle');}
+    catch(err){toast(ptErr(err),'warn');ptFetchRooms();if(el)el.disabled=false;}
+  };
+  const _ready=ACTS.ready;
+  ACTS.ready=(d,el,e)=>{_ready(d,el,e);if(!ptShared()||!SB_UID)return;const me=S.party.members.find(x=>x.isMe);
+    ptRpcCard('party_ready',{p_room:S.party.roomId,p_ready:!!(me&&me.ready),p_card:ptCard()}).catch(err=>{toast(ptErr(err),'warn');ptRefresh();});};
+  const _kick=ACTS.kick;
+  ACTS.kick=(d,el,e)=>{const p=S.party;const x=p&&p.shared&&p.members.find(m=>m.name===d.name&&m.real);_kick(d,el,e);
+    if(x)ptRpc('party_kick',{p_room:p.roomId,p_uid:x.uid}).catch(err=>{toast(ptErr(err),'warn');ptRefresh();});};
+  const _invite=ACTS.invite;
+  ACTS.invite=(d,el,e)=>{if(ptShared()){
+      const pl=chPlayer(d.name);
+      if(pl&&!bot(d.name)&&pl.user_id){ptRpc('party_invite',{p_room:S.party.roomId,p_uid:pl.user_id}).then(()=>{sysParty(`${d.name}님을 초대했습니다. 초대 전용이어도 들어올 수 있습니다.`);save();render();}).catch(err=>toast(ptErr(err),'warn'));return;}
+      toast('실제 블레서 파티에는 봇을 초대할 수 없습니다. 빈자리는 용병으로 채워 주세요.','warn');return;}
+    return _invite(d,el,e);};
+  const _leave=ACTS.leaveparty;
+  ACTS.leaveparty=(d,el,e)=>{const p=S.party;if(p&&p.shared&&SB_UID){ptRpc('party_leave',{p_room:p.roomId}).catch(err=>console.warn(err));ptUnsub();}return _leave(d,el,e);};
+  const _setvis=ACTS.setvis;
+  ACTS.setvis=(d,el,e)=>{_setvis(d,el,e);PT.setSig='';};
+
+  // 출발: 파티장만. 파티원 화면은 파티장의 전투 상태를 기다린다
+  const _startBattle=startBattle;
+  startBattle=function(){
+    const p=S.party;
+    if(!SB_UID||!p||!p.shared)return _startBattle();
+    if(p.leaderUid!==SB_UID)return;
+    _startBattle();const b=S.battle;if(!b)return;
+    const room=PT.room;
+    b.players.forEach((f,i)=>{
+      if(f.isMe){f.uid=SB_UID;return;}
+      const rm=room&&(room.members||[]).find(x=>x.name===f.name&&x.uid!==SB_UID);if(!rm)return;
+      const job=isClass(rm.job)?rm.job:f.job,lv=Math.max(1,Math.min(99,Math.round(+rm.level||f.level||1)));
+      const c=ptSanCard(rm.card,job,lv);const nf=makeFighter({id:f.id,name:f.name,job,level:lv,equip:c.equip,enh:c.enh});
+      const bo=c.bonus||{};['maxHp','atk','def','luk'].forEach(k=>{const v=+bo[k]||0;if(v)nf[k]+=v;});
+      nf.hp=Math.max(1,Math.round(nf.maxHp*Math.min(1,Math.max(0.05,+c.hp||1))));nf.uid=rm.uid;nf.real=true;nf.planAt=Infinity;b.players[i]=nf;});
+    b.shared={room:p.roomId,host:SB_UID};b.srev=0;
+    ptRpc('party_start',{p_room:p.roomId}).then(()=>ptPush()).catch(err=>{console.warn(err);toast('파티원에게 전투 시작을 알리지 못했습니다.','warn');});
+    save();if(S.route==='battle')render();
+  };
+  const _planBots=planBots;
+  planBots=function(b){_planBots(b);if(ptHost(b))b.players.forEach(f=>{if(f.real&&!f.isMe)f.planAt=Infinity;});};
+  const _doResolve=doResolve;
+  doResolve=function(){const b=ptBattle();if(b&&!ptHost(b))return;_doResolve();if(b)ptPush();};
+  const _renderFight=renderFight;
+  renderFight=function(){_renderFight();if(ptHost(ptBattle()))ptPushSoon();};
+  ['confirmact','confirmdefend','editact'].forEach(k=>{const _f=ACTS[k];ACTS[k]=(d,el,e)=>{const r=_f(d,el,e);const b=ptBattle();if(b&&!ptHost(b))ptSendAct();return r;};});
+
+  // 파티 채팅: 서버로. 공유 파티에서는 봇이 실제 블레서 이름으로 말하지 않음
+  const _sendChat2=sendChat;
+  sendChat=function(tab,text){
+    const isParty=(tab==='lobby'&&S.sel.lobbyCh==='party')||(tab==='party'&&S.sel.partyCh!=='lobby');
+    if(!SB_UID||!isParty||!ptShared())return _sendChat2(tab,text);
+    const msg=String(text||'').replace(/\s+/g,' ').trim().slice(0,200);if(!msg)return;
+    ptRpc('party_say',{p_room:S.party.roomId,p_text:msg}).catch(err=>toast(ptErr(err),'warn'));
+    const inp=$$('[data-chatpanel] input').find(i=>document.activeElement===i)||$('#chat-in-all');if(inp)inp.value='';
+    return true;
+  };
+  const _botSay=botSay;
+  botSay=function(ch,name,text){if(ch==='party'&&S.party&&S.party.shared){const x=S.party.members.find(m=>m.name===name);if(!x||x.real)return;}return _botSay(ch,name,text);};
 }

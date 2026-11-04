@@ -19,7 +19,7 @@ class QB{
   neq(k,v){this.f.push(r=>String(r[k])!==String(v));return this;}
   not(k,op,v){this.f.push(r=>r[k]!=null);return this;}
   in(k,arr){this.f.push(r=>arr.map(String).includes(String(r[k])));return this;}
-  or(){return this;} gte(){return this;} gt(){return this;} lt(){return this;} lte(){return this;} is(){return this;} ilike(){return this;} range(){return this;} single(){this.single=true;return this;}
+  or(){return this;} gte(){return this;} gt(k,v){this.f.push(r=>String(r[k])>String(v));return this;} gt(){return this;} lt(){return this;} lte(){return this;} is(){return this;} ilike(){return this;} range(){return this;} single(){this.single=true;return this;}
   upsert(r){this.op='upsert';this.row=r;return this;} update(r){this.op='update';this.row=r;return this;} delete(){this.op='delete';return this;}
   insert(r){this.op='insert';this.row=r;return this;}
   run(){const db=load();const T=db[this.t]||(db[this.t]=[]);const ok=r=>this.f.every(f=>f(r));
@@ -34,7 +34,7 @@ class QB{
         if(o&&n&&window.__GUARD_GOLD&&(n.gold-o.gold)>window.__GUARD_GOLD){n.gold=o.gold+window.__GUARD_GOLD;r.guard={...r.guard,rev:(r.guard.rev||0)+1};}
         if(o&&!n&&r.data){r.data.me=o;}   // 캐릭터 없는 저장으로 예전 캐릭터를 못 지움(016)
         if(o&&n&&n.level<o.level){n.level=o.level;r.guard={...r.guard,rev:(r.guard.rev||0)+1};}   // 레벨은 내려가지 않음
-        if(n&&n.inv){let cut=false;for(const k in n.inv)if(n.inv[k]>99){n.inv[k]=99;cut=true;}if(cut)r.guard={...r.guard,rev:(r.guard.rev||0)+1};}}
+        if(n&&n.inv){let cut=false;for(const k in n.inv)if(n.inv[k]>9999){n.inv[k]=9999;cut=true;}if(cut)r.guard={...r.guard,rev:(r.guard.rev||0)+1};}}
       if(i>=0)T[i]=r;else T.push(r);store(db);window.__UPSERTS=(window.__UPSERTS||0)+1;
       if(this.ret&&this.t==='saves'){const d=r.data||{};return {data:[{rev:d.adminRev??null,lv:d.me?d.me.level:null,ex:d.me?d.me.exp:null,gr:r.guard?r.guard.rev:null,gd:d.me?d.me.gold:null}],error:null};}
       return {data:null,error:null};}

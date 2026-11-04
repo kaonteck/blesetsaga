@@ -8,7 +8,7 @@ def ok(c,label):
     res.append(('OK  ' if c else 'FAIL')+' '+label)
 def setup(pg,role='admin',nosession=False):
     pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=f"window.__MOCK_ROLE='{role}';window.__MOCK_NOSESSION={'true' if nosession else 'false'};"+MOCK,content_type='application/javascript'))
-    pg.route('**/fonts.g*/**',lambda r:r.abort())
+    pg.route('**/fonts.g*/**',lambda r:r.abort());pg.route('**/cdn.jsdelivr.net/gh/**',lambda r:r.abort())
 with sync_playwright() as p:
     b=p.chromium.launch()
     pg=b.new_page(viewport={'width':1440,'height':900});errs=[]

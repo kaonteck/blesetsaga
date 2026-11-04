@@ -345,9 +345,9 @@ set role authenticated; select t.as(:'P4');
 insert into saves(user_id,data) select user_id, jsonb_set(data,'{me,gold}','70000') from saves where user_id=:'P4' on conflict (user_id) do update set data=excluded.data;
 select t.ok((select (data->'me'->>'gold')::numeric from saves where user_id=:'P4')=70000,'서버에서 받은 우편 골드(7만)는 예산과 따로 인정');
 insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":120,"herb":2.4}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->'inv'->>'potion')::int=99 and (data->'me'->'inv'->>'herb')::int=2 and (guard->>'rev')::int=6 and guard->'flags'->0->>'k'='gold' from saves where user_id=:'P4'),'인벤토리 아이템마다 99개까지(120 → 99, 보정 번호 올림, 999 이하는 의심 기록 안 함)');
+select t.ok((select (data->'me'->'inv'->>'potion')::int=120 and (data->'me'->'inv'->>'herb')::int=2 and (guard->>'rev')::int=5 and guard->'flags'->0->>'k'='gold' from saves where user_id=:'P4'),'020: 아이템 99개 넘어도 그대로(120, 보정 번호 그대로, 의심 기록 없음)');
 insert into saves(user_id,data) values (:'P4','{"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{"potion":50000}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->'inv'->>'potion')::int=99 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'아이템 5만 개 → 99개, 의심 기록');
+select t.ok((select (data->'me'->'inv'->>'potion')::int=9999 and (guard->>'rev')::int=6 and guard->'flags'->0->>'k'='inv' from saves where user_id=:'P4'),'아이템 5만 개 → 9,999개, 보정 번호 올림, 의심 기록');
 insert into saves(user_id,data) values (:'P4','{"adminRev":99,"me":{"name":"도윤","level":12,"exp":0,"gold":70000,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok((select not (data ? 'adminRev') from saves where user_id=:'P4'),'운영 조정 번호(adminRev)는 유저가 못 올림');
 select t.fail($$update saves set guard='{}' where user_id='00000000-0000-0000-0000-000000000004'$$,'검사 상태(guard) 직접 고치기');
@@ -372,7 +372,7 @@ insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values ('0
 \set P5 '00000000-0000-0000-0000-000000000005'
 set role authenticated; select t.as(:'P5');
 insert into saves(user_id,data) values (:'P5','{"me":{"name":"하람","level":30,"exp":10,"gold":250000,"inv":{"potion":120}}}') on conflict (user_id) do update set data=excluded.data;
-select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'gold')::int=250000 and (data->'me'->'inv'->>'potion')::int=99 from saves where user_id=:'P5'),'첫 업로드(이 기기에서 키운 LV30·25만 골드)는 자르지 않음 · 아이템만 99개');
+select t.ok((select (data->'me'->>'level')::int=30 and (data->'me'->>'gold')::int=250000 and (data->'me'->'inv'->>'potion')::int=120 from saves where user_id=:'P5'),'첫 업로드(이 기기에서 키운 LV30·25만 골드·회복약 120)는 자르지 않음');
 select t.ok((select jsonb_array_length(guard->'flags')=2 and guard->'flags'->0->>'k'='first' from saves where user_id=:'P5'),'첫 업로드가 크면 의심 기록만 2건(레벨·골드)');
 insert into saves(user_id,data) values (:'P5','{"me":{"name":"하람","level":31,"exp":0,"gold":250500,"inv":{}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok((select (data->'me'->>'level')::int from saves where user_id=:'P5')=31,'그 뒤 저장은 평소처럼(LV31)');
@@ -421,4 +421,82 @@ insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,
 select t.ok(t.flags(:'P6') like 'gear,%' and t.flags(:'P6') not like 'items%','골드 4천을 쓰고 아이템 188개 → 구매로 인정(기록 없음)');
 insert into saves(user_id,data) values (:'P6','{"me":{"name":"이안","level":5,"exp":0,"gold":1000,"inv":{"potion":99,"herb":99,"ev_gem":1,"cheat_blade":1,"g8_gsword":1,"g7_staff":1,"ore":99,"salt":99,"pearl":99}}}') on conflict (user_id) do update set data=excluded.data;
 select t.ok(t.flags(:'P6') like 'items,%' and (select (data->'me'->'inv'->>'pearl')::int=99 from saves where user_id=:'P6'),'골드 안 쓰고 아이템 297개 한 번에 → 개수 증가 기록(아이템은 그대로)');
+
+-- 파티 방 (019)
+reset role; set role authenticated; select t.as(:'P1');
+select party_create('m_test','첫 파티',2,'public','{"hp":1}') as rid \gset
+select t.ok((select status='gather' and jsonb_array_length(members)=1 and members->0->>'name'='아린' and leader=:'P1' from party_rooms where id=:'rid'),'파티 만들기: 파티장이 첫 파티원(이름은 서버 프로필)');
+select t.fail($$insert into party_rooms(leader,monster_id,name,target) values ('00000000-0000-0000-0000-000000000001','x','x',2)$$,'방 표에 직접 넣기');
+select t.as(:'P2');
+select t.ok((select count(*) from party_rooms where id=:'rid')=1,'다른 블레서도 열린 방을 봄');
+select t.ok((select count(*) from party_state where room_id=:'rid')=0,'전투 상태는 방 사람만');
+select party_join(:'rid','{}');
+select t.ok((select jsonb_array_length(members)=2 and members->1->>'name'='벨라' from party_rooms where id=:'rid'),'참가 → 파티원 2명');
+select t.as(:'P5');
+select t.fail(format($$select party_join(%L,'{}')$$, :'rid'),'꽉 찬 방에 참가(FULL)');
+select t.as(:'P2');
+select party_ready(:'rid', true);
+select t.ok((select (members->1->>'ready')::boolean from party_rooms where id=:'rid'),'준비 완료 표시');
+select t.fail(format($$select party_start(%L)$$, :'rid'),'파티원이 출발시키기(NOT_LEADER)');
+select t.fail(format($$select party_kick(%L,'00000000-0000-0000-0000-000000000001')$$, :'rid'),'파티원이 파티장 내보내기');
+select t.as(:'P1');
+select t.fail(format($$select party_set(%L,'[{"name":"용병 카스","job":"hacker","level":5}]')$$, :'rid'),'용병 직업은 클래스만');
+select party_set(:'rid','[]');
+select party_start(:'rid');
+select t.ok((select status from party_rooms where id=:'rid')='battle','파티장이 출발 → 전투');
+select t.as(:'P2');
+select party_act(:'rid', 1, '{"action":{"kind":"defend"}}');
+select t.ok((select turn=1 and action->'action'->>'kind'='defend' from party_acts where room_id=:'rid' and uid=:'P2'),'파티원 행동 올리기');
+select t.fail(format($$select party_push(%L,'{"turn":1}',1,false)$$, :'rid'),'파티원이 전투 상태 올리기');
+select party_say(:'rid','같이 가요 <b>x</b>');
+select t.as(:'P5');
+select t.fail(format($$select party_act(%L,1,'{"x":1}')$$, :'rid'),'방 밖 사람의 행동(NOT_BATTLE)');
+select t.ok((select count(*) from party_acts where room_id=:'rid')=0 and (select count(*) from party_msgs where room_id=:'rid')=0,'방 밖 사람은 행동·채팅 못 봄');
+select t.fail(format($$select party_say(%L,'끼어들기')$$, :'rid'),'방 밖 사람 채팅');
+select t.as(:'P1');
+select party_push(:'rid','{"turn":2,"over":null}',3,false);
+select t.ok((select count(*) from party_acts where room_id=:'rid')=1 and (select name from party_msgs where room_id=:'rid')='벨라','파티장이 행동·채팅(서버가 이름 붙임)을 봄');
+select t.as(:'P2');
+select t.ok((select rev=3 and state->>'turn'='2' from party_state where room_id=:'rid'),'파티원이 전투 상태를 받음');
+select t.as(:'P1');
+select party_push(:'rid','{"turn":3,"over":"win"}',4,true);
+select t.ok((select status from party_rooms where id=:'rid')='closed','전투 끝 → 방 닫힘');
+select t.as(:'P5');
+select t.ok((select count(*) from party_rooms where id=:'rid')=0,'닫힌 방은 방 밖 사람에게 안 보임');
+select t.fail(format($$select party_join(%L,'{}')$$, :'rid'),'닫힌 방 참가(NO_ROOM)');
+select t.as(:'P1');
+select party_create('m_test','둘째',3) as rid2 \gset
+select party_create('m_test','셋째',3) as rid3 \gset
+select t.ok((select status from party_rooms where id=:'rid2')='closed' and (select status from party_rooms where id=:'rid3')='gather','새 방을 만들면 예전 방은 닫힘(한 사람 한 방)');
+select t.as(:'P2'); select party_join(:'rid3','{}');
+select t.as(:'P5'); select party_join(:'rid3','{}');
+select t.as(:'P2'); select party_leave(:'rid3');
+select t.ok((select jsonb_array_length(members) from party_rooms where id=:'rid3')=2,'파티원 나가기');
+select t.as(:'P1'); select party_kick(:'rid3', :'P5');
+select t.ok((select jsonb_array_length(members) from party_rooms where id=:'rid3')=1,'파티장이 내보내기');
+select party_leave(:'rid3');
+select t.ok((select status from party_rooms where id=:'rid3')='closed','파티장이 나가면 방 닫힘');
+
+-- 파티 보완 (022): 초대 전용 · card 값 검사
+reset role;
+update saves set data=jsonb_set(data,'{me,inv}',coalesce(data->'me'->'inv','{}'::jsonb)||'{"sword":1}') where user_id=:'P5';
+update profiles set level=5 where user_id=:'P5';
+set role authenticated; select t.as(:'P1');
+select party_create('m_test','초대방',4,'invite','{}') as rid4 \gset
+select t.as(:'P5');
+select t.fail(format($$select party_join(%L,'{}')$$, :'rid4'),'초대 전용 방에 초대 없이 참가(NOT_INVITED)');
+select t.fail(format($$select party_invite(%L,'00000000-0000-0000-0000-000000000002')$$, :'rid4'),'파티원 아닌 사람이 초대(NOT_LEADER)');
+select t.as(:'P1');
+select party_invite(:'rid4', :'P5');
+select t.as(:'P5');
+select t.fail(format($$select party_join(%L,'{"bonus":{"atk":99999}}')$$, :'rid4'),'card 보너스 99999 막힘(BAD_CARD)');
+select t.fail(format($$select party_join(%L,'{"equip":{"weapon":"g8_gsword"}}')$$, :'rid4'),'card 레벨보다 높은 장비 막힘');
+select t.fail(format($$select party_join(%L,'{"equip":{"weapon":"cheat_blade"}}')$$, :'rid4'),'card 게임에 없는 장비 막힘');
+select t.fail(format($$select party_join(%L,'{"equip":{"weapon":"staff"}}')$$, :'rid4'),'card 세이브에 없는 장비 막힘');
+select t.fail(format($$select party_join(%L,'{"enh":{"sword":50}}')$$, :'rid4'),'card 강화 50 막힘');
+select t.fail(format($$select party_join(%L,'{"hp":5}')$$, :'rid4'),'card 체력 5 막힘');
+select t.fail(format($$select party_join(%L,'{"x":1}')$$, :'rid4'),'card 모르는 항목 막힘');
+select party_join(:'rid4','{"equip":{"weapon":"sword"},"enh":{"sword":3},"bonus":{"atk":8},"hp":0.5}');
+select t.ok((select jsonb_array_length(members)=2 and members->1->'card'->'equip'->>'weapon'='sword' from party_rooms where id=:'rid4'),'초대받은 사람은 초대 전용 방에 참가 · 정상 card');
+select t.as(:'P1'); select party_leave(:'rid4');
 select 'ALL TESTS PASSED';
