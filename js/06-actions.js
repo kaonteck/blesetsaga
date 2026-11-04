@@ -500,3 +500,16 @@ ACTS['dr-potion']=()=>{const R=S.drun;if(!R||R.done)return;if(!(S.me.inv.potion>
 ACTS['reply-send']=d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const t=(($('#reply-text')||{}).value||'').trim();if(!t){toast('답장을 적어 주세요.','warn');return;}
   modal('');qp.pending=+d.i;ACTS.nextq({id:d.id});
   setTimeout(()=>{deliverMail('','수취인이 존재하지 않습니다.',{},{noArchive:true});save();renderTop();toast('병이 금방 되돌아왔다. 우편함을 확인하세요.');},1500);};
+
+/* 최적 장비 착용: 칸마다 착용 가능한(레벨·클래스) 장비 중 점수가 가장 높은 것. 점수 = 주 능력치(공격력/마력)×3 + 방어력×2 + 행운×1.5 + 체력×0.3 + 이동×5, 강화 반영, 내구도 0은 제외 */
+function eqScore(id){const st=itemStats(id,enhOf(id));const pk=isMagic(S.me.job)?'mag':'atk';
+  return (st[pk]||0)*3+(st.def||0)*2+(st.luk||0)*1.5+(st.maxHp||0)*0.3+(st.mov||0)*5;}
+ACTS['eq-best']=()=>{const me=S.me;const best={};
+  for(const id in me.inv){const it=ITEMS[id];if(!it||it.type!=='equip'||!(me.inv[id]>0)||itemBlock(id)||dura(id)<=0)continue;
+    const sc=eqScore(id);if(!best[it.slot]||sc>best[it.slot].sc)best[it.slot]={id,sc};}
+  const changed=[];
+  for(const slot in best){const cur=me.equip[slot];const curOk=cur&&ITEMS[cur]&&!itemBlock(cur)&&dura(cur)>0&&(me.inv[cur]>0);
+    if(cur===best[slot].id)continue;if(curOk&&eqScore(cur)>=best[slot].sc)continue;
+    me.equip[slot]=best[slot].id;changed.push(ITEMS[best[slot].id].name);}
+  if(!changed.length){toast('이미 가장 좋은 장비를 착용하고 있습니다.');return;}
+  save();render();toast(`최적 장비 착용 · ${changed.join(', ')}`,'good');};
