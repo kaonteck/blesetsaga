@@ -832,10 +832,9 @@ function fighterCard(b,p){
   const targeted=b.tel&&b.tel.type!=='aoe'&&b.tel.target===p.id;
   return `<div class="fighter ${p.isMe?'me':''} ${p.dead?'dead':''} ${targeted?'targeted':''}">
     <div class="nm"><b>${esc(p.name)}</b>${conf}</div>
-    <div class="row" style="gap:4px">${roleChip(p.job)}<span class="chip num dim">LV${p.level}</span></div>
+    <div class="row fx-row" style="gap:4px">${roleChip(p.job)}<span class="chip num dim">LV${p.level}</span>${targeted?'<span class="chip warn">예고 대상</span>':''}${st.join('')}</div>
     <div class="bar hp"><i style="width:${pct(p.hp,p.maxHp)}%"></i></div>
-    <div class="vals num"><span>HP ${p.hp}/${p.maxHp}</span></div><ul class="statline num sm">${statIcon('atk',p.atk)}${statIcon('def',p.def)}${statIcon('luk',p.luk)}</ul>
-    <div class="st">${targeted?'<span class="chip warn">예고 대상</span>':''}${st.join('')}</div></div>`;
+    <div class="vals num"><span>HP ${p.hp}/${p.maxHp}</span></div></div>`;
 }
 function actOpt(b,me,k,a,primary){
   const s=SKILLS[k];const err=checkAct(b,me,{kind:'skill',skill:k,target:s.target==='dead'?(b.players.find(x=>x.dead)||{}).id:me.id},hooks.hasItem,primary);

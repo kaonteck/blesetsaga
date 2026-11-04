@@ -2731,3 +2731,12 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
   .mcard-h .mh-main>.row::after{content:"";flex-basis:100%;order:1;height:0}
   .mcard-h .mh-main>.row>.chip.tank,.mcard-h .mh-main>.row>.chip.dps,.mcard-h .mh-main>.row>.chip.heal{order:2}
 }
+/* 던전 탐사 HUD 하단 커맨드(전투·아이템·포기): 폰에서 3칸 + 글자와 테두리 사이 여유, 줄바꿈 없음 */
+.hud .dr-cmd .hcmd{padding:0 20px}
+.hud .hcmd-in b{white-space:nowrap}
+@media (max-width:760px){
+  .hud-cmd.dr-cmd{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+  .hud .dr-cmd .hcmd{padding:10px 14px!important;height:auto;min-height:42px}
+}
+/* 일반 전투 파티 카드: 버프·디버프 칩을 클래스·LV 옆 한 줄에(만신전 HUD처럼) */
+.fighter .fx-row{flex-wrap:wrap;row-gap:4px}
