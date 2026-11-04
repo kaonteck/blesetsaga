@@ -541,9 +541,9 @@ function gfSub(b,me){const al=living(b);
         return dead.length?dead.map(p=>{const far=me.pos!=null&&p.pos!=null&&cheb(me.pos,p.pos)>HEAL_R;return `<div class="gl dead-row"><span class="tok ${p.role} dead">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="faint" style="font-size:11px">${className(p.job)} · LV${p.level}</span>
           ${canRev?`<button class="btn btn-sm gl-rev" data-act="g-revive" data-id="${esc(p.id)}" ${far?'disabled':''} title="${far?'회복 사거리(5×5) 밖':'스킬 탭에서 신세이어 대상으로 지정'}">${far?'사거리 밖':'부활 지정'}</button>`:''}</div>`;}).join('')+`<p class="faint" style="font-size:11.5px;margin-top:6px">${canRev?'부활 지정을 누르면 전투 › 스킬에 신세이어가 선택됩니다. 자신의 차례에 행동 확정을 눌러야 사용됩니다.':'신세이어를 가진 힐러만 부활시킬 수 있습니다.'}</p>`:'<p class="empty" style="padding:8px 2px">쓰러진 참가자가 없습니다.</p>';})()}</div>`;}
 function gfAct(b,me){
-  const mode=S.sel.gmode||'fight';const gi=S.sel.gitem;const al=living(b);
+  let mode=S.sel.gmode||'fight';if(mode==='wait'){mode='fight';S.sel.gmode='fight';}const gi=S.sel.gitem;const al=living(b);
   const CMD_EN={fight:'ATTACK',move:'MOVE',defend:'DEFEND',item:'ITEM',wait:'STANDBY'};
-  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','방어',''],['item','아이템',''],['wait','대기','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
+  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','방어',''],['item','아이템','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
   let body='';
   if(me.dead)body=`<div class="gact-done"><p class="reason">전투 불능 상태입니다.</p><p class="muted" style="font-size:12.5px">신세이어를 가진 힐러가 부활시킬 수 있습니다. 직접 행동한 기록이 있으면 보상은 그대로 받습니다.</p></div>`;
   else if(me.confirmed)body=`<div class="gact-done"><div class="ph" style="margin:0 0 4px">제출 완료</div><p class="gact-sum">${esc(gActLabel(b,me))}</p><div class="row"><button class="btn" data-act="editact">행동 수정</button></div><p class="faint" style="font-size:12px">다른 참가자가 모두 제출하면 바로 판정합니다.</p></div>`;
@@ -574,14 +574,15 @@ function gfAct(b,me){
     ${pad.replace(/<\/div>$/,gfGo(b,me,mode)+'</div>')}</div>`;
 }
 /* 행동 확정 버튼 — 커맨드(대기) 아래 */
-function gfGo(b,me,mode){if(me.dead)return '';const tm=`<span class="go-tm num" data-timer>${Math.max(0,Math.ceil((b.deadline-now())/1000))}초</span>`;
-  if(me.confirmed)return `<button class="btn hcmd-go" disabled><span class="go-l">제출 완료</span></button>`;
-  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="move" ${ok?'':'disabled'}><span class="go-l">${ok?'이동 확정':'칸을 선택하세요'}</span>${tm}</button>`;}
-  if(mode==='wait')return `<button class="btn btn-primary hcmd-go" data-act="g-confirm" data-kind="wait"><span class="go-l">대기 확정</span>${tm}</button>`;
-  if(mode==='defend')return `<button class="btn btn-primary hcmd-go" data-act="${me.bound>0?'confirmdefend':'confirmact'}"><span class="go-l">방어 확정</span>${tm}</button>`;
-  if(mode==='item')return `<button class="btn btn-primary hcmd-go" disabled title="이동 · 전투 · 대기 중 하나를 골라 확정하세요"><span class="go-l">행동 확정</span>${tm}</button>`;
-  if(GS_GO.bound)return `<button class="btn btn-primary hcmd-go" data-act="confirmdefend"><span class="go-l">방어 확정</span>${tm}</button>`;
-  return `<button class="btn btn-primary hcmd-go" data-act="confirmact" ${GS_GO.valid?'':'disabled'}><span class="go-l">행동 확정</span>${tm}</button>`;}
+function gfGo(b,me,mode){if(me.dead)return '';
+  /* 행동 확정: 글자는 항상 '행동 확정', 확정할 수 없으면 회색(비활성) */
+  const btn=(on,attrs)=>`<button class="btn ${on?'btn-primary':''} hcmd-go" ${on?attrs:'disabled'}><span class="go-l">행동 확정</span></button>`;
+  if(me.confirmed)return btn(false);
+  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return btn(ok,'data-act="g-confirm" data-kind="move"');}
+  if(mode==='defend')return btn(true,`data-act="${me.bound>0?'confirmdefend':'confirmact'}"`);
+  if(mode==='item')return btn(false);
+  if(GS_GO.bound)return btn(true,'data-act="confirmdefend"');
+  return btn(!!GS_GO.valid,'data-act="confirmact"');}
 /* 전투 적용 대상 — 위치 옆 */
 function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')return '<span class="hud-pos hud-tgt">대상 나</span>';if(mode!=='fight')return '';
   const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};let n='';

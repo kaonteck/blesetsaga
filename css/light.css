@@ -1410,6 +1410,11 @@ html[data-theme="light"] .gfx .gf-cl{background:rgba(255,255,255,1)}
 html[data-theme="light"] .gfx .gf-act{background:rgba(255,255,255,1)}}
 @media (min-width:1101px){html[data-theme="light"] .gfx .hud-nm b{color:var(--text)}
 html[data-theme="light"] .gfx .hud-nm span{color:var(--gold)}}
+@media (min-width:1101px){html[data-theme="light"] .gfx .hud-cmd{background:none;border:0}
+html[data-theme="light"] .gfx .hud .hcmd{background:rgba(255,255,255,1);border:1px solid var(--rule-2);box-shadow:0 4px 14px rgba(20,28,45,0.158)}
+html[data-theme="light"] .gfx .hud .hcmd.on{background:#dcc489;border-color:#dcc489}
+html[data-theme="light"] .gfx .hud .hcmd:not(.on):hover{border-color:var(--gold)}
+html[data-theme="light"] .gfx .hud .hcmd-go:disabled{background:var(--slab-3);border-color:var(--rule-2);color:var(--faint)}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
