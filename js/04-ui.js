@@ -779,7 +779,9 @@ function vQueue(){
 /* ───────── 전투 화면 ───────── */
 function vFight(){
   if(S.battle&&S.battle.grid&&!S.battle.over)return vGridFight();
-  const side=S.battle&&S.battle.solo?'':S.battle&&S.battle.grid?chatPanel({lock:'raid'})+`<div class="panel" id="dmgrank">${dmgRank(S.battle)}</div>`:chatPanel({lock:'party'});
+  /* 파티 레이드 채팅은 오른쪽 칸 채팅의 '파티' 탭 하나만 쓴다(전투 시작 때 한 번 파티 탭으로) */
+  const B=S.battle;if(B&&!B.solo&&!B.grid){const bid=B.id||B.startedAt||B.mon&&B.mon.id;if(S.sel.ptabFor!==bid){S.sel.ptabFor=bid;S.sel.chatTab='party';S.sel.dmWith=null;}}
+  const side=B&&B.grid?chatPanel({lock:'raid'})+`<div class="panel" id="dmgrank">${dmgRank(B)}</div>`:'';
   return `<div class="wrap page"><div class="arena ${S.battle&&S.battle.grid?'grid-arena':''} ${side?'':'solo-arena'}"><div id="fightmain" class="stack" style="gap:16px">${fightMain()}</div>
     ${side?`<div class="stack" style="gap:16px">${side}</div>`:''}</div></div>`;
 }
