@@ -345,7 +345,7 @@ const STORY_MONS=[soloMon({id:'st_statue',name:'시련의 석상',art:'golem',ki
   soloMon({id:'st_wraith',name:'해무 속 홀린 망령',art:'spirit',kind:'story',region:'벤테 뒷골목 술집',level:42,statLevel:43,tier:'story',desc:'노래를 따라 바다로 걸어간 선원들. 해무와 함께 술집 안까지 밀려든다. 입은 계속 같은 소절을 따라 부른다.',singleName:'젖은 손',aoeName:'해무',dotName:'한기',dotChance:0.3}),
   soloMon({id:'st_kraken',name:'난파 해역의 크라켄 촉수',art:'beast',kind:'story',region:'난파 해역',level:45,statLevel:46,tier:'story',desc:'바다 한가운데에서 배를 붙잡는 거대한 촉수. 본체는 끝내 수면 위로 올라오지 않는다.',singleName:'휘감기',aoeName:'배 흔들기',dotName:'먹물',dotChance:0.3}),
   soloMon({id:'st_siren',name:'심해의 세이렌',art:'spirit',kind:'story',region:'심해 신전',level:48,statLevel:49,tier:'story',desc:'노래가 가장 크게 들리는 심해 신전의 주인. 남기를 택했던 블레서라고 한다. 다음 사람이 오지 않도록 계속 노래한다. [5장 보스]',singleName:'물살 채찍',aoeName:'물보라',dotName:'바닷물',dotChance:0.2,
-    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 부름',say:'세이렌이 노래한다. 매혹되면 1턴 동안 행동할 수 없다(정화의 성수·퓨리파이로 해제)',atkMul:1.3,singleName:'부름',charmChance:0.35,aoeName:'물보라',aoeEvery:3},{at:25,name:'3페이즈 · 심해 수압',say:'신전이 바다 밑으로 가라앉는다',atkMul:1.6,aoeName:'심해 수압',aoeMult:0.75,aoeEvery:2,charmChance:0.2}]})];
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 부름',say:'세이렌이 노래한다. 매혹되면 1턴 동안 행동할 수 없다(정화의 성수·디스펠로 해제)',atkMul:1.3,singleName:'부름',charmChance:0.35,aoeName:'물보라',aoeEvery:3},{at:25,name:'3페이즈 · 심해 수압',say:'신전이 바다 밑으로 가라앉는다',atkMul:1.6,aoeName:'심해 수압',aoeMult:0.75,aoeEvery:2,charmChance:0.2}]})];
 /* 4장 보스 염수의 군주: 3장 바다뱀과 같은 체감(봇 시뮬 LV37 · 독안개 장비 기준 전 클래스 91% 이상) */
 {const m=STORY_MONS.find(x=>x.id==='st_saltlord');m.hp=Math.round(m.hp*1.3);m.atk=Math.round(m.atk*1.1);m.dotDmg=Math.round(m.atk*0.15);}
 /* 5장 보스 심해의 세이렌: 기획 HP ×1.35 · 공격 ×1.15에 시뮬로 한 번 더(×1.2 · ×1.08) — LV47 백염 장비 기준 귀마개 92%+, 노래 듣기 80%+(샐래맨더 최저, 성수 미사용 봇) */

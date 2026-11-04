@@ -85,7 +85,7 @@ const SKILL_FX={
   pray:[['heal','대상 HP 전부 회복'],['dn','자신 HP −15%']],
   utopia:[['heal','전체 · 마력 40%×판정 +40%']],
   vindicate:[['dn','아군 받는 대미지 −20%']],
-  purify:[['heal','독·매혹 해제'],['buff','먼저 처리']],
+  dispel:[['heal','독·매혹 해제'],['buff','먼저 처리']],
   blind:[['buff','아군 전체 대미지 +25%']],
   downworld:[['debuff','몬스터 대미지 −30%']],
   dystopia:[['dmg','대미지 ×3'],['dn','아군 전체 HP −3%']],

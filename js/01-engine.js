@@ -33,7 +33,7 @@ const CLASSES={
   demigod:{name:'데미갓',en:'Demigod',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'神',bonus:{hp:20,atk:4},
     desc:'신을 강림시켜 파티 전체를 회복한다.',skills:['shining','cure','sinsayer','smite','judgment','bless','fasciation','pray','utopia']},
   summoner:{name:'서머너',en:'Summoner',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'召',bonus:{hp:20,luk:4},
-    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['shining','cure','sinsayer','smite','vindicate','purify','blind','downworld','dystopia','backslider']}
+    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['shining','cure','sinsayer','smite','vindicate','dispel','blind','downworld','dystopia','backslider']}
 };
 const JOBS=CLASSES;
 const ORIGIN={defender:'황혼녘 강가',infighter:'바위 산맥',mage:'붉은 모래사막',shooter:'오아시스 마을',priest:'적막의 숲'};
@@ -203,7 +203,7 @@ const SKILLS={
   blind:{name:'블라인드',en:'Blind',type:'support',phase:'pre',target:'party',uses:1,desc:'소환수가 대상의 방어를 낮춘다. 이번 턴 아군 전체 대미지 +25%(시전자 마력 기준).'},
   downworld:{name:'다운월드',en:'Down World',type:'support',phase:'pre',target:'enemy',uses:1,desc:'소환수가 한 턴 동안 대상을 봉쇄한다. 이번 턴 몬스터 대미지 −30%.'},
   dystopia:{name:'디스토피아',en:'Dystopia',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 아군 전체가 최대 HP의 3%씩 바쳐 이번 공격 대미지 ×3.'},
-  purify:{name:'퓨리파이',en:'Purify',type:'support',phase:'pre',target:'ally',uses:2,desc:'소환수가 대상 아군의 상태 이상(독·매혹)을 거둬 간다. 다른 행동보다 먼저 처리돼, 매혹된 아군도 이번 턴에 행동할 수 있다.'},
+  dispel:{name:'디스펠',en:'Dispel',type:'support',phase:'pre',target:'ally',uses:2,desc:'소환수가 대상 아군의 상태 이상(독·매혹)을 거둬 간다. 다른 행동보다 먼저 처리돼, 매혹된 아군도 이번 턴에 행동할 수 있다.'},
   backslider:{name:'타락자',en:'Backslider',type:'support',phase:'pre',target:'ally',uses:1,special:true,desc:'대상의 대미지를 이번 턴 동안 ×2.'}
 };
 function basicSkill(cls){return CLASSES[cls].skills.find(s=>SKILLS[s].type==='dice');}
@@ -334,11 +334,11 @@ function resolveTurn(b,rng,hooks){
   // ③ 미확정자 자동 방어
   b.players.forEach(p=>{if(!p.dead&&!p.confirmed){p.action={kind:'defend',auto:true};p.confirmed=true;log('sys',`${p.name} · 시간 초과로 자동 방어`);}});
   const acts=p=>[p.action,canDouble(p,b)?p.action2:null].filter(Boolean);
-  // ③-1 퓨리파이(상태 이상 해제)는 가장 먼저 — 매혹이 풀린 아군은 이번 턴 행동
-  for(const id of b.order){const p=P(id);if(p.dead||p.charm>0)continue;for(const a of acts(p)){if(a.kind!=='skill'||a.skill!=='purify')continue;a.done=true;p.direct++;
+  // ③-1 디스펠(상태 이상 해제)는 가장 먼저 — 매혹이 풀린 아군은 이번 턴 행동
+  for(const id of b.order){const p=P(id);if(p.dead||p.charm>0)continue;for(const a of acts(p)){if(a.kind!=='skill'||a.skill!=='dispel')continue;a.done=true;p.direct++;
     const err=checkAct(b,p,a,hooks.hasItem);if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
-    spend(p,'purify');const t=a.target?P(a.target):p;if(!t||t.dead){log('sys',`${p.name} · 퓨리파이 대상이 없음`);continue;}
-    const had=[t.poison&&t.poison.name,t.charm>0&&'매혹'].filter(Boolean);t.poison=null;t.charm=0;log('heal',`${p.name} · 퓨리파이 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
+    spend(p,'dispel');const t=a.target?P(a.target):p;if(!t||t.dead){log('sys',`${p.name} · 디스펠 대상이 없음`);continue;}
+    const had=[t.poison&&t.poison.name,t.charm>0&&'매혹'].filter(Boolean);t.poison=null;t.charm=0;log('heal',`${p.name} · 디스펠 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
   // ③-2 매혹된 블레서는 아이템 말고는 아무것도 하지 못한다
   for(const id of b.order){const p=P(id);if(p.dead||!(p.charm>0))continue;let skipped=false;for(const a of acts(p)){if(a.kind==='item'||a.done)continue;a.done=true;skipped=true;}
     if(skipped)log('mon',`${p.name} · 매혹되어 아무것도 하지 못했다`);}
@@ -512,7 +512,7 @@ function decideBot(b,p,rng){
   if(p.role==='heal'){
     const dead=b.players.find(x=>x.dead);
     if(dead&&sk.includes('sinsayer')&&al.length>1)return A('sinsayer',{target:dead.id});
-    if(has('purify')){const st=al.find(x=>x.charm>0)||al.find(x=>x.poison&&x.hp/x.maxHp<0.7);if(st)return A('purify',{target:st.id});}
+    if(has('dispel')){const st=al.find(x=>x.charm>0)||al.find(x=>x.poison&&x.hp/x.maxHp<0.7);if(st)return A('dispel',{target:st.id});}
     const hurt=al.filter(x=>x.hp/x.maxHp<0.6).length;
     if(has('utopia')&&hurt>=Math.max(2,Math.ceil(al.length/2)))return A('utopia');
     if(has('fasciation')&&hurt>=2)return A('fasciation');
