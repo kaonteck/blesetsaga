@@ -540,10 +540,13 @@ function gfSub(b,me){const al=living(b);
       :(()=>{const dead=b.players.filter(p=>p.dead);const canRev=!me.dead&&!me.confirmed&&CLASSES[me.job].skills.includes('sinsayer');
         return dead.length?dead.map(p=>{const far=me.pos!=null&&p.pos!=null&&cheb(me.pos,p.pos)>HEAL_R;return `<div class="gl dead-row"><span class="tok ${p.role} dead">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="faint" style="font-size:11px">${className(p.job)} · LV${p.level}</span>
           ${canRev?`<button class="btn btn-sm gl-rev" data-act="g-revive" data-id="${esc(p.id)}" ${far?'disabled':''} title="${far?'회복 사거리(5×5) 밖':'스킬 탭에서 신세이어 대상으로 지정'}">${far?'사거리 밖':'부활 지정'}</button>`:''}</div>`;}).join('')+`<p class="faint" style="font-size:11.5px;margin-top:6px">${canRev?'부활 지정을 누르면 전투 › 스킬에 신세이어가 선택됩니다. 자신의 차례에 행동 확정을 눌러야 사용됩니다.':'신세이어를 가진 힐러만 부활시킬 수 있습니다.'}</p>`:'<p class="empty" style="padding:8px 2px">쓰러진 참가자가 없습니다.</p>';})()}</div>`;}
+// 커맨드 아이콘 열림/닫힘 모션: 바꾼 직후 한 번만(다시 그릴 때마다 되풀이되지 않게)
+const GM_ANIM={to:null,from:null,t:0};
+function gmAnimMark(from,to){GM_ANIM.from=from;GM_ANIM.to=to;clearTimeout(GM_ANIM.t);GM_ANIM.t=setTimeout(()=>{GM_ANIM.from=GM_ANIM.to=null;},400);}
 function gfAct(b,me){
   let mode=S.sel.gmode||'fight';if(mode==='wait'){mode='fight';S.sel.gmode='fight';}const gi=S.sel.gitem;const al=living(b);
   const CMD_EN={fight:'ATTACK',move:'MOVE',defend:'DEFEND',item:'ITEM',wait:'STANDBY'};
-  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','방어',''],['item','아이템','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
+  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','방어',''],['item','아이템','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''} ${GM_ANIM.to===k&&mode===k?'grow':''} ${GM_ANIM.from===k&&mode!==k?'shrink':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
   let body='';
   if(me.dead)body=`<div class="gact-done"><p class="reason">전투 불능 상태입니다.</p><p class="muted" style="font-size:12.5px">신세이어를 가진 힐러가 부활시킬 수 있습니다. 직접 행동한 기록이 있으면 보상은 그대로 받습니다.</p></div>`;
   else if(me.confirmed)body=`<div class="gact-done"><div class="ph" style="margin:0 0 4px">제출 완료</div><p class="gact-sum">${esc(gActLabel(b,me))}</p><div class="row"><button class="btn" data-act="editact">행동 수정</button></div><p class="faint" style="font-size:12px">다른 참가자가 모두 제출하면 바로 판정합니다.</p></div>`;

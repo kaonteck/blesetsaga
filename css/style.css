@@ -2947,3 +2947,25 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
   .gfx .hud-face{grid-row:1/4}
   .gfx .hud-body{grid-row:3}
 }
+/* 만신전 HUD 4차(유저 요청): HUD 크기 고정(전투 커맨드 기준 200px, 어느 커맨드든 같은 크기) · 커맨드 아이콘 열림 모션 */
+@media (min-width:1101px){
+  .gfx .hud{height:200px;min-height:0;grid-template-rows:auto auto minmax(0,1fr)}
+  .gfx .hud-body{min-height:0;overflow:hidden auto;scrollbar-width:thin}
+  .gfx .hud-body .gact-h{margin-bottom:4px}
+  .gfx .hud-body .gpos{margin:2px 0 4px}
+  .gfx .hud-body .gpos>div{padding:4px 14px}
+  .gfx .hud-body .gpos b{font-size:18px}
+  .gfx .hud-body .gwait{padding:6px 0}
+  .gfx .hud-body .gwait p{margin:0 0 2px}
+  .gfx .hud-body .ginv{margin:2px 0 4px}
+  .gfx .hud-body .ginv .invcell{width:44px;height:44px}
+  .gfx .hud-body>p:last-child{padding-right:96px}
+  .gfx .hud .hcmd{transition:width .3s cubic-bezier(.22,.8,.24,1),background .2s,border-color .2s}
+  .gfx .hud .hcmd-in b{transition:opacity .18s ease .08s}
+  .gfx .hud .hcmd.grow{animation:hcmdGrow .3s cubic-bezier(.22,.8,.24,1)}
+  .gfx .hud .hcmd.grow .hcmd-in b{animation:hcmdTxt .3s ease}
+  .gfx .hud .hcmd.shrink{animation:hcmdShrink .24s cubic-bezier(.22,.8,.24,1)}
+}
+@keyframes hcmdGrow{from{width:44px}to{width:104px}}
+@keyframes hcmdTxt{0%,35%{opacity:0;transform:translateX(-6px)}100%{opacity:1;transform:none}}
+@keyframes hcmdShrink{from{width:104px}to{width:44px}}

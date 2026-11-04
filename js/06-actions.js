@@ -393,7 +393,7 @@ const ACTS={
   editact:()=>{const b=S.battle;const me=b.players.find(p=>p.isMe);if(b.over)return;me.confirmed=false;b.allAt=null;const a=me.action;
     if(b.grid){S.sel.gmode=a&&a.kind==='move'?'move':a&&a.kind==='wait'?'wait':'fight';S.sel.gcell=a&&a.kind==='move'?a.to:null;S.sel.gitem=me.itemAct||null;me.itemAct=null;S.sel.act=a&&['skill','defend'].includes(a.kind)?a:{kind:'skill',skill:basicSkill(me.job)};}
     else S.sel.act=a||{kind:'skill',skill:basicSkill(me.job)};S.sel.act2=me.action2;me.action2=null;renderFight();},
-  'g-mode':d=>{S.sel.gmode=d.mode;if(d.mode==='defend')S.sel.act={kind:'defend'};else if(d.mode==='fight'&&S.sel.act&&S.sel.act.kind==='defend')S.sel.act=null;renderFight();},
+  'g-mode':d=>{const pm=S.sel.gmode||'fight';if(pm!==d.mode)gmAnimMark(pm,d.mode);S.sel.gmode=d.mode;if(d.mode==='defend')S.sel.act={kind:'defend'};else if(d.mode==='fight'&&S.sel.act&&S.sel.act.kind==='defend')S.sel.act=null;renderFight();},
   'g-cl':d=>{S.sel.gcl=d.tab;$$('.gcl-tabs [data-act="g-cl"]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===d.tab)));const c=$('.gcl-chat'),l=$('#blog');if(c)c.hidden=d.tab!=='chat';if(l){l.hidden=d.tab!=='log';l.scrollTop=l.scrollHeight;}},
   'g-log':(d,el)=>{S.sel.glog=!S.sel.glog;const lg=$('#blog');if(lg){lg.hidden=!S.sel.glog;lg.scrollTop=lg.scrollHeight;}if(el)el.setAttribute('aria-expanded',String(!!S.sel.glog));},
   'g-tok':d=>{S.sel.gtok=S.sel.gtok===d.id||!d.id?null:d.id;renderFight();},
