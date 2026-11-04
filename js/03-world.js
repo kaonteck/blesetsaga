@@ -532,7 +532,7 @@ function telLine(b){const tel=b.tel,m=b.mon;if(!tel)return '';const dmg=Math.rou
   return `${tel.name}｜대미지 ${dmg}｜광역`;}
 function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=='dot';const t=esc(telLine(b));
   return `<div class="gtel ${aoe?'aoe':''}" role="status"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
-function gfMap(b,me){return `${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
+function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지도 확대·축소"><button type="button" data-gmz="in" aria-label="확대">+</button><span class="gmz-r num">${Math.round(GMZ.z*100)}%</span><button type="button" data-gmz="out" aria-label="축소">−</button><button type="button" data-gmz="fit" aria-label="맞춤">맞춤</button></div>${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>
@@ -616,8 +616,23 @@ function gridParts(){const b=S.battle,me=b.players.find(p=>p.isMe);
   const set=(id,html)=>{const el=document.getElementById(id);if(el&&el._h!==html){el.innerHTML=html;el._h=html;}};
   set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('dmgrank',dmgRank(b));
   const lg=$('#blog');if(lg){lg.innerHTML=logHTML();lg.scrollTop=lg.scrollHeight;}}
+/* 만신전 전체 화면(≥1101px): 지도 확대·축소·맞춤 — 휠(커서 기준)·끌어서 이동·더블클릭 맞춤. 값은 #gf-map 의 CSS 변수(다시 그려도 유지) */
+const GMZ={z:1,x:0,y:0};
+function gmzApply(){const m=document.getElementById('gf-map');if(!m)return;m.style.setProperty('--gz',GMZ.z);m.style.setProperty('--gx',GMZ.x+'px');m.style.setProperty('--gy',GMZ.y+'px');const r=m.querySelector('.gmz-r');if(r)r.textContent=Math.round(GMZ.z*100)+'%';}
+function gmzZoom(f,cx,cy){const m=document.getElementById('gf-map');if(!m)return;const R=m.getBoundingClientRect();const z0=GMZ.z,z1=Math.max(0.6,Math.min(3,z0*f));if(z1===z0)return;
+  const px=(cx==null?R.width/2:cx-R.left)-R.width/2,py=(cy==null?R.height/2:cy-R.top)-R.height/2;GMZ.x=px-(px-GMZ.x)*z1/z0;GMZ.y=py-(py-GMZ.y)*z1/z0;GMZ.z=z1;gmzApply();}
+function gmzFit(){GMZ.z=1;GMZ.x=0;GMZ.y=0;gmzApply();}
+function initGridZoom(){const m=document.getElementById('gf-map');if(!m||m._gmz)return;m._gmz=1;gmzApply();
+  m.addEventListener('wheel',e=>{if(!matchMedia('(min-width:1101px)').matches)return;e.preventDefault();gmzZoom(e.deltaY<0?1.15:1/1.15,e.clientX,e.clientY);},{passive:false});
+  let drag=null,moved=false;
+  m.addEventListener('pointerdown',e=>{if(!matchMedia('(min-width:1101px)').matches||e.button!==0||e.target.closest('.gmz-btns'))return;drag={x:e.clientX,y:e.clientY,ox:GMZ.x,oy:GMZ.y};moved=false;});
+  addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!moved&&Math.hypot(dx,dy)<5)return;moved=true;m.classList.add('dragging');GMZ.x=drag.ox+dx;GMZ.y=drag.oy+dy;gmzApply();});
+  addEventListener('pointerup',()=>{drag=null;m.classList.remove('dragging');});
+  m.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+  m.addEventListener('dblclick',e=>{if(e.target.closest('.gmz-btns'))return;gmzFit();});
+  m.addEventListener('click',e=>{const b=e.target.closest('[data-gmz]');if(!b)return;const k=b.dataset.gmz;if(k==='in')gmzZoom(1.25);else if(k==='out')gmzZoom(0.8);else gmzFit();});}
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
-  return `<div class="wrap page gfight"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
+  return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
     <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl"><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
       <div class="panel gf-act" id="gf-act">${gfAct(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
     </div>`;}

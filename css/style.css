@@ -2835,3 +2835,63 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
   .gfight .hud .sks.addon>img{border-color:rgba(236,111,111,.8)}
   .gfight .hud .sks-plus{align-self:flex-start;margin-top:14px}
 }
+/* ── 만신전 전체 화면 HUD(≥1101px, 유저 요청): 지도가 화면 전체 · 위 보스 · 왼쪽 원정대 · 왼쪽 아래 채팅 · 아래 가운데 HUD ── */
+.gmz-btns{display:none}
+@media (min-width:1101px){
+  .wrap.page.gfight.gfx{position:fixed;left:0;right:0;top:59px;bottom:0;max-width:none;height:auto;min-height:0;margin:0;padding:0;display:block;z-index:5;background:#101010;overflow:hidden}
+  .gfx>#gf-top{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:min(980px,calc(100% - 560px));z-index:3;padding:8px 14px 50px;background:rgba(18,18,18,.86)}
+  .gfx>#gf-top .gf-clock small.faint{display:none}
+  .gfx>#gf-top .gf-topin{grid-template-columns:minmax(0,1fr) minmax(0,.9fr) auto;gap:14px}
+  .gfx>#gf-top .gf-topin>:nth-child(2){font-size:11px;line-height:1.45;min-width:0;overflow:hidden}
+  .gfx>#gf-top .gf-topin>:nth-child(2) *{font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gfx>#gf-tel{position:absolute;top:104px;left:50%;transform:translateX(-50%);width:min(952px,calc(100% - 588px));margin:0;z-index:4}
+  .gfx>#gf-tel .gtel{height:30px}
+  .gfx .gf-grid{position:absolute;inset:0;display:block}
+  /* 지도: 배경 전체 */
+  .gfx .gf-map{position:absolute;inset:0;z-index:0;padding:0;border:0;border-radius:0;background:radial-gradient(ellipse at center,#1d1d1d 0%,#0e0e0e 75%);overflow:hidden;cursor:grab;touch-action:none}
+  .gfx .gf-map.dragging{cursor:grabbing}
+  .gfx .gf-map .gboard{position:absolute;left:50%;top:calc(50% - 30px);height:calc(100% - 350px);min-height:320px;width:auto;aspect-ratio:1;max-width:none;transform:translate(-50%,-50%) translate(var(--gx,0px),var(--gy,0px)) scale(var(--gz,1));transform-origin:center;transition:transform .08s linear;background:rgba(23,23,23,.92)}
+  .gfx .gf-map.dragging .gboard{transition:none}
+  .gfx .gf-map .glegend{position:absolute;right:14px;top:10px;z-index:2;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 10px;border-radius:10px;background:rgba(18,18,18,.82);border:1px solid var(--rule);font-size:11px}
+  .gmz-btns{position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;border-radius:12px;background:rgba(18,18,18,.82);border:1px solid var(--rule)}
+  .gmz-btns button{width:34px;height:30px;border-radius:8px;border:1px solid var(--rule-2);background:var(--slab-2);color:var(--text);font-size:15px;cursor:pointer;padding:0}
+  .gmz-btns button[data-gmz=fit]{font-size:11px}
+  .gmz-btns button:hover{border-color:var(--gold)}
+  .gmz-r{font-size:10.5px;color:var(--muted)}
+  /* 왼쪽: 제출 현황 간략 */
+  .gfx .gf-sub{position:absolute;left:12px;top:10px;width:250px;max-height:calc(100% - 320px);z-index:3;padding:10px 10px 8px;background:rgba(18,18,18,.86);display:flex;flex-direction:column;overflow:hidden}
+  .gfx .gf-sub h3{font-size:13px;margin:0 0 4px}
+  .gfx .gf-sub .glist{flex:none;max-height:calc(100vh - 470px);overflow:auto}
+  .gfx .gf-sub .gsubtabs button{padding:4px 0;font-size:12px}
+  .gfx .gl:not(.dead-row){grid-template-columns:16px minmax(0,1fr) 22px 44px 12px 38px;gap:5px;padding:3px 4px;font-size:12px}
+  .gfx .gl .gbar{height:5px}
+  .gfx .gl-dmg{font-size:11px}
+  /* 왼쪽 아래: 채팅 · 전투 로그 */
+  .gfx .gf-cl{position:absolute;left:12px;bottom:12px;width:380px;height:280px;z-index:3;background:rgba(18,18,18,.88);display:flex;flex-direction:column;overflow:hidden}
+  .gfx .gf-cl .msgs{flex:1 1 0;min-height:0}
+  .gfx .gf-cl .log{flex:1 1 0;min-height:0;height:auto}
+  /* 오른쪽 위: 대미지 순위는 원정대 목록에 들어 있으므로 숨김 */
+  .gfx .gf-rank{display:none}
+  /* 아래 가운데: HUD */
+  .gfx .gf-act{position:absolute;left:404px;right:70px;bottom:12px;margin:0 auto;max-width:880px;z-index:3;padding:10px 14px;background:rgba(18,18,18,.9)}
+  .gfx .hud{grid-template-columns:minmax(0,1fr);gap:8px;position:relative}
+  .gfx .hud-face{display:none}
+  .gfx .hud-top{grid-column:1;grid-row:3;padding-bottom:0;flex-direction:row;align-items:center;gap:12px}
+  .gfx .hud-id::after{content:none}
+  .gfx .hud-id{flex:none;flex-wrap:nowrap;white-space:nowrap}
+  .gfx .hud-id>.hud-fx{display:none}
+  .gfx .hud-bars{flex:1;min-width:0;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:10px}
+  .gfx .hud-cmd{grid-column:1;grid-row:1;margin-right:120px}
+  .gfx .hud .hcmd{height:30px}
+  .gfx .hud-body{grid-column:1;grid-row:2;padding-right:120px;min-height:0}
+  .gfx .hud .sks-grid{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+  .gfx .hud .sks{width:48px;flex:none}
+  .gfx .hud .sks>img{width:44px;height:44px;border-radius:10px}
+  .gfx .hud .sks-n{font-size:10px;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gfx .hud .hcmd-go{top:0;bottom:auto;min-height:72px}
+}
+@media (min-width:1101px) and (max-width:1400px){
+  .gfx>#gf-top{width:calc(100% - 560px)}.gfx>#gf-tel{width:calc(100% - 588px)}
+  .gfx>#gf-top .gf-topin{grid-template-columns:minmax(0,1fr) auto}.gfx>#gf-top .gf-topin>:nth-child(2){display:none}
+  .gfx .gf-sub{width:230px}.gfx .gf-cl{width:330px;height:240px}.gfx .gf-act{left:354px;right:64px}
+}

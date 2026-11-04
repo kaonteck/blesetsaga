@@ -208,7 +208,7 @@ document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').
 function afterRender(){
   syncChatFab();initMapZoom();updateChats();
   const c=$('#fog');if(c)startFog(c);else stopFog();
-  fitExlog();fitSideChat();flogScroll();initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
+  fitExlog();fitSideChat();flogScroll();try{initGridZoom();}catch(e){}initMini();dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
 }
 
