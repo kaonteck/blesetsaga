@@ -216,7 +216,7 @@ function vBattle(){
     <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19'};
+const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19',frost:'E23'};
 function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
@@ -562,7 +562,7 @@ function gfAct(b,me){
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
   else body=`<div class="gact-h"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
   const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${JOBS[me.job].sigil}</span>`;
-  const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`빛의 속박 ${me.bound}`,'debuff']);if(me.charm>0)st.push(['매혹','debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
+  const st=[];if(me.poison)st.push([`${me.poison.name} ${me.poison.turns}턴`,'debuff']);if(me.bound>0)st.push([`${me.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${me.bound}`,'debuff']);if(me.charm>0)st.push(['매혹','debuff']);if(me.hot)st.push([`블레스 ${me.hot.turns}턴`,'heal']);if(me.protect)st.push(['보호','buff']);me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));
   const hpP=pct(me.hp,me.maxHp);
   return `<div class="hud ${me.dead?'is-dead':''}">
     <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div></div>

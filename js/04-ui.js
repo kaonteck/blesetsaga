@@ -85,7 +85,7 @@ const SKILL_FX={
   pray:[['heal','대상 HP 전부 회복'],['dn','자신 HP −15%']],
   utopia:[['heal','전체 · 마력 40%×판정 +40%']],
   vindicate:[['dn','아군 받는 대미지 −20%']],
-  dispel:[['heal','독·매혹 해제'],['buff','먼저 처리']],
+  dispel:[['heal','독·매혹·뿌리 속박 해제'],['buff','먼저 처리']],
   blind:[['buff','아군 전체 대미지 +25%']],
   downworld:[['debuff','몬스터 대미지 −30%']],
   dystopia:[['dmg','대미지 ×3'],['dn','아군 전체 HP −3%']],
@@ -825,7 +825,7 @@ function fighterCard(b,p){
   if(p.protect||(b.sanct&&!p.dead))st.push('<span class="chip st-buff">보호</span>');
   if(p.poison)st.push(`<span class="chip st-debuff">${esc(p.poison.name)} ${p.poison.turns}</span>`);
   if(p.hot)st.push(`<span class="chip st-heal">블레스 ${p.hot.turns}</span>`);
-  if(p.bound>0)st.push(`<span class="chip st-debuff">빛의 속박 ${p.bound}</span>`);
+  if(p.bound>0)st.push(`<span class="chip st-debuff">${p.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${p.bound}</span>`);
   if(p.charm>0)st.push('<span class="chip st-debuff">매혹 · 행동 불가</span>');
   if(canDouble(p,b))st.push('<span class="chip st-buff">연사</span>');
   if(p.obTurn===T)st.push('<span class="chip st-buff">오버 버닝 가능</span>');

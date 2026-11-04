@@ -1,7 +1,7 @@
 'use strict';
 /* 기본 콘텐츠 데이터 (퀘스트 · 몬스터 · 설정) · 유틸 */
 /* ───────── 콘텐츠 ───────── */
-const FLAG_NAMES={e16_port:'벤테 밤 부두',e17_score:'젖은 악보의 노래',e18_bottle:'병 속의 편지',e19_plug:'귀마개를 낌',e19_listen:'노래를 들음',ch5_clear:'5장 「세이렌의 부름」 완료',s5a_photo:'젖은 사진',s5b_conch:'소라 껍데기',e12_permit:'히페리온 체류 허가',e13_casino:'골든 오아시스 한 판',e13_vip:'VIP 명부의 긁힌 이름',e14_logout:'하산의 대답',ch4_clear:'4장 「황금의 갈증」 완료',s4a_vault:'열쇠 구멍 없는 금고',s4b_seat:'매일 같은 자리의 손님',e1_rescue:'탐사대 증언',e1_seal:'봉인 연구 기록',e1_path:'안전 경로 기록',e2_sealed:'검은 결정 봉인',e2_taken:'검은 결정 보관',e3_scout:'단독 정찰 기록',e3_nest:'추적자 둥지 위치',e3_resonance:'결정의 공명',s1_compass:'멈춘 나침반',s2_charm:'위조 부적',s3_map:'블라스파미아 지도'};
+const FLAG_NAMES={e20_steps:'붉은 모래사막의 발자국',e21_mural:'셀로나 신전 지하 벽화',e22_plan:'문서고의 기획서',ch6_clear:'6장 「고대 문명의 기억」 완료',s6a_steps:'지워지지 않는 발자국',s6b_fire:'꺼지지 않는 불',e16_port:'벤테 밤 부두',e17_score:'젖은 악보의 노래',e18_bottle:'병 속의 편지',e19_plug:'귀마개를 낌',e19_listen:'노래를 들음',ch5_clear:'5장 「세이렌의 부름」 완료',s5a_photo:'젖은 사진',s5b_conch:'소라 껍데기',e12_permit:'히페리온 체류 허가',e13_casino:'골든 오아시스 한 판',e13_vip:'VIP 명부의 긁힌 이름',e14_logout:'하산의 대답',ch4_clear:'4장 「황금의 갈증」 완료',s4a_vault:'열쇠 구멍 없는 금고',s4b_seat:'매일 같은 자리의 손님',e1_rescue:'탐사대 증언',e1_seal:'봉인 연구 기록',e1_path:'안전 경로 기록',e2_sealed:'검은 결정 봉인',e2_taken:'검은 결정 보관',e3_scout:'단독 정찰 기록',e3_nest:'추적자 둥지 위치',e3_resonance:'결정의 공명',s1_compass:'멈춘 나침반',s2_charm:'위조 부적',s3_map:'블라스파미아 지도'};
 const FLAG_REC={
   e1_rescue:{q:'E1',t:'정찰병은 살았다. 그가 끝내 부르지 못한 동료들의 이름만 안개 속에 남았다.'},
   e1_seal:{q:'E1',t:'부적은 다시 맞춰졌다. 비어 있던 한 조각은 끝내 찾지 못했다.'},
