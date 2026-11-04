@@ -1460,6 +1460,11 @@ html[data-theme="light"] .gfx .hud-op input::-webkit-slider-runnable-track{backg
 html[data-theme="light"] .gfx .hud-op input::-webkit-slider-thumb{border:2px solid #ebeef4}
 html[data-theme="light"] .gfx .hud-op input::-moz-range-track{background:rgba(220,196,137,0.4)}
 html[data-theme="light"] .gfx .hud-op input::-moz-range-thumb{border:2px solid #ebeef4}}
+html[data-theme="light"] #gtip{box-shadow:0 8px 24px rgba(20,28,45,0.175)}
+@media (max-width:1100px){html[data-theme="light"] .gsub-fold{border:1px solid var(--rule-2);background:transparent;color:var(--muted)}
+html[data-theme="light"] .gfight .hud .hb{border:0;background:none}
+html[data-theme="light"] .gfight .hud .hb:hover{background:none}
+html[data-theme="light"] .gfight .hud-bars{border-bottom:1px solid var(--rule-2)}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

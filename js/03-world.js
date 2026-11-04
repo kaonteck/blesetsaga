@@ -546,7 +546,7 @@ function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지�
 // 전투원 상태(버프·디버프) 목록 [글자, 종류] — HUD·제출 현황 공통
 function pFxList(b,p){const st=[];if(p.poison)st.push([`${p.poison.name} ${p.poison.turns}턴`,'debuff']);if(p.bound>0)st.push([`${p.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${p.bound}`,'debuff']);if(p.charm>0)st.push(['매혹','debuff']);if(p.hot)st.push([`블레스 ${p.hot.turns}턴`,'heal']);if(p.protect)st.push(['보호','buff']);(p.buffs||[]).filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));return st;}
 function gfSub(b,me){const al=living(b);
-  return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
+  return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span><button type="button" class="gsub-fold" data-act="sub-fold" aria-expanded="${!S.sel.subFold}" aria-label="제출 현황 ${S.sel.subFold?'펼치기':'접기'}">${S.sel.subFold?'▾':'▴'}</button></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>
     <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span>${(fx=>`<span class="gl-fx" title="${esc(fx.map(x=>x[0]).join(' · '))}">${fx.map(([x,t])=>`<span class="hud-fx st-${t}">${esc(x.replace(/ \d+(턴)?$/,''))}</span>`).join('')}</span>`)(pFxList(b,p))}</div>`).join('')
       :(()=>{const dead=b.players.filter(p=>p.dead);const canRev=!me.dead&&!me.confirmed&&CLASSES[me.job].skills.includes('sinsayer');
@@ -692,6 +692,16 @@ function hudOp(){const v=S.me&&S.me.hudOp;return typeof v==='number'&&v>=0.15&&v
 (function(){if(typeof document==='undefined')return;
   document.addEventListener('input',e=>{const r=e.target.closest&&e.target.closest('.hud-op input');if(!r)return;const v=Math.max(15,Math.min(100,+r.value))/100;S.me.hudOp=v;const pn=r.closest('.gf-act');if(pn)pn.style.setProperty('--hud-a',v);});
   document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.hud-op input'))save();});})();
+/* 만신전 PC: 스킬 아이콘 설명은 화면 위에 떠 있는 상자로(커맨드 창 안 스크롤에 잘리지 않게) */
+(function(){if(typeof document==='undefined')return;let tip=null;
+  const hide=()=>{if(tip)tip.style.display='none';};
+  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.gfx .hud .sks');
+    if(!el||!matchMedia('(min-width:1101px)').matches){hide();return;}const src=el.querySelector('.sk-tip');if(!src){hide();return;}
+    if(!tip){tip=document.createElement('div');tip.id='gtip';tip.className='sk-tip';tip.setAttribute('role','tooltip');document.body.appendChild(tip);}
+    tip.innerHTML=src.innerHTML;tip.style.display='flex';const r=el.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
+    tip.style.left=Math.round(Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2)))+'px';tip.style.top=Math.round(Math.max(8,r.top-h-10))+'px';});
+  document.addEventListener('pointerdown',e=>{if(!(e.target.closest&&e.target.closest('.gfx .hud .sks')))hide();});
+  window.addEventListener('scroll',hide,true);})();
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
   return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
     <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
