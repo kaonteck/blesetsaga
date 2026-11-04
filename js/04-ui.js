@@ -10,7 +10,10 @@ let NAV_OPEN=false;
 /* ☰ 메뉴 팝업: 바깥을 누르거나 Esc면 닫힘 */
 document.addEventListener('click',e=>{if(!NAV_OPEN||e.target.closest('#mainnav,.navtog'))return;NAV_OPEN=false;renderTop();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NAV_OPEN){NAV_OPEN=false;renderTop();}});
-function go(route,sel){S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
+/* 퀘스트 페이지 임시 비공개(유저 요청 2026-11-05, 풀라고 할 때 false로): 운영자만 열림 */
+const QUEST_HIDDEN=true;
+const questHidden=()=>QUEST_HIDDEN&&!isAdmin();
+function go(route,sel){if(route==='quest'&&questHidden()){toast('퀘스트 페이지는 잠시 준비 중입니다.','warn');return;}S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
 function openLink(l){
   if(!l)return;const [k,v]=l.split(':');
   if(k==='monster')go('battle',{monster:v});else if(k==='quest')go('quest',{quest:v});else go(k);
@@ -26,7 +29,7 @@ function renderTop(){
   else if(S.match)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="매칭 성사 · 수락 대기"><span class="st-l">매칭 성사 · </span>수락 대기</button>`;
   else if(S.queue)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="매칭 대기"><span class="st-l">매칭 </span>대기 <span class="num" data-qtime>${fmtDur(now()-S.queue.since)}</span></button>`;
   else if(S.party)state=`<button class="pill state" data-act="nav" data-route="battle" aria-label="파티 ${S.party.members.length}/${S.party.target}"><span class="st-l">파티 </span>${S.party.members.length}/${S.party.target}</button>`;
-  const nav=[...NAV];if(isAdmin())nav.push(['admin','운영']);
+  const nav=NAV.filter(([r])=>r!=='quest'||!questHidden());if(isAdmin())nav.push(['admin','운영']);
   top.innerHTML=`<div class="wrap">
     <button class="logo" data-act="nav" data-route="main" aria-label="BLESET SAGA 블레셋 전기 · 메인으로"><svg class="lg-orn" viewBox="0 0 64 40" aria-hidden="true"><circle cx="32" cy="20" r="13" fill="none" stroke="currentColor" stroke-width=".8" opacity=".7"/><circle cx="32" cy="20" r="8.5" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="1 2" opacity=".6"/><path d="M32 3l2.2 14.8L49 20l-14.8 2.2L32 37l-2.2-14.8L15 20l14.8-2.2z" fill="currentColor" opacity=".9"/><path d="M2 20h11M51 20h11" stroke="currentColor" stroke-width=".8"/><path d="M60 20l-4-2.4v4.8z" fill="currentColor"/></svg><span class="lg-tx"><span class="lg-en">BLESET SAGA</span><span class="lg-ko">블레셋 전기</span></span></button>
     <button class="navtog" data-act="navtog" aria-label="메뉴 ${NAV_OPEN?'닫기':'열기'}" aria-expanded="${NAV_OPEN}" aria-controls="mainnav">${NAV_OPEN?'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>':'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'}</button>
@@ -112,6 +115,7 @@ function render(){
   if(S.loggedOut){v.innerHTML=vLogin();renderPop();return;}
   if(!S.me){v.innerHTML=vCreate();renderPop();return;}
   ensureDeco();ensureCraft();ensureRelevel();ensureVilQuest();ensureFish();ensureDunParty();settleFish();
+  if(S.route==='quest'&&questHidden())S.route='main';
   const r=S.route;
   if(r==='admin'&&!isAdmin()){v.innerHTML=`<div class="wrap page"><div class="panel"><h3>운영</h3><p>운영자 권한이 있는 계정만 열 수 있습니다.</p></div></div>`;return;}
   const fn={community:vCommunity,profile:vProfile,main:vMain,quest:vQuest,explore:vExplore,battle:vBattle,character:vChar,lore:vLore,market:vMarket,admin:vAdmin}[r]||vMain;
