@@ -535,7 +535,7 @@ const TEL_SEEN={k:'',at:0};
 // 만신전 보스 대사: 패턴마다 늘 같은 대사 → 대사만 듣고 다음 공격을 알아챌 수 있게. 몬스터에 mass.lines{패턴:대사}가 있으면 그걸 씀({t}=대상 이름).
 const BOSS_SAY={single:'{t}… 너부터 꺾어 주마.',dot:'{t}, 이 독을 견뎌 보아라.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
 function bossSay(b){const tel=b.tel;if(!tel)return '';const k=tel.type==='dot'?'dot':(tel.pat||'single');
-  const own=b.mon&&b.mon.mass&&b.mon.mass.lines;let line=(own&&own[k])||BOSS_SAY[k]||'';
+  const mm=typeof monster==='function'&&b.monsterId?monster(b.monsterId):null;const own=mm&&mm.mass&&mm.mass.lines;let line=(own&&own[k])||BOSS_SAY[k]||'';
   if(line.includes('{t}')){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);line=line.replace(/\{t\}/g,t?t.name:'');}
   return line;}
 function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=='dot';const t=esc(telLine(b));
