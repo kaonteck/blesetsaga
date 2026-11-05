@@ -306,6 +306,12 @@ details.cp>summary{cursor:pointer;list-style:none}
 .fm .kd{position:relative;min-width:0}.fm .kd.wide{grid-column:1/-1}.fm .kd>.f{width:100%}
 .fm .kd-x{position:absolute;top:0;right:0;padding:1px 7px;font-size:11px;line-height:1.5;border-radius:999px;border:1px solid var(--rule-2);background:transparent;color:var(--muted);cursor:pointer}
 .fm .kd-x:hover{color:#e57373;border-color:#e57373}
+/* 백엔드 요청: 인라인으로 임시 처리했던 것들을 CSS로 · 장면 접기 안 머리줄 제목 숨김(요약 줄과 겹침) */
+.shell{align-content:start}
+.shell .side,.shell #view{min-width:0}
+.side-me .row{flex-wrap:nowrap}
+.scn .sc-h h4{display:none}
+.scn .sc-h{justify-content:flex-end}
 </style>
 </head>
 <body>
