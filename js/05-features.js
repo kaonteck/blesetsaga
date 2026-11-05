@@ -191,6 +191,10 @@ function profChips(){return ['craft','cook','alch'].filter(k=>prof(k).rank).map(
 
 /* ───────── 마을 (지역별 NPC) ───────── */
 const VIL_SPOTS=[['plaza','광장'],['grocer','식료품점'],['clinic','치료소'],['alley','뒷골목']];
+/* 땅마다 장소 이름 바꾸기: 혹한 칼리로에는 광장 대신 여관(유저 요청 2026-11-05) */
+const VIL_SPOT_NAME={frost:{plaza:'여관',grocer:'잡화점',clinic:'약방'}};
+function spotName(land,k){const o=VIL_SPOT_NAME[land];return (o&&o[k])||(VIL_SPOTS.find(x=>x[0]===k)||[])[1]||k;}
+const VIL_AVOID_LAND={frost:{plaza:['그레고르가 숙박부를 덮고 장작을 넣는 척한다. "…오늘은 손님이 많네요." 아무도 없는데.','캐서린이 수프 냄비만 젓는다. 당신 쪽을 보지 않는다.']}};
 const VIL_NPC={
   plaza:[['광장의 음유시인 로웬',['{L}의 노래를 들어 보겠소? 신들이 처음 축복을 내린 날의 이야기라오.','요즘 블레서들이 부쩍 늘었어. 다들 백야의 신전 이야기만 하더군.','분수대에 동전을 던지면 신이 소원을 들어준다는데, 나는 아직 한 번도 못 봤지.']],
     ['광장의 게시판지기 하나',['게시판에 새 의뢰가 붙으면 제일 먼저 알려 줄게요!','{L} 경계 쪽에 변이된 짐승이 나타났대요. 조심하세요.','오늘은 조용하네요. 이런 날이 오래가면 좋겠어요.']],
@@ -203,7 +207,7 @@ const VIL_NPC={
     ['수상한 망토의 사내',['…날 본 적 없는 걸로 하게.','이걸 맡아 줄 사람이 필요했네. 묻지는 말고.','혼돈의 파편을 사겠다는 자가 있어. 관심 있으면 다음에 오게.']],
     ['골목 고양이',['야옹. (무언가를 물고 와 발치에 내려놓는다)','고양이가 당신을 빤히 쳐다보다 사라졌다.','골목 끝에서 고양이 울음소리만 들려온다.']]]
 };
-const VIL_TOWN={meadow:['시작의 마을','에우도라'],rock:['바위 협곡','에트나'],swamp:['숨겨진 마을','로타스'],salt:['부유의 땅','히페리온'],ember:['','사막 쉼터'],frost:['빙하 연구소','칼리로에'],sea:['항구도시','벤테']};
+const VIL_TOWN={meadow:['시작의 마을','에우도라'],rock:['바위 협곡','에트나'],swamp:['숨겨진 마을','로타스'],salt:['부유의 땅','히페리온'],ember:['','사막 쉼터'],frost:['눈에 갇힌 마을','칼리로에'],sea:['항구도시','벤테']};
 const VIL_LINES={
  meadow:{
   plaza:[['광장지기 루미',['어서 와요! 에우도라에 온 걸 환영해요! 처음이죠? 다 티 나요, 헤헤.','오늘 날씨 최고죠? 이런 날은 무조건 산책이에요!','길 잃으면 언제든 저한테 물어봐요. 에우도라 골목은 제가 다 알아요!']],['꽃집 소녀 포피',['이 꽃 한 송이 가져가요! 블레서님 얼굴이 환해 보이네요.','초원 바람 냄새 맡아 봤어요? 기분 좋아지죠!']]],
@@ -231,10 +235,10 @@ const VIL_LINES={
   clinic:[['사막 치료사 자라',['얼굴이 벌겋네요. 더위 먹은 거예요. 일단 그늘에 앉으세요.','화상은 가볍게 보면 안 됩니다. 연고를 바르고 천천히 움직이세요.','사막에서 쓰러지는 건 순식간이에요. 무리하지 마세요.']]],
   alley:[['천막 아래 노인',['…이 더위에 골목까지 오다니. 급한 일이 아니면 해가 지고 다니게.','모래폭풍이 오기 전엔 바람 냄새가 바뀐다네. 잘 맡아 두게.']],['골목 고양이',['고양이가 그늘에 납작 엎드려 꼼짝도 하지 않는다.','고양이가 뜨거운 모래를 피해 한 발씩 조심스럽게 걷는다.']]]},
  frost:{
-  plaza:[['연구원 이브',['어서 오세요. 칼리로에는 춥지만… 마음까지 얼진 않았으면 좋겠어요.','얼음 속에 무언가가 잠들어 있다는 기록이 있어요. 무엇인지는… 아직 몰라요.','눈이 그치면 별이 아주 잘 보여요. 그때 다시 이야기해요.']],['늙은 관측자',['눈은 조용히 모든 걸 덮지. 좋은 것도, 나쁜 것도.','자네가 찾는 답은 얼음 아래에 있을 수도 있고… 없을 수도 있네.']]],
-  grocer:[['보급관 라일라',['따뜻한 수프 한 그릇 드릴까요? 손이 너무 차가워 보여요.','서리 열매는 겨울에만 달아요. 이상하죠? 이유는 아무도 몰라요.','필요한 게 있으면 말해요. 없으면… 그냥 쉬다 가요.']]],
-  clinic:[['의무관 세린',['동상은 늦게 알아차릴수록 위험해요. 손가락 좀 볼게요.','천천히 숨 쉬세요. 찬 공기도 익숙해지면 괜찮아져요.','몸이 기억하는 추위는… 오래 남아요. 조심하세요.']]],
-  alley:[['얼음 조각가',['이 조각은 내일이면 녹아요. 그래도 만들어요. 왜냐고요? …글쎄요.','길 끝에 연구소에서 금지한 구역이 있어요. 거긴… 가지 않는 게 좋아요.']],['골목 고양이',['털이 두툼한 고양이가 당신 발치에 조용히 앉아 온기를 나눈다.','고양이가 눈송이를 앞발로 톡톡 건드린다.']]]},
+  plaza:[['여관 주인 그레고르',['어서 오세요, 어서. 문 닫아요, 눈 들어와요. 방은 많아요. 요즘은… 다 비어 있거든요.','숙박부에 이름 좀 적어 주세요. 이 책은 제가 제일 아끼는 거예요. 여기 온 사람은 전부 이 안에 있어요.','올겨울엔 장작을 덜 패도 되겠어요. 불 쬘 사람이 줄었으니까.']],['여관 일꾼 캐서린',['따뜻한 수프 데워 둘게요. 여기선 국물이 식기 전에 먹어야 해요.','지난달에 윗집이 비었어요. 인사도 없이요. 여기선 다들 그렇게 떠나요.','손님이 오면 그레고르 아저씨가 제일 좋아해요. 숙박부가 한 줄 늘어나니까.']],['덮개를 들추는 아이 틸',['쉿. 저기 천 덮인 거, 거울이래요. 어른들은 절대 보지 말래요.','이 마을엔 저 말고 애가 없어요. 작년까진 둘이었는데.']]],
+  grocer:[['잡화점 라일라',['물건이 늦게 와요. 길이 막히면 몇 주씩 안 와요. 그래도 괜찮아요, 사 갈 사람도 별로 없으니까.','서리 열매는 겨울에만 달아요. 이상하죠? 이 마을엔 겨울밖에 없는데.','필요한 게 있으면 말해요. 없으면… 그냥 쉬다 가요. 말 상대가 그리웠어요.']]],
+  clinic:[['약사 세린',['동상은 늦게 알아차릴수록 위험해요. 손가락 좀 볼게요.','약은 넉넉해요. 쓸 사람이 줄었거든요.','몸이 기억하는 추위는… 오래 남아요. 조심하세요.']]],
+  alley:[['장작 패는 로빈',['도끼 소리가 안 들리면 그 집은 빈 거예요. 요즘은 내 도끼 소리만 들려요.','눈은 길을 지워요. 왔던 길도, 갈 길도. 그래서 여기 사람들은 잘 안 떠나요. 떠나도 못 돌아오고.']],['유리 장인 베라',['…유리는 더 이상 안 불어요. 거울은 특히.','이 마을에 거울이 왜 다 덮여 있냐고요? …덮어 둬야 하는 것도 있어요.']],['골목 고양이',['털이 두툼한 고양이가 당신 발치에 조용히 앉아 온기를 나눈다.','고양이가 천 덮인 거울 앞에서 한참 꼬리를 흔들다 돌아선다.']]]},
  sea:{
   plaza:[['선장 바르보사',['…밤엔 잠을 안 자. 자면 노래가 들리거든. 하하! 농담이야, 농담.','하하하! 벤테에 온 걸 환영하네! 바다 냄새 좀 맡아 봐, 이게 사는 맛이지!','오늘 그물에 대어가 걸렸다네! 저녁은 내가 쏘지!','파도가 높을수록 심장이 뛰지 않나? 하하!']],['어부 토마스',['어이, 블레서! 낚싯대 좀 다룰 줄 아나? 모르면 내가 가르쳐 주지!','바다는 거짓말을 안 해. 성실하게 던지면 언젠간 물어!']]],
   grocer:[['어시장 아줌마 벨라',['싱싱한 고등어 있어요~! 오늘 아침에 들어온 거예요!','블레서 양반, 회 한 접시 먹고 가! 기운이 펄펄 날 거야!','꽃게가 살이 꽉 찼어! 안 사면 후회한다니까!']]],
@@ -311,12 +315,12 @@ Object.assign(ITEMS,{
   j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 표지 안쪽에 영문 이름이 긁혀 있다. A■R■■A. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
 /* AURORA 탐사대의 일지(아이템 id는 j2052 그대로): 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다. 3장 1쪽, 4장 E13·E14·E15 완료 때 한 쪽씩. 날짜·템빨/컨빨 언급 없음(시간선: AURORA 탐사대가 먼저 갇혔고, 템빨·컨빨은 다음에 들어와 탈출 → 라니아케아에 기록 없음) */
 const J2052_P1='(날짜 칸은 물에 번져 읽을 수 없다)\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— AURORA';
-const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.','신전 지하 벽화에 우리가 있었다. 머리띠를 쓰고, 빛나는 네모 앞에 앉아 있는 사람들. 수천 년 된 벽화라고 했다. 해시계는 우리가 들어간 시각을 가리키고 있었다.','문서고에서 기획서를 봤다. 우리가 플레이하던 게임의 첫 기획서. 첨부된 지도는 지금 내 지도와 똑같다. 의뢰인 칸에 신전에서 본 문양이 있었다.','게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜.'];
-function j2052Text(){const F=(S&&S.flags)||{};const n=1+['e13_vip','e14_logout','ch4_clear','e17_score','e18_bottle','ch5_clear','e21_mural','e22_plan','ch6_clear'].filter(f=>F[f]).length;const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
+const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.','신전 지하 벽화에 우리가 있었다. 머리띠를 쓰고, 빛나는 네모 앞에 앉아 있는 사람들. 수천 년 된 벽화라고 했다. 해시계는 우리가 들어간 시각을 가리키고 있었다.','문서고에서 기획서를 봤다. 우리가 플레이하던 게임의 첫 기획서. 첨부된 지도는 지금 내 지도와 똑같다. 의뢰인 칸에 신전에서 본 문양이 있었다.','게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜.','여관 거울 속 주인이 우리를 알아봤다. 거울 밖의 그는 처음 보는 사람처럼 웃었다. 둘 중 어느 쪽이 진짜 얼굴인지 모르겠다.','호수에 마을 사람 전부가 비쳤다. 다 우리 같은 사람이었다. 장비를 입고, 레벨이 있고, 퀘스트를 깼다. 백야의 신전까지.','나는 이곳에 남기로 했다. 남아서 신전을 지키는 성녀가 되어 마을 사람들과 함께 어우러져 사는 것을 선택했다. 고된 회사도, 돈을 벌어야 한다는 책임감도, 바쁘게 흘러가는 현실은 전부 잊고 블레서로의 새로운 삶을 시작하기로 했다.'];
+function j2052Text(){const F=(S&&S.flags)||{};const n=1+['e13_vip','e14_logout','ch4_clear','e17_score','e18_bottle','ch5_clear','e21_mural','e22_plan','ch6_clear','e25_mirror','e26_lake','ch7_clear'].filter(f=>F[f]).length;const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
   const NOTE={4:'(4쪽 뒤에 젖은 악보 한 장이 끼워져 있다. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」)',7:'(7쪽 뒤에 금빛 문양을 문질러 뜬 탁본 한 장이 끼워져 있다. 처음 보는 고대 문자다.)',10:'(10쪽 뒤에 깨진 거울 조각 하나가 끼워져 있다. 비친 얼굴이 내 얼굴이 아니다.)'};
   if(n>=7&&F.e19_listen)pages[6]+='\n그 사람이 바다에서 노래한다. 돌아오지 말라고.';
   pages.forEach((x,i)=>{const nt=NOTE[i+1];if(nt&&(i+1<n||(i+1===n&&({4:F.ch4_clear,7:F.ch5_clear,10:F.ch6_clear})[n])))pages[i]=x+'\n\n'+nt;});
-  return pages.join('\n\n― ― ―\n\n')+'\n\n(나머지 쪽은 물에 젖어 붙어 있다. 억지로 떼면 찢어질 것 같다.)';}
+  return pages.join('\n\n― ― ―\n\n')+(F.ch7_clear?'\n\n(13쪽 뒤로는 빈 쪽뿐이다. 넘겨 봐도 아무것도 적혀 있지 않다. 맨 마지막 장 사이에 녹지 않는 눈송이 하나가 끼워져 있었다.)':'\n\n(나머지 쪽은 물에 젖어 붙어 있다. 억지로 떼면 찢어질 것 같다.)');}
 Object.defineProperty(ITEMS.j2052,'readText',{get:j2052Text,enumerable:true,configurable:true});
 
 Object.assign(ITEMS,{q_mask:{name:'빈 안개 마스크',type:'mat',tag:'퀘스트 아이템',desc:'약초꾼 이브가 건넨 가죽 마스크. 늪 독샘을 먹여야 숨을 쉴 수 있다.'},q_ferry:{name:'토르의 나룻배 표',type:'mat',tag:'퀘스트 아이템',desc:'나무 조각에 배 그림이 새겨져 있다. 뒷면에는 오늘 날짜가 이미 적혀 있다.'},q_lamp:{name:'꺼진 등불',type:'mat',tag:'퀘스트 아이템',desc:'장로 하윈이 맡긴 낡은 등불. 정화의 성수를 부으면 다시 켜진다고 한다.'},q_pilgrim:{name:'순례자의 표식',type:'mat',tag:'퀘스트 아이템',desc:'에트나 안내인이 건넨 돌 표식. 손때가 묻어 반들반들하다.'},q_cavemap:{name:'동굴 지도',type:'mat',tag:'퀘스트 아이템',desc:'무너진 바위 동굴로 가는 길이 그려진 낡은 지도. 종이만 새것이다.'}});
@@ -708,7 +712,7 @@ function logoutGlitch(){const b=document.body;if(!b||b.classList.contains('glx')
 function heroLinesOf(b){const H=HERO_LINES[b.monsterId||b.mon.id];if(!H)return null;return b.noCharm&&H.plugSay?{say:H.plugSay,last:H.plugLast||H.last}:H;}
 /* 5장 E18 병 편지 답장 → 바로 반송(보낸 이 빈칸 · 보관 불가) */
 function replyDlg(qid,i){modal(`<button class="ibtn sm md-x" data-act="closemodal" aria-label="닫기">✕</button><h3 class="sh-ttl">답장 쓰기</h3><p class="muted" style="font-size:12.5px">받는 사람 · ■■시 ■■구 ■■로 12, 302호</p><textarea id="reply-text" rows="5" maxlength="300" placeholder="병에 넣을 답장을 적으세요." style="width:100%"></textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="closemodal">그만두기</button><button class="btn btn-primary" data-act="reply-send" data-id="${qid}" data-i="${i}">병에 넣어 띄우기</button></div>`);}
-const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']],['ch4','4장 「황금의 갈증」',['E12','E13','E14','E15']],['ch5','5장 「세이렌의 부름」',['E16','E17','E18','E19']],['ch6','6장 「고대 문명의 기억」',['E20','E21','E22','E23']]];
+const QCHAPTERS=[['ch0','서장 「블레스 링크」',['E0']],['ch1','1장 「사라진 탐사대」',['E1','E2','E3','E4']],['ch2','2장 「시련의 길」',['E5','E6','E7']],['ch3','3장 「독안개 아래」',['E8','E9','E10','E11']],['ch4','4장 「황금의 갈증」',['E12','E13','E14','E15']],['ch5','5장 「세이렌의 부름」',['E16','E17','E18','E19']],['ch6','6장 「고대 문명의 기억」',['E20','E21','E22','E23']],['ch7','7장 「거울 속 죄수」',['E24','E25','E26','E27']]];
 /* 옛 영웅 보스: 전투 중 대사 · 처치 후 유언 */
 const HERO_LINES={
   st_witch:{say:['(노래가 끊기지 않는다. 숨도 쉬지 않고.)','쉿… 노래가 끝나면 안 돼.','왜 다들 웃고 있는 거지?'],last:'…이제 좀, 조용하네.'},
@@ -743,7 +747,7 @@ const ADV_MONS=Object.entries(ADV_ORIGIN).map(([job,o])=>soloMon({id:o.mon[0],na
 function advQuest(job){const o=ADV_ORIGIN[job];const advs=CLASSES[job].adv;
   return {id:'J_'+job,cat:'sub',title:`[전직] ${o.god}의 시련`,published:true,level:20,prereq:null,repeat:null,job,cond:{},
     desc:`${o.godDesc} ${o.god}이(가) 당신을 부른다. ${villageName(o.land)}로 가서 상위 클래스로 나아갈 시련을 받자.`,start:'s1',steps:{
-    s1:{text:`꿈에서 낯선 목소리를 들었다. "${CLASSES[job].name}의 아이야, 이제 때가 되었다." ${o.place}으로 가서 시련의 증표를 받아야 한다. (탐색 › ${LANDS[o.land]} › 마을 › 광장)`,
+    s1:{text:`꿈에서 낯선 목소리를 들었다. "${CLASSES[job].name}의 아이야, 이제 때가 되었다." ${o.place}으로 가서 시련의 증표를 받아야 한다. (탐색 › ${LANDS[o.land]} › 마을 › ${spotName(o.land,'plaza')})`,
       give:{land:o.land,spot:'plaza',item:'q_trial',n:1,npc:o.npc,text:`기다리고 있었습니다. ${o.god}께서 당신을 지켜보고 계셨어요. 이 증표를 쥐고 신전 깊은 곳으로 들어가세요.`},
       choices:[{label:'증표를 쥐고 신전 깊은 곳으로 들어간다',req:{item:'q_trial'},result:'증표가 빛나며 신전 바닥의 문양이 열린다.',next:'s2'},{label:'아직 신전에 가지 못했다',result:`${villageName(o.land)}의 광장에서 ${o.npc}을(를) 찾아야 한다.`,next:'s1'}]},
     s2:{text:`문양 너머, ${o.mon[1]}이(가) 무기를 든다. "증명하라. 네가 나아갈 자격이 있는지."`,battle:o.mon[0],next:'s3',winText:'환영이 무릎을 꿇고 빛으로 흩어진다.'},
@@ -766,7 +770,7 @@ function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.jtGift){S.me.inv.jobticket=(S.me.inv.jobticket||0)+JOBTICKET_GIFT;S.me.jtGift=1;ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
-  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14',E16:'E15',E17:'E16',E18:'E17',E19:'E18',E20:'E19',E21:'E20',E22:'E21',E23:'E22'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14',E16:'E15',E17:'E16',E18:'E17',E19:'E18',E20:'E19',E21:'E20',E22:'E21',E23:'E22',E24:'E23',E25:'E24',E26:'E25',E27:'E26'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -786,7 +790,7 @@ function vilVisit(land,spot){
     S.me.gold-=THEFT_GOLD;npc='';text='눈 깜짝할 사이에 지갑을 털렸다!';lost=THEFT_GOLD;
     const done=(S.me.justice>0)||S.claimedQ[`D_THEFT:${kstCycle()}`]||(S.qp.D_THEFT&&S.qp.D_THEFT.status==='active');
     if(!done){S.theft={cycle:kstCycle(),land};if(S.qp.D_THEFT)delete S.qp.D_THEFT;setTimeout(()=>notify('데일리 퀘스트 「잃어버린 골드를 찾아서」가 생겼습니다.'),600);}}
-  else if(n>10){npc='';text=pick(VIL_AVOID[spot]);}
+  else if(n>10){npc='';text=pick((VIL_AVOID_LAND[land]&&VIL_AVOID_LAND[land][spot])||VIL_AVOID[spot]);}
   else {const r=Math.random();const ex=EXPLORE.find(x=>x.id===land);
     if(Math.random()<(CLASSES[S.me.job].tier===2?0.02:0.015)){text=pick(CLASSES[S.me.job].tier===2?VIL_GLITCH:VIL_GLITCH_SOFT).replace('{N}',pick(GLITCH_NAMES));}
     else if(r<0.015){const g=3+Math.floor(Math.random()*10);S.me.gold+=g;got=`${g}골드`;d.vil++;}
@@ -796,9 +800,10 @@ function vilVisit(land,spot){
 function villageHTML(land){
   const v=S.sel.vil&&S.sel.vil.land===land?S.sel.vil:null;
   return `<section class="md-sec panel vil" id="md-village"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>마을 · <b class="vil-town">${esc(villageFull(land))}</b></div>
-    <div class="vil-btns">${VIL_SPOTS.map(([k,l])=>`<button class="vil-b ${v&&v.spot===k?'on':''}" data-act="vil-go" data-land="${land}" data-spot="${k}">${VIL_IC[k]}<span>${l}</span></button>`).join('')}</div>
+    <div class="vil-btns">${VIL_SPOTS.map(([k,l])=>`<button class="vil-b ${v&&v.spot===k?'on':''}" data-act="vil-go" data-land="${land}" data-spot="${k}">${land==='frost'&&k==='plaza'?VIL_IC_INN:VIL_IC[k]}<span>${spotName(land,k)}</span></button>`).join('')}</div>
     ${v?`<div class="vil-say ${v.got?'got':''} ${v.npc?'':'avoid'} ${v.lost?'theft':''}">${v.npc?`<b>${esc(v.npc)}</b><p>“${esc(v.text)}”</p>`:`<p class="${v.lost?'':'faint'}">${esc(v.text)}</p>`}${v.got?`<span class="vil-got">+ ${esc(v.got)}</span>`:''}${v.lost?`<span class="vil-lost">− ${v.lost}골드</span>`:''}</div>`:'<p class="faint vil-hint">장소를 고르면 마을 사람들과 이야기할 수 있습니다. 가끔 작은 선물을 받기도 합니다. 다만 하루에 너무 자주 말을 걸면 주민들이 슬슬 자리를 피할지도 모릅니다.</p>'}</section>`;
 }
+const VIL_IC_INN='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14V7l6-4 6 4v7M2 14h12M6 14v-4h4v4M5 8h1M10 8h1" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
 const VIL_IC={plaza:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14h12M3.5 14V8M12.5 14V8M8 14V9M2.5 8h11L8 3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
   grocer:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 5h11l-1 8.5h-9z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 5a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>',
   clinic:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v6M5 8h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -821,7 +826,7 @@ function dungeonTab(){
     return `<details class="dun-dd panel" ${focusLand===land?'open':''}><summary><b>${esc(LANDS[land])}</b><span class="faint">${ds.length}곳 · LV${ds.map(x=>lvOf(x[0])).join(' / ')}</span></summary><div class="dun-list">${ds.map(([id,,n])=>{
       const I=MAP_INFO[id]||{};const m=monster(id);
       let act='';
-      if(id==='temple'){act=`<div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="rtab" data-tab="weekly">토벌전으로</button></div>`;}
+      if(id==='temple'){act=weeklyClosed()?`<p class="faint" style="font-size:12px">백야의 신전은 지금 닫혀 있습니다.</p>`:`<div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="rtab" data-tab="weekly">토벌전으로</button></div>`;}
       else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,dtg(m.id));
         act=`<div class="dun-rw">보상 · <b>EXP ${R.exp}</b> · <b>${R.gold}골드</b>${(m.loot||[]).length?` · 보물상자에서 ${lootText(m)}`:''}</div><div class="row cj-act">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':lr?`<button class="btn btn-sm" disabled>${esc(`LV${m.level} 이상 필요`)}</button>`:`<button class="btn btn-sm btn-primary" data-act="dfight" data-id="${m.id}" ${busy?'disabled':''}>개인 입장</button><button class="btn btn-sm" data-act="dparty" data-id="${m.id}" ${busy?'disabled':''}>파티 입장 (최대 4인)</button>${busy?`<span class="faint" style="font-size:12px;align-self:center">${esc(busy)}</span>`:''}`}</div>`;}
       return `<article class="dun-card ${S.sel.dfocus===id?'focus':''}" id="dun-${id}"><div class="dun-t"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${esc(I.label||'인스턴스 던전')}</div><h3>${esc(n)}</h3>
@@ -1531,7 +1536,7 @@ function dexTab(){const t=['fish','mon','dun'].includes(S.sel.dexTab)?S.sel.dexT
 const SELONA_SIGIL='<svg class="sigil-ink" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="20" fill="none" stroke="currentColor" stroke-width="3"/><path d="M18 26h28L32 50z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="34" r="3.2" fill="currentColor"/><path d="M32 4v8M20 8l4 7M44 8l-4 7" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
 const WALK_N=5;
 function walkHTML(k){const cells=[];for(let i=0;i<=9;i++){const mine=i<=k&&i>0,ah=i>=WALK_N&&i<=WALK_N+Math.min(k,4);const both=mine&&ah;
-    cells.push(`<span class="wk-c ${mine?'me':''} ${ah?'ah':''} ${both?'both':''} ${ah&&i===WALK_N+Math.min(k,4)&&k<WALK_N?'tip':''}">${mine||ah?'<i class="fp l"></i><i class="fp r"></i>':''}</span>`);}
+    cells.push(`<span class="wk-c ${mine?'me':''} ${ah?'ah':''} ${both?'both':''} ${ah&&i===WALK_N+Math.min(k,4)&&k<WALK_N?'tip':''}">${mine||ah?`<i class="fp ${i%2?'r':'l'}"></i>`:''}</span>`);}
   return `<div class="walk ${k>=WALK_N?'done':''}" role="img" aria-label="모래 위 발자국 · 내 걸음 ${k}/${WALK_N}">${cells.join('')}</div>`;}
 let WALK_IDLE=0;
 function walkIdleArm(){clearTimeout(WALK_IDLE);const w=document.querySelector('.walk');if(w)w.classList.remove('still');WALK_IDLE=setTimeout(()=>{const x=document.querySelector('.walk');if(x)x.classList.add('still');},10000);}
@@ -1605,3 +1610,164 @@ function storyClaimFx(id){
   if(id==='E23')setTimeout(()=>{deliverMail('Bless Link 고객지원','[장시간 접속 안내]\n\n안녕하세요, 블레서님. 게임 장시간 접속에 따라 안내드립니다.\n「환영합니다!」\n「환ㅁ합니다!」\n「환영합니다?」',{},{noArchive:true,noBtns:true});save();},1500);}
 /* 기존 세이브: 수호자 설명 v2로 */
 (function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{const m=S.data&&S.data.monsters&&S.data.monsters.find(x=>x.id==='st_rootguard');if(m&&/관람석/.test(m.desc||'')){m.desc=STORY_MONS.find(x=>x.id==='st_rootguard').desc;save();}}catch(e){}};})();
+
+/* ───────── 7장 「거울 속 죄수」 (혹한 · LV65–79 · E24–E27 + S7a·S7b, 기획 claude/chapter7-draft.md v1.3 + 유저 결정 2026-11-05) ─────────
+   무대: 눈에 갇힌 마을 칼리로에(여관 · 잡화점 · 약방 · 뒷골목), 얼음 호수 = 거울 감옥. 감각: 거울(반사·지연·반전) · 눈(지워짐). */
+Object.assign(ITEMS,{
+  q_lantern:{name:'로빈의 등불',type:'mat',tag:'퀘스트 아이템',desc:'눈보라 속에서는 앞사람 등불만 보고 걸어야 한다.',price:0},
+  q_innkey:{name:'여관 2층 열쇠',type:'mat',tag:'퀘스트 아이템',desc:'칼리로에 여관 2층 방 열쇠. 방은 많다. 다 비어 있다.',price:0},
+  q_icepick:{name:'베라의 얼음 송곳',type:'mat',tag:'퀘스트 아이템',desc:'호수 얼음에 구멍을 낼 때 쓰는 송곳. 손잡이에 오래된 길드 문양이 긁혀 있다.',price:0},
+  q_vmirror:{name:'베라의 손거울',type:'mat',tag:'퀘스트 아이템',desc:'베라가 몇십 년 만에 만든 거울. 들여다보면 내 얼굴이 반 박자 늦게 웃는다.',price:0},
+  q_nametag:{name:'얼음 이름표',type:'mat',tag:'???',desc:'내 이름이 새겨진 얼음 조각. 녹지 않는다. 사용하면 읽는다.',price:0},
+  q_letter7:{name:'7호실의 편지',type:'mat',tag:'기념품',desc:'여관 7호실 책상 위에 있던 반쯤 쓴 편지. 사용하면 읽는다.',price:0,readText:'(받는 사람 칸은 이 세계의 글자가 아니다. 바다에서 띄운 병 편지와 같은 글자다.)\n\n(본문은 같은 글자로 빼곡하다. 읽을 수 없다.)\n\n끝줄만 이 세계의 글자다.\n「곧 갈게.」'},
+  q_snow:{name:'녹지 않는 눈송이',type:'mat',tag:'???',desc:'일지 마지막 장 사이에 끼워져 있던 눈송이. 녹지 않는다. 사용하면 들여다본다.',price:0,viewer:'snow'},
+  d_shard:{name:'깨진 거울 조각',type:'deco',tag:'장식품',desc:'어디서 났는지 모르는 거울 조각. 비친 얼굴이 가끔 내 얼굴이 아니다. 획득 경로: —',price:0}});
+Object.defineProperty(ITEMS.q_nametag,'readText',{get:()=>`혹한 마을 주민 명부 등록 완료.\n\n이름: ${(S&&S.me&&S.me.name)||''}\n직업: (빈칸)`,enumerable:true,configurable:true});
+STORY_MONS.push(
+  soloMon({id:'st_frostwolf',name:'눈보라 속 서리 늑대 떼',art:'beast',kind:'story',region:'칼리로에 가는 길',level:65,statLevel:66,tier:'story',desc:'등불을 따라붙는 늑대들. 지나간 자리에 발자국이 남지 않는다.',singleName:'서리 송곳니',aoeName:'눈보라 울음',dotName:'동상',dotChance:0.25}),
+  soloMon({id:'st_frostshade',name:'거울에서 나온 서리 그림자',art:'spirit',kind:'story',region:'칼리로에 여관 복도',level:68,statLevel:69,tier:'story',desc:'덮개가 벗겨진 거울에서 기어 나온 그림자. 당신과 같은 자세로 움직인다.',singleName:'서리 손',aoeName:'성에',dotName:'냉기',dotChance:0.25}),
+  soloMon({id:'st_lakespirit',name:'호수의 서리 정령',art:'spirit',kind:'story',region:'얼음 호수 가장자리',level:72,statLevel:73,tier:'story',desc:'호수 표면에 비친 것들이 한데 엉겨 생긴 정령. 얼굴이 계속 바뀐다.',singleName:'얼음 파편',aoeName:'반사광',dotName:'냉기',dotChance:0.25}),
+  soloMon({id:'st_prisoner',name:'거울 속 죄수',art:'spirit',kind:'story',region:'거울 감옥 · 얼음 호수 밑',level:76,statLevel:77,tier:'story',desc:'가장 먼저 남은 블레서. "이 세계를 영원히 볼 수 있게"를 빌었다. 볼 수만 있고 닿을 수는 없는 거울 안에 남았다. [7장 보스]',singleName:'서리 손톱',aoeName:'얼음 거울',dotName:'동상',dotChance:0.2,
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 되비침',say:'거울은 당신을 따라 합니다',atkMul:1.3,mirror:true,aoeName:'얼음 거울',aoeEvery:3},{at:25,name:'3페이즈 · 깨진 거울',say:'"성녀님은 아직 신전에 계셔? …아니, 이제 성녀가 아니겠구나. 문지기가 됐다지."',atkMul:1.6,mirror:false,aoeName:'깨진 거울',aoeMult:0.75,aoeEvery:2}]}));
+var PR_HP=1.75,PR_ATK=1.3;
+{const m=STORY_MONS.find(x=>x.id==='st_prisoner');m.hp=Math.round(m.hp*PR_HP);m.atk=Math.round(m.atk*PR_ATK);m.dotDmg=Math.round(m.atk*0.15);}
+Object.assign(HERO_LINES,{st_prisoner:{say:['그레고르는 내 공대장이었어. 이젠 날 몰라.','너도 곧 이쪽이야. 다들 거울 앞에서 웃더라.','내 이름? 거울에 물어봐.'],last:'이제… 네가 보여. 거울 말고.'}});
+/* 2페이즈: 죄수가 플레이어의 탐사 기록(옛 영웅 유언)을 읽는다 — 실제로 깬 것만 */
+function storyBattleFx(b){if(!b||b.monsterId!=='st_prisoner'||!b.mon||!b.mon.sphases)return;b.mon.sphases=clone(b.mon.sphases);const F=S.flags||{},done=id=>S.qp[id]&&S.qp[id].status==='done';
+  const r=[];if(done('E15'))r.push('"■■■… 소금 성의 그 친구."');if(done('E19'))r.push(F.e19_listen?'"빈칸… 바다의 그 애."':'"…그 애는 끝까지 못 들었구나."');
+  b.mon.sphases[1].say=(r.length?'죄수가 당신의 탐사 기록을 읽는다. '+r.join(' ')+' · ':'')+'거울은 당신을 따라 합니다';}
+/* 거울 속 사람들의 캐릭터 카드(가짜) — 캐릭터 정보 카드 모양을 빌림 */
+const MIRROR_CARDS={
+  gregor:{name:'그레고르',job:'defender',level:88,craft:'총장인',memo:'공대장은 마지막에 나간다.'},
+  catherine:{name:'캐서린',job:'demigod',level:84,craft:'셰프 드 퀴진',memo:'수프는 식기 전에. 사람도.'},
+  robin:{name:'로빈',job:'priest',level:91,craft:'',memo:'길 잃은 사람은 내가 데려온다.'},
+  vera:{name:'베라',job:'dualist',level:86,craft:'연금술사',memo:'깨진 건 다시 붙이면 돼.'},
+  til:{name:'틸',job:'mage',level:null,craft:'',memo:'',empty:true}};
+function mirrorCardHTML(k){const me=k==='me';const c=me?{name:S.me.name,job:S.me.job,level:S.me.level,craft:'',memo:S.sel.cardMemo||S.me.memo||''}:MIRROR_CARDS[k];if(!c)return '';
+  const face=me&&S.me.portrait?`<img class="u-face" src="${S.me.portrait}" alt="">`:sigil(c.job);
+  return `<div class="fcard ${c.empty?'empty':''}"><div class="row" style="justify-content:space-between"><b class="faint" style="font-size:11.5px">캐릭터 정보</b><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    <div class="u-top">${face}<div class="rm-t"><b>${esc(c.name)}</b><small><span class="num">${c.level?'LV'+c.level:'LV —'}</span></small><div class="row" style="gap:4px">${roleChip(c.job)}${c.empty?'':statusChip(me?myStatus():'offline')}${c.craft?`<span class="chip">${esc(c.craft)}</span>`:''}</div></div></div>
+    <div class="fc-row"><small class="faint">한줄메모</small><p>${c.memo?esc(c.memo):'<span class="faint">—</span>'}</p></div>
+    <div class="fc-row"><small class="faint">진행 중인 퀘스트</small><p>${c.empty?'<span class="faint">—</span>':me?'<span class="faint">[메인] 거울 속 죄수 · 진행 중</span>':'[메인] 백야의 신전 · 완료'}</p></div></div>`;}
+function openMirrorCard(k){modal(mirrorCardHTML(k));const mm=$('.modal');if(mm)mm.classList.add('narrow','fc-modal');}
+/* 숙박부 */
+function ledgerHTML(){const rows=[['그레고르','✓','—'],['캐서린','✓','—'],['로빈','✓','—'],['베라','✓','—'],['틸','✓','—'],['(번진 이름)','✓','—'],[S.me.name,'','']];
+  return `<div class="ledger"><div class="row" style="justify-content:space-between"><b>칼리로에 여관 숙박부</b><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    <table><thead><tr><th>이름</th><th>체크인</th><th>체크아웃</th></tr></thead><tbody>${rows.map(([n,a,b],i)=>`<tr class="${i===rows.length-1?'me':''}"><td>${esc(n)}</td><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table>
+    <p class="faint" style="font-size:11.5px;margin:6px 0 0">체크아웃 칸은 전부 비어 있다. 맨 아래 줄의 이름은 당신의 글씨가 아니다.</p></div>`;}
+/* 녹지 않는 눈송이: 하얀 신전, 등 돌린 성녀가 천천히 돌아보다가 얼굴 직전에 닫힘(약 6초, 다시 열면 처음부터) */
+function snowViewerHTML(){return `<div class="snowv" aria-label="녹지 않는 눈송이 속"><div class="sv-temple"></div><div class="sv-fig"><i class="sv-head"></i><i class="sv-veil"></i><i class="sv-robe"></i></div><div class="sv-flakes"></div></div>`;}
+let SNOW_T=0;
+(function(){const f=openViewer;openViewer=function(kind){if(kind==='snow'){clearTimeout(SNOW_T);modal(snowViewerHTML());const mm=$('.modal');if(mm)mm.classList.add('snow-modal');SNOW_T=setTimeout(()=>{if(document.querySelector('.snowv'))modal('');},6100);return;}return f(kind);};})();
+/* 7장 퀘스트 단계 연출: walkErase(지워지는 발자국) · mirrorTalk(반 박자 늦은 거울 대화) · lakeCards(호수의 카드) · shards(깨지는 거울) · ledger(숙박부) */
+(function(){const f=stepFx;stepFx=function(q,qp,step){if(!step)return null;
+  if(step.walkErase){const n=step.walkErase,k=Math.min(n,qp.walk||0);S.sel.wkT=S.sel.wkT&&S.sel.wkT.q===q.id?S.sel.wkT:{q:q.id,t:[]};
+    const T=S.sel.wkT.t,t0=now();const cells=[];for(let i=0;i<=9;i++){const ti=T[i-1];const age=ti?t0-ti:0;const on=i>0&&i<=k&&ti;const last=k>=n&&i===k;
+      cells.push(`<span class="wk-c ${on||last?'me':''} ${last?'stand':''}">${on||last?`<i class="fp ${i%2?'r':'l'} ${last?'':k>=n?'melt-fast':'melt'}" style="${k>=n?'':`animation-delay:-${age}ms`}"></i>`:''}</span>`);}
+    const strip=`<div class="walk snow ${k>=n?'done':''}" role="img" aria-label="눈 위 발자국 · ${k}/${n}">${cells.join('')}</div>`;
+    if(k<n)return {hold:true,html:`${qTextHTML(step.text)}${strip}<div class="row"><button class="btn btn-primary" data-act="walk-step" data-id="${q.id}">앞으로 걷는다 <span class="num faint">${k}/${n}</span></button></div>`};
+    return {html:strip+'<p class="muted" style="font-size:12.5px">돌아보면 남은 건 당신이 서 있는 자리 하나뿐이다.</p>',hold:false,text:null};}
+  if(step.mirrorTalk){const M=step.mirrorTalk,i=Math.min(M.lines.length,qp.mt||0);const cur=i>0?M.lines[i-1]:'',mir=i>0?((M.mirror&&M.mirror[i-1])||cur):'';
+    const box=`<div class="mtalk"><div class="mt-box"><b>${esc(M.npc)}</b><p>${cur?`“${esc(cur)}”`:'<span class="faint">…</span>'}</p></div>
+      <div class="mt-box mirror" title="거울"><b>${esc(M.npc)}</b><p class="mt-late" ${i?`data-k="${i}"`:''}>${mir?`“${esc(mir)}”`:'<span class="faint">…</span>'}</p></div></div>`;
+    if(i<M.lines.length)return {hold:true,html:`${qTextHTML(step.text)}${box}<div class="row"><button class="btn btn-primary" data-act="mt-next" data-id="${q.id}">대사 넘기기 <span class="num faint">${i}/${M.lines.length}</span></button></div>`};
+    return {html:box+`<div class="row"><button class="btn btn-sm" data-act="mcard" data-k="${M.card||'gregor'}">거울 속 ${esc(M.npc)}를 본다</button></div>`,hold:false,text:null};}
+  if(step.lakeCards){const h=`<div class="lake"><div class="lk-names">${['gregor','catherine','robin','vera','til'].map(k=>`<button type="button" class="lk-n" data-act="mcard" data-k="${k}">${esc(MIRROR_CARDS[k].name)}</button>`).join('')}<button type="button" class="lk-n me" data-act="mcard-me">당신의 반사</button></div></div>`;
+    return {html:h,hold:false,text:null};}
+  if(step.shards){const key=q.id+':'+qp.step;S.sel.fxSeen=S.sel.fxSeen||{};if(!S.sel.fxSeen[key]){S.sel.fxSeen[key]=1;glassBreak();if(navigator.vibrate){try{navigator.vibrate(500);}catch(e){}}[1,2,3,4,5].forEach(i=>setTimeout(()=>snowStep(),900+i*700));}
+    return {html:`<div class="shards">${[0,1,2,3,4].map(i=>`<span class="sh" style="--i:${i}"><i class="sh-face"></i></span>`).join('')}<button type="button" class="sh last" data-act="mcard-real" aria-label="마지막 조각"></button></div>`,hold:false,text:null};}
+  if(step.ledger)return {html:`<div class="row"><button class="btn btn-sm" data-act="ledger">숙박부를 들여다본다</button></div>`,hold:false,text:null};
+  return f(q,qp,step);};})();
+/* 소리(합성음): 유리 깨짐 · 눈 밟는 소리 · 장작 · 바람(좌우) */
+function glassBreak(){const c=audio();if(!c)return;const v=0.09*sndVol('bgm');keyClick(v*1.5);[3200,4100,2700,5200].forEach((f,i)=>blip(f,0.18+i*0.05,v*0.6,'triangle',i*0.03));}
+function snowStep(){const c=SND.ctx;if(!c)return;const v=0.05*sndVol('bgm');try{const s=c.createBufferSource();s.buffer=noiseBuf(c);const fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=700;const g=c.createGain();const t=c.currentTime;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);s.connect(fl).connect(g).connect(c.destination);s.start(t,Math.random()*0.8,0.14);}catch(e){}}
+const WIND={src:null,pan:null};
+function windOn(side){const c=SND.ctx;if(!c)return;try{if(!WIND.src){const s=c.createBufferSource();s.buffer=noiseBuf(c);s.loop=true;const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=420;f.Q.value=0.7;const g=c.createGain();g.gain.value=0.02*sndVol('bgm');const p=c.createStereoPanner?c.createStereoPanner():null;s.connect(f).connect(g);if(p){g.connect(p).connect(c.destination);}else g.connect(c.destination);s.start();WIND.src=s;WIND.pan=p;}
+  if(WIND.pan)WIND.pan.pan.setTargetAtTime(side,c.currentTime,0.3);}catch(e){}}
+function windOff(){if(WIND.src){try{WIND.src.stop();}catch(e){}WIND.src=null;WIND.pan=null;}}
+/* 7장 소리 연출 루프: 덮개(바람 좌우), 13쪽 장작, 죄수 2페이즈 메아리·3페이즈 거꾸로 감긴 소리 */
+const PRFX={mode:null,turn:-1,swell:0};
+(function(){const f=bgmMul;bgmMul=function(){if(PRFX.mode==='rev')return 0;if(AMB.on==='hearth')return 0;return f();};})();
+(function(){const f=playClick;playClick=function(){f();if(PRFX.mode==='echo')setTimeout(f,500);};})();
+setInterval(()=>{if(typeof document==='undefined'||!S||!S.me)return;
+  const w=document.querySelector('.q-amb[data-amb="wind"]');if(w)windOn(S.sel.coverOff?0.75:-0.75);else windOff();
+  if(AMB.on==='hearth'&&SND.ctx&&Math.random()<0.35){keyClick(0.012*sndVol('bgm'));if(Math.random()<0.04)blip(1568,0.6,0.012*sndVol('bgm'),'sine');}
+  const b=S.battle;const pr=b&&!b.over&&b.monsterId==='st_prisoner'&&b.mon;const ph=pr?(b.mon.sph||0):-1;const mode=ph>=2?'rev':ph===1?'echo':null;
+  if(mode!==PRFX.mode){PRFX.mode=mode;PRFX.turn=b?b.turn:-1;try{updateBgm();}catch(e){}}
+  if(mode==='rev'){if(now()>=PRFX.swell){PRFX.swell=now()+2600;revSwell();}if(b.turn!==PRFX.turn){PRFX.turn=b.turn;glassBreak();}}
+},250);
+/* 거꾸로 감긴 소리: 천천히 커지다가 툭 끊김 */
+function revSwell(){const c=SND.ctx;if(!c)return;const v=0.05*sndVol('bgm');if(v<=0)return;try{[110,164.81,220.6].forEach((fq,i)=>{const o=c.createOscillator(),g=c.createGain();o.type=i%2?'triangle':'sine';o.frequency.value=fq;const t=c.currentTime;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v*(i?0.5:1),t+1.4);g.gain.setValueAtTime(0.0001,t+1.42);o.connect(g).connect(c.destination);o.start(t);o.stop(t+1.5);});}catch(e){}}
+/* 마을 덮개(E25 이후): 혹한 마을에서 덮개를 걷으면 바람 소리가 반대쪽 귀로 */
+(function(){const f=villageHTML;villageHTML=function(land){let h=f(land);if(land==='frost'&&S.qp.E25&&S.qp.E25.status==='done'){const on=!!S.sel.coverOff;h=h.replace('</section>',`<div class="row vil-cover"><button type="button" class="btn btn-sm btn-ghost" data-act="cover-toggle">${on?'덮개를 덮는다':'덮개를 걷는다'}</button><small class="faint">${on?'천 아래에서 거울이 드러났다.':'천으로 덮인 거울이 벽에 걸려 있다.'}</small></div><i class="q-amb" data-amb="wind" hidden></i></section>`);}return h;};})();
+/* 보상: E27 → 장식장 빈칸에 깨진 거울 조각(1회, 다 차 있으면 인벤토리) */
+(function(){const f=storyClaimFx;storyClaimFx=function(id){f(id);
+  if(id==='E27'&&!S.me.shardGiven){S.me.shardGiven=1;addItem('d_shard',1);try{noteDeco('d_shard',{t:'etc',v:'—'});}catch(e){}const sh=shelf();const i=sh.indexOf(null);if(i>=0){sh[i]='d_shard';toast('장식장에 무언가가 놓였다.');}save();}};})();
+/* 한줄메모 초안(E26 호수의 내 반사를 본 뒤 캐릭터 페이지에서 한 번만, 저장하지 않으면 사라짐) */
+(function(){const f=memoHTML;memoHTML=function(){const d=S.sel.memoDraft;if(d&&S.route==='character'){setTimeout(()=>{S.sel.memoDraft=null;},0);
+  return `<div class="me-memo editing draft">${statusDD()}<label class="sr" for="me-memo">한줄메모</label><input type="text" id="me-memo" maxlength="40" value="${esc(d)}" placeholder="한줄메모를 남겨 보세요 (40자)" autocomplete="off"><span class="memo-ic" aria-hidden="true">${TICON.pen}</span></div>`;}return f();};})();
+STORY_QUESTS.push(
+ {id:'E24',cat:'epic',title:'눈이 지우는 것',published:true,level:65,prereq:'E23',repeat:null,cond:{},
+  desc:'일지 10쪽 뒤의 깨진 거울 조각을 들고 혹한의 땅으로 간다. 비친 얼굴이 내 얼굴이 아니다. [7장 「거울 속 죄수」]',start:'s1',steps:{
+  s1:{text:'혹한의 땅. 눈보라가 길을 지운다. 마을로 내려가는 길목에서 장작을 진 사내가 걸음을 멈춘다. (탐색 › 혹한의 땅 › 마을 › 뒷골목)',
+    give:{land:'frost',spot:'alley',item:'q_lantern',n:1,npc:'장작 패는 로빈',text:'"블레서요? 이 날씨에 여기까지." 로빈이 등불 하나를 내민다. "눈보라 속에선 앞사람 등불만 보고 걸어요. 그리고 마을에 가면… 거울은 보지 마세요. 거울은 기억을 해요."'},
+    choices:[{label:'등불을 받아 든다',req:{item:'q_lantern'},result:'로빈이 앞장선다. 등불 하나가 눈보라 속에서 흔들린다.',next:'s2'},
+      {label:'아직 로빈을 만나지 못했다',result:'칼리로에 뒷골목에서 장작 패는 로빈을 찾아야 한다.',next:'s1'}]},
+  s2:{text:'로빈의 등불을 따라 눈보라 속을 걷는다. 발밑에 발자국이 찍힌다.',walkErase:5,choices:[
+    {label:'뒤를 돌아본다',result:'왔던 길이 하얗다. 로빈이 돌아보지도 않고 말한다. "여기선 다들 그렇게 와요. 왔던 길이 안 남아요."',next:'s3'}]},
+  s3:{text:'등불 빛 가장자리에 눈이 몇 쌍 반짝인다. 서리 늑대 떼가 따라붙는다.',battle:'st_frostwolf',next:'s4',winText:'늑대들이 눈 속으로 흩어진다. 늑대 발자국도 금방 지워진다.'},
+  s4:{text:'칼리로에. 지붕 낮은 집 몇 채와 여관 하나. 창문 대부분은 불이 꺼져 있다. 여관 안의 거울은 전부 두꺼운 천으로 덮여 있다.',choices:[
+    {label:'여관 문을 연다',result:'여관 주인 그레고르가 숙박부를 펼친 채 반긴다. "어서 오세요! 이름부터 적어 주세요. 이 책은 제가 제일 아끼는 거예요."',next:'end',flag:'e24_snow'}]},
+  end:{end:true,text:'눈이 지운 길',reward:{exp:14000,gold:2000,items:{potion:2}}}}},
+ {id:'E25',cat:'epic',title:'덮어 둔 거울',published:true,level:68,prereq:'E24',repeat:null,cond:{},
+  desc:'칼리로에 여관의 거울은 모두 덮여 있다. [7장 「거울 속 죄수」]',start:'s1',steps:{
+  s1:{text:'여관 칼리로에. 그레고르가 방을 안내하려는 참이다. (탐색 › 혹한의 땅 › 마을 › 여관)',
+    give:{land:'frost',spot:'plaza',item:'q_innkey',n:1,npc:'여관 주인 그레고르',text:'그레고르가 열쇠를 건넨다. "방은 2층이에요. 아, 복도 거울은… 신경 쓰지 마세요." 그 순간 창틈 바람에 복도 거울의 덮개가 미끄러져 내린다.'},
+    choices:[{label:'벗겨진 거울을 본다',req:{item:'q_innkey'},result:'거울 속에도 그레고르가 서 있다. 거울 밖 그레고르와 같은 얼굴, 같은 앞치마. 그런데 반 박자 늦다.',next:'s2'},
+      {label:'아직 여관에 가지 않았다',result:'칼리로에 여관에서 그레고르에게 방 열쇠를 받아야 한다.',next:'s1'}]},
+  s2:{text:'덮개가 벗겨진 거울 앞. 그레고르가 말을 잇는다.',mirrorTalk:{npc:'그레고르',card:'gregor',lines:['어서 오세요, 블레서님. 먼 길 오셨네요.','장작은 넉넉해요. 밤새 불 꺼질 일은 없어요.','방은 2층이에요.'],mirror:{2:'너 왔구나. 이번엔 누구야?'}},choices:[
+    {label:'거울 밖 그레고르에게 묻는다',result:'"거울이요? 저 덮개는 원래 벗겨져 있었어요." 그레고르는 덮개가 벗겨진 걸 처음 보는 얼굴로 웃는다.',next:'s3'}]},
+  s3:{text:'거울 속 그레고르가 웃는 순간, 거울 표면에 성에가 번지더니 서리 그림자가 기어 나온다.',battle:'st_frostshade',next:'s4',winText:'그림자가 바닥에서 녹아 사라진다. 그레고르가 덮개를 다시 씌운다. 아무 일도 없었다는 듯이.'},
+  s4:{text:'2층 방. 창밖에 눈이 쌓인다. 그날 밤 일지의 11쪽이 떨어진다.',choices:[
+    {label:'11쪽을 읽는다',result:'"여관 거울 속 주인이 우리를 알아봤다. 거울 밖의 그는 처음 보는 사람처럼 웃었다. 둘 중 어느 쪽이 진짜 얼굴인지 모르겠다."',next:'end',flag:'e25_mirror'}]},
+  end:{end:true,text:'여관의 덮어 둔 거울',reward:{exp:15500,gold:2100,items:{potion:2,holywater:1}}}}},
+ {id:'E26',cat:'epic',title:'얼음 호수',published:true,level:72,prereq:'E25',repeat:null,cond:{},
+  desc:'유리 장인 베라가 호수를 보여 주겠다고 한다. 사람들은 그 호수를 거울 감옥이라 부른다. [7장 「거울 속 죄수」]',start:'s1',steps:{
+  s1:{text:'뒷골목 끝 베라의 공방. 몇십 년째 불이 꺼져 있던 화로 앞에서 베라가 처음으로 먼저 말을 건다. (탐색 › 혹한의 땅 › 마을 › 뒷골목)',
+    give:{land:'frost',spot:'alley',item:'q_icepick',n:1,npc:'유리 장인 베라',text:'"…호수를 보여 줄게요. 다들 거울 감옥이라고 부르죠. 감옥이 아니라, 그냥 호수예요. 전부 비추는." 베라가 얼음 송곳을 건넨다.'},
+    choices:[{label:'송곳을 받아 든다',req:{item:'q_icepick'},result:'베라를 따라 적막의 숲 너머 얼어붙은 호수로 간다.',next:'s2'},
+      {label:'아직 베라를 만나지 못했다',result:'칼리로에 뒷골목에서 유리 장인 베라를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'얼어붙은 호수. 바람이 멎으면 수면이 거울처럼 하늘을 비춘다. 호수 가장자리에서 무언가가 일어선다.',battle:'st_lakespirit',next:'s3',winText:'정령이 호수 표면으로 스며든다. 호수가 다시 거울처럼 고요해진다.'},
+  s3:{text:'호수에 마을 사람 전부가 비친다. 그레고르, 캐서린, 로빈, 베라, 틸. 호수 속 그들은 장비를 입고 있다. 그리고 맨 끝에 당신도 비친다. 이름을 눌러 보면 한 사람씩 들여다볼 수 있다.',lakeCards:true,choices:[
+    {label:'호수에서 눈을 뗀다',result:'베라가 호수를 내려다본다. "…다들 처음엔 웃었어요. 거울 앞에서." 그날 밤 일지의 12쪽이 떨어진다. "호수에 마을 사람 전부가 비쳤다. 다 우리 같은 사람이었다. 장비를 입고, 레벨이 있고, 퀘스트를 깼다. 백야의 신전까지."',next:'end',flag:'e26_lake'}]},
+  end:{end:true,text:'얼음 호수에 비친 마을',reward:{exp:17000,gold:2200,items:{potion:2}}}}},
+ {id:'E27',cat:'epic',title:'거울 속 죄수',published:true,level:76,prereq:'E26',repeat:null,cond:{},
+  desc:'베라가 몇십 년 만에 거울을 하나 만든다. 그 거울로 호수 밑, 거울 감옥 가장 깊은 곳에 들어갈 수 있다. 권장 LV78 · 회복약 3개 이상 준비. [7장 「거울 속 죄수」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'베라의 공방에서 몇십 년 만에 유리 녹이는 냄새가 난다. (탐색 › 혹한의 땅 › 마을 › 뒷골목)',
+    give:{land:'frost',spot:'alley',item:'q_vmirror',n:1,npc:'유리 장인 베라',text:'베라가 손바닥만 한 거울을 건넨다. 아직 따뜻하다. "호수 밑으로 들어가는 문이에요. 그 사람한테… 미안하다고 전해 줘요. 거울을 만든 게 나였다고."'},
+    choices:[{label:'손거울을 받는다',req:{item:'q_vmirror'},result:'거울 속 당신이 반 박자 늦게 고개를 끄덕인다.',next:'s2'},
+      {label:'아직 베라를 만나지 못했다',result:'칼리로에 뒷골목에서 유리 장인 베라를 찾아야 한다.',next:'s1'}]},
+  s2:{text:'얼음 호수 한가운데. 손거울을 얼음에 대자 얼음 아래로 계단이 비친다. 거울 감옥. 가장 깊은 곳, 거울 안에 한 사람이 서 있다. (권장 LV78 · 회복약 3개 이상)',choices:[
+    {label:'준비를 마치고 내려간다',result:'거울 속 사람이 당신을 본다. "…또 왔네."',next:'s3'},
+    {label:'회복약을 더 챙겨 온다',result:'호수는 기다린다. 얼음 속 사람은 처음부터 기다리고 있었다.',next:'s2'}]},
+  s3:{text:'거울 속 죄수가 손바닥을 거울에 댄다. "이번엔 누구야?" 체력이 줄면 당신을 따라 하고(60%), 끝에는 거울을 깨뜨린다(25%).',battle:'st_prisoner',next:'s4',winText:'죄수가 쓰러지자 거울 전체에 금이 간다.'},
+  s4:{text:'유리가 깨지는 소리. 조각마다 마을 사람들의 옛 얼굴이 비친다. 블레서였던 얼굴들이다. 조각이 하나씩 떨어진다. 마지막 조각에는 아무 얼굴도 비치지 않는다.',shards:true,choices:[
+    {label:'마지막 조각을 내려놓는다',result:'시야 한쪽에 평범한 메시지 한 줄이 떠오른다. 「호수의 얼음이 녹지 않습니다.」',next:'s5'}]},
+  s5:{text:'칼리로에로 돌아온다. 마을의 거울 덮개가 전부 벗겨져 있다. 거울에는 평범하게 마을 사람들이 비친다. 그레고르가 숙박부를 펼쳐 둔 채 자리를 비웠다.',ledger:true,choices:[
+    {label:'일지를 펼친다',result:'그날 밤 일지의 마지막 쪽이 떨어진다. 13쪽. 글씨가 앞쪽들보다 또박또박하다. 13쪽 뒤로는 빈 쪽뿐이고, 맨 마지막 장 사이에 녹지 않는 눈송이 하나가 끼워져 있다.',next:'end',flag:'ch7_clear'}]},
+  end:{end:true,text:'7장 「거울 속 죄수」 완료',reward:{exp:25000,gold:3000,items:{potion:3,q_nametag:1,q_snow:1},gearTier:7}}}},
+ {id:'S7a',cat:'sub',title:'덮개를 들추는 아이',published:true,level:68,prereq:null,repeat:null,cond:{quests:['E25']},
+  desc:'여관의 아이 틸이 같이 볼 게 있다고 한다.',start:'s1',steps:{
+  s1:{text:'여관 복도. 틸이 거울 덮개 귀퉁이를 몰래 들추고 있다. "쉿. 같이 볼래요?"',choices:[
+    {label:'같이 들여다본다',result:'거울 속 틸은 아이가 아니다. 블레서 장비를 입은 어른이 틸과 똑같은 자세로 덮개를 들추고 있다.',next:'s2'}]},
+  s2:{text:'틸: "저 사람 누구예요? 매일 저랑 똑같이 움직여요."',choices:[
+    {label:'"…너랑 닮았네."',result:'"그쵸? 근데 저 사람은 안 웃어요." 틸이 덮개를 내린다.',next:'end',flag:'s7a_til'},
+    {label:'덮개를 덮어 준다',result:'틸이 아쉬운 얼굴로 손을 뗀다. 덮개 너머에서 누군가 같이 손을 떼는 것 같다.',next:'end',flag:'s7a_til'}]},
+  end:{end:true,text:'덮개를 들추는 아이',reward:{exp:4800,gold:500,items:{frost:3}}}}},
+ {id:'S7b',cat:'sub',title:'7호실',published:true,level:74,prereq:null,repeat:null,cond:{quests:['E26']},
+  desc:'여관 7호실 열쇠만 수십 년째 돌아오지 않았다고 한다.',start:'s1',steps:{
+  s1:{text:'그레고르가 열쇠 꾸러미를 정리하다 한숨을 쉰다. "7호실 열쇠만 몇십 년째 안 돌아와요. 손님이 아직 안 나갔다는 뜻이죠." 그가 여벌 열쇠를 내민다. "한번 봐 줄래요?"',choices:[
+    {label:'7호실로 올라간다',result:'복도 끝 7호실. 문이 잠겨 있지 않다.',next:'s2'}]},
+  s2:{text:'먼지 쌓인 책상 위에 반쯤 쓴 편지가 있다. 받는 사람 칸은 이 세계의 글자가 아니다. 바다에서 띄운 병 편지와 같은 글자다.',choices:[
+    {label:'편지를 읽는다',result:'본문은 읽을 수 없다. 끝줄만 이 세계의 글자로 적혀 있다. 「곧 갈게.」',next:'end',flag:'s7b_room'}]},
+  end:{end:true,text:'7호실의 편지',reward:{exp:5600,gold:600,items:{q_letter7:1}}}}});
