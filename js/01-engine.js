@@ -257,6 +257,7 @@ function createBattle(m,members,rng,cfg){
 function supMult(n){return 4*Math.pow(2,Math.min(2,Math.max(0,n-1)));}
 function threatOrder(b){const sup=supActive(b)?b.players.find(p=>p.id===b.sup.by):null;
   return living(b).map(p=>({p,t:(p===sup?1e12:0)+(b.attention===p.id?1e11:0)+(p.role==='tank'?1e6+(p.supUses||0)*1e5:0)+p.dealt+Math.round((p.healed||0)*0.5)})).sort((x,y)=>y.t-x.t).map(x=>x.p);}
+var MIRROR_CAP=0.25; // 되비침 한 번에 최대 체력의 25%까지
 function supActive(b){return b.sup&&!b.players.find(p=>p.id===b.sup.by).dead;}
 function telText(b){
   const t=b.tel;if(!t)return '';
@@ -268,7 +269,7 @@ function telText(b){
 /* 개인 레이드 보스 페이즈(그리드 없음): m.sphases=[{at:HP%,name,atkMul,…덮어쓸 몬스터 값}] — HP가 at% 이하로 내려가면 다음 턴부터 적용 */
 function soloPhase(b){const m=b.mon,P=m.sphases;if(!P||!P.length)return;const pct=m.hp/m.maxHp*100;let k=0;P.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
   if(k===m.sph)return;m.sph=k;const ph=P[k];m.atk=Math.round(m.baseAtk*(ph.atkMul||1));
-  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
+  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
   b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 공격력 ×${ph.atkMul||1}`});}
 function startTurn(b,rng){
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
@@ -280,6 +281,7 @@ function startTurn(b,rng){
     const target=supActive(b)?b.players.find(p=>p.id===b.sup.by):weightedPick(alive,p=>p.role==='tank'?2:1,rng);
     const dot=rng()<m.dotChance;
     b.tel={type:dot?'dot':'single',name:dot?m.dotName:m.singleName,mult:m.singleMult,target:target.id};
+    if(m.mirror&&!b.grid){b.tel={type:'single',name:'되비침',mult:m.singleMult,target:target.id,mirror:true};}
   }
   b.log.push({t:'turn',text:`${b.turn}턴`});
   b.log.push({t:'warn',text:`예고 · ${telText(b)}`});
@@ -457,7 +459,14 @@ function resolveTurn(b,rng,hooks){
     const fix=b.attention?P(b.attention):supActive(b)?P(b.sup.by):null;
     if(fix&&!fix.dead&&fix!==t){t=fix;note=b.attention?' (시야 강탈)':' (제압)';}
     if(!t||t.dead){const al=living(b);t=al[Math.floor(rng()*al.length)];note=' (대상 재지정)';}
-    if(t){
+    /* 7장 거울 속 죄수 「되비침」: 직전 턴 내 행동을 따라 한다(공격 → ×0.6으로 되돌림, 회복 → 같은 비율 회복, 방어·대기 → 쉼, 아이템·기타 → 평소 공격) */
+    const mp=tel.mirror&&b.mirPrev;let mirrored=false;
+    if(t&&mp&&['atk','heal','rest'].includes(mp.kind)){mirrored=true;
+      if(!b.mirTold){b.mirTold=1;log('sys','거울은 당신을 따라 합니다.');}
+      if(mp.kind==='atk'){let d=Math.round(mp.dealt*0.6);if(t.protect||b.sanct)d=0;else if(t.defending)d=Math.round(d*0.5);d=Math.min(d,Math.round(t.maxHp*MIRROR_CAP));t.hp=Math.max(0,t.hp-d);if(t.hp===0)t.dead=true;log('mon',`${m.name} · 되비침 → ${t.name} ${d} 대미지 (당신의 공격을 되돌려준다)${t.dead?' · 쓰러짐':''}`);}
+      else if(mp.kind==='heal'){const v=Math.round(m.maxHp*Math.min(0.2,mp.healPct));m.hp=Math.min(m.maxHp,m.hp+v);log('mon',`${m.name} · 되비침 · 당신처럼 상처를 돌본다 (+${v})`);}
+      else log('mon',`${m.name} · 되비침 · 당신처럼 가만히 서 있다`);}
+    if(t&&!mirrored){
       const r=hitP(t,tel.mult);let extra='';
       if(tel.type==='dot'&&!t.dead&&r.note!=='보호'){t.poison={turns:3,dmg:m.dotDmg,name:m.dotName};extra=` · ${m.dotName} 3턴`;}
       if(m.rootChance&&!t.dead&&r.note!=='보호'&&rng()<m.rootChance){t.bound=Math.max(t.bound||0,2);t.boundBy='root';extra+=' · 뿌리 속박 (다음 턴 스킬 불가)';}
@@ -485,6 +494,8 @@ function resolveTurn(b,rng,hooks){
   }
   // ⑧ 승패
   if(living(b).length===0){b.over='lose';log('lose','파티 전멸 · 패배');return;}
+  if(!b.grid&&b.players.length===1){const me=b.players[0],a=me.action,hd=(me.healed||0)-(me._healed0||0);me._healed0=me.healed||0;
+    b.mirPrev={kind:!a||a.kind==='defend'||a.kind==='wait'?'rest':a.kind==='item'?'item':(me.turnDealt||0)>0?'atk':hd>0?'heal':'other',dealt:me.turnDealt||0,healPct:hd/Math.max(1,me.maxHp)};}
   startTurn(b,rng);
 }
 function decideBot(b,p,rng){

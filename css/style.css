@@ -3163,3 +3163,60 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 .pv-att small{color:#4a3a20}
 .ol-ghost .ghost{width:28px;height:28px;border-radius:50%;background:var(--slab-3);display:inline-block}
 .ol-ghost small{color:var(--faint)}
+/* 발자국 한 줄로(유저 요청): 칸마다 한 발, 왼발·오른발이 같은 줄에서 번갈아 */
+.wk-c .fp.l,.wk-c .fp.r{left:calc(50% - 4px);top:10px}
+.wk-c .fp.l{transform:rotate(-10deg) translateY(-2px)}
+.wk-c .fp.r{transform:rotate(10deg) translateY(2px)}
+/* 7장 연출: 지워지는 발자국 · 거울 대화 · 호수 카드 · 깨지는 거울 · 숙박부 · 가짜 캐릭터 카드 · 눈송이 · 덮개 */
+.walk.snow{background:linear-gradient(180deg,#eef3f8,#d6e0ea);box-shadow:inset 0 2px 8px rgba(40,60,90,.18)}
+.walk.snow .fp{background:rgba(70,90,120,.45)}
+.walk.snow .fp.melt{animation:wkMelt 6s linear forwards}
+.walk.snow .stand .fp{background:rgba(40,60,90,.75);box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+@keyframes wkMelt{0%,55%{opacity:1}100%{opacity:0}}
+.mtalk{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.mt-box{padding:10px 14px;border-radius:10px;background:var(--slab-2);border:1px solid var(--rule-2)}
+.mt-box b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.mt-box p{margin:0}
+.mt-box.mirror{text-align:right;background:linear-gradient(180deg,rgba(170,200,230,.12),rgba(170,200,230,.04));border:3px double rgba(170,200,230,.45);border-radius:16px;filter:saturate(.7)}
+.mt-late[data-k]{animation:mtLate .25s ease .5s both}
+@keyframes mtLate{from{opacity:0}to{opacity:1}}
+.lake{margin:12px 0;padding:14px;border-radius:12px;background:linear-gradient(180deg,#9fb6c9,#6e8aa3);box-shadow:inset 0 0 30px rgba(255,255,255,.25)}
+.lk-names{display:flex;flex-wrap:wrap;gap:6px}
+.lk-n{padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.18);color:#0f1b27;font-weight:600;cursor:pointer}
+.lk-n:hover{background:rgba(255,255,255,.35)}
+.lk-n.me{border-style:dashed}
+.shards{position:relative;display:flex;gap:8px;justify-content:center;align-items:flex-end;height:110px;margin:14px 0}
+.shards .sh{width:44px;height:64px;clip-path:polygon(20% 0,100% 12%,82% 100%,0 78%);background:linear-gradient(140deg,#dfe8f1,#9fb2c4);display:grid;place-items:center;animation:shFall 1s ease-in calc(.9s + var(--i)*.7s) both;border:0}
+.shards .sh-face{width:18px;height:22px;border-radius:50% 50% 45% 45%;background:rgba(40,50,64,.35)}
+.shards .sh.last{animation:none;cursor:pointer;background:linear-gradient(140deg,#f3f7fb,#c1cfdc);outline:none}
+.shards .sh.last:hover{filter:brightness(1.1)}
+@keyframes shFall{0%{transform:none;opacity:1}100%{transform:translateY(30px) rotate(18deg);opacity:0}}
+.ledger table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+.ledger th,.ledger td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:left}
+.ledger th{font-weight:500;color:var(--muted);font-size:12px}
+.ledger tr.me td{font-weight:600}
+.fc-modal .fcard{display:flex;flex-direction:column;gap:10px}
+.fcard .u-top{display:flex;gap:12px;align-items:center}
+.fcard .u-top .sigil,.fcard .u-face{width:56px;height:70px}
+.fcard .rm-t{display:flex;flex-direction:column;gap:3px}
+.fcard .fc-row p{margin:2px 0 0}
+.fcard.empty .rm-t b{color:var(--faint)}
+.me-memo.draft input{border-style:dashed}
+.vil-cover{gap:8px;align-items:center;margin-top:8px}
+.snow-modal{background:#f4f7fb!important;max-width:420px}
+.snowv{position:relative;height:300px;overflow:hidden;border-radius:10px;background:radial-gradient(ellipse at 50% 30%,#ffffff,#dfe7ef 70%)}
+.sv-temple{position:absolute;left:50%;bottom:40px;width:220px;height:150px;transform:translateX(-50%);background:linear-gradient(#fff,#e8eef4);clip-path:polygon(50% 0,100% 30%,92% 30%,92% 100%,8% 100%,8% 30%,0 30%);opacity:.9}
+.sv-fig{position:absolute;left:50%;bottom:40px;width:46px;height:120px;transform:translateX(-50%);animation:svTurn 6s ease-in forwards}
+.sv-robe{position:absolute;left:0;bottom:0;width:46px;height:96px;background:linear-gradient(#f8f8f8,#e2e6eb);clip-path:polygon(30% 0,70% 0,100% 100%,0 100%);box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.sv-head{position:absolute;left:13px;top:6px;width:20px;height:22px;border-radius:50%;background:#e9e2da}
+.sv-veil{position:absolute;left:9px;top:2px;width:28px;height:40px;border-radius:50% 50% 20% 20%;background:#fbfbfb;z-index:1;animation:svVeil 6s ease-in forwards}
+.sv-flakes{position:absolute;inset:0;background-image:radial-gradient(#fff 1.5px,transparent 2px);background-size:26px 26px;opacity:.7;animation:svSnow 6s linear infinite}
+@keyframes svTurn{0%,40%{transform:translateX(-50%) scaleX(1)}100%{transform:translateX(-50%) scaleX(.82)}}
+@keyframes svVeil{0%,45%{transform:none}100%{transform:translateX(-7px)}}
+@keyframes svSnow{to{background-position:0 26px}}
+.walk.snow .fp.melt-fast{animation:wkMeltFast 1.4s ease forwards}
+@keyframes wkMeltFast{to{opacity:0}}
+.sv-robe{background:linear-gradient(#e4e7ec,#c9ced6)}
+.sv-veil{background:#f1f3f6;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.sv-head{background:#d9cfc4}
+.sv-temple{background:linear-gradient(#fbfcfd,#e1e7ee);box-shadow:0 0 0 1px rgba(120,140,160,.15)}

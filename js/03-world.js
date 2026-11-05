@@ -137,8 +137,12 @@ function daily(){const c=kstCycle();if(!S.daily||S.daily.cycle!==c)S.daily={cycl
 function weekly(){const k=weekKey(now()-5*3600e3);if(!S.weekly||S.weekly.wk!==k)S.weekly={wk:k,done:{}};return S.weekly;}
 function mkind(m){return (m&&m.kind)||'party';}
 const MKIND={party:'데일리 파티 레이드',weekly:'토벌전',event:'만신전',field:'필드 몬스터',dungeon:'던전 보스',story:'퀘스트 전투'};
-function isGroupMon(m){return !!(m&&m.published&&['party','weekly'].includes(mkind(m)));}
+/* 토벌전(백야의 신전 봉인 수호자) 임시 닫힘(유저 요청 2026-11-05, 풀라고 할 때 false로): 운영자만 */
+const WEEKLY_CLOSED=true;
+function weeklyClosed(){return WEEKLY_CLOSED&&!(typeof isAdmin==='function'&&isAdmin());}
+function isGroupMon(m){return !!(m&&m.published&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!WEEKLY_CLOSED)));}
 function raidBlock(m){const k=mkind(m);
+  if(k==='weekly'&&weeklyClosed())return '토벌전은 잠시 닫혀 있습니다';
   if(['field','story'].includes(k))return '개인 전투 전용 몬스터입니다';
   if(k==='dungeon'&&daily().dungeon[m.id])return '오늘은 이미 클리어했습니다 (05:00 초기화)';
   if(k==='party'&&daily().raid>=RAID_MAX)return `오늘 파티 레이드 ${RAID_MAX}회를 모두 사용했습니다 (05:00 초기화)`;
@@ -193,6 +197,8 @@ function vBattle(){
   if(S.drun&&monster(S.drun.mid))return vDrun();
   if(S.match||S.queue)return vQueue();
   if(S.party)return vParty();
+  if(S.sel.monster&&monster(S.sel.monster)&&mkind(monster(S.sel.monster))==='weekly'&&weeklyClosed()){S.sel.monster=null;S.sel.rtab='dungeon';}
+  if(S.sel.rtab==='weekly'&&weeklyClosed())S.sel.rtab='dungeon';
   if(S.sel.monster&&monster(S.sel.monster)){if(mkind(monster(S.sel.monster))==='event'){S.sel.monster=null;S.sel.rtab='event';}else return vMonster(monster(S.sel.monster));}
   const tab=S.sel.rtab||'dungeon';const d=daily(),w=weekly();
   const ms=S.data.monsters.filter(m=>m.published);
@@ -213,10 +219,10 @@ function vBattle(){
     body=massPanel();
   }
   return `<div class="wrap page"><div class="page-head"><div><h2>레이드<small class="en">Raid</small></h2><p>던전 · 파티 레이드 · 토벌전 · 만신전을 고르세요. 던전은 혼자 또는 최대 4인 파티로, 파티 레이드는 최소 3인으로 출발합니다.</p></div></div>
-    <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
+    <div class="qtabs" role="tablist">${RTABS.filter(([k])=>k!=='weekly'||!weeklyClosed()).map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19',frost:'E23'};
+const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19',frost:'E23',chaos:'E27'};
 function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
@@ -338,7 +344,7 @@ function mapDlg(land,focus,page){
   let dg='';
   ins.filter(s=>s[1]==='dungeon').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};const m=monster(id);const img=SPOT_IMG[id];const tg=dtg(m?m.id:id);
     let act='';
-    if(id==='temple'){const g=S.data.monsters.find(x=>mkind(x)==='weekly');act=g?`<div class="row md-btns"><button class="btn btn-primary" data-act="map-goto" data-link="monster:${g.id}">토벌전 · ${esc(g.name)}</button></div><p class="faint" style="font-size:12px">현재 시제품에서는 봉인 수호자 토벌전(LV${g.level}+ · ${g.min}~${g.max}인)으로 열려 있습니다.</p>`:'';}
+    if(id==='temple'){const g=S.data.monsters.find(x=>mkind(x)==='weekly');act=weeklyClosed()?'<p class="faint" style="font-size:12px">백야의 신전은 지금 닫혀 있습니다.</p>':g?`<div class="row md-btns"><button class="btn btn-primary" data-act="map-goto" data-link="monster:${g.id}">토벌전 · ${esc(g.name)}</button></div><p class="faint" style="font-size:12px">현재 시제품에서는 봉인 수호자 토벌전(LV${g.level}+ · ${g.min}~${g.max}인)으로 열려 있습니다.</p>`:'';}
     else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,tg);
       act=`<p class="faint" style="font-size:12px">보스 · ${esc(m.name)} · ${tg==='exp'?`EXP ${R.exp} · ${R.gold}골드`:`아이템 1개 확정 (${lootText(m)})`}</p>
         <div class="row md-btns">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':`<button class="btn btn-primary" data-act="dfight" data-id="${m.id}" ${lr||busy?'disabled':''}>${lr?esc(`LV${m.level} 이상 필요`):'개인 레이드 도전'}</button>`}</div>`;}
