@@ -122,7 +122,7 @@
 | 024_items_ch6.sql | 적용됨 (2026-11-05) |
 | 025_items_ch7.sql | 적용됨 (2026-11-05) |
 | 026_mass.sql | 적용됨 (2026-11-05) |
-| 028_real_name.sql | **적용 대기** (2026-11-06) — 실제 이름 표 `real_names`(본인만 읽기·쓰기) + `item_catalog`에 `q_scrap` |
+| 028_real_name.sql | 적용됨 (2026-11-06) — 실제 이름 표 `real_names`(본인만 읽기·쓰기) + `item_catalog`에 `q_scrap` |
 | 027_monster_art.sql | 적용됨 (2026-11-05) — 공개 버킷 `monster-art`(2MB, png·jpg·webp·gif), 올리기·바꾸기·지우기는 운영자만 |
 | 028_items_ch8.sql | 적용됨 (2026-11-05, 실제 DB 마이그레이션 이름은 `027_items_ch8`) |
 
