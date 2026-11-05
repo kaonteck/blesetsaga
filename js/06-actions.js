@@ -509,8 +509,9 @@ ACTS['theme-toggle']=()=>{
   if(L)de.dataset.theme='light';else delete de.dataset.theme;
   try{localStorage.setItem('bs-theme',L?'light':'dark');}catch(e){}
   const m=document.querySelector('meta[name=theme-color]');if(m)m.content=L?'#ebeef4':'#161616';
-  renderTop();
+  renderTop();if(S&&S.sel&&S.sel.pop)renderPop();
 };
+ACTS['theme-set']=d=>{if((d.v==='light')!==isLight())ACTS['theme-toggle']();};   /* 환경설정 › 화면 모드 (상단 토글은 2026-11-06 제거) */
 
 ACTS['flog-fold']=()=>{S.sel.flogOpen=!S.sel.flogOpen;const f=document.querySelector('.flog');if(f){f.classList.toggle('open',!!S.sel.flogOpen);const h=f.querySelector('.flog-h');if(h)h.setAttribute('aria-expanded',String(!!S.sel.flogOpen));}flogScroll();};
 
