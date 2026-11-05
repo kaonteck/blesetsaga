@@ -40,7 +40,7 @@ const ORIGIN={defender:'황혼녘 강가',infighter:'바위 산맥',mage:'붉은
 const ITEMS={
   potion:{name:'회복약',type:'use',target:'self',desc:'레이드 중 사용 · 자신의 HP 50 회복 · 평소에 사용하면 10분 동안 HP +20',price:30,buff:{stat:'maxHp',val:20,min:10}},
   holywater:{name:'정화의 성수',type:'use',target:'self',desc:'레이드 중 사용 · 자신의 상태 이상 제거 · 평소에 사용하면 10분 동안 행운 +3',price:40,buff:{stat:'luk',val:3,min:10}},
-  elixir:{name:'용기의 영약',type:'use',target:'self',desc:'[테스트용] 마시면 60분 동안 공격력 +8, 행운 +4. 아이템 보너스 표시를 확인하기 위한 가상의 아이템.',price:150,buff:{stat:'atk',val:8,min:60},buff2:{stat:'luk',val:4,min:60}},
+  elixir:{name:'용기의 영약',type:'use',target:'self',desc:'불씨 조각과 진주로 연성한 영약. 마시면 60분 동안 공격력 +8, 행운 +4.',price:150,buff:{stat:'atk',val:8,min:60},buff2:{stat:'luk',val:4,min:60}},
   sword:{name:'낡은 순례자 검',type:'equip',slot:'weapon',wtype:'gsword',stats:{atk:3},desc:'순례자들이 호신용으로 지니던 검',price:90},
   shield:{name:'성역의 대방패',type:'equip',slot:'weapon',wtype:'sws',stats:{def:3,maxHp:25},desc:'성역 기사단의 문장이 새겨진 방패'},
   bow:{name:'추적자의 장궁',type:'equip',slot:'weapon',wtype:'gun',stats:{mag:6,luk:2},desc:'블라스파미아의 나무로 깎은 활'},

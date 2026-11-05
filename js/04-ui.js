@@ -1684,12 +1684,12 @@ function classAllowed(it,job){const wt=it&&(it.wtype||(it.slot==='weapon'&&!(it.
 function itemBlock(k){const it=ITEMS[k];if(!it)return '알 수 없는 아이템';if(it.levelReq&&S.me.level<it.levelReq)return `LV${it.levelReq} 이상 사용 가능`;if(!classAllowed(it,S.me.job)){const wt=it.wtype||LEGACY_WT[k];return wt?`${CLASSES[S.me.job].name}의 무기가 아닙니다 · ${WTYPE[wt]}`:`${(it.classReq||[]).map(c=>CLASSES[c].name).join('·')} 전용`;}return null;}
 function typeLabel(it){return it.type==='equip'?SLOT[it.slot]:it.rod?'소모품':it.type==='mat'?'재료':it.type==='deco'?'장식품':'소모품';}
 function reqText(it){const r=[];if(it.levelReq)r.push(`LV${it.levelReq}+`);if(it.wtype)r.push(`${WTYPE[it.wtype]} · ${Object.keys(CLASS_WEAPON).filter(c=>CLASS_WEAPON[c].includes(it.wtype)).map(c=>CLASSES[c].name).join('·')}`);if(it.classReq&&it.classReq.length)r.push(it.classReq.map(c=>CLASSES[c].name).join('·')+' 전용');if(it.maxOwn)r.push(`1인 최대 ${it.maxOwn}개`);return r.join(' · ');}
-/* 아이템은 종류마다 최대 99개(서버 016 saves_guard · 08-server INV_CAP 과 같음). maxOwn 이 더 작으면 그 값 */
-const ITEM_CAP=99;
+/* 아이템은 종류마다 최대 9,999개(서버 020 · 08-server INV_CAP 과 같음). 99개를 넘으면 인벤토리에서 칸을 나눠 쌓음. maxOwn 이 더 작으면 그 값 */
+const ITEM_CAP=9999; // 서버(020)와 같은 상한. 인벤토리는 99개씩 칸을 나눠 그림(INV_STACK)
 function itemCap(k){const it=ITEMS[k];return Math.min(ITEM_CAP,(it&&it.maxOwn)||ITEM_CAP);}
 function itemRoom(k){return Math.max(0,itemCap(k)-((S.me&&S.me.inv[k])||0));}
 function capMsg(k){const it=ITEMS[k]||{name:k};return it.maxOwn&&it.maxOwn<ITEM_CAP?`${it.name}은(는) 1인 최대 ${it.maxOwn}개까지 가질 수 있습니다.`:`${it.name}은(는) 종류마다 최대 ${ITEM_CAP}개까지 가질 수 있습니다.`;}
-/* 우편 아이템이 99개를 넘게 되면 받기 전에 막는다(서버 우편은 서버에서 받음 처리 전에 확인 — 08-server) */
+/* 우편 아이템이 상한(9,999개)을 넘게 되면 받기 전에 막는다(서버 우편은 서버에서 받음 처리 전에 확인 — 08-server) */
 function mailOver(m){const over=Object.keys((m&&m.items)||{}).filter(k=>k!=='_gold'&&ITEMS[k]&&m.items[k]>0&&itemRoom(k)<m.items[k]);
   return over.length?`${over.map(k=>`${ITEMS[k].name}(${itemRoom(k)}개만 더 가질 수 있음)`).join(', ')} — 종류마다 최대 ${ITEM_CAP}개라 받을 수 없습니다. 먼저 사용하거나 판매해 주세요.`:'';}
 function addItem(k,n){const it=ITEMS[k];if(!it)return 0;const have=S.me.inv[k]||0;const add=Math.max(0,Math.min(n,itemRoom(k)));if(add>0)S.me.inv[k]=have+add;if(add<n)toast(`${capMsg(k)} ${n-add}개는 받지 못했습니다.`,'warn');return add;}
