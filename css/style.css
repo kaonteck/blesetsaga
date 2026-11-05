@@ -3285,3 +3285,4 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .wk-c .fp,.wk-c .fp.l,.wk-c .fp.r{width:15px;height:8px;border-radius:40% 60% 60% 40% / 50% 50% 50% 50%;left:calc(50% - 7px)}
 .wk-c .fp.l{top:calc(50% - 9px);transform:rotate(-6deg)}
 .wk-c .fp.r{top:calc(50% + 1px);transform:rotate(6deg)}
+.dfx.heal b{color:#7dffa8;text-shadow:0 0 18px rgba(60,230,120,.65),0 3px 0 #0d4a24,0 0 2px #000}.dfx.heal small{color:#b8ffd0}
