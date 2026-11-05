@@ -171,6 +171,33 @@ with sync_playwright() as p:
     ok(drun_room()['status']=='closed','포기하면 방 닫힘')
     bp.evaluate("ACTS['drun-exit']()");bp.wait_for_timeout(200)
     bp.screenshot(path=OUT+'/party-drun.png')
+    # 10) 랜덤 매칭 — 실제 블레서끼리 먼저
+    a.evaluate("PT.matchWait=60000");bp.evaluate("PT.matchWait=60000")
+    a.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");a.wait_for_timeout(1200)
+    qa=a.evaluate("S.queue&&S.queue.roomId");qt=a.evaluate("S.queue&&S.queue.target")
+    ok(bool(qa) and a.evaluate("S.queue.host===true") and [r for r in db()['party_rooms'] if r['id']==qa][0]['name']=='랜덤 매칭','매칭을 시작하면 실제 블레서용 매칭 방을 엶')
+    ok(not a.evaluate("!!S.match"),'기다리는 동안은 봇과 바로 매칭하지 않음')
+    bp.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");bp.wait_for_timeout(1500)
+    ok(bp.evaluate("S.queue&&S.queue.roomId")==qa and bp.evaluate("S.queue.host")==False,'두 번째 블레서는 그 방으로 매칭')
+    ok(wait(a,f"PT.room&&PT.room.members.length===2"),'방장 화면에 실제 블레서 2명')
+    ok('실제 블레서' in bp.evaluate("vQueue()"),'매칭 화면에 실제 블레서 매칭 상태 표시')
+    if qt and qt>2:
+        a.evaluate("PT.matchWait=0");bp.evaluate("PT.matchWait=0")
+    ok(wait(a,"!!(S.battle&&S.battle.shared)",10000) and a.evaluate("!S.queue"),'모이면(또는 기다림이 끝나면 용병으로 채워) 출발')
+    ok(wait(bp,"!!(S.battle&&S.battle.shared)",10000) and bp.evaluate("!S.queue"),'매칭된 블레서 화면에도 같은 전투')
+    ok(bp.evaluate("S.battle.players.some(p=>p.name==='아린'&&!p.isMe)") and a.evaluate("S.battle.players.find(p=>p.name==='하늘별').real===true"),'매칭 파티에 서로 실제 블레서로 들어감')
+    a.evaluate("S.battle.over='lose';finishBattle(S.battle);ptPush()");wait(bp,"S.battle&&S.battle.over",8000)
+    bp.evaluate("leaveBattle()");a.evaluate("leaveBattle()");a.wait_for_timeout(300)
+    # 10b) 혼자면 기다림 뒤 예전처럼 봇 매칭 · 취소하면 방 닫힘
+    a.evaluate("PT.matchWait=60000");a.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");a.wait_for_timeout(1000)
+    qc=a.evaluate("S.queue&&S.queue.roomId")
+    a.evaluate("ACTS.cancelqueue()");a.wait_for_timeout(400)
+    ok(bool(qc) and [r for r in db()['party_rooms'] if r['id']==qc][0]['status']=='closed' and a.evaluate("!S.queue"),'매칭을 취소하면 매칭 방도 닫힘')
+    a.evaluate("PT.matchWait=800");a.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");a.wait_for_timeout(1500)
+    a.evaluate("S.queue&&(S.queue.nextTry=0)");
+    solo=wait(a,"!!S.match||(S.queue&&S.queue.botOnly)",12000)
+    ok(solo and a.evaluate("!S.queue||!S.queue.roomId"),'혼자면 기다림이 끝난 뒤 연습용 동료 매칭으로(방은 닫힘)')
+    a.evaluate("S.match?matchFail(true):ACTS.cancelqueue()");a.wait_for_timeout(200)
     bot_r=bp.evaluate("(()=>{const m=S.data.monsters.find(x=>mkind(x)==='party'&&x.published&&levelOk(x,12));let r=null;for(let i=0;i<40;i++){const x=genRecruit(m);if(x&&!joinReason(x)){r=x;break;}}if(!r)return null;S.recruits.push(r);return r.id;})()")
     if bot_r:
         bp.evaluate(f"ACTS.joinrecruit({{id:'{bot_r}'}})");bp.wait_for_timeout(400)

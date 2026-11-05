@@ -816,8 +816,10 @@ if(ONLINE){
    · 파티 채팅: 서버(party_msgs)로. 공유 파티에서는 봇이 실제 블레서 이름으로 말하지 않는다.
    · 던전 파티(5페이즈): 파티장 화면이 탐사를 진행하고(페이즈·체력·결과), 페이즈 전투는 위와 같은 공유 전투(페이즈마다 전투 id 따로).
      파티원은 보상을 자기 게임 규칙으로(보스 = 내 dungeonReward, 몬스터 = 던전 몬스터 규칙, 보물상자는 내 화면에서 따로 열림).
-   · 만신전·랜덤 매칭은 아직 이 기기 안에서만. */
-const PT={rooms:[],room:null,ch:null,chRoom:null,listCh:null,rev:0,lastState:0,pushT:null,pushing:false,again:false,sent:null,setSig:'',setAt:0,msgIds:new Set(),loop:null};
+   · 랜덤 매칭: 먼저 같은 레이드·같은 목표 인원의 열린 실제 블레서 방에 들어가고, 없으면 '랜덤 매칭' 방을 열어 기다림.
+     PT.matchWait(15초) 동안 아무도 안 오면 예전처럼 연습용 동료(봇)와 매칭, 몇 명 왔으면 빈자리는 용병으로 채워 출발.
+   · 만신전은 아직 이 기기 안에서만. */
+const PT={matchWait:15000,rooms:[],room:null,ch:null,chRoom:null,listCh:null,rev:0,lastState:0,pushT:null,pushing:false,again:false,sent:null,setSig:'',setAt:0,msgIds:new Set(),loop:null};
 const ptKindOk=m=>!!m&&['party','weekly','dungeon'].includes(mkind(m));
 function ptCard(){const bo={};['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v)bo[k]=v;});return {equip:effEquip(),enh:S.me.enh||{},bonus:bo,hp:Math.round(hpNow()*1000)/1000};}
 async function ptRpc(fn,args){const {data,error}=await SB.rpc(fn,args);if(error)throw error;return data;}
@@ -898,6 +900,12 @@ function ptRoomGone(text){
 }
 function ptRoomEvent(r){
   PT.room=r;
+  {const q=S.queue;if(q&&q.roomId===r.id&&!S.battle){
+    const inRoom=r.leader===SB_UID||(r.members||[]).some(x=>x.uid===SB_UID);
+    if(r.status==='closed'||!inRoom){q.roomId=null;q.host=false;ptUnsub();}
+    else if(r.status==='battle'&&r.leader!==SB_UID){S.queue=null;S.party=ptPartyFrom(r,null);S.sel.chatTab='party';ptRefreshStateOnce();}
+    else if(q.host)ptQueueRoom(q);
+    save();if(S.route==='battle')render();else renderTop();return;}}
   const inRoom=r.leader===SB_UID||(r.members||[]).some(x=>x.uid===SB_UID);
   if(!inRoom){ptRoomGone(r.status==='closed'?'파티가 해산되었습니다.':'파티에서 나가게 되었습니다.');return;}
   if(r.status==='closed'){const b=ptBattle();if(b&&!b.over&&!ptHost(b)){ptRefreshStateOnce();return;}
@@ -1037,7 +1045,9 @@ function ptLoop(){
       const limit=(b.rules.turnSeconds||30)*1000+45000;if(now()-PT.lastState>limit)ptAbort('파티장과 연결이 끊겨 전투가 끝났습니다.');}
   }
   const R=ptDrun();if(R&&!R.done&&PT.chRoom!==R.shared.room&&!(b&&!b.over))ptSubscribe(R.shared.room);
-  if(PT.chRoom&&!(S.party&&S.party.roomId===PT.chRoom)&&!(b&&b.shared.room===PT.chRoom&&!b.over)&&!(R&&!R.done&&R.shared.room===PT.chRoom))ptUnsub();
+  const q=S.queue&&S.queue.roomId?S.queue:null;if(q&&PT.chRoom!==q.roomId)ptSubscribe(q.roomId);
+  if(q&&q.host&&!q.busy)ptQueueRoom(q);
+  if(PT.chRoom&&!(q&&q.roomId===PT.chRoom)&&!(S.party&&S.party.roomId===PT.chRoom)&&!(b&&b.shared.room===PT.chRoom&&!b.over)&&!(R&&!R.done&&R.shared.room===PT.chRoom))ptUnsub();
 }
 async function ptStart(){
   ptFetchRooms();
@@ -1048,6 +1058,7 @@ async function ptStart(){
   if(S.party&&S.party.shared)ptSubscribe(S.party.roomId);
   else if(b&&!b.over)ptSubscribe(b.shared.room);
   else if(ptDrun()&&!ptDrun().done){ptSubscribe(ptDrun().shared.room);if(ptDrunHost())ptPush();}
+  else if(S.queue&&S.queue.roomId){S.queue.busy=false;ptSubscribe(S.queue.roomId);}
   if(b&&!b.over&&ptHost(b)){b.players.forEach(f=>{if(f.real&&!f.isMe&&!f.confirmed)f.planAt=Infinity;});ptPush();}
 }
 
@@ -1170,6 +1181,43 @@ function ptDrunAbort(text){
 }
 let _ptStartBattle=null;
 
+// ── 랜덤 매칭 ──
+const ptQ=()=>{const q=S&&S.queue;return q&&SB_UID&&ptKindOk(monster(q.monsterId))?q:null;};
+function ptQueueFind(q){return ptEntries().filter(r=>r.monsterId===q.monsterId&&r.target===q.target&&r.roomId!==q.roomId&&!joinReason(r)).sort((a,b)=>a.roomId<b.roomId?-1:1)[0]||null;}
+async function ptQueueJoin(q,rid){
+  q.busy=true;
+  try{const room=await ptRpcCard('party_join',{p_room:rid,p_card:ptCard()});
+    if(S.queue!==q){ptRpc('party_leave',{p_room:room.id}).catch(()=>{});return;}
+    q.roomId=room.id;q.host=false;PT.room=room;ptSubscribe(room.id);save();if(S.route==='battle')render();}
+  catch(e){console.warn(e);ptFetchRooms();}
+  finally{q.busy=false;}
+}
+async function ptQueueOpen(q){
+  q.busy=true;
+  try{const id=await ptRpcCard('party_create',{p_monster:q.monsterId,p_name:'랜덤 매칭',p_target:q.target,p_vis:'public',p_card:ptCard()});
+    if(S.queue!==q){ptRpc('party_leave',{p_room:id}).catch(()=>{});return;}
+    q.roomId=id;q.host=true;q.openAt=now();ptSubscribe(id);save();if(S.route==='battle')render();}
+  catch(e){console.warn(e);q.botOnly=true;}
+  finally{q.busy=false;}
+}
+// 방장(먼저 연 사람): 다 모이면 출발, 기다림이 끝나면 용병으로 채워 출발 · 혼자면 봇 매칭으로
+function ptQueueRoom(q){
+  const room=PT.room;if(!room||room.id!==q.roomId||!q.host||q.busy||room.status!=='gather')return false;
+  const real=(room.members||[]).length;
+  if(real<=1){const other=ptQueueFind(q);if(other&&other.roomId<room.id){ptQueueJoin(q,other.roomId);return false;}}
+  const waited=now()-q.since>=PT.matchWait;
+  if(real>=q.target||(waited&&real>=2)){ptQueueGo(q,room,real<q.target);return true;}
+  if(waited){ptRpc('party_leave',{p_room:room.id}).catch(()=>{});q.roomId=null;q.host=false;q.botOnly=true;ptUnsub();save();if(S.route==='battle')render();}
+  return false;
+}
+function ptQueueGo(q,room,fill){
+  S.queue=null;S.party=ptPartyFrom(room,null);S.party.members.forEach(x=>{x.ready=true;});S.sel.chatTab='party';
+  if(fill&&ACTS['merc-fill'])ACTS['merc-fill']();
+  sysParty('랜덤 매칭으로 실제 블레서 파티가 구성되었습니다.');
+  startBattle();
+}
+
+
 if(ONLINE){
   // 아이템 사용: 공유 전투에서 '나'의 전투원 id는 'me'가 아닐 수 있음. 파티장 화면은 파티원 아이템을 믿고(각자 차감) 처리
   const _has=hooks.hasItem,_use=hooks.useItem;
@@ -1267,6 +1315,31 @@ if(ONLINE){
   };
   const _botSay=botSay;
   botSay=function(ch,name,text){if(ch==='party'&&S.party&&S.party.shared){const x=S.party.members.find(m=>m.name===name);if(!x||x.real)return;}return _botSay(ch,name,text);};
+
+  // 랜덤 매칭: 실제 블레서 먼저, 없으면 예전처럼 봇
+  const _tryMatch=tryMatch;
+  tryMatch=function(){
+    const q=ptQ();if(!q||q.botOnly)return _tryMatch();
+    if(q.busy)return false;
+    if(q.roomId)return ptQueueRoom(q);
+    const r=ptQueueFind(q);if(r){ptQueueJoin(q,r.roomId);return false;}
+    ptQueueOpen(q);return false;
+  };
+  const _queue=ACTS.queue;
+  ACTS.queue=(d,el,e)=>{const r=_queue(d,el,e);const q=ptQ();if(q&&!q.roomId&&!q.busy){ptFetchRooms().then(()=>{if(S.queue===q&&!q.roomId&&!q.busy)tryMatch();});}return r;};
+  const _cancelq=ACTS.cancelqueue;
+  ACTS.cancelqueue=(d,el,e)=>{const q=S.queue;if(q&&q.roomId&&SB_UID){ptRpc('party_leave',{p_room:q.roomId}).catch(()=>{});ptUnsub();}return _cancelq(d,el,e);};
+  const _vQueue=vQueue;
+  vQueue=function(){
+    let h=_vQueue();const q=ptQ();if(!q)return h;const room=PT.room&&PT.room.id===q.roomId?PT.room:null;
+    const left=Math.max(0,Math.ceil((q.since+PT.matchWait-now())/1000));
+    const n=room?(room.members||[]).length:0;const lead=room&&((room.members||[]).find(x=>x.uid===room.leader)||{}).name;
+    const line=q.botOnly?'함께할 실제 블레서가 없어 연습용 동료 블레서와 매칭합니다.'
+      :!room?'같은 레이드를 기다리는 실제 블레서를 찾는 중입니다…'
+      :q.host?`실제 블레서 ${n}명 모임 · 목표 ${q.target}명${left?` · ${left}초 뒤 ${n>=2?'빈자리는 용병으로 채워 출발':'연습용 동료 블레서와 매칭'}`:''}`
+      :`실제 블레서 파티(파티장 ${esc(lead||'')})에 들어왔습니다 · ${n}/${q.target}명 · 출발을 기다리는 중…`;
+    return h.replace('<div class="panel"><h3>대기 상태</h3>',`<div class="panel"><h3>대기 상태</h3><p class="pt-qline${room?' ok':''} muted" style="font-size:13px;margin:0 0 10px">${line}</p>`);
+  };
 
   // 던전 파티: 파티장이 진행(전투·이벤트), 파티원은 따라감
   const _drunStartBattle=drunStartBattle;
