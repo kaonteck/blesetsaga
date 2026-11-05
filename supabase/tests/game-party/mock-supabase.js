@@ -58,15 +58,27 @@ const RPC={
 
   // ── 파티 방(019) 흉내 ──
   party_create(a){const db=load();const me=prof(db,UID);
-    db.party_rooms.filter(r=>r.leader===UID&&r.status!=='closed').forEach(r=>{r.status='closed';touch(r);});
-    const r={id:'pr'+Math.random().toString(36).slice(2,10),leader:UID,monster_id:a.p_monster,name:(a.p_name||'파티').slice(0,16),target:a.p_target,visibility:a.p_vis==='invite'?'invite':'public',status:'gather',members:[pmem(me,a.p_card,false)],extra:[],created_at:now(),updated_at:now()};
+    db.party_rooms.filter(r=>r.leader===UID&&r.status!=='closed'&&r.kind!=='mass').forEach(r=>{r.status='closed';touch(r);});
+    const r={id:'pr'+Math.random().toString(36).slice(2,10),kind:'party',leader:UID,monster_id:a.p_monster,name:(a.p_name||'파티').slice(0,16),target:a.p_target,visibility:a.p_vis==='invite'?'invite':'public',status:'gather',members:[pmem(me,a.p_card,false)],extra:[],created_at:now(),updated_at:now()};
     db.party_rooms.push(r);store(db);notifyRT('party_rooms',r,'INSERT');return r.id;},
   party_join(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room);if(!r||r.status==='closed')throw {message:'NO_ROOM'};
     if(r.visibility==='invite'&&!r.members.some(x=>x.uid===UID)&&!(r.invited||[]).includes(UID))throw {message:'NOT_INVITED'};
     if(r.members.some(x=>x.uid===UID))return r;if(r.status!=='gather')throw {message:'NOT_GATHER'};
     if(r.members.length+r.extra.length>=r.target)throw {message:'FULL'};
     r.members.push(pmem(prof(db,UID),a.p_card,false));touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return r;},
+  // ── 만신전(026) 흉내 ──
+  mass_spawn(a){const db=load();db.party_rooms.filter(r=>r.kind==='mass'&&r.status==='gather').forEach(r=>{r.status='closed';touch(r);});
+    const r={id:'mr'+Math.random().toString(36).slice(2,10),kind:'mass',leader:UID,spawner:UID,monster_id:a.p_monster,name:'만신전',target:a.p_target,visibility:'public',status:'gather',members:[],extra:[],until:new Date(Date.now()+a.p_minutes*60000).toISOString(),meta:a.p_meta||{},created_at:now(),updated_at:now()};
+    db.party_rooms.push(r);store(db);notifyRT('party_rooms',r,'INSERT');return r.id;},
+  mass_join(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.kind==='mass');if(!r||r.status==='closed')throw {message:'NO_ROOM'};
+    if(r.members.some(x=>x.uid===UID))return r;if(r.status!=='gather'||Date.parse(r.until)<Date.now())throw {message:'NOT_GATHER'};if(r.members.length>=r.target)throw {message:'FULL'};
+    if(!r.members.some(x=>x.uid===r.leader))r.leader=UID;r.members.push(pmem(prof(db,UID),a.p_card,true));touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return r;},
+  mass_leave(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.kind==='mass'&&x.status==='gather');if(!r)throw {message:'NOT_GATHER'};
+    r.members=r.members.filter(x=>x.uid!==UID);if(r.leader===UID)r.leader=(r.members[0]||{}).uid||r.spawner;touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
+  mass_start(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.kind==='mass'&&x.status==='gather'&&x.members.some(m=>m.uid===UID));
+    if(!r||!(r.leader===UID||Date.parse(r.until)<Date.now()-10000))throw {message:'NOT_LEADER'};r.status='battle';r.leader=UID;touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
   party_leave(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room);if(!r)return null;
+    if(r.kind==='mass'){r.members=r.members.filter(x=>x.uid!==UID);if(r.leader===UID)r.leader=(r.members[0]||{}).uid||r.spawner;touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;}
     if(r.leader===UID)r.status='closed';else r.members=r.members.filter(x=>x.uid!==UID);touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},
   party_ready(a){const db=load();const r=db.party_rooms.find(x=>x.id===a.p_room&&x.status==='gather');if(!r||!r.members.some(x=>x.uid===UID))throw {message:'NOT_MEMBER'};
     r.members=r.members.map(x=>x.uid===UID?pmem(prof(db,UID),a.p_card||x.card,!!a.p_ready):x);touch(r);store(db);notifyRT('party_rooms',r,'UPDATE');return null;},

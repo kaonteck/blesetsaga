@@ -499,4 +499,54 @@ select t.fail(format($$select party_join(%L,'{"x":1}')$$, :'rid4'),'card 모르�
 select party_join(:'rid4','{"equip":{"weapon":"sword"},"enh":{"sword":3},"bonus":{"atk":8},"hp":0.5}');
 select t.ok((select jsonb_array_length(members)=2 and members->1->'card'->'equip'->>'weapon'='sword' from party_rooms where id=:'rid4'),'초대받은 사람은 초대 전용 방에 참가 · 정상 card');
 select t.as(:'P1'); select party_leave(:'rid4');
+
+-- 만신전 공유 (026)
+select t.as(:'P1');
+select t.fail($$select mass_spawn('ev_rift',30,20,'{}')$$,'운영자 아닌 사람이 만신전 띄우기(NOT_ADMIN)');
+select t.as(:'A',true);
+select t.fail($$select mass_spawn('ev_rift',30,21,'{}')$$,'정원 21명 막힘');
+select mass_spawn('ev_rift',30,3,'{"loc":"성문 인근","title":"균열"}') as mr \gset
+select t.ok((select kind='mass' and status='gather' and target=3 and until>now() and jsonb_array_length(members)=0 from party_rooms where id=:'mr'),'운영자가 만신전 띄움(모집 중 · 원정대 0명)');
+select t.as(:'P1');
+select t.ok((select count(*) from party_rooms where id=:'mr')=1,'다른 블레서도 만신전 방을 읽음');
+select t.fail(format($$select party_join(%L,'{}')$$, :'mr'),'파티 참가 함수로 만신전 방에 들어가기(NO_ROOM)');
+select mass_join(:'mr','{"hp":1}');
+select t.ok((select leader from party_rooms where id=:'mr')=:'P1','처음 들어온 블레서가 공대장');
+select t.as(:'P2'); select mass_join(:'mr','{}');
+select t.fail(format($$select mass_start(%L)$$, :'mr'),'공대장 아닌 원정대원은 마감 전 출발 못 함');
+select t.fail(format($$select party_set(%L,'[]',null,8)$$, :'mr'),'만신전 방 정원 바꾸기(파티 함수) 막힘');
+select t.as(:'P1');
+select t.fail(format($$select party_kick(%L,%L)$$, :'mr', :'P2'),'공대장도 파티 함수로 원정대원 내보내기 못 함');
+select party_leave(:'mr');
+select t.ok((select status='gather' and leader=:'P2' and jsonb_array_length(members)=1 from party_rooms where id=:'mr'),'공대장이 나가면 이벤트는 그대로 · 다음 사람이 공대장');
+select mass_join(:'mr','{}');
+select t.as(:'P3'); select mass_join(:'mr','{}');
+select t.as(:'P5');
+select t.fail(format($$select mass_join(%L,'{}')$$, :'mr'),'정원이 차면 참가 막힘(FULL)');
+select t.as(:'P2'); select mass_start(:'mr');
+select t.ok((select status from party_rooms where id=:'mr')='battle','공대장 출발 → 전투');
+select party_push(:'mr','{"turn":1}',1,false);
+select t.as(:'P1');
+select t.ok((select count(*) from party_state where room_id=:'mr')=1,'원정대원은 전투 상태를 읽음');
+select party_act(:'mr',1,'{"action":{"kind":"move","to":11}}'); select party_say(:'mr','가자');
+select t.as(:'P5');
+select t.ok((select count(*) from party_state where room_id=:'mr')=0 and (select count(*) from party_msgs where room_id=:'mr')=0,'원정대 밖 사람은 전투 상태·레이드 채팅 못 봄');
+-- 마감이 지나도 공대장이 출발하지 않으면 원정대 누구나
+select t.as(:'A',true); select mass_spawn('ev_rift',30,20,'{}') as mr2 \gset
+select t.ok((select status from party_rooms where id=:'mr')='battle','새 만신전을 띄워도 전투 중인 만신전은 그대로');
+select t.as(:'P1'); select mass_join(:'mr2','{}');
+select t.as(:'P3'); select mass_join(:'mr2','{}');
+reset role; update party_rooms set until=now()-interval '20 seconds' where id=:'mr2'; set role authenticated;
+select t.as(:'P5');
+select t.fail(format($$select mass_join(%L,'{}')$$, :'mr2'),'집결 마감 뒤 참가 막힘');
+select t.as(:'P3'); select mass_start(:'mr2');
+select t.ok((select status='battle' and leader=:'P3' from party_rooms where id=:'mr2'),'마감 10초가 지나면 원정대 누구나 출발(그 사람이 공대장)');
+-- 만신전 원정대원이 파티를 만들어도 이벤트는 닫히지 않음(원정대에서만 빠짐)
+select t.as(:'A',true); select mass_spawn('ev_rift',30,20,'{}') as mr3 \gset
+select t.as(:'P1'); select mass_join(:'mr3','{}');
+select party_create('m_test','다른 파티',3) as rid5 \gset
+select t.ok((select status='gather' and jsonb_array_length(members)=0 from party_rooms where id=:'mr3'),'원정대원이 파티를 만들면 원정대에서만 빠짐(만신전은 그대로)');
+select party_leave(:'rid5');
+select t.as(:'A',true); select mass_spawn('ev_crown',10,20,'{}');
+select t.ok((select status from party_rooms where id=:'mr3')='closed','새 만신전을 띄우면 모집 중이던 만신전은 닫힘');
 select 'ALL TESTS PASSED';
