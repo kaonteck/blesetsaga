@@ -103,6 +103,7 @@ function sceneForm(q,k,i){const st=q.steps[k];const p='steps.'+k;const isB=!!st.
   if(isB){const m=liveData('monster',st.battle)||{};
     return `<section class="fm-sec scene battle">${head}<div class="fgrid">
       ${fText(p+'.text','전투 전 장면 글',null,{wide:true,area:true,rows:2})}
+      ${sceneImg(q,k)}
       ${fPick(p+'.battle','등장 몬스터',monsL(),{wide:true})}
       ${st.battle?`<p class="wide faint small mon-info">${m.name?`${esc(m.name)} · ${esc(KIND_MON[m.kind]||m.kind||'')} · LV${m.level??'?'} · HP ${m.hp??'?'} · 공격 ${m.atk??'?'}${m.sphases?` · 페이즈 ${m.sphases.length}개`:''} — 퀘스트 전투는 혼자 싸우는 개인 레이드, 지면 이 장면부터 다시 도전`:'몬스터를 찾을 수 없습니다.'}</p>`:''}
       ${fText(p+'.winText','이기면 나오는 글',null,{wide:true,area:true,rows:2})}
@@ -110,6 +111,7 @@ function sceneForm(q,k,i){const st=q.steps[k];const p='steps.'+k;const isB=!!st.
     </div></section>`;}
   const g=st.give;const body=String(st.text||'').replace(ROUTE_RE,'');
   return `<section class="fm-sec scene">${head}<div class="fgrid">
+    ${sceneImg(q,k)}
     <label class="f wide">${i?'장면 글':'퀘스트 내용 (첫 장면 글)'}<textarea data-fa="scene-text" data-k="${k}" rows="3">${esc(body)}</textarea>${g&&!st._noRoute?`<small class="faint">끝에 길 안내가 붙습니다:${esc(hintOf(st))}</small>`:''}</label>
     <div class="wide">${fToggle('give:'+k,'중간 경로 · 장소에서 퀘스트 아이템 받기',!!g,g?`<div class="fgrid">
       ${fPick(p+'.give.land','지역',[...LANDS_L(),['@theft','오늘의 도둑 지역']],{act:'hint',t:'str'})}
@@ -122,6 +124,9 @@ function sceneForm(q,k,i){const st=q.steps[k];const p='steps.'+k;const isB=!!st.
   </div>
   <div class="chs">${(st.choices||[]).map((c,j)=>choiceForm(q,k,c,j)).join('')}</div>
   <button type="button" class="btn btn-sm" data-fa="add-choice" data-k="${k}">+ 선택지</button></section>`;}
+// 장면 그림: 켜면 이미지 칸(장면 글 위에 나옴)
+function sceneImg(q,k){const st=q.steps[k];const on=st._img||!!st.img;
+  return `<div class="wide">${fToggle('img:'+k,'장면 그림 넣기',on,on?imgRow('steps.'+k+'.img','장면 그림','퀘스트 화면에서 장면 글 위에 나옴','quest/'):'')}</div>`;}
 function reqKind(r){if(!r)return '';if(r.item)return 'item';if(r.items)return 'items';if(r.gold)return 'gold';if(r.level)return 'level';if(r.flag)return 'flag';return '';}
 function choiceForm(q,k,c,j){const p=`steps.${k}.choices.${j}`;const rk=reqKind(c.req);
   const tgt=q.steps[c.next];const second=!!(tgt&&!tgt.end&&!tgt.battle&&tgt._second);
@@ -165,13 +170,13 @@ const FPICK={
 // 칸 묶음 [제목, 작은 설명, 칸들] — 묶음에 없는 칸은 '그 밖의 값'
 const FGROUP={
   monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','img','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
-  item:[['기본 정보','',['id','type','name','tag','desc','art','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
+  item:[['기본 정보','',['id','type','name','tag','desc','art','img','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
 };
 function genericForm(k,d){
   const keys=Object.keys(d);const P=FPICK[k]||{};
   const isMass=k==='monster'&&d.kind==='event';
   if(k==='monster')(isMass?['drops','mass']:['drops','sphases']).forEach(x=>{if(!keys.includes(x))keys.push(x);});
-  if(k==='monster'&&!keys.includes('img'))keys.splice(Math.max(0,keys.indexOf('art')+1),0,'img');
+  if((k==='monster'||k==='item')&&!keys.includes('img'))keys.splice(Math.max(0,keys.indexOf(k==='item'?'desc':'art')+1),0,'img');
   const row=key=>{const v=d[key];const lab=FLABEL[key]?FLABEL[key]+KSEP+key:key;
     if(k==='monster'){
       if(key==='kind')return isMass?'':fPick('kind',lab,MON_CAT);
@@ -179,6 +184,7 @@ function genericForm(k,d){
       if(key==='img')return monImgRow();
       if(key==='sphases')return phasesForm();
       if(key==='mass')return massForm();}
+    if(k==='item'&&key==='img')return imgRow('img','이미지','상점에서 같은 아이템에도 그대로 · 긴 변 512px로 줄여 저장','item/');
     if(k==='market'&&key==='item')return fPick(key,lab,itemsL(),{wide:true});
     if(P[key])return fPick(key,lab,P[key]);
     if(typeof v==='boolean')return `<div class="f">${fCheck(key,lab)}</div>`;
@@ -189,7 +195,9 @@ function genericForm(k,d){
   const secs=(FGROUP[k]||[]).map(([t,sub,ks])=>{const have=ks.filter(x=>keys.includes(x));have.forEach(x=>used.add(x));
     return have.length?{t,sub,body:have.map(row).join('')}:null;}).filter(Boolean);
   const rest=keys.filter(x=>!used.has(x));
-  if(rest.length||!secs.length)secs.push({t:secs.length?'그 밖의 값':KINDS[k].label,sub:secs.length?'기타':'',body:rest.map(row).join('')});
+  const delWrap=key=>{const h=row(key);if(!h||key==='id'||(!secs.length&&key in (BLANK[k]||{})))return h;const wide=/^<(?:label|div) class="f wide|^<div class="wide/.test(h);
+    return `<div class="kd ${wide?'wide':''}">${h}<button type="button" class="kd-x" data-fa="del-key" data-key="${esc(key)}" title="${esc(key)} 칸 삭제" aria-label="${esc(key)} 칸 삭제">삭제</button></div>`;};
+  if(rest.length||!secs.length)secs.push({t:secs.length?'그 밖의 값':KINDS[k].label,sub:secs.length?'기타':'',body:rest.map(delWrap).join('')});
   const addRow=`<div class="row" style="margin-top:8px"><input type="text" id="fm-newkey" placeholder="새 칸 이름 (영문)" style="max-width:200px"><button type="button" class="btn btn-sm" data-fa="add-key">+ 칸 더하기</button></div>`;
   return `<div class="fm">${secs.map((x,i)=>`<section class="fm-sec"><h4>${esc(x.t)}${x.sub?` <i>${esc(x.sub)}</i>`:''}</h4><div class="fgrid">${x.body}</div>${i===secs.length-1?addRow:''}</section>`).join('')}</div>`;}
 
@@ -270,6 +278,7 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
     case 'toggle':{const key=el.dataset.k,[t,a1,a2]=key.split(':');
       if(t==='cond'){q.cond=v?(q.cond||{}):{};}
       else if(t==='give'){const st=q.steps[a1];if(v)st.give={land:FM.d.land||LANDS_L()[0][0],spot:'plaza',item:'',n:1,npc:'',text:''};else delete st.give;fixHint(st);}
+      else if(t==='img'){const st=q.steps[a1];if(v)st._img=true;else{delete st._img;delete st.img;}}
       else if(t==='reward'){const st=q.steps[a1];if(v)st.reward={exp:10,gold:10};else delete st.reward;}
       else if(t==='req'){const c=q.steps[a1].choices[+a2];if(v)c.req={item:''};else{delete c.req;delete c.take;delete c.takeGold;}}
       else if(t==='flag'){const c=q.steps[a1].choices[+a2];if(v)c.flag='';else delete c.flag;}
@@ -317,6 +326,7 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
         if(sh==='rows-even'&&r%2===0||sh==='cols-even'&&c%2===0||sh==='check'&&(r+c)%2===0||sh==='edge'&&(r===0||c===0||r===G-1||c===G-1)||sh==='left'&&c<G/2||sh==='right'&&c>=G/2||sh==='top'&&r<G/2||sh==='bottom'&&r>=G/2)out.push(i);}
       P.aim=false;P.cells=out;break;}
     case 'mph-pat':{const ph=q.mass.phases[i];const a=ph.patterns=ph.patterns||[];if(v){if(!a.includes(k))a.push(k);}else ph.patterns=a.filter(x=>x!==k);break;}
+    case 'del-key':{const key=el.dataset.key;if(key&&key in q)delete q[key];break;}
     case 'add-key':{const nk=($('#fm-newkey').value||'').trim();if(!/^[A-Za-z_]\w*$/.test(nk))return toast('칸 이름은 영문·숫자·_로 적어 주세요.','bad');if(nk in q)return toast('이미 있는 칸입니다.','bad');q[nk]='';break;}
   }
   // 골드 내기는 낼 골드도 같이
@@ -328,26 +338,28 @@ function codeToForm(){const d=parseEditor();if(!d)return;FM.d=d;redrawForm();sho
 /* ── 몬스터 이미지(img): 올리면 monster-art 버킷에 저장하고 주소를 img 칸에 넣는다 · 메인 2026-11-05 ──
    PNG·JPG·WEBP·GIF, 긴 변 512px로 줄여 WEBP로 저장(GIF는 움직임 유지를 위해 그대로, 2MB 이하). 지우면 게임은 ASCII 그림으로 돌아감 */
 const MONART_BUCKET='monster-art';
-function monImgRow(){const u=FM.d.img||'';
-  return `<div class="f wide monimg"><span class="fl">${labH('이미지'+KSEP+'img')} <small class="faint">비우면 위 ASCII 그림 · 긴 변 512px로 줄여 저장</small></span>
+function monImgRow(){return imgRow('img','이미지','비우면 위 ASCII 그림 · 긴 변 512px로 줄여 저장','');}
+/* 이미지 칸(몬스터·아이템·퀘스트 장면 공통): p = 값 경로, pre = 버킷 안 폴더 */
+function imgRow(p,label,hint,pre){const u=pget(FM.d,p)||'';const sid=('imgst-'+p).replace(/[^\w-]/g,'_');
+  return `<div class="f wide monimg"><span class="fl">${labH(label+KSEP+p.split('.').pop())} <small class="faint">${esc(hint)}</small></span>
     <div class="row" style="gap:12px;align-items:flex-start">
       <div class="monimg-pv">${u?`<img src="${esc(u)}" alt="미리보기">`:'<span class="faint small">이미지 없음</span>'}</div>
-      <div class="stack" style="gap:6px"><label class="btn btn-sm">이미지 올리기<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hide" data-fimg="1"></label>
-        ${u?'<button type="button" class="btn btn-g btn-sm" data-fa="img-clear">이미지 빼기</button>':''}<small class="faint" id="monimg-st"></small></div></div></div>`;}
+      <div class="stack" style="gap:6px"><label class="btn btn-sm">이미지 올리기<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hide" data-fimg="${esc(p)}" data-fpre="${esc(pre)}" data-fst="${sid}"></label>
+        ${u?`<button type="button" class="btn btn-g btn-sm" data-fa="img-clear" data-ip="${esc(p)}">이미지 빼기</button>`:''}<small class="faint" id="${sid}"></small></div></div></div>`;}
 function monImgResize(file){return new Promise((res,rej)=>{if(file.type==='image/gif'){if(file.size>2097152)rej(new Error('GIF는 2MB 이하만 올릴 수 있습니다'));else res(file);return;}
   const url=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const k=Math.min(1,512/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
     c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);c.toBlob(b=>b?res(b):rej(new Error('이미지를 변환하지 못했습니다')),'image/webp',0.9);};
   im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('이미지를 읽지 못했습니다'));};im.src=url;});}
-async function monImgUpload(file){const st=$('#monimg-st');if(st)st.textContent='올리는 중…';
+async function monImgUpload(file,p,pre,sid){p=p&&p!=='1'?p:'img';pre=pre||'';const st=$('#'+(sid||'imgst-img'));if(st)st.textContent='올리는 중…';
   try{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type))throw new Error('PNG·JPG·WEBP·GIF만 올릴 수 있습니다');
     const blob=await monImgResize(file);const ext=blob.type==='image/gif'?'gif':'webp';const id=String(FM.d.id||FM.id||'monster').replace(/[^a-zA-Z0-9_-]/g,'_');
-    const path=`${id}/${Date.now().toString(36)}.${ext}`;
+    const path=`${pre}${id}/${Date.now().toString(36)}.${ext}`;
     const {error}=await A.sb.storage.from(MONART_BUCKET).upload(path,blob,{contentType:blob.type,upsert:false,cacheControl:'31536000'});if(error)throw error;
-    const {data}=A.sb.storage.from(MONART_BUCKET).getPublicUrl(path);FM.d.img=data.publicUrl;sync();redrawForm();toast('이미지를 올렸습니다. 저장(게시)하면 게임에 나타납니다.','good');}
+    const {data}=A.sb.storage.from(MONART_BUCKET).getPublicUrl(path);pset(FM.d,p,data.publicUrl);sync();redrawForm();toast('이미지를 올렸습니다. 저장(게시)하면 게임에 나타납니다.','good');}
   catch(e){if(st)st.textContent='';toast('이미지 올리기 실패 · '+((e&&e.message)||e),'bad');}}
 (function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
-  $$('input[data-fimg]',box).forEach(el=>el.onchange=()=>{const fl=el.files&&el.files[0];if(fl)monImgUpload(fl);el.value='';});};})();
-(function(){const f=fAct;fAct=function(a,el,v){if(a==='img-clear'){delete FM.d.img;sync();redrawForm();return;}return f(a,el,v);};})();
+  $$('input[data-fimg]',box).forEach(el=>el.onchange=()=>{const fl=el.files&&el.files[0];if(fl)monImgUpload(fl,el.dataset.fimg,el.dataset.fpre,el.dataset.fst);el.value='';});};})();
+(function(){const f=fAct;fAct=function(a,el,v){if(a==='img-clear'){pset(FM.d,el.dataset.ip||'img',undefined);sync();redrawForm();return;}return f(a,el,v);};})();
 
 /* ── 만신전: 칸을 찍어 만드는 광역 패턴(mass.patterns.cN = {name,mult,custom,aim,cells|offs}) · 메인 2026-11-05 ──
    고정 위치: 10×10 전장에서 맞을 칸을 찍는다(가운데 2×2는 보스). 대상 기준: 무작위 1명(★)을 가운데 둔 7×7에서 찍는다 → 그 사람이 선 자리 기준으로 떨어진다. */
