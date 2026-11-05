@@ -3286,3 +3286,8 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .wk-c .fp.l{top:calc(50% - 9px);transform:rotate(-6deg)}
 .wk-c .fp.r{top:calc(50% + 1px);transform:rotate(6deg)}
 .dfx.heal b{color:#7dffa8;text-shadow:0 0 18px rgba(60,230,120,.65),0 3px 0 #0d4a24,0 0 2px #000}.dfx.heal small{color:#b8ffd0}
+
+/* 퀘스트 장면 그림(운영 페이지에서 장면마다 올린 이미지) · 아이템 그림 */
+.qimg{margin:0 0 10px;border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--slab-2,#14151c);display:flex;justify-content:center}
+.qimg img{display:block;max-width:100%;max-height:320px;object-fit:contain}
+.invcell>img,.invd>img,.eqdet>img,.enh-item>img,.mkimg{object-fit:contain}
