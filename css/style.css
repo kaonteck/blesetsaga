@@ -3291,3 +3291,7 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .qimg{margin:0 0 10px;border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--slab-2,#14151c);display:flex;justify-content:center}
 .qimg img{display:block;max-width:100%;max-height:320px;object-fit:contain}
 .invcell>img,.invd>img,.eqdet>img,.enh-item>img,.mkimg{object-fit:contain}
+/* 이모티콘 창: 8칸이 글꼴(이모지 폭)과 상관없이 창 안에 들어가게 · 글쓰기 칸은 아래로 열어 상단 바에 안 가림 */
+.emo-pop{box-sizing:border-box;width:min(292px,calc(100vw - 32px))!important;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;padding:6px;overflow:hidden}
+.emo-pop button{min-width:0;width:100%;height:32px;padding:0;font-size:18px;line-height:1;display:grid;place-items:center;overflow:hidden}
+.fd-tools .emo-pop{bottom:auto;top:calc(100% + 6px)}

@@ -10,6 +10,10 @@ let NAV_OPEN=false;
 /* ☰ 메뉴 팝업: 바깥을 누르거나 Esc면 닫힘 */
 document.addEventListener('click',e=>{if(!NAV_OPEN||e.target.closest('#mainnav,.navtog'))return;NAV_OPEN=false;renderTop();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NAV_OPEN){NAV_OPEN=false;renderTop();}});
+/* 이모티콘 창: 창·이모티콘 버튼 밖을 누르거나 Esc면 닫힘(다시 그리지 않고 창만 지움 → 쓰던 글 유지) */
+function emoClose(){if(!S.sel||!S.sel.emoFor)return;S.sel.emoFor=null;$$('.emo-pop').forEach(x=>x.remove());}
+document.addEventListener('click',e=>{if(S.sel&&S.sel.emoFor&&!e.target.closest('.emo-w'))emoClose();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')emoClose();});
 /* 퀘스트 페이지 임시 비공개(유저 요청 2026-11-05, 풀라고 할 때 false로): 운영자만 열림 */
 const QUEST_HIDDEN=true;
 const questHidden=()=>QUEST_HIDDEN&&!isAdmin();
