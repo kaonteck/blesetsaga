@@ -237,25 +237,35 @@ const CLASS_INTRO={
  shooter:{q:'자유를 갈망하는 탄환이 되어라',w:'총',t:'원거리 물리',d:'슈터는 총을 통해 빠르게 움직이며 정확하게 목표를 맞추고\n때로는 강력한 한 방으로 적을 쓰러트립니다.',adv:{dualist:'두 개의 총을 사용하여\n더 빠르고 더 많은 공격이 가능한 클래스'}},
  priest:{q:'신의 축복을 받은 사도들, 그 자체로 기적이라',w:'완드',t:'원거리 마법',d:'프리스트는 성스러운 힘을 사용하여 아군을 치유하고 보호하며\n때때로 전장의 흐름에 따라 공격을 강행하는 멀티 클래스입니다.',adv:{demigod:'신에게 가까워진 자로 빛의 힘으로\n더 강력한 회복 마법을 구사하는 클래스',summoner:'신에게서 멀어진 자로 어둠의 힘으로\n보호막과 보조 스킬을 구사하는 클래스'}}};
 const LOCK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="15" r="1.6" fill="#1b1d22"/><rect x="11.3" y="15" width="1.4" height="3" fill="#1b1d22"/></svg>';
+/* 깃발 고를 때 전체를 다시 그려도 부드럽게: 직전 깃발을 켠 채로 그린 뒤 다음 프레임에 바꿔 CSS 전환이 돌게 함.
+   흔들림·연기·먼지 애니메이션은 시계 기준 음수 지연(--t)으로 다시 그려도 끊기지 않음 */
+let CC_LAST=null;
 function vCreate(){
   const sel=CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender';
   const flagOf=k=>k==='mage'||k==='shooter'?'ranged':k;const cur=flagOf(sel);
   const I=CLASS_INTRO[sel],c=CLASSES[sel];
-  const flags=CREATE_FLAGS.map(([f,job],n)=>{const on=f===cur;const j=on?sel:(f==='ranged'?(S.sel.rangedJob||'mage'):job);
-    return `<button type="button" class="cflag ${on?'on':''}" data-act="pickjob" data-job="${j}" aria-pressed="${on}" aria-label="${f==='ranged'?'슈터 · 메이지':CLASSES[job].name}" style="--d:${n*0.37}s">
-      <span class="cfl-cloth"><span class="cfl-ic" style="-webkit-mask-image:url(img/class/${f}.png);mask-image:url(img/class/${f}.png)"></span><span class="cfl-sheen"></span></span><span class="cfl-name">${f==='ranged'?'슈터 · 메이지':CLASSES[job].name}</span></button>`;}).join('');
+  const prev=CC_LAST&&CC_LAST!==cur?CC_LAST:null;CC_LAST=cur;
+  const t=(performance.now()/1000).toFixed(2);
+  const flags=CREATE_FLAGS.map(([f,job],n)=>{const on=f===cur;const j=on?sel:(f==='ranged'?(S.sel.rangedJob||'mage'):job);const lit=prev?f===prev:on;
+    const nm=f==='ranged'?'슈터 · 메이지':CLASSES[job].name;
+    return `<button type="button" class="cflag ${lit?'on':''}" data-f="${f}" data-act="pickjob" data-job="${j}" aria-pressed="${on}" aria-label="${nm}" style="--d:${(n*0.37).toFixed(2)}s">
+      <span class="cfl-rod" aria-hidden="true"></span><span class="cfl-wrap"><span class="cfl-cloth"><span class="cfl-ic" style="-webkit-mask-image:url(img/class/${f}.png);mask-image:url(img/class/${f}.png)"></span><span class="cfl-sheen"></span></span></span><span class="cfl-name">${nm}</span></button>`;}).join('');
+  if(prev)requestAnimationFrame(()=>requestAnimationFrame(()=>{$$('.cflag').forEach(b=>b.classList.toggle('on',b.dataset.f===cur));}));
   const pair=cur==='ranged'?`<div class="cd-pair" role="group" aria-label="슈터 또는 메이지">${['shooter','mage'].map(k=>`<button type="button" data-act="pickjob" data-job="${k}" aria-pressed="${sel===k}">${CLASSES[k].name}<small>${CLASSES[k].en}</small></button>`).join('')}</div>`:'';
-  return `<div class="cc-page"><div class="cc-smoke" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="cc-head"><p class="cc-lead">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 클래스와 이름을 정하세요.</p></div>
+  const dust=Array.from({length:22},(_,i)=>{const r=x=>((Math.sin(i*12.9898+x*78.233)*43758.5453)%1+1)%1;return `<i style="left:${(r(1)*100).toFixed(1)}%;--s:${(1+r(2)*2.4).toFixed(1)}px;--du:${(14+r(3)*18).toFixed(1)}s;--dl:${(-r(4)*30).toFixed(1)}s;--dx:${((r(5)-.5)*80).toFixed(0)}px"></i>`;}).join('');
+  const ja=(c.name.charCodeAt(c.name.length-1)-0xAC00)%28;
+  return `<div class="cc-page" style="--t:${t}s"><div class="cc-smoke" aria-hidden="true"><i></i><i></i><i></i></div><div class="cc-rays" aria-hidden="true"></div><div class="cc-dust" aria-hidden="true">${dust}</div>
+    <div class="cc-head"><div class="cc-kicker"><span></span>CREATE YOUR BLESSER<span></span></div><h1 class="cc-title">클래스 선택</h1><p class="cc-lead">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 클래스와 이름을 정하세요.</p></div>
     <form class="cc-body" data-form="create">
-      <div class="cc-flags" role="group" aria-label="클래스 선택">${flags}</div>
-      <div class="cc-desc" aria-live="polite">${pair}
+      <div class="cc-stage"><div class="cc-flags" role="group" aria-label="클래스 선택">${flags}</div><div class="cc-floor" aria-hidden="true"></div></div>
+      <div class="cc-desc" aria-live="polite"><div class="cd-in">${pair}
+        <div class="cd-cls">${esc(c.name)}<small>${esc(c.en||'')}</small></div>
         <h2 class="cd-q">“ ${esc(I.q)} ”</h2>
         <div class="cd-meta"><span><b>주요 무기</b><i>|</i>${esc(I.w)}</span><span><b>전투 타입</b><i>|</i>${esc(I.t)}</span><span><b>사거리</b><i>|</i>${esc(c.range.replace('×','x'))}</span></div>
         <p class="cd-d">${esc(I.d).replace(/\n/g,' <br>')}</p>
-        <div class="cd-adv-h">| 2차 전직 |</div>
-        <div class="cd-adv">${c.adv.map(a=>`<div class="cd-a"><span class="cd-lock">${LOCK_SVG}</span><div><b>${CLASSES[a].name}</b> <span class="faint">${CLASSES[a].en}</span><p>${esc(I.adv[a]||CLASSES[a].desc||'').replace(/\n/g,' <br>')}</p></div></div>`).join('')}</div>
-        <div class="cd-name"><label for="new-name">블레서 이름</label><div class="row" style="gap:8px;flex-wrap:nowrap"><input type="text" id="new-name" maxlength="10" placeholder="2~10자" required autocomplete="off"><button class="btn btn-primary" type="submit">${esc(c.name)}${(c.name.charCodeAt(c.name.length-1)-0xAC00)%28&&(c.name.charCodeAt(c.name.length-1)-0xAC00)%28!==8?'으로':'로'} 시작</button></div>
+        <div class="cd-adv-h">2차 전직</div>
+        <div class="cd-adv">${c.adv.map(a=>`<div class="cd-a"><span class="cd-lock">${LOCK_SVG}</span><div><b>${CLASSES[a].name}</b> <span class="faint">${CLASSES[a].en}</span><p>${esc(I.adv[a]||CLASSES[a].desc||'').replace(/\n/g,' <br>')}</p></div></div>`).join('')}</div></div>
+        <div class="cd-name"><label for="new-name">블레서 이름</label><div class="row" style="gap:8px;flex-wrap:nowrap"><input type="text" id="new-name" maxlength="10" placeholder="2~10자" required autocomplete="off"><button class="btn btn-primary cd-go" type="submit">${esc(c.name)}${ja&&ja!==8?'으로':'로'} 시작</button></div>
           <small class="faint">게임 닉네임을 입력해주세요.</small></div>
       </div></form></div>`;
 }
