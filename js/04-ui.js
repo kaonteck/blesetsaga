@@ -624,12 +624,13 @@ function vQuest(){
   let tab=S.sel.qtab||'epic';
   const isDone=q=>QDONE.includes(questStatus(q));
   /* 서고: 완료한 퀘스트 모음. 서브·데일리 탭에는 진행할 것만 남김(메인 스토리는 장 흐름을 보여 주려고 완료도 그대로) */
-  {const rq=quest(S.sel.quest);if(rq&&rq.published&&isDone(rq)&&tab!=='archive'&&S.sel.qtab!=='archive'&&(tab==='sub'||tab==='repeat'||tab==='epic')){tab='archive';S.sel.qtab='archive';}}
+  /* 방금 완료한 퀘스트는 지금 탭에 그대로 둔다(유저 요청 2026-11-05) — 다른 분류의 완료 퀘스트로 바로 온 경우만 서고로 */
+  {const rq=quest(S.sel.quest);if(rq&&rq.published&&isDone(rq)&&tab!=='archive'&&rq.cat!==tab){tab='archive';S.sel.qtab='archive';}}
   const inTab=(q,t)=>t==='archive'?isDone(q):q.cat===t&&questStatus(q)!=='hidden'&&!isDone(q);
   const AC=S.sel.arcCat||'all';
   const qs=all.filter(q=>inTab(q,tab)&&(tab!=='archive'||AC==='all'||q.cat===AC));
   let sel=S.sel.quest;const sq=quest(sel);
-  if(!sq||!sq.published||!inTab(sq,tab))sel=(qs.find(q=>['active','claim','available'].includes(questStatus(q)))||qs[0]||{}).id;
+  if(!sq||!sq.published||!(inTab(sq,tab)||tab!=='archive'&&isDone(sq)&&sq.cat===tab))sel=(qs.find(q=>['active','claim','available'].includes(questStatus(q)))||qs[0]||{}).id;
   S.sel.quest=sel;
   const cnt=c=>all.filter(q=>inTab(q,c)).length;
   const note={epic:'이야기 중간의 전투는 혼자 치르는 개인 레이드입니다. 지면 같은 단계에서 다시 도전합니다. 완료한 이야기는 서고에 있습니다.',sub:'세계관에서 파생된 이야기입니다. 조건을 채우면 열립니다. 완료한 이야기는 서고에 있습니다.',repeat:`오늘의 데일리 ${DAILY_Q}개 · 매일 05:00에 목록에서 무작위로 바뀝니다. 오늘 끝낸 데일리는 서고에 있습니다.`,archive:'완료한 퀘스트를 모아 둔 곳입니다. 고른 선택지와 지나온 이야기를 다시 읽을 수 있습니다.'}[tab];
