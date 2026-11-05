@@ -212,8 +212,8 @@ function massForm(){const M=FM.d.mass;const D=MPATS();const on=!!(M&&(M.patterns
       return `<tr><td><b>${esc(D[pk].name)}</b><small class="faint">${esc(MPDESC()[pk]||pk)}</small></td><td><input type="text" data-p="mass.patterns.${pk}.name" data-t="stropt" value="${esc(cur.name??D[pk].name)}" aria-label="${esc(D[pk].name)} 이름"></td><td><input type="number" step="0.05" min="0" data-p="mass.patterns.${pk}.mult" data-t="num" value="${cur.mult??D[pk].mult}" aria-label="${esc(D[pk].name)} 배율"></td><td><input type="text" data-p="mass.lines.${pk}" data-t="stropt" value="${esc((M.lines||{})[pk]||'')}" placeholder="비우면 기본 대사" aria-label="${esc(D[pk].name)} 대사"></td></tr>`;}).join('')}</tbody></table>
     <div class="stack" style="gap:6px;margin-top:8px">${(M.phases||[]).map((ph,i)=>`<div class="ch"><div class="ch-h"><b>페이즈 ${i+1}</b><button type="button" class="btn btn-g btn-sm" data-fa="mph-del" data-i="${i}">삭제</button></div><div class="fgrid">
       ${fText(`mass.phases.${i}.at`,'체력 % 이하'+KSEP+'at',null,{num:true})}${fText(`mass.phases.${i}.name`,'페이즈 이름'+KSEP+'name')}${fText(`mass.phases.${i}.atkMul`,'공격력 배율'+KSEP+'atkMul',null,{num:true})}
-      <div class="f wide"><span class="fl">이 페이즈에 쓰는 패턴</span><div class="row" style="gap:4px 12px">${Object.keys(D).map(pk=>`<label class="chk"><input type="checkbox" data-fa="mph-pat" data-i="${i}" data-k="${pk}" ${(ph.patterns||[]).includes(pk)?'checked':''}> ${esc(((M.patterns||{})[pk]||{}).name||D[pk].name)}</label>`).join('')}</div></div></div></div>`).join('')}
-      <div class="row"><button type="button" class="btn btn-sm" data-fa="mph-add">+ 페이즈</button></div></div>`:'';
+      <div class="f wide"><span class="fl">이 페이즈에 쓰는 패턴</span><div class="row" style="gap:4px 12px">${[...Object.keys(D),...cpKeys(M)].map(pk=>`<label class="chk"><input type="checkbox" data-fa="mph-pat" data-i="${i}" data-k="${pk}" ${(ph.patterns||[]).includes(pk)?'checked':''}> ${esc(((M.patterns||{})[pk]||{}).name||(D[pk]||{}).name||pk)}${D[pk]?'':' <small class="faint">직접</small>'}</label>`).join('')}</div></div></div></div>`).join('')}
+      <div class="row"><button type="button" class="btn btn-sm" data-fa="mph-add">+ 페이즈</button></div></div>${cpForm(M)}`:'';
   return `<div class="wide">${`<div class="tg ${on?'on':''}"><label class="chk tg-h"><input type="checkbox" data-fa="mass-own" ${on?'checked':''}> 이 보스만의 공격 패턴 쓰기 <small class="faint">끄면 만신전 공통 규칙(설정)의 패턴을 씀</small></label>${on?`<div class="tg-b">${body}</div>`:''}</div>`}</div>`;}
 
 /* ───────── 그리기 · 연결 ───────── */
@@ -306,6 +306,16 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
       else if(q.mass){delete q.mass.patterns;delete q.mass.phases;delete q.mass.lines;if(!Object.keys(q.mass).length)delete q.mass;}break;}
     case 'mph-add':{const P=q.mass.phases=q.mass.phases||[];const last=P[P.length-1]||{at:100,atkMul:1};P.push({at:P.length?Math.max(5,last.at-25):100,name:`${P.length+1}페이즈`,atkMul:P.length?Math.round(((last.atkMul||1)+0.1)*100)/100:1,patterns:['single']});break;}
     case 'mph-del':{q.mass.phases.splice(i,1);break;}
+    case 'cp-add':{const P=q.mass.patterns=q.mass.patterns||{};let n=1;while(P['c'+n])n++;P['c'+n]={name:`광역 ${n}`,mult:0.9,custom:true,aim:false,cells:[],offs:[]};CP_OPEN.add('c'+n);break;}
+    case 'cp-del':{const key=el.dataset.k;delete q.mass.patterns[key];if(q.mass.lines)delete q.mass.lines[key];(q.mass.phases||[]).forEach(ph=>{ph.patterns=(ph.patterns||[]).filter(x=>x!==key);});break;}
+    case 'cp-mode':{const P=q.mass.patterns[el.dataset.k];P.aim=el.dataset.v==='aim';break;}
+    case 'cp-cell':{const P=q.mass.patterns[el.dataset.k];const c=+el.dataset.c;if(P.aim){const o=[+el.dataset.r,+el.dataset.cc];const j=(P.offs=P.offs||[]).findIndex(x=>x[0]===o[0]&&x[1]===o[1]);if(j>=0)P.offs.splice(j,1);else P.offs.push(o);}
+      else{const a=P.cells=P.cells||[];const j=a.indexOf(c);if(j>=0)a.splice(j,1);else a.push(c);a.sort((x,y)=>x-y);}break;}
+    case 'cp-clear':{const P=q.mass.patterns[el.dataset.k];if(P.aim)P.offs=[];else P.cells=[];break;}
+    case 'cp-fill':{const P=q.mass.patterns[el.dataset.k];const G=fget('GRID',10),B=fget('BOSS_CELLS',[44,45,54,55]);const sh=el.dataset.v;const out=[];
+      for(let i=0;i<G*G;i++){const r=Math.floor(i/G),c=i%G;if(B.includes(i))continue;
+        if(sh==='rows-even'&&r%2===0||sh==='cols-even'&&c%2===0||sh==='check'&&(r+c)%2===0||sh==='edge'&&(r===0||c===0||r===G-1||c===G-1)||sh==='left'&&c<G/2||sh==='right'&&c>=G/2||sh==='top'&&r<G/2||sh==='bottom'&&r>=G/2)out.push(i);}
+      P.aim=false;P.cells=out;break;}
     case 'mph-pat':{const ph=q.mass.phases[i];const a=ph.patterns=ph.patterns||[];if(v){if(!a.includes(k))a.push(k);}else ph.patterns=a.filter(x=>x!==k);break;}
     case 'add-key':{const nk=($('#fm-newkey').value||'').trim();if(!/^[A-Za-z_]\w*$/.test(nk))return toast('칸 이름은 영문·숫자·_로 적어 주세요.','bad');if(nk in q)return toast('이미 있는 칸입니다.','bad');q[nk]='';break;}
   }
@@ -338,3 +348,29 @@ async function monImgUpload(file){const st=$('#monimg-st');if(st)st.textContent=
 (function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
   $$('input[data-fimg]',box).forEach(el=>el.onchange=()=>{const fl=el.files&&el.files[0];if(fl)monImgUpload(fl);el.value='';});};})();
 (function(){const f=fAct;fAct=function(a,el,v){if(a==='img-clear'){delete FM.d.img;sync();redrawForm();return;}return f(a,el,v);};})();
+
+/* ── 만신전: 칸을 찍어 만드는 광역 패턴(mass.patterns.cN = {name,mult,custom,aim,cells|offs}) · 메인 2026-11-05 ──
+   고정 위치: 10×10 전장에서 맞을 칸을 찍는다(가운데 2×2는 보스). 대상 기준: 무작위 1명(★)을 가운데 둔 7×7에서 찍는다 → 그 사람이 선 자리 기준으로 떨어진다. */
+const CP_OPEN=new Set();
+const cpKeys=M=>Object.keys((M&&M.patterns)||{}).filter(k=>M.patterns[k]&&M.patterns[k].custom);
+function cpBoard(key,P){const G=fget('GRID',10),B=fget('BOSS_CELLS',[44,45,54,55]);
+  if(P.aim){const R=3,on=new Set((P.offs||[]).map(o=>o[0]+','+o[1]));let h='';for(let dr=-R;dr<=R;dr++)for(let dc=-R;dc<=R;dc++){const me=dr===0&&dc===0,k=dr+','+dc;
+      h+=`<button type="button" class="cpc ${on.has(k)?'on':''} ${me?'tg':''}" data-fa="cp-cell" data-k="${key}" data-r="${dr}" data-cc="${dc}" aria-pressed="${on.has(k)}" aria-label="대상에서 ${dr}행 ${dc}열">${me?'★':''}</button>`;}
+    return `<div class="cpg" style="--n:${2*R+1}">${h}</div>`;}
+  const on=new Set(P.cells||[]);let h='';for(let i=0;i<G*G;i++){const boss=B.includes(i);const nm='ABCDEFGHIJ'[Math.floor(i/G)]+(i%G+1);
+    h+=boss?`<span class="cpc boss" aria-hidden="true"></span>`:`<button type="button" class="cpc ${on.has(i)?'on':''}" data-fa="cp-cell" data-k="${key}" data-c="${i}" aria-pressed="${on.has(i)}" aria-label="${nm}" title="${nm}"></button>`;}
+  return `<div class="cpg" style="--n:${G}">${h}</div>`;}
+function cpForm(M){const ks=cpKeys(M);
+  return `<div class="cp-wrap"><div class="ch-h" style="margin-top:12px"><b>직접 만든 광역 패턴</b><small class="faint">칸을 눌러 맞을 자리를 고른 뒤, 위 페이즈에서 체크하면 그 페이즈에 나옵니다</small></div>
+    ${ks.map(key=>{const P=M.patterns[key];const n=P.aim?(P.offs||[]).length:(P.cells||[]).length;
+      return `<details class="ch cp" ${CP_OPEN.has(key)?'open':''} data-cp="${key}"><summary class="ch-h"><b>${esc(P.name||key)}</b> <small class="faint">${key} · ${P.aim?'대상 기준':'고정 위치'} · ${n}칸 · 배율 ${P.mult??0.9}</small></summary>
+        <div class="fgrid">${fText(`mass.patterns.${key}.name`,'이름'+KSEP+'name')}${fText(`mass.patterns.${key}.mult`,'배율'+KSEP+'mult',null,{num:true})}
+        <label class="f wide"><span class="fl">보스 대사 <small class="faint">예고 때 뜨는 말 · 비우면 없음</small></span><input type="text" data-p="mass.lines.${key}" data-t="stropt" value="${esc((M.lines||{})[key]||'')}"></label></div>
+        <div class="row" style="gap:6px;margin:8px 0"><span class="seg"><button type="button" class="${P.aim?'':'on'}" data-fa="cp-mode" data-k="${key}" data-v="fix" aria-pressed="${!P.aim}">고정 위치</button><button type="button" class="${P.aim?'on':''}" data-fa="cp-mode" data-k="${key}" data-v="aim" aria-pressed="${!!P.aim}">대상 기준</button></span>
+          ${P.aim?'':`<select data-fa="cp-fill" data-k="${key}" aria-label="빠른 채우기"><option value="">빠른 채우기…</option>${[['rows-even','짝수 줄'],['cols-even','짝수 열'],['check','체크무늬'],['edge','가장자리'],['left','왼쪽 절반'],['right','오른쪽 절반'],['top','위쪽 절반'],['bottom','아래쪽 절반']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select>`}
+          <button type="button" class="btn btn-g btn-sm" data-fa="cp-clear" data-k="${key}">칸 모두 지우기</button><button type="button" class="btn btn-g btn-sm" data-fa="cp-del" data-k="${key}" style="margin-left:auto">패턴 삭제</button></div>
+        ${cpBoard(key,P)}<p class="faint small" style="margin-top:6px">${P.aim?'★ = 무작위로 고른 블레서 한 명이 선 칸. 전장 밖으로 나가는 칸·보스 칸은 빠집니다.':'가운데 2×2는 보스 칸이라 고를 수 없습니다. 고른 칸에 선 블레서가 맞습니다.'}</p></details>`;}).join('')}
+    <div class="row"><button type="button" class="btn btn-sm" data-fa="cp-add">+ 광역 패턴 만들기</button></div></div>`;}
+(function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
+  $$('details.cp',box).forEach(d=>d.addEventListener('toggle',()=>{if(d.open)CP_OPEN.add(d.dataset.cp);else CP_OPEN.delete(d.dataset.cp);}));
+  $$('select[data-fa="cp-fill"]',box).forEach(el=>el.onchange=()=>{if(el.value){el.dataset.v=el.value;fAct('cp-fill',el,el.value);}});};})();

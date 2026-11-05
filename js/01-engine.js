@@ -597,6 +597,11 @@ function gridTel(b,rng){
   const pats=(ph.patterns&&ph.patterns.length?ph.patterns:['single']);const pat=pats[Math.floor(rng()*pats.length)];
   const rp=()=>al[Math.floor(rng()*al.length)];
   const PC=(b.pats&&b.pats[pat])||null;const N=(PC&&PC.name)||GRID_PAT[pat]||pat;const MU=(d)=>PC&&PC.mult!=null?PC.mult:d;
+  /* 운영 페이지에서 칸을 찍어 만든 광역 패턴: cells(0~99, 보스 칸 제외) · aim이면 무작위 1명 기준 상대 위치([dr,dc]) */
+  if(PC&&(Array.isArray(PC.cells)||Array.isArray(PC.offs))){let cells=[];
+    if(PC.aim&&Array.isArray(PC.offs)){const t=rp();if(t){const [r0,c0]=gxy(t.pos);PC.offs.forEach(o=>{const r=r0+(+o[0]||0),c=c0+(+o[1]||0);if(r>=0&&r<GRID&&c>=0&&c<GRID)cells.push(r*GRID+c);});}}
+    else cells=(PC.cells||[]).map(x=>Math.floor(+x)).filter(x=>x>=0&&x<GRID*GRID);
+    cells=[...new Set(cells)].filter(i=>!BOSS_CELLS.includes(i));if(cells.length)return {type:'area',name:N,mult:MU(0.9),cells,pat};}
   if(pat==='all')return {type:'aoe',name:N,mult:MU(0.5),pat};
   if(pat==='burst'){const t=rp();return {type:'area',name:N,mult:MU(0.9),cells:gridArea(t.pos,1),pat};}
   if(pat==='burst2'){const t1=rp(),t2=rp();return {type:'area',name:N,mult:MU(0.9),cells:[...new Set([...gridArea(t1.pos,1),...gridArea(t2.pos,1)])],pat};}
