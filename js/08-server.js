@@ -814,9 +814,11 @@ if(ONLINE){
      파티원은 자기 행동만 party_acts에 올린다. 파티원 화면은 받은 상태를 그대로 그린다. 시간 안에 안 정하면 자동 방어(원래 규칙).
    · 보상: 전투가 끝나면 각자 자기 화면에서 받는다(원래 '보상은 각자 지급').
    · 파티 채팅: 서버(party_msgs)로. 공유 파티에서는 봇이 실제 블레서 이름으로 말하지 않는다.
-   · 던전 파티·만신전·랜덤 매칭은 아직 이 기기 안에서만. */
+   · 던전 파티(5페이즈): 파티장 화면이 탐사를 진행하고(페이즈·체력·결과), 페이즈 전투는 위와 같은 공유 전투(페이즈마다 전투 id 따로).
+     파티원은 보상을 자기 게임 규칙으로(보스 = 내 dungeonReward, 몬스터 = 던전 몬스터 규칙, 보물상자는 내 화면에서 따로 열림).
+   · 만신전·랜덤 매칭은 아직 이 기기 안에서만. */
 const PT={rooms:[],room:null,ch:null,chRoom:null,listCh:null,rev:0,lastState:0,pushT:null,pushing:false,again:false,sent:null,setSig:'',setAt:0,msgIds:new Set(),loop:null};
-const ptKindOk=m=>!!m&&['party','weekly'].includes(mkind(m));
+const ptKindOk=m=>!!m&&['party','weekly','dungeon'].includes(mkind(m));
 function ptCard(){const bo={};['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v)bo[k]=v;});return {equip:effEquip(),enh:S.me.enh||{},bonus:bo,hp:Math.round(hpNow()*1000)/1000};}
 async function ptRpc(fn,args){const {data,error}=await SB.rpc(fn,args);if(error)throw error;return data;}
 // card를 보내는 호출: 서버 세이브가 늦어 장비 확인(022)에 걸리면 저장을 마친 뒤 한 번 더, 그래도 안 되면 장비 없이
@@ -888,6 +890,7 @@ async function ptRefresh0(){
   (ms||[]).reverse().forEach(ptMsg);
 }
 function ptRoomGone(text){
+  {const R=ptDrunMem();if(R&&!R.done){ptDrunAbort(text);return;}}
   const b=ptBattle();
   if(b&&!b.over&&!ptHost(b)){ptAbort('파티장이 전투를 끝냈습니다.');return;}
   if(S.party&&S.party.shared&&!S.battle){S.party=null;toast(text,'warn');if(S.route==='battle')render();else renderTop();save();}
@@ -897,7 +900,9 @@ function ptRoomEvent(r){
   PT.room=r;
   const inRoom=r.leader===SB_UID||(r.members||[]).some(x=>x.uid===SB_UID);
   if(!inRoom){ptRoomGone(r.status==='closed'?'파티가 해산되었습니다.':'파티에서 나가게 되었습니다.');return;}
-  if(r.status==='closed'){const b=ptBattle();if(b&&!b.over&&!ptHost(b))ptRefreshStateOnce();else if(!S.battle)ptRoomGone('파티가 해산되었습니다.');return;}
+  if(r.status==='closed'){const b=ptBattle();if(b&&!b.over&&!ptHost(b)){ptRefreshStateOnce();return;}
+    const R=ptDrunMem();if(R&&R.shared.room===r.id&&!R.done){ptRefreshStateOnce().then(()=>{const R2=ptDrunMem();if(R2&&R2.shared.room===r.id&&!R2.done)ptDrunAbort('파티장이 던전 탐사를 끝냈습니다.');});return;}
+    if(!S.battle)ptRoomGone('파티가 해산되었습니다.');return;}
   if(S.party&&S.party.roomId===r.id&&!S.battle){S.party=ptPartyFrom(r,S.party);save();ptRedraw();}
   if(r.status==='battle'&&r.leader!==SB_UID&&!ptBattle())ptRefreshStateOnce();
 }
@@ -911,13 +916,19 @@ function ptSnapshot(b){
 }
 function ptPushSoon(){const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=setTimeout(()=>ptPush(),500);}
 async function ptPush(){
-  const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=null;
+  const R=ptDrunHost(),b=ptBattle();if(!R&&!ptHost(b))return;if(R&&R.closed)return;clearTimeout(PT.pushT);PT.pushT=null;
   if(PT.pushing){PT.again=true;return;}PT.pushing=true;
-  try{b.srev=(b.srev||0)+1;await ptRpc('party_push',{p_room:b.shared.room,p_state:ptSnapshot(b),p_rev:b.srev,p_over:!!b.over});}
+  try{
+    if(R){const withB=ptHost(b)&&b.shared.room===R.shared.room;
+      const st=withB?ptSnapshot(b):{shared:{room:R.shared.room,host:SB_UID},nob:true,hostName:S.me.name};
+      st.drun=ptDrunPayload(R);R.srev=(R.srev||0)+1;const over=!!R.done;
+      await ptRpc('party_push',{p_room:R.shared.room,p_state:st,p_rev:R.srev,p_over:over});if(over){R.closed=true;save();}}
+    else{b.srev=(b.srev||0)+1;await ptRpc('party_push',{p_room:b.shared.room,p_state:ptSnapshot(b),p_rev:b.srev,p_over:!!b.over});}}
   catch(e){console.warn(e);}
   finally{PT.pushing=false;if(PT.again){PT.again=false;ptPush();}}
 }
 function ptApplyAct(row){
+  if(row.turn===-1){ptDrunHpAct(row);return;}
   const b=ptBattle();if(!ptHost(b)||b.over||row.turn!==b.turn)return;
   const f=b.players.find(p=>p.uid===row.uid&&!p.isMe);if(!f||f.dead)return;
   if(!row.action){f.action=null;f.action2=null;f.confirmed=false;b.allAt=null;}
@@ -933,6 +944,7 @@ function ptApplyState(state,rev){
   if(!state||!S.me)return;
   if(rev!=null&&rev<=PT.rev)return;if(rev!=null)PT.rev=rev;PT.lastState=now();
   if(state.shared&&state.shared.host===SB_UID)return;   // 내가 파티장이면 내 화면이 원본
+  if(state.drun){if((state.shared||{}).room===PT.chRoom)ptApplyDrunState(state);return;}
   const prev=S.battle&&S.battle.shared&&S.battle.shared.room===(state.shared||{}).room?S.battle:null;
   if(S.battle&&!prev&&!S.battle.over)return;            // 다른 전투 중
   const rid=(state.shared||{}).room;if(!rid||rid!==PT.chRoom)return;
@@ -1024,7 +1036,8 @@ function ptLoop(){
     else{b.players.forEach(f=>{if(!f.isMe)f.planAt=Infinity;});
       const limit=(b.rules.turnSeconds||30)*1000+45000;if(now()-PT.lastState>limit)ptAbort('파티장과 연결이 끊겨 전투가 끝났습니다.');}
   }
-  if(PT.chRoom&&!(S.party&&S.party.roomId===PT.chRoom)&&!(b&&b.shared.room===PT.chRoom&&!b.over))ptUnsub();
+  const R=ptDrun();if(R&&!R.done&&PT.chRoom!==R.shared.room&&!(b&&!b.over))ptSubscribe(R.shared.room);
+  if(PT.chRoom&&!(S.party&&S.party.roomId===PT.chRoom)&&!(b&&b.shared.room===PT.chRoom&&!b.over)&&!(R&&!R.done&&R.shared.room===PT.chRoom))ptUnsub();
 }
 async function ptStart(){
   ptFetchRooms();
@@ -1034,8 +1047,128 @@ async function ptStart(){
   const b=ptBattle();
   if(S.party&&S.party.shared)ptSubscribe(S.party.roomId);
   else if(b&&!b.over)ptSubscribe(b.shared.room);
+  else if(ptDrun()&&!ptDrun().done){ptSubscribe(ptDrun().shared.room);if(ptDrunHost())ptPush();}
   if(b&&!b.over&&ptHost(b)){b.players.forEach(f=>{if(f.real&&!f.isMe&&!f.confirmed)f.planAt=Infinity;});ptPush();}
 }
+
+// 실제 블레서 전투원: 방 사람의 card(장비·강화·보너스·체력)를 거른 뒤 그 사람 전투원으로 바꿔 끼움
+function ptRealFighters(b,list,hpOf){
+  b.players.forEach((f,i)=>{
+    if(f.isMe){f.uid=SB_UID;return;}
+    const rm=(list||[]).find(x=>x.name===f.name&&x.uid&&x.uid!==SB_UID);if(!rm)return;
+    const job=isClass(rm.job)?rm.job:f.job,lv=Math.max(1,Math.min(99,Math.round(+rm.level||f.level||1)));
+    const c=ptSanCard(rm.card,job,lv);const nf=makeFighter({id:f.id,name:f.name,job,level:lv,equip:c.equip,enh:c.enh});
+    const bo=c.bonus||{};['maxHp','atk','def','luk'].forEach(k=>{const v=+bo[k]||0;if(v)nf[k]+=v;});
+    const h=hpOf?hpOf(rm.uid,c.hp):c.hp;
+    nf.hp=Math.max(1,Math.round(nf.maxHp*Math.min(1,Math.max(0.05,+h||0.05))));nf.uid=rm.uid;nf.real=true;nf.planAt=Infinity;b.players[i]=nf;});
+}
+
+// ── 던전 파티(5페이즈) ──
+// S.drun.shared={room,host}. 파티장: R.hps(블레서별 남은 체력)·R.cards를 들고 진행. 파티원: 받은 진행을 따라가고 보상은 자기 게임 규칙으로.
+const ptDrun=()=>{const R=S&&S.drun;return R&&R.shared&&R.shared.room?R:null;};
+const ptDrunHost=()=>{const R=ptDrun();return R&&R.shared.host===SB_UID?R:null;};
+const ptDrunMem=()=>{const R=ptDrun();return R&&R.shared.host!==SB_UID?R:null;};
+const PT_DR_MOB_ART=['beast','spirit','golem'];
+function ptPhasesOk(a){return Array.isArray(a)&&a.length===5&&a[4]==='boss'&&a.slice(0,4).every(x=>['monster','chest','trap','empty'].includes(x))&&a.slice(0,4).filter(x=>x==='monster').length===2;}
+function ptDrunPayload(R){const hp={...(R.hps||{})};hp[SB_UID]=R.hp;
+  return {mid:R.mid,phases:R.phases,idx:R.idx,done:R.done||null,last:String(R.last||'').slice(0,160),hp,
+    party:(R.party||[]).map(x=>({name:x.name,job:x.job,level:x.level,uid:x.uid||null}))};}
+function ptStartDrun(p){
+  const room=PT.room&&PT.room.id===p.roomId?PT.room:null;
+  _ptStartBattle();const R=S.drun;if(!R||R.mid!==p.monsterId)return;
+  R.party.forEach(x=>{if(x.isMe){x.uid=SB_UID;return;}const rm=room&&(room.members||[]).find(y=>y.name===x.name&&y.uid!==SB_UID);if(rm)x.uid=rm.uid;});
+  R.cards={};R.hps={};
+  ((room&&room.members)||[]).forEach(rm=>{if(rm.uid===SB_UID)return;const job=isClass(rm.job)?rm.job:'defender',lv=Math.max(1,Math.min(99,Math.round(+rm.level||1)));
+    const c=ptSanCard(rm.card,job,lv);R.cards[rm.uid]={name:rm.name,job,level:lv,card:c};R.hps[rm.uid]=c.hp;});
+  R.shared={room:p.roomId,host:SB_UID};R.srev=0;
+  ptRpc('party_start',{p_room:p.roomId}).then(()=>ptPush()).catch(err=>{console.warn(err);toast('파티원에게 던전 입장을 알리지 못했습니다.','warn');});
+  save();if(S.route==='battle')render();
+}
+// 파티장: 파티원이 던전 사이에 회복약을 마심 → 그 사람 체력(한 번에 최대 +60%까지만 인정)
+function ptDrunHpAct(row){
+  const R=ptDrunHost();if(!R||R.done||row.room_id!==R.shared.room||!row.action||!R.hps||R.hps[row.uid]==null)return;
+  if(S.battle&&!S.battle.over&&S.battle.shared&&S.battle.shared.room===R.shared.room)return;
+  const v=+row.action.hp,o=R.hps[row.uid];if(!(v>o))return;
+  R.hps[row.uid]=Math.min(1,o+0.6,v);save();ptPush();
+}
+// 파티원: 보물상자는 내 화면에서 따로 연다(05-features drunEvent와 같은 규칙)
+function ptDrunChest(R,boss){
+  const L=boss.level;const g=Math.round(20+L*3+Math.random()*L*2);const it={};let line=`${g}골드`;
+  if(Math.random()<0.4&&(boss.loot||[]).length){const x=pickLoot(boss);it[x]=1;line+=` · ${ITEMS[x]?ITEMS[x].name:x}`;}else if(Math.random()<0.5){it.potion=1;line+=' · 회복약';}
+  grant({exp:0,gold:g,items:it},'dungeon',{label:boss.region+' 보물상자',region:boss.region,noRec:1});
+  const text=`낡은 보물상자를 열었다 · ${line}`;R.log.push(`${R.idx+1}페이즈 · 보물상자 · ${text}`);rec('dungeon',`${boss.region} ${R.idx+1}페이즈 · ${text}`);R.last=text;
+}
+// 파티원: 받은 페이즈 전투의 보상·진행 값을 내 게임 기준으로
+function ptTrustDrun(b,boss,rid,R,ph){
+  const ts=Math.min(120,Math.max(5,+((b.rules||{}).turnSeconds)||cfg().turnSeconds));
+  const k=R.phases[ph];const ok=ph===R.idx&&!R.done&&(k==='monster'||k==='boss');
+  b.id='PT'+rid+':'+ph;b.mon=b.mon&&typeof b.mon==='object'?b.mon:{};
+  if(k==='boss'){const tg=dtg(boss.id),RW=dungeonReward(boss,tg);b.monsterId=boss.id;b.rules={exp:RW.exp,gold:RW.gold,drops:RW.drops,turnSeconds:ts};
+    b.ctx={type:'dungeon',target:tg,drun:true,hpPct:R.hp};b.mon.name=boss.name;b.mon.art=boss.art;}
+  else{const L=boss.level;b.monsterId='drun_'+boss.id+'_'+ph;b.rules={exp:Math.round(10+L*3),gold:Math.round(5+L),drops:[],turnSeconds:ts};
+    b.ctx={type:'drun',drun:true,hpPct:R.hp};b.mon.name=DRUN_MOBS.includes(b.mon.name)?b.mon.name:'던전 몬스터';b.mon.art=PT_DR_MOB_ART.includes(b.mon.art)?b.mon.art:'beast';}
+  b.mon.region=boss.region;
+  if(!ok){b.rules.exp=0;b.rules.gold=0;b.rules.drops=[];b.ctx={type:'drun'};}
+  delete b.eventBonus;delete b.reward;delete b.bless;delete b.grid;
+  b.over=b.over==='win'||b.over==='lose'?b.over:null;
+  b.players.forEach(p=>{p.direct=Math.max(0,Math.min(999,+p.direct||0));});
+}
+function ptApplyDrunState(state){
+  const D=state.drun,rid=state.shared.room;
+  const mid=(PT.room&&PT.room.id===rid&&PT.room.monster_id)||(S.party&&S.party.roomId===rid&&S.party.monsterId)||(ptDrun()&&ptDrun().shared.room===rid&&ptDrun().mid);
+  const boss=monster(mid);if(!boss||mkind(boss)!=='dungeon'||!D||typeof D!=='object')return;
+  let R=ptDrun(),fresh=false;
+  if(R&&R.shared.room!==rid)return;
+  if(!R){
+    if(S.drun||(S.battle&&!S.battle.over)||D.done||!ptPhasesOk(D.phases))return;
+    R=S.drun={mid:boss.id,phases:D.phases.slice(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now(),party:[],shared:{room:rid,host:state.shared.host}};
+    S.party=null;S.sel.monster=null;S.route='battle';fresh=true;
+    toast(`${boss.region} 입장 · 파티장 ${String(state.hostName||'').slice(0,16)}의 화면에서 진행됩니다`,'good');
+  }
+  if(Array.isArray(D.party))R.party=D.party.slice(0,8).map(x=>({name:String((x&&x.name)||'').slice(0,16),job:isClass(x&&x.job)?x.job:'defender',level:Math.max(1,Math.min(99,Math.round(+(x&&x.level)||1))),uid:(x&&x.uid)||null,isMe:!!x&&x.uid===SB_UID}));
+  // 1) 페이즈 전투
+  let first=false;
+  if(!state.nob&&Array.isArray(state.players)&&state.mon){
+    const ph=Math.floor(+state.shared.ph);
+    const prev=S.battle&&S.battle.shared&&S.battle.shared.room===rid&&S.battle.shared.ph===ph?S.battle:null;
+    const id='PT'+rid+':'+ph;
+    if(Number.isInteger(ph)&&(prev||!(S.battle&&!S.battle.over))&&!(!prev&&(ph<R.idx||S.claimedB[id]))){
+      const b=JSON.parse(JSON.stringify(state));delete b.drun;delete b.nob;
+      ptTrustDrun(b,boss,rid,R,ph);
+      b.players.forEach(p=>{p.isMe=p.uid===SB_UID;if(!p.isMe)p.planAt=Infinity;});
+      const me=b.players.find(p=>p.isMe);
+      if(me){
+        if(PT.sent&&PT.sent.turn===b.turn&&PT.sent.room===rid&&!me.confirmed&&PT.sent.action){me.action=PT.sent.action.action;me.action2=PT.sent.action.action2||null;me.confirmed=true;}
+        b.deadline=now()+(+state.deadlineIn||0);b.allAt=null;delete b.deadlineIn;
+        first=!prev;const newTurn=!prev||prev.turn!==b.turn;
+        if(prev&&prev.result)b.result=prev.result;
+        S.battle=b;if(first){S.route='battle';toast(`${R.idx+1}페이즈 · ${b.mon.name} · 파티 전투`,'good');}
+        if(newTurn)resetAct();
+        if(b.over&&!S.claimedB[b.id])finishBattle(b);
+      }
+    }
+  }
+  // 2) 진행(전투 결과를 받은 뒤): 지나간 페이즈 따라가기 · 체력 · 끝
+  const busy=S.battle&&!S.battle.over&&S.battle.shared&&S.battle.shared.room===rid;
+  const to=Math.max(R.idx,Math.min(R.phases.length,Math.floor(+D.idx||0)));
+  while(!R.done&&R.idx<to){const k=R.phases[R.idx];
+    if(k==='chest')ptDrunChest(R,boss);
+    else if(k==='trap'||k==='empty'){R.last=String(D.last||'').slice(0,160);R.log.push(`${R.idx+1}페이즈 · ${DRUN_KIND[k][0]} · ${R.last}`);}
+    else R.log.push(`${R.idx+1}페이즈 · ${DRUN_KIND[k][0]} · 파티가 지나감`);
+    R.idx++;}
+  if(!busy){const h=+((D.hp||{})[SB_UID]);if(h>0)R.hp=Math.max(0.05,Math.min(1,h));}
+  if(D.done&&!R.done&&!busy){R.done=D.done==='win'&&R.idx>=R.phases.length?'win':'lose';if(D.done==='quit')R.quitBy='파티장이 던전 탐사를 포기했습니다.';}
+  if(R.done)ptUnsub();
+  save();
+  if(S.route==='battle'){if(fresh||first||!S.battle)render();else renderFight();}else renderTop();
+}
+function ptDrunAbort(text){
+  const R=ptDrunMem();if(!R)return;
+  const b=ptBattle();if(b&&!b.over)ptAbort(text);
+  if(!R.done){R.done='lose';}R.quitBy=text;save();ptUnsub();
+  if(S.route==='battle'&&!S.battle)render();notify(text,'warn');
+}
+let _ptStartBattle=null;
 
 if(ONLINE){
   // 아이템 사용: 공유 전투에서 '나'의 전투원 id는 'me'가 아닐 수 있음. 파티장 화면은 파티원 아이템을 믿고(각자 차감) 처리
@@ -1048,7 +1181,7 @@ if(ONLINE){
   const _roleCounts=roleCounts;
   roleCounts=function(r){if(!r.real)return _roleCounts(r);const c={tank:0,dps:0,heal:0};r.people.forEach(x=>c[roleOf(x.job)]++);return c;};
   const _joinReason=joinReason;
-  joinReason=function(r){if(!r.real)return _joinReason(r);const m=monster(r.monsterId);if(!m)return '몬스터 정보가 없습니다';const lr=levelReason(m,S.me.level)||raidBlock(m);if(lr)return lr;return slotReason(m,r.people,roleOf(S.me.job),r.target);};
+  joinReason=function(r){if(!r.real)return _joinReason(r);const m=monster(r.monsterId);if(!m)return '몬스터 정보가 없습니다';const lr=levelReason(m,S.me.level)||raidBlock(m);if(lr)return lr;if(mkind(m)==='dungeon'&&daily().dungeon[m.id])return '오늘은 이미 클리어했습니다';return slotReason(m,r.people,roleOf(S.me.job),r.target);};
   const _rmemHTML=rmemHTML;
   rmemHTML=function(r){if(!r.real)return _rmemHTML(r);const m=monster(r.monsterId);
     return `<div class="rmenu" role="menu" aria-label="${esc(r.name)} 참가 인원"><div class="rm-head"><b>${esc(r.name)}</b><span class="num faint">${r.people.length}/${r.target}</span></div>
@@ -1102,20 +1235,14 @@ if(ONLINE){
   ACTS.setvis=(d,el,e)=>{_setvis(d,el,e);PT.setSig='';};
 
   // 출발: 파티장만. 파티원 화면은 파티장의 전투 상태를 기다린다
-  const _startBattle=startBattle;
+  const _startBattle=startBattle;_ptStartBattle=_startBattle;
   startBattle=function(){
     const p=S.party;
     if(!SB_UID||!p||!p.shared)return _startBattle();
     if(p.leaderUid!==SB_UID)return;
+    if(mkind(monster(p.monsterId))==='dungeon')return ptStartDrun(p);
     _startBattle();const b=S.battle;if(!b)return;
-    const room=PT.room;
-    b.players.forEach((f,i)=>{
-      if(f.isMe){f.uid=SB_UID;return;}
-      const rm=room&&(room.members||[]).find(x=>x.name===f.name&&x.uid!==SB_UID);if(!rm)return;
-      const job=isClass(rm.job)?rm.job:f.job,lv=Math.max(1,Math.min(99,Math.round(+rm.level||f.level||1)));
-      const c=ptSanCard(rm.card,job,lv);const nf=makeFighter({id:f.id,name:f.name,job,level:lv,equip:c.equip,enh:c.enh});
-      const bo=c.bonus||{};['maxHp','atk','def','luk'].forEach(k=>{const v=+bo[k]||0;if(v)nf[k]+=v;});
-      nf.hp=Math.max(1,Math.round(nf.maxHp*Math.min(1,Math.max(0.05,+c.hp||1))));nf.uid=rm.uid;nf.real=true;nf.planAt=Infinity;b.players[i]=nf;});
+    ptRealFighters(b,(PT.room&&PT.room.members)||[],null);
     b.shared={room:p.roomId,host:SB_UID};b.srev=0;
     ptRpc('party_start',{p_room:p.roomId}).then(()=>ptPush()).catch(err=>{console.warn(err);toast('파티원에게 전투 시작을 알리지 못했습니다.','warn');});
     save();if(S.route==='battle')render();
@@ -1140,4 +1267,51 @@ if(ONLINE){
   };
   const _botSay=botSay;
   botSay=function(ch,name,text){if(ch==='party'&&S.party&&S.party.shared){const x=S.party.members.find(m=>m.name===name);if(!x||x.real)return;}return _botSay(ch,name,text);};
+
+  // 던전 파티: 파티장이 진행(전투·이벤트), 파티원은 따라감
+  const _drunStartBattle=drunStartBattle;
+  drunStartBattle=function(){
+    const R=ptDrunHost();if(!R)return _drunStartBattle();
+    if(PT.room&&PT.room.id===R.shared.room){const inRoom=new Set((PT.room.members||[]).map(x=>x.uid));R.party=R.party.filter(x=>x.isMe||!x.uid||inRoom.has(x.uid));}
+    _drunStartBattle();const b=S.battle;if(!b||b.solo||!b.ctx||!b.ctx.drun){ptPush();return;}
+    ptRealFighters(b,Object.entries(R.cards||{}).map(([uid,c])=>({uid,name:c.name,job:c.job,level:c.level,card:c.card})),uid=>R.hps[uid]);
+    b.shared={room:R.shared.room,host:SB_UID,ph:R.idx};b.srev=0;
+    save();ptPush();if(S.route==='battle')render();
+  };
+  const _drunAfter=drunAfter;
+  drunAfter=function(b,me){
+    const R=ptDrun();
+    if(R&&b.shared&&b.shared.room===R.shared.room){
+      if(R.shared.host!==SB_UID){if(b.shared.ph!==R.idx)return;return _drunAfter(b,me);}
+      _drunAfter(b,me);
+      b.players.forEach(f=>{if(f.uid&&f.uid!==SB_UID&&R.hps&&R.hps[f.uid]!=null)R.hps[f.uid]=Math.max(0.05,(f.dead?0:f.hp)/f.maxHp);});
+      save();ptPush();return;
+    }
+    return _drunAfter(b,me);
+  };
+  const _drunEvent=drunEvent;
+  drunEvent=function(){
+    const R=ptDrunHost();if(!R)return _drunEvent();
+    const k=R.phases[R.idx],before=R.hp;_drunEvent();
+    const d=R.hp-before;if(d&&(k==='trap'||k==='empty'))for(const u in R.hps)R.hps[u]=Math.min(1,Math.max(k==='trap'?0.1:0.05,R.hps[u]+d));
+    save();ptPush();
+  };
+  const _drNext=ACTS['drun-next'];
+  ACTS['drun-next']=(d,el,e)=>{if(ptDrunMem()){toast('던전 진행은 파티장이 합니다.');return;}return _drNext(d,el,e);};
+  const ptDrunLeave=(host)=>{const R=ptDrun();if(!R)return;const rid=R.shared.room;
+    if(host&&!R.done&&!R.closed){R.done='quit';R.srev=(R.srev||0)+1;R.closed=true;
+      ptRpc('party_push',{p_room:rid,p_state:{shared:{room:rid,host:SB_UID},nob:true,hostName:S.me.name,drun:ptDrunPayload(R)},p_rev:R.srev,p_over:true}).catch(err=>console.warn(err));}
+    else ptRpc('party_leave',{p_room:rid}).catch(()=>{});
+    ptUnsub();};
+  ['drun-quit','drun-exit'].forEach(k=>{const _f=ACTS[k];ACTS[k]=(d,el,e)=>{const R=ptDrun();if(R)ptDrunLeave(R.shared.host===SB_UID);return _f(d,el,e);};});
+  const _drPot=ACTS['dr-potion'];
+  ACTS['dr-potion']=(d,el,e)=>{const R=ptDrunMem(),h0=R&&R.hp;const r=_drPot(d,el,e);
+    if(R&&S.drun===R&&R.hp>h0&&!R.done)ptRpc('party_act',{p_room:R.shared.room,p_turn:-1,p_action:{hp:Math.round(R.hp*1000)/1000}}).catch(err=>console.warn(err));return r;};
+  const _vDrun=vDrun;
+  vDrun=function(){
+    let h=_vDrun();const R=ptDrun();if(!R)return h;
+    if(R.shared.host!==SB_UID&&!R.done)h=h.replace(/<button class="btn btn-sm btn-primary" data-act="drun-next">[^<]*<\/button>/,'<span class="faint dr-wait">파티장이 진행합니다</span>');
+    if(R.done==='lose'&&R.quitBy)h=h.replace(/(<div class="dr-card lose"><h3>)[^<]*(<\/h3><p>)[^<]*/,`$1탐사 종료$2${esc(R.quitBy)} 오늘 클리어 기록은 남지 않았으니 다시 도전할 수 있습니다.`);
+    return h;
+  };
 }

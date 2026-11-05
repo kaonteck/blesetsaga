@@ -1,4 +1,4 @@
-# 파티 레이드 공유(019) 두 플레이어 브라우저 테스트
+# 파티 레이드·던전 파티 공유(019·022) 두 플레이어 브라우저 테스트
 # python3 -m http.server 8765 (저장소 맨 위) → python3 supabase/tests/game-party/test_party.py
 from playwright.sync_api import sync_playwright
 import os; SP=os.path.dirname(os.path.abspath(__file__)); OUT=os.environ.get('SHOTS','/tmp')
@@ -108,12 +108,69 @@ with sync_playwright() as p:
     bp.evaluate(f"ACTS.joinrecruit({{id:'room:{rid2}'}})");bp.wait_for_timeout(900)
     ok(bp.evaluate("!!(S.party&&S.party.shared)"),'초대받은 블레서는 초대 전용 방에 참가')
     bp.evaluate("ACTS.leaveparty()");a.evaluate("ACTS.leaveparty()");a.wait_for_timeout(500)
-    # 9) 던전 파티는 이 기기 안에서만 · 봇 파티 참가는 예전처럼
-    did=a.evaluate("(S.data.monsters.find(m=>mkind(m)==='dungeon'&&levelOk(m,12))||{}).id")
-    if did:
-        n0=len(db()['party_rooms']);a.evaluate(f"ACTS.createparty({{id:'{did}'}})");a.wait_for_timeout(600)
-        ok(a.evaluate("!!S.party&&!S.party.shared") and len(db()['party_rooms'])==n0,'던전 파티는 서버 방을 만들지 않음')
-        a.evaluate("ACTS.leaveparty()");a.wait_for_timeout(200)
+    # 9) 던전 파티(5페이즈) — 실제 블레서끼리
+    did=a.evaluate("(S.data.monsters.find(m=>mkind(m)==='dungeon'&&m.published!==false&&levelOk(m,12)&&!raidBlock(m))||{}).id")
+    ok(bool(did),f'던전 {did}')
+    def drun_room(): return [r for r in db()['party_rooms'] if r['monster_id']==did][-1]
+    def drun_party():
+        a.evaluate("daily().dungeon={};S.me.hpPct=1;save()");bp.evaluate("daily().dungeon={};S.me.hpPct=1;save()")
+        a.evaluate(f"go('battle',{{monster:'{did}'}});ACTS.createparty({{id:'{did}'}})");a.wait_for_timeout(800)
+        r=drun_room();bp.evaluate("ptFetchRooms()");bp.wait_for_timeout(500)
+        bp.evaluate(f"ACTS.joinrecruit({{id:'room:{r['id']}'}})");bp.wait_for_timeout(800)
+        bp.evaluate("ACTS.ready()");bp.wait_for_timeout(600)
+        wait(a,"S.party.members.some(x=>x.name==='하늘별'&&x.ready)")
+        a.evaluate("ACTS['merc-fill']&&ACTS['merc-fill']()");a.wait_for_timeout(1200);a.evaluate("ACTS.ready()");a.wait_for_timeout(300)
+        a.evaluate("ACTS.depart()");a.wait_for_timeout(1000)
+        return r['id']
+    drid=drun_party()
+    ok(drun_room()['status']=='battle' and a.evaluate("!!(S.drun&&S.drun.shared&&S.drun.shared.host)") ,'던전 파티도 서버 방 → 출발하면 공유 탐사')
+    ok(wait(bp,"!!(S.drun&&S.drun.shared)",10000),'파티원 화면에도 같은 던전 탐사가 열림')
+    ok(bp.evaluate("JSON.stringify(S.drun.phases)")==a.evaluate("JSON.stringify(S.drun.phases)"),'페이즈 구성이 같음')
+    ok('파티장이 진행합니다' in bp.evaluate("vDrun()") and 'data-act="drun-next">' not in bp.evaluate("vDrun()").split('dr-card')[1][:600],'파티원 화면은 진행 버튼 대신 안내')
+    i0=bp.evaluate("S.drun.idx");bp.evaluate("ACTS['drun-next']()");bp.wait_for_timeout(300)
+    ok(bp.evaluate("S.drun.idx")==i0 and not bp.evaluate("!!S.battle"),'파티원은 혼자 진행할 수 없음')
+    g0=bp.evaluate("S.me.gold");boss_gold=bp.evaluate(f"dungeonReward(monster('{did}'),'exp').gold");mob_gold=bp.evaluate(f"Math.round(5+monster('{did}').level)")
+    battles=0;chests=0;potion_ok=None
+    for step in range(5):
+        k=a.evaluate("S.drun.phases[S.drun.idx]");idx=a.evaluate("S.drun.idx")
+        if k in ('monster','boss'):
+            a.evaluate("ACTS['drun-next']()");a.wait_for_timeout(500)
+            okb=wait(bp,f"!!(S.battle&&S.battle.shared&&S.battle.shared.ph==={idx}&&!S.battle.over)",10000)
+            if not okb: ok(False,f'{idx+1}페이즈 전투가 파티원에게 열림');break
+            if k=='boss': a.evaluate("S.battle.rules.gold=99999999;S.battle.rules.exp=99999999;S.battle.rules.drops=[['g8_gsword',1]];S.battle.ctx.qid='E1';S.battle.ctx.type='dungeon';")
+            a.evaluate("S.battle.mon.hp=1")
+            bp.evaluate("resetAct();ACTS.confirmact()");wait(a,"S.battle.players.find(p=>p.name==='하늘별').confirmed===true")
+            a.evaluate("S.battle.players.forEach(p=>{if(!p.real&&!p.isMe)p.planAt=0;});resetAct();ACTS.confirmact()")
+            w1=wait(a,"S.battle.over==='win'",12000);w2=wait(bp,f"S.battle&&S.battle.shared.ph==={idx}&&S.battle.over==='win'",10000)
+            if not(w1 and w2): ok(False,f'{idx+1}페이즈 전투 승리(둘 다)');break
+            battles+=1
+            wait(bp,f"S.drun.idx>{idx}",6000)
+            bp.evaluate("leaveBattle()");a.evaluate("leaveBattle()");a.wait_for_timeout(300)
+        else:
+            if potion_ok is None:
+                bp.evaluate("S.drun.hp=0.3;S.me.inv.potion=(S.me.inv.potion||0)+1;ACTS['dr-potion']()")
+                potion_ok=wait(a,f"S.drun.hps['{B}']>0.3",5000)
+            if k=='chest': chests+=1
+            a.evaluate("ACTS['drun-next']()")
+            if not wait(bp,f"S.drun.idx>{idx}",6000): ok(False,f'{idx+1}페이즈 이벤트가 파티원에게 전달');break
+    ok(battles==3,f'몬스터 2 · 보스 1 페이즈 전투를 함께 진행({battles}번)')
+    if potion_ok is not None: ok(potion_ok,'파티원이 던전 사이에 마신 회복약이 파티장 화면 체력에 반영')
+    dw=wait(bp,"S.drun&&S.drun.done==='win'",6000) and a.evaluate("S.drun.done==='win'")
+    ok(dw,'둘 다 던전 공략 완료')
+    ok(bp.evaluate(f"!!daily().dungeon['{did}']"),'파티원도 오늘 클리어 기록')
+    dg=bp.evaluate("S.me.gold")-g0
+    ok(dg>=boss_gold+2*mob_gold and dg<=boss_gold+2*mob_gold+chests*400 and not bp.evaluate("!!S.me.inv.g8_gsword") and bp.evaluate("S.me.level")<=14,f'파티원 보상은 내 게임 규칙(골드 +{dg}: 보스 {boss_gold}·몬스터 {mob_gold}×2·상자 {chests}) — 파티장이 조작한 1억 골드·LV80 무기 무시')
+    ok(drun_room()['status']=='closed','탐사가 끝나면 방 닫힘')
+    bp.evaluate("ACTS['drun-exit']()");a.evaluate("ACTS['drun-exit']()");a.wait_for_timeout(300)
+    ok(bp.evaluate("!S.drun&&!S.party") and a.evaluate("!S.drun&&!S.party"),'던전 나가기 → 둘 다 정리')
+    # 9b) 파티장이 포기하면 파티원 탐사도 끝남
+    drun_party()
+    ok(wait(bp,"!!(S.drun&&S.drun.shared)",10000),'두 번째 던전 파티 입장')
+    a.evaluate("ACTS['drun-quit']()");a.wait_for_timeout(500)
+    ok(wait(bp,"S.drun&&S.drun.done==='lose'&&!!S.drun.quitBy",8000) and '탐사 종료' in bp.evaluate("vDrun()"),'파티장이 포기 → 파티원 화면 "탐사 종료"')
+    ok(drun_room()['status']=='closed','포기하면 방 닫힘')
+    bp.evaluate("ACTS['drun-exit']()");bp.wait_for_timeout(200)
+    bp.screenshot(path=OUT+'/party-drun.png')
     bot_r=bp.evaluate("(()=>{const m=S.data.monsters.find(x=>mkind(x)==='party'&&x.published&&levelOk(x,12));let r=null;for(let i=0;i<40;i++){const x=genRecruit(m);if(x&&!joinReason(x)){r=x;break;}}if(!r)return null;S.recruits.push(r);return r.id;})()")
     if bot_r:
         bp.evaluate(f"ACTS.joinrecruit({{id:'{bot_r}'}})");bp.wait_for_timeout(400)
