@@ -999,7 +999,8 @@ function ptTrust(b,m,rid){
     b.players.forEach(p=>{p.direct=Math.max(0,Math.min(999,+p.direct||0));});return;}
   b.id='PT'+rid;b.monsterId=m.id;
   b.rules={exp:m.exp,gold:m.gold,drops:(m.drops||[]).map(d=>d.slice()),turnSeconds:ts};
-  b.ctx={type:mkind(m)};delete b.eventBonus;delete b.reward;delete b.bless;delete b.grid;
+  b.ctx={type:mkind(m)};delete b.eventBonus;delete b.reward;delete b.bless;
+  if(m.gridRaid){b.grid=true;b.endsAt=now()+Math.max(0,Math.min(3600000,+b.endsIn||0))+60000;delete b.endsIn;}else delete b.grid;   // 8장 보스 토벌(그리드)
   const ev=eventFor(m.id);if(ev){b.ctx.ev=ev.id;b.rules.exp=Math.round(b.rules.exp*1.5);b.rules.gold=Math.round(b.rules.gold*1.5);b.eventBonus=ev.title;}
   b.mon.name=m.name;b.mon.art=m.art;b.mon.region=m.region;
   b.over=b.over==='win'||b.over==='lose'?b.over:null;
@@ -1435,7 +1436,7 @@ if(ONLINE){
   const _massJoin=ACTS['mass-join'];
   ACTS['mass-join']=(d,el,e)=>{
     const M=mtShared();if(!M)return _massJoin(d,el,e);
-    const m=monster(M.monsterId);const why=busyReason()||levelReason(m,S.me.level)||(M.roster.length>=M.target?'정원이 찼습니다':'');if(why){toast(why,'warn');return;}
+    const m=monster(M.monsterId);const why=busyReason()||levelReason(m,S.me.level)||(m&&m.id==='guardian'&&typeof summusLock==='function'?summusLock():'')||(M.roster.length>=M.target?'정원이 찼습니다':'');   // 숨무스 만신전: 8장 완료자만(메인 2026-11-05)if(why){toast(why,'warn');return;}
     if(typeof entryGate==='function'&&entryGate('mass-join',d,true))return;
     ptRpcCard('mass_join',{p_room:M.shared.room,p_card:ptCard()}).then(r=>{PT.room=r;mtApply(r);ptSubscribe(r.id);toast('만신전 원정대에 참가했습니다.','good');})
       .catch(err=>{toast(/FULL/.test(err&&err.message||'')?'정원이 찼습니다.':/NOT_GATHER/.test(err&&err.message||'')?'집결이 끝났습니다.':ptErr(err),'warn');mtFetch();});

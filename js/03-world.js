@@ -214,7 +214,7 @@ function vBattle(){
     const wm=ms.filter(m=>mkind(m)==='weekly'&&!weeklyClosed(m));
     body=`${cntRow([['이번 주 토벌',`${wm.filter(m=>w.done[m.id]).length} / ${wm.length}`,'보상 주 1회'],['초기화','월 05:00','매주']])}
       <div class="mgrid">${wm.map(m=>monCard(m,`<span class="chip ${w.done[m.id]?'dim':'ok'}">${w.done[m.id]?'이번 주 보상 수령 완료':'이번 주 보상 받을 수 있음'}</span>`)).join('')||'<p class="empty">등록된 토벌전이 없습니다.</p>'}</div>
-      ${wm.every(m=>m.raid4)?'':`<div class="panel"><h3>모집 중인 토벌대</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='weekly'),true)}</div></div>`}`;
+      ${`<div class="panel"><h3>모집 중인 토벌대</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='weekly'),true)}</div></div>`}`;
   }else{
     body=massPanel();
   }
@@ -461,7 +461,7 @@ function massPanel(){
     <p class="faint" style="font-size:12px;margin-top:8px">퀘스트 이름 · 몬스터 스탯 · AOE · 보상은 운영 › 만신전 탭에서 설정합니다.</p></div>`:'';
   if(!M)return `<div class="panel"><p class="empty">지금 출현한 만신전 보스가 없습니다. 보스가 나타나면 전광판과 알림으로 알려 드립니다.</p></div>${rules}${admin}`;
   const m=monster(M.monsterId);const ev=massEv();const c=massRoles(M);const need=massNeed(M);const meIn=M.roster.some(x=>x.isMe);const busy=busyReason();
-  const lr=m?levelReason(m,S.me.level):'';const leader=M.leader;const iLead=leader===S.me.name;
+  const lr=m?levelReason(m,S.me.level)||(m.id==='guardian'?summusLock():''):'';const leader=M.leader;const iLead=leader===S.me.name;
   const left=ev?Math.max(0,ev.until-now()):0;
   return `<div class="panel mass-card"><div class="boss"><pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:8px">
       <div class="row" style="gap:6px"><span class="chip warn">만신전</span><span class="chip">${esc(ev?ev.loc:'')}</span><span class="chip num">집결 마감 ${fmtDur(left)}</span></div>
@@ -472,7 +472,7 @@ function massPanel(){
       <div class="row">${meIn?`<button class="btn" data-act="mass-leave">집결 취소</button>${iLead&&massReady(M)?'<button class="btn btn-primary" data-act="mass-go">지금 출발</button>':''}`
         :`<button class="btn btn-primary" data-act="mass-join" ${lr||(busy&&!meIn)||M.roster.length>=C.maxPlayers?'disabled':''}>원정대 참가</button>${lr?`<span class="reason">${esc(lr)}</span>`:busy?`<span class="reason">${esc(busy)}</span>`:''}`}</div>
     </div></div>
-    ${meIn?`<div style="margin-top:14px">${chatPanel({lock:'raid'})}</div>`:''}<div class="mass-roster">${M.roster.map(x=>`<span class="mr ${roleOf(x.job)} ${x.isMe?'me':''}">${x.name===leader?'<b title="공대장">★</b>':''}${esc(x.name)}<small>${CLASSES[x.job].name} · LV${x.level}</small></span>`).join('')||'<p class="empty">아직 참가자가 없습니다.</p>'}</div></div>${rules}${admin}`;
+    ${meIn?`<div style="margin-top:14px">${chatPanel({lock:S.mass||!S.party?'raid':'party'})}</div>`:''}<div class="mass-roster">${M.roster.map(x=>`<span class="mr ${roleOf(x.job)} ${x.isMe?'me':''}">${x.name===leader?'<b title="공대장">★</b>':''}${esc(x.name)}<small>${CLASSES[x.job].name} · LV${x.level}</small></span>`).join('')||'<p class="empty">아직 참가자가 없습니다.</p>'}</div></div>${rules}${admin}`;
 }
 /* 그리드 전투 화면 */
 
@@ -710,7 +710,7 @@ function hudOp(){const v=S.me&&S.me.hudOp;return typeof v==='number'&&v>=0.15&&v
   window.addEventListener('scroll',hide,true);})();
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
   return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
-    <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
+    <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:S.mass||!S.party?'raid':'party'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
       <div class="panel gf-act" style="--hud-a:${hudOp()}"><label class="hud-op" title="커맨드 창 투명도"><input type="range" min="15" max="100" step="5" value="${Math.round(hudOp()*100)}" aria-label="커맨드 창 투명도"></label><div id="gf-act">${gfAct(b,me)}</div></div><div class="panel gf-rank2" id="gf-rank2">${gfRank(b)}</div><div class="gqs-wrap" id="gf-qs" style="${qsPosStyle()}">${gfQs(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
     </div>`;}
 

@@ -347,7 +347,7 @@ const ACTS={
   abandonq:d=>{const qp=S.qp[d.id];if(!qp)return;(qp.flagsSet||[]).forEach(f=>{const still=Object.entries(S.qp).some(([id,x])=>id!==d.id&&x.status==='done'&&(x.flagsSet||[]).includes(f));if(!still)delete S.flags[f];});delete S.qp[d.id];save();render();toast('퀘스트를 포기했습니다. 다시 수락할 수 있습니다.');},
   backmon:()=>{const m=monster(S.sel.monster);S.sel.monster=null;go('battle',{rtab:m&&mkind(m)==='weekly'?'weekly':m&&mkind(m)==='event'?'event':m&&mkind(m)==='dungeon'?'dungeon':'daily'});},
   mkset:d=>{S.sel.mk=S.sel.mk||{};const ni=$('#mk-name');if(ni)S.sel.mk.name=ni.value;S.sel.mk[d.k]=d.k==='target'?+d.v:d.v;render();},
-  createparty:d=>{const m=monster(d.id);if(busyReason()||levelReason(m,S.me.level))return;{const rb=raidBlock(m);if(rb){toast(rb,'warn');return;}}const mk=S.sel.mk||{};
+  createparty:d=>{const m=monster(d.id);if(busyReason()||levelReason(m,S.me.level))return;if(m.questOnly&&!r4Pending(m)&&!isAdmin()){toast('이 퀘스트를 진행 중인 블레서만 토벌대를 만들 수 있습니다.','warn');return;}if(m.questOnly)S.sel.mk={...(S.sel.mk||{}),vis:'invite'};{const rb=raidBlock(m);if(rb){toast(rb,'warn');return;}}const mk=S.sel.mk||{};
     const target=Math.min(m.max,Math.max(m.min,mk.target||m.target||m.min));
     const nm=(($('#mk-name')||{}).value||'').trim().slice(0,16)||`${S.me.name}의 파티`;
     S.party={id:uid('P'),name:nm,monsterId:m.id,leader:S.me.name,visibility:mk.vis||'public',target,members:[meMember()],chat:[],invites:[],rev:m.rev,nextJoin:now()+2000};
@@ -356,7 +356,7 @@ const ACTS={
     const m=monster(r.monsterId);S.recruits=S.recruits.filter(x=>x!==r);
     S.party={id:r.id,name:r.name,monsterId:m.id,leader:r.leader,visibility:'public',target:r.target,members:[...r.members.map(n=>{const b=bot(n);return {name:n,job:b.job,level:b.level,isMe:false,ready:true};}),meMember()],chat:[],invites:[],rev:m.rev,nextJoin:now()+2500};
     sysParty(`${S.me.name}님이 파티에 참가했습니다.`);S.sel.chatTab='party';later(1500,()=>botSay('party',r.leader,'어서 오세요! 준비 눌러 주세요'));go('battle');},
-  queue:d=>{const m=monster(d.id);if(busyReason()||levelReason(m,S.me.level))return;{const rb=raidBlock(m);if(rb){toast(rb,'warn');return;}}const mk=S.sel.mk||{};
+  queue:d=>{const m=monster(d.id);if(m&&m.questOnly)return;if(busyReason()||levelReason(m,S.me.level))return;{const rb=raidBlock(m);if(rb){toast(rb,'warn');return;}}const mk=S.sel.mk||{};
     S.queue={monsterId:m.id,target:Math.min(m.max,Math.max(m.min,mk.target||m.target||m.min)),since:now(),nextTry:now()+rnd(3000,6000)};save();render();toast('랜덤 매칭을 시작했습니다. 기다리는 동안 퀘스트를 진행해도 됩니다.');},
   cancelqueue:()=>{S.queue=null;save();render();toast('매칭을 취소했습니다.');},
   'm-accept':()=>acceptMatch(),
@@ -371,7 +371,7 @@ const ACTS={
       if(slotReason(m,p.members,r,p.target))break;addMerc(p,pick(mercJobs(L,r)));added++;}
     if(added){sysParty(`용병 ${added}명이 합류했습니다.`);save();render();}else toast('더 채울 자리가 없습니다.','warn');},
   kick:d=>{const p=S.party;p.members=p.members.filter(x=>x.name!==d.name);const b=bot(d.name);if(b)b.status='lobby';sysParty(`${d.name}님을 파티에서 내보냈습니다.`);save();render();},
-  setvis:d=>{S.party.visibility=d.v;sysParty(`파티 공개 범위를 ${d.v==='public'?'공개 모집':'초대 전용'}으로 바꿨습니다.`);save();render();},
+  setvis:d=>{{const mm=S.party&&monster(S.party.monsterId);if(mm&&mm.questOnly&&d.v!=='invite')return;}S.party.visibility=d.v;sysParty(`파티 공개 범위를 ${d.v==='public'?'공개 모집':'초대 전용'}으로 바꿨습니다.`);save();render();},
   invite:d=>{const p=S.party;p.invites=p.invites||[];if(p.invites.some(x=>x.name===d.name))return;p.invites.push({name:d.name,at:now()+rnd(1800,4000)});sysParty(`${d.name}님을 초대했습니다.`);save();render();},
   ackchange:()=>{const p=S.party;p.changed=false;p.rev=monster(p.monsterId).rev;sysParty('바뀐 조건을 확인했습니다. 다시 준비해 주세요.');save();render();},
   acttab:d=>{S.sel.actTab=d.tab;const me=S.battle.players.find(p=>p.isMe);if(d.tab==='attack')S.sel.act={kind:'skill',skill:basicSkill(me.job)};else if(d.tab==='skill'&&S.battle.grid&&S.sel.act&&S.sel.act.kind==='skill'&&S.sel.act.skill===basicSkill(me.job))S.sel.act={kind:'none'};else if(d.tab==='defend')S.sel.act={kind:'defend'};renderFight();},
@@ -425,7 +425,6 @@ const ACTS={
   'pv-att':()=>{S.sel.pvAtt=!S.sel.pvAtt;const mm=$('.modal');if(mm){const pv=mm.querySelector('.pv');if(pv)pv.outerHTML=planViewerHTML();}},
   'pv-next':(d,el)=>{const p=el&&el.closest('.pv');if(!p)return;p.classList.remove('nope');void p.offsetWidth;p.classList.add('nope');},
   'ghost-mira':()=>{toast('프로필을 불러올 수 없습니다.','warn');},
-  'r4-go':d=>r4Gather(d.id),'r4-leave':()=>{r4End();save();render();},
   'wish-save':()=>{const i=$('#wish-in');if(!i)return;S.me.myWish=i.value.replace(/\s+/g,' ').trim().slice(0,30);save();toast(S.me.myWish?'벽에 소원을 새겼다.':'아무것도 새기지 않았다.');render();},
   'seq-e28':()=>{seqE28();},
   'sub-fold':()=>{S.sel.subFold=!S.sel.subFold;if(S.battle&&S.battle.grid)renderFight();},
@@ -442,7 +441,7 @@ const ACTS={
   'g-confirm':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;const me=b.players.find(p=>p.isMe);if(me.dead)return;
     if(d.kind==='move'){if(S.sel.gcell==null||!canMoveTo(b,me,S.sel.gcell)){toast('이동할 칸을 다시 선택하세요.','warn');return;}me.action={kind:'move',to:S.sel.gcell};}else me.action={kind:'wait'};
     me.action2=null;me.itemAct=gItemAct(b,me);me.confirmed=true;save();renderFight();},
-  'mass-join':()=>{const M=S.mass;if(!M)return;const m=monster(M.monsterId);const C=massCfg();const why=busyReason()||levelReason(m,S.me.level)||(M.roster.length>=C.maxPlayers?'정원이 찼습니다':'');if(why){toast(why,'warn');return;}
+  'mass-join':()=>{const M=S.mass;if(!M)return;const m=monster(M.monsterId);const C=massCfg();const why=busyReason()||levelReason(m,S.me.level)||(m&&m.id==='guardian'?summusLock():'')||(M.roster.length>=C.maxPlayers?'정원이 찼습니다':'');if(why){toast(why,'warn');return;}
     M.roster.push({name:S.me.name,job:S.me.job,level:S.me.level,isMe:true});if(!M.leader)M.leader=S.me.name;save();render();toast('만신전 원정대에 참가했습니다.','good');if(M.roster.length>=C.maxPlayers)massStart();},
   'mass-leave':()=>{const M=S.mass;if(!M)return;M.roster=M.roster.filter(x=>!x.isMe);if(M.leader===S.me.name)M.leader=M.roster[0]?M.roster[0].name:null;save();render();},
   'mass-go':()=>{const M=S.mass;if(!M||M.leader!==S.me.name||!massReady(M))return;massStart();},
