@@ -685,7 +685,7 @@ const STORY_QUESTS=[
     {label:'돌판의 문양을 본다',result:'바람 소리가 돌아온다. 시야 한쪽에 평범한 메시지 한 줄이 떠오른다. 「제단의 불이 꺼졌습니다.」',next:'s4'}]},
   s4:{text:'쉼터로 돌아온다. 미라는 아무것도 묻지 않는다. 그날 밤 일지의 10쪽이 떨어진다.',choices:[
     {label:'10쪽을 읽는다',result:'"게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜." 10쪽 뒤에는 깨진 거울 조각 하나가 끼워져 있다. 비친 얼굴이 내 얼굴이 아니다.',next:'end',flag:'ch6_clear'}]},
-  end:{end:true,text:'6장 「고대 문명의 기억」 완료',reward:{exp:19000,gold:2400,items:{potion:3},gearTier:6}}}},
+  end:{end:true,text:'6장 「고대 문명의 기억」 완료',reward:{exp:19000,gold:2400,items:{potion:3,q_scrap:1},gearTier:6}}}},
  {id:'S6a',cat:'sub',title:'지워지지 않는 발자국',published:true,level:52,prereq:null,repeat:null,cond:{quests:['E20']},
   desc:'길잡이 나디아가 보여 줄 것이 있다고 한다.',start:'s1',steps:{
   s1:{text:'나디아가 쉼터 뒤 모래언덕으로 데려간다. 모래 위에 발자국이 여섯 쌍. 바람이 세게 부는데 하나도 지워지지 않는다. "몇 년째 이래요. 아무도 밟지 않아요."',choices:[
@@ -2022,3 +2022,14 @@ function r4Grid(b,m){const MD=massDef(m);b.grid=true;b.pats=MD.patterns;b.massTi
   if(i>=0&&mkind(S.data.monsters[i])!=='event'){S.data.monsters[i]=clone(SUMMUS_EVENT);ch=true;}
   R4_MONS.forEach(M=>{const j=S.data.monsters.findIndex(x=>x.id===M.id);if(j>=0&&(S.data.monsters[j].rev||0)<M.rev){S.data.monsters[j]=clone(M);ch=true;}});
   if(S.r4){S.r4=null;ch=true;}if(ch)save();}catch(e){}};})();
+
+/* ───────── 6장 기묘한 보상: 반쯤 지워진 종잇조각 (유저 결정 2026-11-06) ─────────
+   처음 접속할 때 받은 실제 이름(서버 real_names 표, 본인만 읽음 · 세이브·캐릭터 페이지에 넣지 않음)이 반쯤 지워진 채 적혀 있다.
+   게임 안 닉네임이 아니다. 실제 이름은 메모리(RN)에만 두고 S에 넣지 않는다. */
+var RN=null;
+function rnHalf(n){const a=[...String(n||'').trim()];if(!a.length)return '□□□';if(a.length===1)return a[0];return a.map((c,i)=>i%2===1&&c!==' '?'□':c).join('');}
+ITEMS.q_scrap={name:'반쯤 지워진 종잇조각',type:'mat',tag:'기념품',desc:'황금 뿌리 제단 가장 깊은 곳, 원본 기획서 사이에 끼워져 있던 종잇조각. 사용하면 읽는다.',price:0};
+Object.defineProperty(ITEMS.q_scrap,'readText',{enumerable:true,configurable:true,get(){
+  return `(접힌 종잇조각. 이 세계의 글씨가 아니다. 그런데 읽힌다.)\n\n이름: ${rnHalf(RN)}\n\n(게임 안의 이름이 아니다. 누가 이걸 여기에 끼워 두었을까.)`;}});
+/* 이미 6장을 마친 블레서에게 한 번 */
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{if(S.me&&!S.me.scrapGiven&&S.qp.E23&&S.qp.E23.status==='done'){S.me.scrapGiven=1;S.me.inv.q_scrap=(S.me.inv.q_scrap||0)+1;save();}}catch(e){}};})();

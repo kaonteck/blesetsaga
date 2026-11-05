@@ -1550,6 +1550,8 @@ html[data-theme="light"] .rc-art .mon-img{border:0;background:transparent}
 html[data-theme="light"] .dfx.heal b{text-shadow:0 0 18px rgba(60,230,120,0.65),0 3px 0 #0d4a24,0 0 2px #ebeef4}
 html[data-theme="light"] .dfx.heal small{color:#00d648}
 html[data-theme="light"] .qimg{border:1px solid var(--rule);background:var(--slab-2,#ebeef4)}
+html[data-theme="light"] #rn-gate{background:rgba(255,255,255,1)}
+html[data-theme="light"] #rn-gate .rn-box{border:1px solid var(--rule);background:var(--panel,var(--slab))}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
