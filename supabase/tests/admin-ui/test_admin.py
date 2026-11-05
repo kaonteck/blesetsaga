@@ -14,7 +14,13 @@ with sync_playwright() as p:
     pg=b.new_page(viewport={'width':1440,'height':900});errs=[]
     pg.on('pageerror',lambda e:errs.append('pageerror: '+str(e)));pg.on('console',lambda m: m.type=='error' and 'net::ERR_FAILED' not in m.text and errs.append(m.text))
     setup(pg)
-    pg.goto(URL);pg.wait_for_selector('.li[data-id]',timeout=20000)
+    pg.goto(URL);pg.wait_for_selector('.dash-card',timeout=20000)
+    ok(pg.locator('.side .tab').count()==12 and pg.locator('.nav-g').count()==6,'왼쪽 메뉴 6묶음·12개')
+    ok(pg.locator('.dash-card').count()==4 and pg.locator('.tab[data-tab=home][aria-selected=true]').count()==1,'첫 화면 = 홈(카드 4개)')
+    hv=pg.inner_text('#view');ok('오늘의 운영' in hv and '처리할 일' in hv and '최근 운영 기록' in hv,'홈: 처리할 일·최근 운영 기록')
+    pg.screenshot(path=OUT+'/0-home.png')
+    pg.click('.dash-card[data-go-tab=inbox]');pg.wait_for_selector('[data-ans-in]');ok(pg.locator('#view .ph h1').inner_text()=='문의 · 신고','홈 카드 → 문의 · 신고 (화면 제목)')
+    pg.click('.tab[data-tab=content]');pg.wait_for_selector('.li[data-id]',timeout=20000)
     ok(pg.locator('.kind').count()==7,'콘텐츠 종류 7개')
     n=pg.locator('.li[data-id]').count();ok(n>=40,f'몬스터 목록 {n}개 (코드 기본값)')
     ok('연결 준비 중' not in pg.inner_text('#view'),'게임 연결됨 → 미연결 안내 없음')
@@ -25,6 +31,9 @@ with sync_playwright() as p:
     ok(pg.locator('.chip.ok').count()>0,'서버 공개 표시')
     # 몬스터 편집·공개
     pg.click('.li[data-id="forest"]');pg.wait_for_selector('#c-json',state='attached');pg.evaluate("document.querySelectorAll('.codebox').forEach(d=>d.open=true)")
+    ok(pg.locator('.ed-head.stick .ed-act #c-pub').count()==1,'공개하기 버튼이 제목 옆')
+    h4=pg.locator('.fm-sec h4').all_inner_texts();ok(any('공격 패턴' in x for x in h4) and any('보상' in x for x in h4),'몬스터 칸 묶음: '+', '.join(x.split('\n')[0] for x in h4))
+    ok(pg.locator('.f .fl code.key').count()>5,'이름표에 영문 키')
     d=json.loads(pg.input_value('#c-json'));d['hp']=999;pg.fill('#c-json',json.dumps(d,ensure_ascii=False))
     pg.click('#c-pub');pg.wait_for_timeout(300)
     body=pg.inner_text('#modal');ok('hp' in body,'공개 전 변경점(hp) 표시')
@@ -39,6 +48,10 @@ with sync_playwright() as p:
     pg.fill('#c-json','{"name": "x",, }');pg.click('#c-check');ok('JSON 형식' in pg.inner_text('#c-msg'),'잘못된 JSON 안내')
     # 퀘스트 검사 (게임 검사 함수)
     pg.click('.kind[data-kind=quest]');pg.click('.li[data-id="E1"]');pg.wait_for_selector('#c-json',state='attached');pg.evaluate("document.querySelectorAll('.codebox').forEach(d=>d.open=true)")
+    nd=pg.locator('details.scn').count();no=pg.locator('details.scn[open]').count()
+    ok(pg.locator('.flow [data-scn]').count()==nd and nd>=2 and no==1,f'퀘스트 흐름 줄·장면 접기(장면 {nd}개 중 {no}개 열림)')
+    pg.locator('.flow [data-scn]').last.click();pg.wait_for_timeout(300);ok(pg.locator('details.scn[open]').count()==2,'흐름 줄 누르면 그 장면 열림')
+    pg.locator('details.scn[open] .sg').first.click();pg.wait_for_timeout(200);ok(pg.locator('details.scn[open]').count()==2,'다시 그려도 열린 장면 유지')
     d=json.loads(pg.input_value('#c-json'));d['start']='nope';pg.fill('#c-json',json.dumps(d,ensure_ascii=False));pg.click('#c-check')
     msg=pg.inner_text('#c-msg');ok('문제' in msg,'퀘스트 검사로 잘못된 시작 단계 찾음: '+msg.split('\n')[1][:60] if '\n' in msg else msg[:80])
     # 초안
@@ -125,7 +138,7 @@ with sync_playwright() as p:
     # 휴대폰
     m=b.new_page(viewport={'width':390,'height':844},is_mobile=True,has_touch=True);merrs=[]
     m.on('pageerror',lambda e:merrs.append(str(e)));setup(m)
-    m.goto(URL);m.wait_for_selector('.kind');m.screenshot(path=OUT+'/6-mobile-kinds.png')
+    m.goto(URL+'#content');m.wait_for_selector('.kind');m.screenshot(path=OUT+'/6-mobile-kinds.png')
     ok(not m.locator('.list-p').is_visible(),'휴대폰: 처음엔 종류만')
     m.click('.kind[data-kind=quest]');ok(m.locator('.list-p').is_visible() and not m.locator('.kinds-p').is_visible(),'휴대폰: 종류 → 목록')
     m.click('.li[data-id="E1"]');m.wait_for_selector('#c-json',state='attached');ok(not m.locator('.list-p').is_visible(),'휴대폰: 목록 → 편집기');m.screenshot(path=OUT+'/7-mobile-editor.png')
@@ -136,7 +149,7 @@ with sync_playwright() as p:
     # 운영자 아님 / 로그인
     n=b.new_page();setup(n,role='user');n.goto(URL);n.wait_for_selector('.msg.warn');ok('운영자 권한이 없습니다' in n.inner_text('body'),'일반 계정 차단')
     l=b.new_page();setup(l,nosession=True);l.goto(URL);l.wait_for_selector('#lf');l.screenshot(path=OUT+'/9-login.png')
-    l.fill('#lid','admin');l.fill('#lpw','x');l.click('#lgo');l.wait_for_selector('.li[data-id]',timeout=20000);ok(True,'로그인 → 콘텐츠')
+    l.fill('#lid','admin');l.fill('#lpw','x');l.click('#lgo');l.wait_for_selector('.dash-card',timeout=20000);ok(True,'로그인 → 홈')
     ok(l.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('bleset')).length")==0,'게임 세이브 키를 건드리지 않음')
     b.close()
 print('\n'.join(res));print('PASS',sum(r.startswith('OK') for r in res),'/',len(res))

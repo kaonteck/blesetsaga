@@ -166,16 +166,19 @@ VIEWS.invites=async(el)=>{
 function bindCopy(){$$('[data-copy]').forEach(b=>b.onclick=()=>navigator.clipboard.writeText(b.dataset.copy).then(()=>toast('복사했습니다: '+b.dataset.copy),()=>toast('복사하지 못했습니다.','bad')));}
 
 /* ── 운영 기록 ── */
+/* 운영 기록 한 줄씩 (운영 기록 탭·홈 공통) */
+function logItems(ops,ch){
+  const ACT={send_mail:'우편 발송',ban:'정지',unban:'정지 해제',invite_create:'초대코드 생성',invite_delete:'초대코드 삭제',set_level:'레벨 조정'};
+  const OP={insert:'올림',update:'수정',delete:'삭제',restore:'되돌림'};
+  return [...ops.map(r=>({t:r.created_at,who:r.admin,what:ACT[r.action]||r.action,detail:r.action==='send_mail'?`${r.detail.count??'?'}명 · ${r.detail.text||''}`:r.action==='ban'?`${who(r.target)} ~${fmtTime(r.detail.until)} ${esc(r.detail.reason||'')}`:r.action==='unban'?who(r.target):r.action==='set_level'?`${who(r.target)} LV${+r.detail.before||'?'} → LV${+r.detail.after||'?'} ${esc(r.detail.reason||'')}`:esc(r.target||''),raw:!['ban','unban','set_level'].includes(r.action)})),
+    ...ch.map(r=>({t:r.changed_at,who:r.changed_by,what:`콘텐츠 ${OP[r.op]||r.op}`,detail:`${(KINDS[r.kind]||{}).label||r.kind} · ${r.id}${r.rev?' v'+r.rev:''}`,link:{kind:r.kind,id:r.id}}))]
+    .sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,150);}
 VIEWS.log=async(el)=>{
   const [ops,ch]=await Promise.all([
     q(A.sb.from('admin_log').select('*').order('id',{ascending:false}).limit(100)),
     q(A.sb.from('content_history').select('hid,kind,id,op,rev,changed_by,changed_at').order('hid',{ascending:false}).limit(100))]);
   if(!ops||!ch){el.innerHTML='<div class="msg bad">기록을 불러오지 못했습니다.</div>';return;}
-  const ACT={send_mail:'우편 발송',ban:'정지',unban:'정지 해제',invite_create:'초대코드 생성',invite_delete:'초대코드 삭제',set_level:'레벨 조정'};
-  const OP={insert:'올림',update:'수정',delete:'삭제',restore:'되돌림'};
-  const items=[...ops.map(r=>({t:r.created_at,who:r.admin,what:ACT[r.action]||r.action,detail:r.action==='send_mail'?`${r.detail.count??'?'}명 · ${r.detail.text||''}`:r.action==='ban'?`${who(r.target)} ~${fmtTime(r.detail.until)} ${esc(r.detail.reason||'')}`:r.action==='unban'?who(r.target):r.action==='set_level'?`${who(r.target)} LV${+r.detail.before||'?'} → LV${+r.detail.after||'?'} ${esc(r.detail.reason||'')}`:esc(r.target||''),raw:!['ban','unban','set_level'].includes(r.action)})),
-    ...ch.map(r=>({t:r.changed_at,who:r.changed_by,what:`콘텐츠 ${OP[r.op]||r.op}`,detail:`${(KINDS[r.kind]||{}).label||r.kind} · ${r.id}${r.rev?' v'+r.rev:''}`,link:{kind:r.kind,id:r.id}}))]
-    .sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,150);
+  const items=logItems(ops,ch);
   el.innerHTML=`<div class="panel"><h3>운영 기록 <span class="faint" style="font-weight:400">최근 ${items.length}건</span></h3>
     <div class="tbl-wrap"><table class="tbl"><thead><tr><th>시각</th><th>운영자</th><th>한 일</th><th>내용</th></tr></thead><tbody>
     ${items.map((x,i)=>`<tr><td class="small faint" style="white-space:nowrap">${fmtTime(x.t)}</td><td class="small">${who(x.who)}</td><td style="white-space:nowrap">${esc(x.what)}</td>
@@ -312,4 +315,54 @@ VIEWS.guard=async(el)=>{
   $('#gd-reload').onclick=()=>go('guard');
   el.querySelectorAll('[data-gclear]').forEach(b=>b.onclick=async()=>{if(!await ask('의심 기록 지우기','이 회원의 부정 의심 기록을 지웁니다. 레벨·골드는 이미 잘려 있어 바뀌지 않습니다.','지우기'))return;
     const ok=await q(A.sb.rpc('admin_clear_flags',{p_user:b.dataset.gclear}));if(ok!==null){toast('기록을 지웠습니다.','good');go('guard');}});
+};
+
+/* ── 홈 (오늘의 운영) ── */
+VIEWS.home=async(el)=>{
+  const DAY=86400e3,now=Date.now();
+  const [pl,iq,rp,gd,ops,ch,lt]=await Promise.all([
+    q(A.sb.rpc('admin_players',{p_search:null,p_limit:1000})),
+    q(A.sb.from('inquiries').select('id,author,cat,text,created_at').is('answer',null).order('created_at',{ascending:true}).limit(50)),
+    q(A.sb.from('reports').select('id,reporter,target,target_name,kind,snapshot,reason,created_at').eq('done',false).order('created_at',{ascending:true}).limit(50)),
+    q(A.sb.rpc('admin_save_flags')),
+    q(A.sb.from('admin_log').select('*').order('id',{ascending:false}).limit(5)),
+    q(A.sb.from('content_history').select('hid,kind,id,op,rev,changed_by,changed_at').order('hid',{ascending:false}).limit(5)),
+    q(A.sb.rpc('admin_lotto',{p_weeks:1}))]);
+  if(A.tab!=='home')return;
+  const players=pl||[],inq=iq||[],rep=rp||[],flags=gd||[];
+  if(pl)players.forEach(p=>A.names[p.user_id]=p.name?`${p.name} (${p.username})`:p.username);
+  const on=players.filter(p=>p.status!=='offline'&&now-new Date(p.last_seen)<10*60e3).length;
+  const newFlags=flags.filter(r=>r.last_at&&now-new Date(r.last_at)<DAY).length;
+  const RK={chat:'채팅',dm:'귓속말',feed:'피드',comment:'댓글',profile:'프로필',etc:'기타'};
+  const repKinds=Object.entries(rep.reduce((o,x)=>(o[x.kind]=(o[x.kind]||0)+1,o),{})).map(([k,n])=>`${RK[k]||k} ${n}건`).join(' · ');
+  const draw=(lt||[]).find(r=>new Date(r.draw_at)>now);
+  const cut=t=>{t=String(t||'').replace(/\s+/g,' ');return t.length>40?t.slice(0,40)+'…':t;};
+  const todo=[
+    ...inq.map(x=>({dot:'bad',t:`1:1 문의 · ${who(x.author)}`,s:`${esc(x.cat||'')} · "${esc(cut(x.text))}" · ${fmtTime(x.created_at)}`,btn:'답하기',p:1,go:'inbox'})),
+    ...rep.map(x=>({dot:'bad',t:`${esc(RK[x.kind]||x.kind)} 신고 · ${who(x.reporter)} → ${x.target?who(x.target):esc(x.target_name||'?')}`,s:`${esc(x.reason||'사유 없음')}${x.snapshot?` · "${esc(cut(x.snapshot))}"`:''} · ${fmtTime(x.created_at)}`,btn:'보기',go:'inbox'})),
+    ...flags.filter(r=>r.last_at&&now-new Date(r.last_at)<DAY).map(r=>({dot:'warn',t:`부정 의심 · ${esc(r.name||r.username||'?')}`,s:`${r.n}건 · 최근 ${fmtTime(r.last_at)}`,btn:'보기',go:'guard'})),
+    ...(draw?[{dot:'warn',t:`행운권 ${esc(draw.draw_key)} 회차`,s:`${fmtTime(draw.draw_at)} 추첨 · ${draw.tickets}장 판매`,btn:'보기',go:'lotto'}]:[])];
+  const need=inq.length+rep.length+newFlags;
+  const logs=ops&&ch?logItems(ops,ch).slice(0,5):[];
+  const k=new Date(now+9*3600e3),p2=n=>String(n).padStart(2,'0');
+  const today=`${k.getUTCMonth()+1}월 ${k.getUTCDate()}일 (${'일월화수목금토'[k.getUTCDay()]}) ${p2(k.getUTCHours())}:${p2(k.getUTCMinutes())}`;
+  const card=(cls,go,label,n,sub)=>`<button class="dash-card ${cls}" data-go-tab="${go}"><small>${label}</small><b>${n}</b><em>${sub}</em></button>`;
+  el.innerHTML=`<div class="ph"><div><h1>오늘의 운영</h1><p>${today} · ${need?`처리할 일이 ${need}건 있습니다.`:'처리할 일이 없습니다.'}</p></div><div class="ph-act"><button class="btn btn-sm" id="hm-reload">새로고침</button></div></div>
+    <div class="dash-cards">
+      ${card('ok','players','지금 접속 중',pl?on:'—',`최근 10분 · 전체 회원 ${players.length}명`)}
+      ${card(inq.length?'alert':'','inbox','답하지 않은 문의',iq?inq.length:'—',inq.length?`가장 오래된 것 ${fmtTime(inq[0].created_at)}`:'모두 답했습니다')}
+      ${card(rep.length?'alert':'','inbox','처리 안 한 신고',rp?rep.length:'—',rep.length?esc(repKinds):'모두 처리했습니다')}
+      ${card(newFlags?'alert':'','guard','부정 의심',gd?flags.length:'—',newFlags?`최근 하루 새 기록 ${newFlags}명`:'새 기록 없음')}
+    </div>
+    <div class="dash-two">
+      <div class="panel"><h3>처리할 일</h3><div class="todo">
+        ${todo.slice(0,12).map(x=>`<div class="todo-i"><span class="dot ${x.dot}"></span><div class="t"><b>${x.t}</b><small>${x.s}</small></div><button class="btn btn-sm ${x.p?'btn-p':''}" data-go-tab="${x.go}">${x.btn}</button></div>`).join('')||'<p class="empty">처리할 일이 없습니다.</p>'}
+        ${todo.length>12?`<p class="faint small" style="margin:8px 0 0">그 밖에 ${todo.length-12}건</p>`:''}
+      </div></div>
+      <div class="panel"><h3>최근 운영 기록 <a class="small" href="#log" data-go-tab="log">모두 보기 ›</a></h3><div class="todo">
+        ${logs.map(x=>`<div class="todo-i"><div class="t"><b>${esc(x.what)}</b><small>${who(x.who)} · ${fmtTime(x.t)} · ${x.link||x.raw?esc(x.detail):x.detail}</small></div></div>`).join('')||'<p class="empty">아직 기록이 없습니다.</p>'}
+      </div></div>
+    </div>`;
+  $$('[data-go-tab]',el).forEach(b=>b.onclick=e=>{e.preventDefault();go(b.dataset.goTab);});
+  $('#hm-reload').onclick=()=>{refreshBadges().catch(()=>{});go('home');};
 };

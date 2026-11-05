@@ -4,7 +4,7 @@
    운영자(app_metadata.role = 'admin')만 들어올 수 있고, 실제 권한 검사는 DB(RLS·운영 함수)가 한다. */
 const ADM_URL='https://ktuhkiihrnawcpwpqwdl.supabase.co',ADM_KEY='sb_publishable_ITKnRBBzkYweQl1htyVoWQ_0w-P4H7o';
 const ADM_DOMAIN='blesetsaga.vercel.app';
-const A={sb:null,user:null,tab:'content',names:{},badge:{}};   // 페이지 상태
+const A={sb:null,user:null,tab:'home',names:{},badge:{}};   // 페이지 상태
 
 /* ── 작은 도구 ── */
 const $=(s,r)=>(r||document).querySelector(s);
@@ -55,28 +55,40 @@ async function loadNames(){const d=await q(A.sb.from('profiles').select('user_id
 const who=id=>id?esc(A.names[id]||String(id).slice(0,8)):'<span class="faint">시스템</span>';
 
 /* ── 탭 ── */
-const TABS=[['content','콘텐츠'],['players','회원'],['mail','우편 보내기'],['chat','채팅'],['feed','피드'],['inbox','문의 · 신고'],['invites','초대코드'],['lotto','행운권'],['fish','낚시 랭킹'],['guard','부정 의심'],['log','운영 기록']];
+const IC={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',content:'<path d="M4 4h16v4H4zM4 10h10v10H4zM16 10h4v10h-4z"/>',players:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c2 .7 3.2 2.6 3.6 5.4"/>',mail:'<path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/>',invites:'<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M12 7v12" stroke-dasharray="2 2"/>',inbox:'<path d="M4 4h16v12H8l-4 4z"/>',chat:'<path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',feed:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',lotto:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>',fish:'<path d="M3 12c3-5 9-6 13-3l5-3v12l-5-3c-4 3-10 2-13-3z"/>',guard:'<path d="M12 3l8 3v6c0 5-3.4 8.2-8 9-4.6-.8-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/>',log:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7"/>'};
+const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]||''}</svg>`;
+// 왼쪽 메뉴 묶음 [묶음 이름, [[탭 id, 이름], …]]
+const GROUPS=[['',[['home','홈']]],['콘텐츠',[['content','콘텐츠 편집']]],['유저',[['players','회원'],['mail','우편 보내기'],['invites','초대코드']]],['커뮤니티',[['inbox','문의 · 신고'],['chat','채팅'],['feed','피드']]],['게임 운영',[['lotto','행운권'],['fish','낚시 랭킹']]],['보안',[['guard','부정 의심'],['log','운영 기록']]]];
+const TABS=GROUPS.flatMap(g=>g[1]);
+const TAB_DESC={content:'몬스터·퀘스트·아이템 등 게임 데이터를 고치고 공개합니다.',players:'가입한 블레서를 찾고 세이브·레벨·정지를 관리합니다.',mail:'전체 또는 골라 둔 블레서에게 골드·아이템이 담긴 우편을 보냅니다.',invites:'새 블레서가 가입할 때 쓰는 코드를 만들고 관리합니다.',inbox:'1:1 문의에 답하고 신고된 글을 처리합니다.',chat:'전체·월드·1:1 채팅을 살피고 문제 메시지를 가립니다.',feed:'커뮤니티 글과 댓글을 살피고 가립니다.',lotto:'주간 행운권 회차·판매·당첨 현황입니다.',fish:'이번 주 지역별 낚시 순위와 지난 주 정산 기록입니다.',guard:'서버가 말이 안 되는 변화를 자르거나 기록한 계정입니다.',log:'운영자가 한 일이 모두 남습니다.'};
+const tabLabel=k=>(TABS.find(t=>t[0]===k)||[k,k])[1];
 const VIEWS={};   // 탭 id → async render(el)
+function tabHTML(k,l){return `${icon(k)}<span class="tl">${l}</span>${A.badge[k]?`<span class="num">${A.badge[k]}</span>`:''}`;}
 function shell(){
   const nick=A.names[A.user.id]||A.user.email.split('@')[0];
-  $('#app').innerHTML=`<header class="top"><div class="top-in">
-      <div class="brand">블레셋 전기<small>운영</small></div>
-      <nav class="tabs" role="tablist">${TABS.map(([k,l])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${A.tab===k}">${l}${A.badge[k]?`<span class="num">${A.badge[k]}</span>`:''}</button>`).join('')}</nav>
-      <div class="who"><span>${esc(nick)}</span><a class="btn btn-g btn-sm" href="./" target="_blank" rel="noopener">게임 열기</a><button class="btn btn-g btn-sm" id="logout">로그아웃</button></div>
-    </div></header><main class="wrap" id="view"></main>`;
+  const app=$('#app');app.classList.add('shell');app.style.alignContent='start';
+  app.innerHTML=`<aside class="side" style="min-width:0">
+      <div class="side-brand">블레셋 전기<small>운영 페이지</small></div>
+      <nav class="side-nav" role="tablist">${GROUPS.map(([g,it])=>`<div class="nav-g">${g?`<span class="nav-gl">${g}</span>`:''}${it.map(([k,l])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${A.tab===k}">${tabHTML(k,l)}</button>`).join('')}</div>`).join('')}</nav>
+      <div class="side-me"><span>${esc(nick)}</span><div class="row" style="flex-wrap:nowrap"><a class="btn btn-sm" href="./" target="_blank" rel="noopener">게임 열기</a><button class="btn btn-g btn-sm" id="logout">로그아웃</button></div></div>
+    </aside><main class="wrap" id="view" style="min-width:0"></main>`;
   $$('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));
   $('#logout').onclick=async()=>{if(!await ask('로그아웃','이 브라우저의 게임에서도 함께 로그아웃됩니다.','로그아웃'))return;await A.sb.auth.signOut();location.reload();};
 }
-async function go(tab,opts){A.tab=tab;A.opts=opts||{};history.replaceState(null,'','#'+tab);
+// 화면 제목 (홈은 자기 제목을 그림)
+const phHTML=(k,act)=>`<div class="ph"><div><h1>${esc(tabLabel(k))}</h1><p>${esc(TAB_DESC[k]||'')}</p></div>${act?`<div class="ph-act">${act}</div>`:''}</div>`;
+async function go(tab,opts){if(!VIEWS[tab])tab='home';A.tab=tab;A.opts=opts||{};history.replaceState(null,'','#'+tab);
   $$('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
-  const v=$('#view');v.innerHTML='<p class="loading">불러오는 중…</p>';
-  try{await VIEWS[tab](v,A.opts);}catch(e){console.error(e);v.innerHTML=`<div class="msg bad">화면을 그리지 못했습니다: ${esc(e.message)}</div>`;}}
+  const v=$('#view');let el=v;
+  if(tab==='home')v.innerHTML='<p class="loading">불러오는 중…</p>';
+  else{v.innerHTML=phHTML(tab)+'<div id="vb"><p class="loading">불러오는 중…</p></div>';el=$('#vb');}
+  try{await VIEWS[tab](el,A.opts);}catch(e){console.error(e);el.innerHTML=`<div class="msg bad">화면을 그리지 못했습니다: ${esc(e.message)}</div>`;}}
 async function refreshBadges(){
   const [i,r]=await Promise.all([
     A.sb.from('inquiries').select('id',{count:'exact',head:true}).is('answer',null),
     A.sb.from('reports').select('id',{count:'exact',head:true}).eq('done',false)]);
   A.badge.inbox=(i.count||0)+(r.count||0);
-  const t=$('.tab[data-tab=inbox]');if(t)t.innerHTML='문의 · 신고'+(A.badge.inbox?`<span class="num">${A.badge.inbox}</span>`:'');}
+  const t=$('.tab[data-tab=inbox]');if(t)t.innerHTML=tabHTML('inbox',tabLabel('inbox'));}
 
 /* ── 로그인 ── */
 const idMail=id=>id.includes('@')?id:`${id.toLowerCase()}@${ADM_DOMAIN}`;
@@ -107,7 +119,7 @@ async function enter(user){
   try{const r=await A.sb.auth.getUser();if(r.data&&r.data.user)user=r.data.user;}catch(e){}
   if(!(user.app_metadata&&user.app_metadata.role==='admin'))return notAdminView(user);
   A.user=user;await loadNames();shell();
-  const h=(location.hash||'').slice(1);go(TABS.some(t=>t[0]===h)?h:'content');
+  const h=(location.hash||'').slice(1);go(TABS.some(t=>t[0]===h)?h:'home');
   refreshBadges().catch(()=>{});
 }
 async function admStart(){
