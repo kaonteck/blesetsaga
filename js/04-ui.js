@@ -244,17 +244,17 @@ function vCreate(){
   const sel=CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender';
   const flagOf=k=>k==='mage'||k==='shooter'?'ranged':k;const cur=flagOf(sel);
   const I=CLASS_INTRO[sel],c=CLASSES[sel];
-  const prev=CC_LAST&&CC_LAST!==cur?CC_LAST:null;CC_LAST=cur;
+  const first=!CC_LAST;const prev=CC_LAST&&CC_LAST!==cur?CC_LAST:null;CC_LAST=cur;
   const t=(performance.now()/1000).toFixed(2);
   const flags=CREATE_FLAGS.map(([f,job],n)=>{const on=f===cur;const j=on?sel:(f==='ranged'?(S.sel.rangedJob||'mage'):job);const lit=prev?f===prev:on;
     const nm=f==='ranged'?'슈터 · 메이지':CLASSES[job].name;
     return `<button type="button" class="cflag ${lit?'on':''}" data-f="${f}" data-act="pickjob" data-job="${j}" aria-pressed="${on}" aria-label="${nm}" style="--d:${(n*0.37).toFixed(2)}s">
-      <span class="cfl-rod" aria-hidden="true"></span><span class="cfl-wrap"><span class="cfl-cloth"><span class="cfl-ic" style="-webkit-mask-image:url(img/class/${f}.png);mask-image:url(img/class/${f}.png)"></span><span class="cfl-sheen"></span></span></span><span class="cfl-name">${nm}</span></button>`;}).join('');
+      <span class="cfl-beam" aria-hidden="true"><svg class="cfl-cst" viewBox="0 0 40 30"><path d="M2 26 L12 18 L20 22 L30 8 L38 4" fill="none" stroke="currentColor" stroke-width=".7"/><circle cx="2" cy="26" r="1.2"/><circle cx="12" cy="18" r="1.2"/><circle cx="20" cy="22" r="1"/><circle cx="30" cy="8" r="1.4"/><circle cx="38" cy="4" r="1"/></svg></span><span class="cfl-wrap"><span class="cfl-cloth"><span class="cfl-ic" style="-webkit-mask-image:url(img/class/${f}.png);mask-image:url(img/class/${f}.png)"></span><span class="cfl-sheen"></span></span></span><span class="cfl-spark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="cfl-name">${nm}</span></button>`;}).join('');
   if(prev)requestAnimationFrame(()=>requestAnimationFrame(()=>{$$('.cflag').forEach(b=>b.classList.toggle('on',b.dataset.f===cur));}));
   const pair=cur==='ranged'?`<div class="cd-pair" role="group" aria-label="슈터 또는 메이지">${['shooter','mage'].map(k=>`<button type="button" data-act="pickjob" data-job="${k}" aria-pressed="${sel===k}">${CLASSES[k].name}<small>${CLASSES[k].en}</small></button>`).join('')}</div>`:'';
   const dust=Array.from({length:22},(_,i)=>{const r=x=>((Math.sin(i*12.9898+x*78.233)*43758.5453)%1+1)%1;return `<i style="left:${(r(1)*100).toFixed(1)}%;--s:${(1+r(2)*2.4).toFixed(1)}px;--du:${(14+r(3)*18).toFixed(1)}s;--dl:${(-r(4)*30).toFixed(1)}s;--dx:${((r(5)-.5)*80).toFixed(0)}px"></i>`;}).join('');
   const ja=(c.name.charCodeAt(c.name.length-1)-0xAC00)%28;
-  return `<div class="cc-page" style="--t:${t}s"><div class="cc-smoke" aria-hidden="true"><i></i><i></i><i></i></div><div class="cc-rays" aria-hidden="true"></div><div class="cc-dust" aria-hidden="true">${dust}</div>
+  return `<div class="cc-page${first?' cc-first':''}" style="--t:${t}s"><div class="cc-smoke" aria-hidden="true"><i></i><i></i><i></i></div><div class="cc-neb" aria-hidden="true"><i></i><i></i></div><div class="cc-rays" aria-hidden="true"></div><div class="cc-dust" aria-hidden="true">${dust}</div>
     <div class="cc-head"><div class="cc-kicker"><span></span>CREATE YOUR BLESSER<span></span></div><h1 class="cc-title">클래스 선택</h1><p class="cc-lead">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 클래스와 이름을 정하세요.</p></div>
     <form class="cc-body" data-form="create">
       <div class="cc-stage"><div class="cc-flags" role="group" aria-label="클래스 선택">${flags}</div><div class="cc-floor" aria-hidden="true"></div></div>
