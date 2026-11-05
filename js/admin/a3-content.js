@@ -6,7 +6,13 @@
 const GAME_NOT_CONNECTED=false;
 
 A.content={};A.drafts={};
-const C={kind:'monster',id:null,search:'',filter:'all',pane:'kind'};   // 화면 선택 상태
+const C={kind:'monster',id:null,search:'',filter:'all',pane:'kind',mon:'normal',mcat:'all'};   // 화면 선택 상태 (mon: 몬스터 탭 normal / 만신전 탭 mass)
+// 몬스터 분류(만신전은 따로 탭) — 서버 종류는 둘 다 'monster', 데이터의 kind 값으로 나눔
+const MON_CAT=[['field','필드 사냥'],['dungeon','던전'],['party','파티 레이드'],['weekly','토벌전'],['story','퀘스트 전투']];
+const monData=id=>((A.drafts.monster||{})[id]||{}).data||liveData('monster',id)||{};
+const isMassMon=id=>monData(id).kind==='event';
+const viewIds=k=>k!=='monster'?idsOf(k):idsOf(k).filter(id=>isMassMon(id)===(C.mon==='mass'));
+const viewLabel=k=>k==='monster'&&C.mon==='mass'?'만신전':KINDS[k].label;
 
 async function loadServerContent(){
   const [c,d]=await Promise.all([q(A.sb.from('content').select('*').order('sort').order('id')),q(A.sb.from('content_drafts').select('*'))]);
@@ -44,28 +50,32 @@ VIEWS.content=async(el)=>{
   el.innerHTML='<p class="loading">게임 기본값과 서버 콘텐츠를 불러오는 중…</p>';
   const [ok]=await Promise.all([loadServerContent(),loadDefaults()]);
   if(!ok){el.innerHTML='<div class="msg bad">서버 콘텐츠를 불러오지 못했습니다. 새로고침해 주세요.</div>';return;}
-  if(A.opts&&A.opts.kind){C.kind=A.opts.kind;C.id=A.opts.id||null;C.pane=C.id?'ed':'list';}
+  if(A.opts&&A.opts.kind){C.kind=A.opts.kind;C.id=A.opts.id||null;C.pane=C.id?'ed':'list';if(C.kind==='monster'&&C.id)C.mon=isMassMon(C.id)?'mass':'normal';}
   drawContent();
 };
 
 function drawContent(){
   const el=$('#vb')||$('#view');if(A.tab!=='content')return;
-  const k=C.kind;const ids=idsOf(k);
+  const k=C.kind;const ids=viewIds(k);const monTab=k==='monster';
   const term=C.search.trim().toLowerCase();
   const shown=ids.filter(id=>{
     if(term&&!(id.toLowerCase().includes(term)||String(titleOf(k,id)).toLowerCase().includes(term)||subOf(k,id).toLowerCase().includes(term)))return false;
+    if(monTab){if(C.mon==='mass'||C.mcat==='all')return true;const mk=monData(id).kind||'party';return mk===C.mcat;}
     const s=rowState(k,id);
     return C.filter==='all'||(C.filter==='server'&&s.srv)||(C.filter==='changed'&&s.srv&&s.def&&JSON.stringify(DEF[k][id])!==JSON.stringify(A.content[k][id].data))||(C.filter==='draft'&&s.draft)||(C.filter==='code'&&!s.srv);
   });
-  const gone=C.id&&!ids.includes(C.id);   // 지워진 항목(기록에서 열었을 때)
-  const counts=Object.fromEntries(Object.keys(KINDS).map(kk=>[kk,idsOf(kk).length]));
+  const gone=C.id&&!idsOf(k).includes(C.id);   // 지워진 항목(기록에서 열었을 때)
+  const counts=Object.fromEntries(Object.keys(KINDS).map(kk=>[kk,idsOf(kk).length]));const massN=idsOf('monster').filter(isMassMon).length;counts.monster-=massN;
+  const massDraftN=Object.keys(A.drafts.monster||{}).filter(isMassMon).length;
   const draftN=kk=>Object.keys(A.drafts[kk]||{}).length;
   el.innerHTML=`
     ${GAME_NOT_CONNECTED?`<div class="msg info" style="margin-bottom:12px"><b>연결 준비 중</b> · 여기서 공개한 내용은 서버에 저장되지만, 게임이 서버 콘텐츠를 읽도록 연결하는 작업(다음 단계)이 끝나야 실제 게임에 반영됩니다.</div>`:''}
     ${DEF._error?`<div class="msg warn" style="margin-bottom:12px">게임 기본값을 읽지 못했습니다(${esc(DEF._error)}). 서버에 저장된 항목만 보입니다.</div>`:''}
     <div class="cgrid pick-${C.pane}">
       <div class="panel kinds-p"><h3>종류</h3><div class="kinds">
-        ${Object.entries(KINDS).map(([kk,v])=>`<button class="kind" data-kind="${kk}" aria-current="${kk===k}"><span>${v.label}</span><span class="n">${draftN(kk)?`<span class="chip warn" style="margin-right:4px">초안 ${draftN(kk)}</span>`:''}${counts[kk]}</span></button>`).join('')}
+        ${Object.entries(KINDS).map(([kk,v])=>{const btn=(lab,cur,n,dn,mon)=>`<button class="kind" data-kind="${kk}"${mon?` data-mon="${mon}"`:''} aria-current="${cur}"><span>${lab}</span><span class="n">${dn?`<span class="chip warn" style="margin-right:4px">초안 ${dn}</span>`:''}${n}</span></button>`;
+          if(kk!=='monster')return btn(v.label,kk===k,counts[kk],draftN(kk));
+          return btn(v.label,k==='monster'&&C.mon!=='mass',counts.monster,draftN('monster')-massDraftN,'normal')+btn('만신전',k==='monster'&&C.mon==='mass',massN,massDraftN,'mass');}).join('')}
       </div>
       <div class="stack" style="margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">
         <button class="btn btn-sm" id="c-seed">기본값을 서버에 올리기</button>
@@ -74,10 +84,10 @@ function drawContent(){
         <input type="file" id="c-file" accept=".json,application/json" class="hide">
       </div></div>
       <div class="panel list-p">
-        <h3><span class="row" style="gap:6px"><button class="btn btn-g btn-sm back" data-pane="kind">‹ 종류</button>${KINDS[k].label} <span class="faint" style="font-weight:400">${shown.length}</span></span><button class="btn btn-sm" id="c-new">+ 새로 만들기</button></h3>
+        <h3><span class="row" style="gap:6px"><button class="btn btn-g btn-sm back" data-pane="kind">‹ 종류</button>${viewLabel(k)} <span class="faint" style="font-weight:400">${shown.length}</span></span><button class="btn btn-sm" id="c-new">+ 새로 만들기</button></h3>
         <div class="stack" style="gap:6px;margin-bottom:10px">
           <input type="search" id="c-search" placeholder="이름·id 검색" value="${esc(C.search)}">
-          <select id="c-filter">${[['all','전체'],['server','서버에 있는 것'],['changed','기본값과 다른 것'],['draft','초안 있는 것'],['code','코드 기본값만']].map(([v,l])=>`<option value="${v}" ${C.filter===v?'selected':''}>${l}</option>`).join('')}</select>
+          ${monTab&&C.mon==='mass'?'':monTab?`<select id="c-mcat" aria-label="몬스터 분류">${[['all','전체 분류'],...MON_CAT].map(([v,l])=>`<option value="${v}" ${C.mcat===v?'selected':''}>${l}</option>`).join('')}</select>`:`<select id="c-filter">${[['all','전체'],['server','서버에 있는 것'],['changed','기본값과 다른 것'],['draft','초안 있는 것'],['code','코드 기본값만']].map(([v,l])=>`<option value="${v}" ${C.filter===v?'selected':''}>${l}</option>`).join('')}</select>`}
         </div>
         <div class="list">${shown.map(id=>{const s=rowState(k,id);return `<div class="li" data-id="${esc(id)}" aria-current="${id===C.id}" tabindex="0"><div class="t"><b>${esc(titleOf(k,id))}</b><small>${esc(id)}${subOf(k,id)?' · '+esc(subOf(k,id)):''}</small></div><div class="chips">${s.chips.map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join('')}</div></div>`;}).join('')||'<p class="empty">항목이 없습니다.</p>'}</div>
       </div>
@@ -97,7 +107,7 @@ function editorHTML(k,id){
   const diff=def&&srv?topDiff(def,srv.data):[];
   return `<div class="panel">
     <div class="ed-head stick"><div><button class="btn btn-g btn-sm back" data-pane="list" style="margin-bottom:6px">‹ 목록</button>
-      <h2>${esc(titleOf(k,id))} ${s.chips.map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join(' ')}</h2><div class="id">${KINDS[k].label} · id <b>${esc(id)}</b>${srv?` · ${srv.rev}번째 버전 · ${ago(srv.updated_at)} ${who(srv.updated_by)}`:''}</div></div>
+      <h2>${esc(titleOf(k,id))} ${s.chips.map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join(' ')}</h2><div class="id">${viewLabel(k)} · id <b>${esc(id)}</b>${srv?` · ${srv.rev}번째 버전 · ${ago(srv.updated_at)} ${who(srv.updated_by)}`:''}</div></div>
       <div class="ed-act"><button class="btn" id="c-check">검사</button><button class="btn" id="c-draft">초안 저장</button><button class="btn btn-p" id="c-pub">공개하기</button></div></div>
     <div class="ed-grid">
       <div class="stack">
@@ -134,11 +144,12 @@ function editorHTML(k,id){
 }
 
 function bindContent(){
-  $$('.kind').forEach(b=>b.onclick=()=>{C.kind=b.dataset.kind;C.id=null;C.search='';C.pane='list';drawContent();});
+  $$('.kind').forEach(b=>b.onclick=()=>{C.kind=b.dataset.kind;C.mon=b.dataset.mon||'normal';C.id=null;C.search='';C.pane='list';drawContent();});
   $$('[data-pane]').forEach(b=>b.onclick=()=>{C.pane=b.dataset.pane;if(C.pane!=='ed')C.id=C.pane==='kind'?null:C.id;drawContent();});
   $$('.li[data-id]').forEach(r=>{const open=()=>{C.id=r.dataset.id;C.pane='ed';drawContent();window.scrollTo({top:0});};r.onclick=open;r.onkeydown=e=>{if(e.key==='Enter')open();};});
   const s=$('#c-search');if(s)s.oninput=()=>{C.search=s.value;const pos=s.selectionStart;drawContent();const n=$('#c-search');n.focus();n.setSelectionRange(pos,pos);};
   const f=$('#c-filter');if(f)f.onchange=()=>{C.filter=f.value;drawContent();};
+  const mc=$('#c-mcat');if(mc)mc.onchange=()=>{C.mcat=mc.value;drawContent();};
   $('#c-new').onclick=newItem;
   $('#c-seed').onclick=seedDefaults;
   $('#c-export').onclick=exportAll;
@@ -209,18 +220,25 @@ async function loadHistory(k,id){
     if(await q(A.sb.rpc('admin_restore',{p_hid:+b.dataset.restore}),'되돌렸습니다.')){await loadServerContent();drawContent();}});
 }
 
+// 새 몬스터: 지금 보고 있는 탭·분류에 맞춘 뼈대
+function blankFor(k){const d=clone(BLANK[k]);if(k!=='monster')return d;
+  const kind=C.mon==='mass'?'event':C.mcat!=='all'?C.mcat:'field';d.kind=kind;
+  if(kind==='party')Object.assign(d,{min:3,max:4,target:4,roles:{tank:1,dps:1,heal:1}});
+  if(kind==='weekly')Object.assign(d,{min:3,max:8,target:6,roles:{tank:1,dps:1,heal:1}});
+  if(kind==='event')Object.assign(d,{min:6,max:20,target:10,roles:{tank:2,dps:2,heal:2}});
+  return d;}
 async function newItem(){
   const k=C.kind;
-  modal(`<h3>새 ${KINDS[k].label}</h3><form class="stack" id="nf">
+  modal(`<h3>새 ${viewLabel(k)}</h3><form class="stack" id="nf">
     <label class="f">id (영문·숫자·_ — 게임 안에서 이 이름으로 찾습니다)<input type="text" id="n-id" maxlength="64" autocapitalize="none" spellcheck="false" value="${k==='event'?'ev_'+Date.now().toString(36):''}"></label>
-    ${idsOf(k).length?`<label class="f">복사해서 시작 (선택)<select id="n-from"><option value="">빈 양식</option>${idsOf(k).map(i=>`<option value="${esc(i)}">${esc(titleOf(k,i))} (${esc(i)})</option>`).join('')}</select></label>`:''}
+    ${viewIds(k).length?`<label class="f">복사해서 시작 (선택)<select id="n-from"><option value="">빈 양식</option>${viewIds(k).map(i=>`<option value="${esc(i)}">${esc(titleOf(k,i))} (${esc(i)})</option>`).join('')}</select></label>`:''}
     <div id="n-err"></div>
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-g" data-close-btn>취소</button><button class="btn btn-p">만들기</button></div></form>`);
   $('#nf').onsubmit=async e=>{e.preventDefault();const id=$('#n-id').value.trim();
     const bad=t=>{$('#n-err').innerHTML=`<div class="msg bad">${esc(t)}</div>`;};
     if(!/^[A-Za-z0-9_\-]{1,64}$/.test(id))return bad('id는 영문·숫자·_- 1–64자로 정해 주세요.');
     if(idsOf(k).includes(id))return bad('이미 있는 id입니다.');
-    const from=$('#n-from')&&$('#n-from').value;const data=from?clone(liveData(k,from)||A.drafts[k][from].data):clone(BLANK[k]);
+    const from=$('#n-from')&&$('#n-from').value;const data=from?clone(liveData(k,from)||A.drafts[k][from].data):blankFor(k);
     if(from&&data.name)data.name+=' (복사)';if(from&&data.title)data.title+=' (복사)';
     if(await q(A.sb.from('content_drafts').insert({kind:k,id,data}))){modal(null);await loadServerContent();C.id=id;C.pane='ed';drawContent();toast('초안을 만들었습니다. 고친 뒤 공개하세요.','good');}};
 }

@@ -21,7 +21,7 @@ with sync_playwright() as p:
     pg.screenshot(path=OUT+'/0-home.png')
     pg.click('.dash-card[data-go-tab=inbox]');pg.wait_for_selector('[data-ans-in]');ok(pg.locator('#view .ph h1').inner_text()=='문의 · 신고','홈 카드 → 문의 · 신고 (화면 제목)')
     pg.click('.tab[data-tab=content]');pg.wait_for_selector('.li[data-id]',timeout=20000)
-    ok(pg.locator('.kind').count()==7,'콘텐츠 종류 7개')
+    ok(pg.locator('.kind').count()==8,'콘텐츠 종류 8개(몬스터·만신전 따로)')
     n=pg.locator('.li[data-id]').count();ok(n>=40,f'몬스터 목록 {n}개 (코드 기본값)')
     ok('연결 준비 중' not in pg.inner_text('#view'),'게임 연결됨 → 미연결 안내 없음')
     pg.screenshot(path=OUT+'/1-content.png')
