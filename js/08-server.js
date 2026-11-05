@@ -1436,7 +1436,8 @@ if(ONLINE){
   const _massJoin=ACTS['mass-join'];
   ACTS['mass-join']=(d,el,e)=>{
     const M=mtShared();if(!M)return _massJoin(d,el,e);
-    const m=monster(M.monsterId);const why=busyReason()||levelReason(m,S.me.level)||(m&&m.id==='guardian'&&typeof summusLock==='function'?summusLock():'')||(M.roster.length>=M.target?'정원이 찼습니다':'');   // 숨무스 만신전: 8장 완료자만(메인 2026-11-05)if(why){toast(why,'warn');return;}
+    const m=monster(M.monsterId);const why=busyReason()||levelReason(m,S.me.level)||(m&&m.id==='guardian'&&typeof summusLock==='function'?summusLock():'')||(M.roster.length>=M.target?'정원이 찼습니다':'');   // 숨무스 만신전: 8장 완료자만(메인 2026-11-05)
+    if(why){toast(why,'warn');return;}
     if(typeof entryGate==='function'&&entryGate('mass-join',d,true))return;
     ptRpcCard('mass_join',{p_room:M.shared.room,p_card:ptCard()}).then(r=>{PT.room=r;mtApply(r);ptSubscribe(r.id);toast('만신전 원정대에 참가했습니다.','good');})
       .catch(err=>{toast(/FULL/.test(err&&err.message||'')?'정원이 찼습니다.':/NOT_GATHER/.test(err&&err.message||'')?'집결이 끝났습니다.':ptErr(err),'warn');mtFetch();});
