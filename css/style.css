@@ -3227,3 +3227,6 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 .qarch>summary::before{content:'▸ ';}
 .qarch[open]>summary::before{content:'▾ ';}
 .qarch .qhist{margin-top:8px}
+/* 퀘스트 서고: 분류 드롭다운(오른쪽) */
+.qarc-bar{display:flex;justify-content:flex-end;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--rule)}
+.qarc-dd{font-size:12.5px;padding:5px 28px 5px 10px;border-radius:8px;min-width:130px}

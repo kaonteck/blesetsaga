@@ -622,7 +622,8 @@ function vQuest(){
   /* 서고: 완료한 퀘스트 모음. 서브·데일리 탭에는 진행할 것만 남김(메인 스토리는 장 흐름을 보여 주려고 완료도 그대로) */
   {const rq=quest(S.sel.quest);if(rq&&rq.published&&isDone(rq)&&tab!=='archive'&&S.sel.qtab!=='archive'&&(tab==='sub'||tab==='repeat'||tab==='epic')){tab='archive';S.sel.qtab='archive';}}
   const inTab=(q,t)=>t==='archive'?isDone(q):q.cat===t&&questStatus(q)!=='hidden'&&!isDone(q);
-  const qs=all.filter(q=>inTab(q,tab));
+  const AC=S.sel.arcCat||'all';
+  const qs=all.filter(q=>inTab(q,tab)&&(tab!=='archive'||AC==='all'||q.cat===AC));
   let sel=S.sel.quest;const sq=quest(sel);
   if(!sq||!sq.published||!inTab(sq,tab))sel=(qs.find(q=>['active','claim','available'].includes(questStatus(q)))||qs[0]||{}).id;
   S.sel.quest=sel;
@@ -632,7 +633,7 @@ function vQuest(){
     <div class="page-head"><div><h2>퀘스트<small class="en">Quest</small></h2><p>수락 → 상황 읽기 → 선택 → 결과 확인 → 다음 단계 → 보상 수령. 선택은 캐릭터별로 저장됩니다.</p></div></div>
     <div class="qtabs" role="tablist">${QT.map(([k,l])=>`<button role="tab" data-act="qtab" data-tab="${k}" aria-selected="${tab===k}">${l}<span class="num">${cnt(k)}</span></button>`).join('')}</div>
     <div class="split">
-      <div class="panel qcats"><p class="qtab-note">${note}</p><div class="qgroups" data-cat="${tab}">${questGroupsHTML(tab,qs,sel)}</div></div>
+      <div class="panel qcats">${tab==='archive'?`<div class="qarc-bar"><select class="qarc-dd" data-act-change="arccat" aria-label="서고 분류">${[['all','전체'],['epic','메인 스토리'],['sub','서브 스토리'],['repeat','데일리']].map(([k,l])=>`<option value="${k}" ${AC===k?'selected':''}>${l}</option>`).join('')}</select></div>`:`<p class="qtab-note">${note}</p>`}<div class="qgroups" data-cat="${tab}">${questGroupsHTML(tab,qs,sel)}</div></div>
       <div class="panel" id="qdetail">${sel?questDetail(quest(sel)):'<p class="empty">퀘스트가 없습니다.</p>'}</div>
     </div></div>`;
 }

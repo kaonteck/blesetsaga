@@ -18,6 +18,7 @@ document.addEventListener('change',e=>{if(!S)return;
   if(el.classList&&el.classList.contains('csel')){const pn=el.closest('[data-chatpanel]');const t=(pn&&pn.dataset.lock)||S.sel.chatTab;if(t==='party')S.sel.partyCh=el.value;else S.sel.lobbyCh=el.value;updateChats();}
   if(el.classList&&el.classList.contains('mk-ed')&&isAdmin()){const x=market().find(y=>y.id===el.dataset.id);if(x){const f=el.dataset.f;const v=el.value.trim();x[f]=f==='stock'?(v===''?null:Math.max(0,Math.round(+v))):Math.max(f==='price'?1:0,Math.round(+v||0));save();toast('저장했습니다.');}}
   if(el.id==='m-sort'){S.sel.mailSort=el.value;renderPop();}
+  if(el.dataset.actChange==='arccat'){S.sel.arcCat=el.value;S.sel.quest=null;render();return;}
   if(el.dataset.actChange==='rodsel'){S.me.rodSel=el.value;save();render();}
   if(el.dataset.actChange==='whisperto'){S.sel.whisperTo=el.value;updateChats();save();}
   if(el.dataset.actChange==='cropfile'&&el.files&&el.files[0])cropFile(el.files[0]);
