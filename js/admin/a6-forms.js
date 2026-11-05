@@ -59,7 +59,7 @@ function nextOpts(q,self){const ord=stepOrder(q);return [...ord.map(k=>[k,(k===s
 
 function questForm(q){
   q.steps=q.steps||{};q.cond=q.cond||{};
-  const cat=[['epic','메인 스토리'],['sub','서브'],['repeat','데일리']];
+  const cat=[['epic','메인'],['sub','서브'],['repeat','데일리']];
   const ord=stepOrder(q);const ends=ord.filter(k=>q.steps[k].end),scenes=ord.filter(k=>!q.steps[k].end);
   const c=q.cond;const condOn=!!(c.quests&&c.quests.length||c.level||c.adv||c.item||(c.flags&&c.flags.length));
   return `<div class="fm">
