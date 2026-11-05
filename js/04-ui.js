@@ -1459,8 +1459,8 @@ function ambient(){
   // 보낸 친구 요청 응답
   Object.entries(S.rel).forEach(([n,v])=>{if(v==='out'){const b=bot(n);if(b&&b.online&&Math.random()<0.5){S.rel[n]='friend';toast(`${n}님이 친구 요청을 수락했습니다.`,'good');if(S.route==='friends')render();}}});
   // 모집 파티
-  S.recruits=S.recruits.filter(r=>{if(Math.random()<0.04||!monster(r.monsterId)){r.members.forEach(n=>{const b=bot(n);if(b)b.status='lobby';});return false;}return true;});
-  S.recruits.forEach(r=>{const m=monster(r.monsterId);if(r.members.length<r.target-1&&Math.random()<0.2){const b=shuffle(idleBots().filter(x=>levelOk(m,x.level))).find(x=>!slotReason(m,r.members.map(bot),roleOf(x.job),r.target));if(b&&r.members.length+1<r.target){b.status='recruit';r.members.push(b.name);}}});
+  S.recruits=S.recruits.filter(r=>{if(r.real)return true;if(Math.random()<0.04||!monster(r.monsterId)){r.members.forEach(n=>{const b=bot(n);if(b)b.status='lobby';});return false;}return true;});
+  S.recruits.forEach(r=>{if(r.real)return;const m=monster(r.monsterId);if(r.members.length<r.target-1&&Math.random()<0.2){const b=shuffle(idleBots().filter(x=>levelOk(m,x.level))).find(x=>!slotReason(m,r.members.map(bot),roleOf(x.job),r.target));if(b&&r.members.length+1<r.target){b.status='recruit';r.members.push(b.name);}}});
   for(let k=0;k<2&&S.recruits.length<6;k++){if(Math.random()<0.5)continue;const ms=S.data.monsters.filter(m=>isGroupMon(m)&&S.recruits.filter(r=>r.monsterId===m.id).length<3);const m=pick(ms);if(m){const r=genRecruit(m);if(r)S.recruits.push(r);}}
   // 상태 랜덤 (전투 중 표시)
   S.bots.forEach(b=>{if(b.online&&b.status==='lobby'&&Math.random()<0.04){const m=pick(S.data.monsters.filter(x=>isGroupMon(x)&&levelOk(x,b.level)));if(m){b.status='battle';b.raid=m.id;}}else if(b.status==='battle'&&!inMyGroup(b.name)&&Math.random()<0.12)b.status='lobby';});
@@ -1678,8 +1678,10 @@ function mkAdmin(){
 /* ───────── 아이템 관리 ───────── */
 const ITEM_DEFAULTS=JSON.parse(JSON.stringify(ITEMS));
 function loadItems(){S.data.items=S.data.items||{};for(const id in S.data.items)ITEMS[id]=S.data.items[id];(S.data.itemsDeleted||[]).forEach(id=>{if(!S.data.items[id])delete ITEMS[id];});}
-function classAllowed(it,job){if(it.wtype)return (CLASS_WEAPON[job]||[]).includes(it.wtype);if(!it.classReq||!it.classReq.length)return true;const c=CLASSES[job];return it.classReq.includes(job)||(c.base&&it.classReq.includes(c.base));}
-function itemBlock(k){const it=ITEMS[k];if(!it)return '알 수 없는 아이템';if(it.levelReq&&S.me.level<it.levelReq)return `LV${it.levelReq} 이상 사용 가능`;if(!classAllowed(it,S.me.job))return it.wtype?`${CLASSES[S.me.job].name}의 무기가 아닙니다 · ${WTYPE[it.wtype]}`:`${it.classReq.map(c=>CLASSES[c].name).join('·')} 전용`;return null;}
+// 무기 종류가 없는 예전 기본 무기 4개(다른 기기의 운영 편집으로 덮인 값 포함)도 종류로 판단
+const LEGACY_WT={sword:'gsword',shield:'sws',bow:'gun',staff:'staff'};
+function classAllowed(it,job){const wt=it&&(it.wtype||(it.slot==='weapon'&&!(it.classReq&&it.classReq.length)?LEGACY_WT[Object.keys(ITEMS).find(k=>ITEMS[k]===it)]:null));if(wt)return (CLASS_WEAPON[job]||[]).includes(wt);if(!it.classReq||!it.classReq.length)return true;const c=CLASSES[job];return it.classReq.includes(job)||(c.base&&it.classReq.includes(c.base));}
+function itemBlock(k){const it=ITEMS[k];if(!it)return '알 수 없는 아이템';if(it.levelReq&&S.me.level<it.levelReq)return `LV${it.levelReq} 이상 사용 가능`;if(!classAllowed(it,S.me.job)){const wt=it.wtype||LEGACY_WT[k];return wt?`${CLASSES[S.me.job].name}의 무기가 아닙니다 · ${WTYPE[wt]}`:`${(it.classReq||[]).map(c=>CLASSES[c].name).join('·')} 전용`;}return null;}
 function typeLabel(it){return it.type==='equip'?SLOT[it.slot]:it.rod?'소모품':it.type==='mat'?'재료':it.type==='deco'?'장식품':'소모품';}
 function reqText(it){const r=[];if(it.levelReq)r.push(`LV${it.levelReq}+`);if(it.wtype)r.push(`${WTYPE[it.wtype]} · ${Object.keys(CLASS_WEAPON).filter(c=>CLASS_WEAPON[c].includes(it.wtype)).map(c=>CLASSES[c].name).join('·')}`);if(it.classReq&&it.classReq.length)r.push(it.classReq.map(c=>CLASSES[c].name).join('·')+' 전용');if(it.maxOwn)r.push(`1인 최대 ${it.maxOwn}개`);return r.join(' · ');}
 /* 아이템은 종류마다 최대 99개(서버 016 saves_guard · 08-server INV_CAP 과 같음). maxOwn 이 더 작으면 그 값 */

@@ -75,7 +75,7 @@ function cjobs(){return S.me.cjobs=S.me.cjobs||{};}
 const DURA_MAX=35;
 function isQuestItem(k){const it=ITEMS[k];return !!it&&(/^q_/.test(k)||it.tag==='퀘스트 아이템'||it.tag==='이스터에그');}
 function dura(id){const d=(S.me.dura||{})[id];return d==null?DURA_MAX:d;}
-function effEquip(){const e={};for(const sl in (S.me.equip||{})){const id=S.me.equip[sl];const it=ITEMS[id];if(id&&dura(id)>0&&!(it&&it.wtype&&!classAllowed(it,S.me.job)))e[sl]=id;}return e;}
+function effEquip(){const e={};for(const sl in (S.me.equip||{})){const id=S.me.equip[sl];const it=ITEMS[id];if(id&&dura(id)>0&&!(it&&(it.wtype||LEGACY_WT[id])&&!classAllowed(it,S.me.job)))e[sl]=id;}return e;}
 function itemLv(id){const it=ITEMS[id];return it.levelReq||Math.max(1,Math.round((it.price||150)/30));}
 function repairRate(id){return 5+itemLv(id)*3;}
 function repairCost(id,miss){return Math.ceil(miss*repairRate(id)*10/DURA_MAX);}
