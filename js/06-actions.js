@@ -205,7 +205,7 @@ const ACTS={
   link:d=>openLink(d.link),
   online:()=>{S.sel.noteEdit=null;S.sel.pop='online';renderPop();renderTop();},
   closemodal:()=>modal(''),
-  pickjob:d=>{S.sel.newJob=d.job;const nm=$('#new-name')?$('#new-name').value:'';render();if($('#new-name'))$('#new-name').value=nm;},
+  pickjob:d=>{S.sel.newJob=d.job;if(d.job==='mage'||d.job==='shooter')S.sel.rangedJob=d.job;const nm=$('#new-name')?$('#new-name').value:'';render();if($('#new-name'))$('#new-name').value=nm;},
   chattab:d=>{S.sel.chatTab=d.tab;if(d.tab!=='dm')S.sel.dmWith=null;updateChats();save();},
   'dm-open':d=>{S.sel.dmWith=d.name;updateChats();save();const i=$('#chat-in-all');if(i)i.focus();},
   'dm-back':()=>{S.sel.dmWith=null;updateChats();},

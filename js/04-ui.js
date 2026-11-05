@@ -227,25 +227,38 @@ function afterRender(){
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);
 }
 
-/* ───────── 캐릭터 생성 ───────── */
+/* ───────── 캐릭터 생성 (2026-11-06 개편: 깃발 4개 · 누르면 클래스 설명) ─────────
+   깃발 순서 디펜더 > 인파이터 > 슈터·메이지(한 깃발, 설명 안에서 고름) > 프리스트. 아이콘 img/class/*.png(흰색 바탕 투명) */
+const CREATE_FLAGS=[['defender','defender'],['infighter','infighter'],['ranged','mage'],['priest','priest']];
+const CLASS_INTRO={
+ defender:{q:'그 앞에 선 자 결국 무릎을 꿇고…',w:'둔기, 대검, 검과 방패',t:'근접',d:'디펜더는 아군을 보호하고 강력한 힘으로 적을 제압하며\n적의 공격을 무력화시켜 역습의 기회를 만들어냅니다.',adv:{warrior:'공격형 플레이 위주로\n몬스터의 시야를 장악하는 클래스',knight:'방어형 플레이 위주로\n아군을 보호하고 탱킹을 보조하는 클래스'}},
+ infighter:{q:'힘의 정점에 선 자, 빛과 그림자가 되리라',w:'권갑, 너클, 단도류',t:'근접',d:'인파이터는 적을 파고들어 강력한 한 방을 날리며, 동시에 빠른 움직임으로\n적을 교란시키는 공격력·방어력·기동력 모두 균형 잡힌 클래스입니다.',adv:{destroyer:'다양한 체술로 더 강력한 한 방을\n날려 전장의 판도를 뒤집는 클래스',mystic:'단도류를 주 무기로 하여 기동성이 높고\n디버프 등으로 적을 교란시키는 클래스'}},
+ mage:{q:'영원히 타오르는 불꽃의 힘으로',w:'스태프',t:'원거리 마법',d:'메이지는 불의 신의 힘을 빌려 적을 공격하고\n디버프 마법으로 파티원의 공격을 지원합니다.',adv:{salamander:'불의 신에 가까워지며\n더 강력한 마법을 구사하는 클래스'}},
+ shooter:{q:'자유를 갈망하는 탄환이 되어라',w:'총',t:'원거리 물리',d:'슈터는 총을 통해 빠르게 움직이며 정확하게 목표를 맞추고\n때로는 강력한 한 방으로 적을 쓰러트립니다.',adv:{dualist:'두 개의 총을 사용하여\n더 빠르고 더 많은 공격이 가능한 클래스'}},
+ priest:{q:'신의 축복을 받은 사도들, 그 자체로 기적이라',w:'완드',t:'원거리 마법',d:'프리스트는 성스러운 힘을 사용하여 아군을 치유하고 보호하며\n때때로 전장의 흐름에 따라 공격을 강행하는 멀티 클래스입니다.',adv:{demigod:'신에게 가까워진 자로 빛의 힘으로\n더 강력한 회복 마법을 구사하는 클래스',summoner:'신에게서 멀어진 자로 어둠의 힘으로\n보호막과 보조 스킬을 구사하는 클래스'}}};
+const LOCK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="15" r="1.6" fill="#1b1d22"/><rect x="11.3" y="15" width="1.4" height="3" fill="#1b1d22"/></svg>';
 function vCreate(){
   const sel=CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender';
-  const base=Object.entries(CLASSES).filter(([,c])=>c.tier===1);
-  return `<div class="wrap"><div class="create">
-    <div><img class="biglogo" src="${LOGO}" alt="BLESET SAGA"><div class="sub">블레셋 전기</div></div>
-    <p class="qtext" style="font-size:15px">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 이름과 클래스를 정하세요.</p>
-    <form class="stack" data-form="create">
-      <label class="stack" style="gap:6px;max-width:360px"><span class="ph" style="margin:0">블레서 이름</span>
-        <input type="text" id="new-name" maxlength="10" placeholder="2~10자" required autocomplete="off"></label>
-      <div class="ph" style="margin:8px 0 0">클래스 · LV${cfg().jobAdvanceLevel}에 ★ 상위 클래스로 전직</div>
-      <div class="jobs">${base.map(([k,c])=>{const st=statsFor(k,1,{});return `<button type="button" class="job" data-act="pickjob" data-job="${k}" aria-pressed="${sel===k}">
-        <div class="row" style="gap:12px">${sigil(k)}<div class="stack" style="gap:4px">${roleChip(k)}<span class="faint" style="font-size:11.5px;letter-spacing:.08em">${c.en}</span></div></div>
-        <p class="muted">${c.desc}</p>
-        <dl class="kv num"><dt>HP</dt><dd>${st.maxHp}</dd><dt>${STATK[st.pk||'atk']}</dt><dd>${st[st.pk||'atk']}</dd><dt>방어력</dt><dd>${st.def}</dd><dt>행운</dt><dd>${st.luk}</dd><dt>사거리</dt><dd>${c.range}</dd></dl>
-        <p style="font-size:12.5px">${c.skills.map(x=>SKILLS[x].name).join(' · ')}</p>
-        <p class="faint" style="font-size:12px">부름을 받는 곳 · ${ORIGIN[k]}<br>전직 → ${c.adv.map(a=>'★ '+CLASSES[a].name).join(' / ')}</p></button>`;}).join('')}</div>
-      <div class="row"><button class="btn btn-primary" type="submit">탐사 시작</button><span class="notice-local">시제품 · 진행 기록은 이 브라우저에만 저장됩니다</span></div>
-    </form></div></div>`;
+  const flagOf=k=>k==='mage'||k==='shooter'?'ranged':k;const cur=flagOf(sel);
+  const I=CLASS_INTRO[sel],c=CLASSES[sel];
+  const flags=CREATE_FLAGS.map(([f,job],n)=>{const on=f===cur;const j=on?sel:(f==='ranged'?(S.sel.rangedJob||'mage'):job);
+    return `<button type="button" class="cflag ${on?'on':''}" data-act="pickjob" data-job="${j}" aria-pressed="${on}" aria-label="${f==='ranged'?'슈터 · 메이지':CLASSES[job].name}" style="--d:${n*0.37}s">
+      <span class="cfl-cloth"><span class="cfl-ic" style="-webkit-mask-image:url(img/class/${f}.png);mask-image:url(img/class/${f}.png)"></span><span class="cfl-sheen"></span></span><span class="cfl-name">${f==='ranged'?'슈터 · 메이지':CLASSES[job].name}</span></button>`;}).join('');
+  const pair=cur==='ranged'?`<div class="cd-pair" role="group" aria-label="슈터 또는 메이지">${['shooter','mage'].map(k=>`<button type="button" data-act="pickjob" data-job="${k}" aria-pressed="${sel===k}">${CLASSES[k].name}<small>${CLASSES[k].en}</small></button>`).join('')}</div>`:'';
+  return `<div class="cc-page"><div class="cc-smoke" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="cc-head"><img class="biglogo" src="${LOGO}" alt="BLESET SAGA"><div class="sub">블레셋 전기</div>
+      <p class="cc-lead">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 클래스와 이름을 정하세요.</p></div>
+    <form class="cc-body" data-form="create">
+      <div class="cc-flags" role="group" aria-label="클래스 선택">${flags}</div>
+      <div class="cc-desc" aria-live="polite">${pair}
+        <h2 class="cd-q">“ ${esc(I.q)} ”</h2>
+        <div class="cd-meta"><span><b>주요 무기</b><i>|</i>${esc(I.w)}</span><span><b>전투 타입</b><i>|</i>${esc(I.t)}</span><span><b>사거리</b><i>|</i>${esc(c.range.replace('×','x'))}</span></div>
+        <p class="cd-d">${esc(I.d).replace(/\n/g,' <br>')}</p>
+        <div class="cd-adv-h">| 2차 전직 |</div>
+        <div class="cd-adv">${c.adv.map(a=>`<div class="cd-a"><span class="cd-lock">${LOCK_SVG}</span><div><b>${CLASSES[a].name}</b> <span class="faint">${CLASSES[a].en}</span><p>${esc(I.adv[a]||CLASSES[a].desc||'').replace(/\n/g,' <br>')}</p></div></div>`).join('')}</div>
+        <div class="cd-name"><label for="new-name">블레서 이름</label><div class="row" style="gap:8px;flex-wrap:nowrap"><input type="text" id="new-name" maxlength="10" placeholder="2~10자" required autocomplete="off"><button class="btn btn-primary" type="submit">${esc(c.name)}${(c.name.charCodeAt(c.name.length-1)-0xAC00)%28&&(c.name.charCodeAt(c.name.length-1)-0xAC00)%28!==8?'으로':'로'} 시작</button></div>
+          <small class="faint">LV${cfg().jobAdvanceLevel}에 2차 전직 · 부름을 받는 곳 ${esc(ORIGIN[sel]||'')}</small></div>
+      </div></form></div>`;
 }
 /* ───────── 메인 ───────── */
 function vMain(){

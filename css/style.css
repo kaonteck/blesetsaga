@@ -3299,3 +3299,56 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 #rn-gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(6,7,10,.86);backdrop-filter:blur(4px)}
 #rn-gate .rn-box{width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--rule);border-radius:10px;background:var(--panel,var(--slab))}
 #rn-gate h3{margin:0;text-align:center}#rn-gate .faint{font-size:12.5px;margin:0;line-height:1.6}
+
+/* ───────── 캐릭터 생성(깃발 4개 · 2026-11-06) ───────── */
+.cc-page{position:relative;min-height:calc(100vh - 60px);padding:28px 16px 60px;background:radial-gradient(120% 80% at 30% 30%,#14161c 0%,#07080b 60%,#030304 100%);color:#e8e6e1;overflow:hidden;isolation:isolate}
+.cc-smoke{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.cc-smoke i{position:absolute;width:70vw;height:40vh;left:-10vw;bottom:-8vh;border-radius:50%;background:radial-gradient(closest-side,rgba(180,190,210,.08),transparent);filter:blur(30px);animation:ccSmoke 22s ease-in-out infinite alternate}
+.cc-smoke i:nth-child(2){left:20vw;bottom:2vh;width:60vw;animation-duration:28s;animation-delay:-8s}
+.cc-smoke i:nth-child(3){left:45vw;bottom:-12vh;animation-duration:34s;animation-delay:-15s;opacity:.7}
+@keyframes ccSmoke{from{transform:translateX(-4vw) scale(1)}to{transform:translateX(6vw) scale(1.15)}}
+.cc-head{max-width:1180px;margin:0 auto 18px}
+.cc-head .sub{display:block;font-family:var(--f-display);font-size:15px;letter-spacing:.6em;color:#9aa0aa;margin-top:8px}
+.cc-lead{margin:14px 0 0;color:#b9bcc3;font-size:14.5px;max-width:640px;line-height:1.7}
+.cc-body{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:40px;align-items:start}
+.cc-flags{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+.cflag{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
+.cflag:focus-visible .cfl-cloth{outline:2px solid #e7cf9a;outline-offset:4px}
+.cfl-cloth{position:relative;display:block;width:100%;aspect-ratio:118/300;clip-path:polygon(0 0,100% 0,100% 80%,50% 100%,0 80%);background:linear-gradient(90deg,#5a4a30,#2c2a2a 30%,#2c2a2a 70%,#5a4a30);
+  transform-origin:50% 0;animation:cfWave 4.6s ease-in-out infinite;animation-delay:var(--d);transition:filter .25s,opacity .25s}
+.cfl-cloth::before{content:"";position:absolute;inset:0 2px 3px;clip-path:polygon(0 0,100% 0,100% 80%,50% 99%,0 80%);background:linear-gradient(180deg,#1b1e26,#23262f 55%,#171a21)}
+.cflag.on .cfl-cloth{background:linear-gradient(90deg,#c9ad7a,#f3e2b8 45%,#a88a58)}
+.cflag.on .cfl-cloth::before{inset:0 4px 5px;background:linear-gradient(180deg,#2f466d,#3c5682 50%,#2a3f63)}
+.cfl-ic{position:absolute;left:12%;right:12%;top:26%;aspect-ratio:1;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;background:#5d6574;opacity:.75;transition:background .25s,opacity .25s}
+.cflag.on .cfl-ic{background:linear-gradient(160deg,#a9c4ee,#6f93cf 55%,#4f73b0);opacity:1}
+.cfl-sheen{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,0) 0,rgba(255,255,255,.07) 14%,rgba(0,0,0,.18) 30%,rgba(255,255,255,0) 46%);background-size:220% 100%;mix-blend-mode:soft-light;animation:cfSheen 4.6s ease-in-out infinite;animation-delay:var(--d)}
+.cflag:not(.on) .cfl-cloth{filter:brightness(.8) saturate(.7)}
+.cflag:not(.on):hover .cfl-cloth{filter:none}
+.cfl-name{font-size:12.5px;letter-spacing:.06em;color:#8f949d;transition:color .2s}
+.cflag.on .cfl-name{color:#f0dcae}
+@keyframes cfWave{0%,100%{transform:perspective(700px) rotateY(0) skewY(0)}25%{transform:perspective(700px) rotateY(5deg) skewY(.6deg)}50%{transform:perspective(700px) rotateY(-1deg) skewY(-.3deg)}75%{transform:perspective(700px) rotateY(-5deg) skewY(-.6deg)}}
+@keyframes cfSheen{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+@media (prefers-reduced-motion:reduce){.cfl-cloth,.cfl-sheen,.cc-smoke i{animation:none}}
+.cc-desc{padding-top:6px;animation:cdIn .4s ease both}
+@keyframes cdIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cd-q{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,2.4vw,32px);line-height:1.35;margin:0 0 18px;color:#f1efe9}
+.cd-meta{display:flex;flex-wrap:wrap;gap:6px 24px;font-size:14px;color:#c9cbd0;margin-bottom:16px}
+.cd-meta b{color:#8fa8dc;font-weight:700}.cd-meta i{font-style:normal;color:#8fa8dc;margin:0 8px}
+.cd-d{font-size:14.5px;line-height:1.8;color:#e1dfda;margin:0 0 26px}
+.cd-adv-h{font-weight:700;font-size:14px;color:#f0eee9;margin-bottom:12px}
+.cd-adv{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:28px}
+.cd-a{display:flex;gap:12px;align-items:flex-start;min-width:240px;flex:1}
+.cd-a b{color:#f3f1ec}.cd-a p{margin:4px 0 0;font-size:13px;line-height:1.6;color:#c7c9ce}
+.cd-lock{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#f2f2f2,#9a9a9a 70%,#6d6d6d);box-shadow:0 0 0 2px #2b2d33,0 2px 6px rgba(0,0,0,.6);color:#3a3c42}
+.cd-lock svg{width:26px;height:26px;color:#f5f5f5;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.cd-pair{display:inline-flex;gap:4px;padding:3px;border:1px solid rgba(231,207,154,.35);border-radius:999px;margin-bottom:16px}
+.cd-pair button{all:unset;cursor:pointer;padding:6px 16px;border-radius:999px;font-size:13px;color:#b9bcc3}
+.cd-pair button small{margin-left:6px;font-size:11px;opacity:.7}
+.cd-pair button[aria-pressed="true"]{background:#e7cf9a;color:#17181c;font-weight:700}
+.cd-name{display:flex;flex-direction:column;gap:8px;max-width:460px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+.cd-name label{font-size:12px;letter-spacing:.12em;color:#9aa0aa}
+.cd-name input{flex:1;min-width:0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);color:#f1efe9;border-radius:6px;padding:10px 12px;font-size:15px}
+.cd-name input:focus{outline:none;border-color:#e7cf9a}
+.cd-name .btn{white-space:nowrap}
+@media (max-width:900px){.cc-body{grid-template-columns:1fr;gap:24px}.cc-flags{max-width:520px;margin:0 auto;width:100%}}
+@media (max-width:520px){.cd-d br,.cd-a p br{display:none}.cc-flags{gap:8px}.cfl-name{font-size:11px}.cd-a{min-width:0;flex-basis:100%}.cd-name .row{flex-wrap:wrap!important}.cd-name .btn{width:100%}}
