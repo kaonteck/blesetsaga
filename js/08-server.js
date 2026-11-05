@@ -925,7 +925,7 @@ async function ptRefreshStateOnce(){const id=PT.chRoom;if(!id)return;const {data
 // ── 전투: 파티장 ──
 function ptSnapshot(b){
   const s=JSON.parse(JSON.stringify(b,(k,v)=>k==='result'?undefined:v));
-  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;if(b.endsAt)s.endsIn=Math.max(0,b.endsAt-now());delete s.endsAt;
+  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;if(b.endsAt)s.endsIn=Math.max(0,b.endsAt-now());delete s.endsAt;if(s.blessR&&!s.bless)s.bless=s.blessR;delete s.blessR;
   return s;
 }
 function ptPushSoon(){const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=setTimeout(()=>ptPush(),500);}
@@ -943,6 +943,7 @@ async function ptPush(){
 }
 function ptApplyAct(row){
   if(row.turn===-1){ptDrunHpAct(row);return;}
+  if(row.turn===-2){if(row.action)mtBlessPick(row);return;}
   const b=ptBattle();if(!ptHost(b)||b.over||row.turn!==b.turn)return;
   const f=b.players.find(p=>p.uid===row.uid&&!p.isMe);if(!f||f.dead)return;
   if(!row.action){f.action=null;f.action2=null;f.confirmed=false;b.allAt=null;}
@@ -991,7 +992,7 @@ function ptTrust(b,m,rid){
   if(mkind(m)==='event'){
     b.id='PT'+rid;b.monsterId=m.id;b.rules={exp:0,gold:0,drops:[],turnSeconds:ts};
     const M=mtShared();b.ctx={type:'mass',ev:M&&M.shared.room===rid?M.evId:'srvmass:'+rid};b.reward=massDef(m).reward;b.grid=true;delete b.eventBonus;
-    const ks=Object.keys(BLESS);if(b.bless&&typeof b.bless==='object'){const B=b.bless;b.bless={by:String(B.by||'').slice(0,16),cards:Array.isArray(B.cards)&&B.cards.every(k=>ks.includes(k))?B.cards.slice(0,5):ks,pick:ks.includes(B.pick)?B.pick:null,me:false};}else delete b.bless;
+    const ks=Object.keys(BLESS);if(b.bless&&typeof b.bless==='object'){const B=b.bless;b.bless={by:String(B.by||'').slice(0,16),cards:Array.isArray(B.cards)&&B.cards.every(k=>ks.includes(k))?B.cards.slice(0,5):ks,pick:ks.includes(B.pick)?B.pick:null};b.bless.me=!b.bless.pick&&B.uid===SB_UID;}else delete b.bless;
     b.endsAt=now()+Math.max(0,Math.min(3600000,+b.endsIn||0))+60000;delete b.endsIn;
     b.mon.name=m.name;b.mon.art=m.art;b.mon.region=m.region;
     b.over=b.over==='win'||b.over==='lose'?b.over:null;
@@ -1261,10 +1262,26 @@ async function mtStart(){
     _ptMassStart();const b=S.battle;if(!b||!b.grid||!b.ctx||b.ctx.type!=='mass')return;
     ptRealFighters(b,r.members||[],null);
     b.shared={room:r.id,host:SB_UID};b.srev=0;ptSubscribe(r.id);
+    mtBlessHold(b);
     save();ptPush();
   }finally{MT.starting=false;}
 }
 let _ptMassStart=null;
+// 가호 카드: 뽑힌 사람이 공대장이 아닌 실제 블레서면, 공대장 화면(봇 자동 선택 타이머)이 대신 고르지 않게
+// b.bless를 b.blessR로 잠시 옮겨 둔다 → 그 사람이 고르면(party_act turn -2) 적용, 첫 턴 처리 때까지 안 고르면 무작위(원래 규칙)
+function mtBlessHold(b){
+  const B=b&&b.bless;if(!B||B.pick)return false;
+  const f=b.players.find(p=>p.name===B.by&&p.real&&!p.isMe);if(!f)return false;
+  B.me=false;B.uid=f.uid;b.blessR=B;delete b.bless;b.deadline+=20000;
+  if($('.modal.bless'))modal('');save();ptPush();return true;
+}
+function mtBlessPick(row){
+  const b=ptBattle();if(!ptHost(b)||b.over||!b.blessR)return;const B=b.blessR;
+  if(B.pick||row.uid!==B.uid)return;const i=Math.floor(+row.action.bless);if(!(i>=0&&i<B.cards.length))return;
+  b.bless=B;delete b.blessR;S.sel.blessOpen=i;applyBless(b,B.cards[i]);save();
+  if(S.route==='battle')render();if($('.modal.bless'))showBless(true);else toast(`${B.by}님이 「${BLESS[B.pick][0]}」을(를) 골랐습니다.`,'good');
+  ptPush();
+}
 
 const ptQ=()=>{const q=S&&S.queue;return q&&SB_UID&&ptKindOk(monster(q.monsterId))?q:null;};
 function ptQueueFind(q){return ptEntries().filter(r=>r.monsterId===q.monsterId&&r.target===q.target&&r.roomId!==q.roomId&&!joinReason(r)).sort((a,b)=>a.roomId<b.roomId?-1:1)[0]||null;}
@@ -1382,7 +1399,7 @@ if(ONLINE){
   const _planBots=planBots;
   planBots=function(b){_planBots(b);if(ptHost(b))b.players.forEach(f=>{if(f.real&&!f.isMe)f.planAt=Infinity;});};
   const _doResolve=doResolve;
-  doResolve=function(){const b=ptBattle();if(b&&!ptHost(b))return;_doResolve();if(b)ptPush();};
+  doResolve=function(){const b=ptBattle();if(b&&!ptHost(b))return;if(b&&b.blessR&&!b.bless){b.bless=b.blessR;delete b.blessR;}_doResolve();if(b)ptPush();};
   const _renderFight=renderFight;
   renderFight=function(){_renderFight();if(ptHost(ptBattle()))ptPushSoon();};
   ['confirmact','confirmdefend','editact','g-confirm'].forEach(k=>{const _f=ACTS[k];ACTS[k]=(d,el,e)=>{const r=_f(d,el,e);const b=ptBattle();if(b&&!ptHost(b))ptSendAct();return r;};});
@@ -1428,6 +1445,12 @@ if(ONLINE){
     M.roster=M.roster.filter(x=>!x.isMe);ptRpc('mass_leave',{p_room:M.shared.room}).catch(err=>console.warn(err)).finally(()=>mtFetch());ptUnsub();save();render();};
   const _massGo=ACTS['mass-go'];
   ACTS['mass-go']=(d,el,e)=>{const M=mtShared();if(!M)return _massGo(d,el,e);if(M.leaderUid!==SB_UID)return;mtStart();};
+  const _blessDlg=blessDlg;
+  blessDlg=function(){const b=S.battle;if(b&&b.blessR&&!b.bless){b.bless=b.blessR;try{return _blessDlg();}finally{delete b.bless;}}return _blessDlg();};
+  const _blessPick=ACTS['bless-pick'];
+  ACTS['bless-pick']=(d,el,e)=>{const b=ptBattle();
+    if(b&&!ptHost(b)&&b.bless&&b.bless.me&&!b.bless.pick){const i=+d.i;ptRpc('party_act',{p_room:b.shared.room,p_turn:-2,p_action:{bless:i}}).catch(err=>{console.warn(err);toast('가호 선택을 공대장에게 보내지 못했습니다. 다시 골라 주세요.','bad');});}
+    return _blessPick(d,el,e);};
   const _massTick=massTick;
   massTick=function(t){
     const M=mtShared();if(!M)return _massTick(t);if(M.phase!=='gather'||MT.starting)return;
