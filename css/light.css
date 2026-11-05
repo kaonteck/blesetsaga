@@ -1522,6 +1522,8 @@ html[data-theme="light"] .sv-robe{background:linear-gradient(#e4e7ec,#c9ced6)}
 html[data-theme="light"] .sv-veil{background:#f1f3f6;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
 html[data-theme="light"] .sv-head{background:#d9cfc4}
 html[data-theme="light"] .sv-temple{background:linear-gradient(#fbfcfd,#e1e7ee);box-shadow:0 0 0 1px rgba(120,140,160,.15)}
+html[data-theme="light"] .qarch{border:1px solid var(--rule)}
+html[data-theme="light"] .qarch>summary{color:var(--muted)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

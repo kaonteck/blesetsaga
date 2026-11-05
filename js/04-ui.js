@@ -615,15 +615,19 @@ function later(ms,fn){const t=setTimeout(()=>{timers.delete(t);fn();},ms);timers
 
 /* ───────── 퀘스트 화면 ───────── */
 function vQuest(){
-  const QT=[['epic','메인 스토리'],['sub','서브 스토리'],['repeat','데일리']];
+  const QT=[['epic','메인 스토리'],['sub','서브 스토리'],['repeat','데일리'],['archive','서고']];
   const all=S.data.quests.filter(q=>q.published);
   let tab=S.sel.qtab||'epic';
-  const qs=all.filter(q=>q.cat===tab&&questStatus(q)!=='hidden');
+  const isDone=q=>QDONE.includes(questStatus(q));
+  /* 서고: 완료한 퀘스트 모음. 서브·데일리 탭에는 진행할 것만 남김(메인 스토리는 장 흐름을 보여 주려고 완료도 그대로) */
+  {const rq=quest(S.sel.quest);if(rq&&rq.published&&isDone(rq)&&(tab==='sub'||tab==='repeat')){tab='archive';S.sel.qtab='archive';}}
+  const inTab=(q,t)=>t==='archive'?isDone(q):q.cat===t&&questStatus(q)!=='hidden'&&(t==='epic'||!isDone(q));
+  const qs=all.filter(q=>inTab(q,tab));
   let sel=S.sel.quest;const sq=quest(sel);
-  if(!sq||!sq.published||sq.cat!==tab||questStatus(sq)==='hidden')sel=(qs.find(q=>['active','claim','available'].includes(questStatus(q)))||qs[0]||{}).id;
+  if(!sq||!sq.published||!inTab(sq,tab))sel=(qs.find(q=>['active','claim','available'].includes(questStatus(q)))||qs[0]||{}).id;
   S.sel.quest=sel;
-  const cnt=c=>all.filter(q=>q.cat===c&&questStatus(q)!=='hidden').length;
-  const note={epic:'이야기 중간의 전투는 혼자 치르는 개인 레이드입니다. 지면 같은 단계에서 다시 도전합니다.',sub:'세계관에서 파생된 이야기입니다. 조건을 채우면 열립니다.',repeat:`오늘의 데일리 ${DAILY_Q}개 · 매일 05:00에 목록에서 무작위로 바뀝니다.`}[tab];
+  const cnt=c=>all.filter(q=>inTab(q,c)).length;
+  const note={epic:'이야기 중간의 전투는 혼자 치르는 개인 레이드입니다. 지면 같은 단계에서 다시 도전합니다.',sub:'세계관에서 파생된 이야기입니다. 조건을 채우면 열립니다. 완료한 이야기는 서고에 있습니다.',repeat:`오늘의 데일리 ${DAILY_Q}개 · 매일 05:00에 목록에서 무작위로 바뀝니다. 오늘 끝낸 데일리는 서고에 있습니다.`,archive:'완료한 퀘스트를 모아 둔 곳입니다. 고른 선택지와 지나온 이야기를 다시 읽을 수 있습니다.'}[tab];
   return `<div class="wrap page">
     <div class="page-head"><div><h2>퀘스트<small class="en">Quest</small></h2><p>수락 → 상황 읽기 → 선택 → 결과 확인 → 다음 단계 → 보상 수령. 선택은 캐릭터별로 저장됩니다.</p></div></div>
     <div class="qtabs" role="tablist">${QT.map(([k,l])=>`<button role="tab" data-act="qtab" data-tab="${k}" aria-selected="${tab===k}">${l}<span class="num">${cnt(k)}</span></button>`).join('')}</div>
@@ -637,14 +641,20 @@ const QDONE=['done','doneToday'];
 function qLi(q,sel){const st=questStatus(q);return `<div class="li clickable" data-act="openquest" data-id="${q.id}" ${q.id===sel?'aria-current="true"':''}><div class="t"><b>${esc(q.title)}</b><small>LV${q.level}${q.prereq?' · 선행 '+esc((quest(q.prereq)||{}).title||q.prereq):''}${hasBattle(q)?' · 개인 레이드':''}</small></div><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>`;}
 function qGroup(key,title,list,sel,defOpen,meta){const O=S.sel.qgrp||{};const open=key in O?O[key]:defOpen;
   return `<div class="qgrp ${open?'open':''}"><button class="qgrp-h" data-act="qgrp" data-k="${key}" data-def="${defOpen?1:0}" aria-expanded="${open}"><span class="qgrp-t">${esc(title)}</span><span class="qgrp-m num">${meta}</span><svg class="qgrp-c" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>${open?`<div class="list">${list.map(q=>qLi(q,sel)).join('')}</div>`:''}</div>`;}
-function questGroupsHTML(tab,qs,sel){if(!qs.length)return '<p class="empty">없음</p>';
+function questGroupsHTML(tab,qs,sel){if(!qs.length)return `<p class="empty">${tab==='archive'?'아직 완료한 퀘스트가 없습니다.':'없음'}</p>`;
+  if(tab==='archive'){const byLv=(a,b)=>(a.level-b.level)||a.title.localeCompare(b.title,'ko');const used=new Set();const out=[];
+    QCHAPTERS.forEach(([key,title,ids])=>{const L=ids.map(id=>qs.find(q=>q.id===id)).filter(Boolean);L.forEach(q=>used.add(q.id));if(L.length)out.push(qGroup('arc_'+key,title,L,sel,L.some(q=>q.id===sel),`${L.length}/${ids.length}`));});
+    const ep=qs.filter(q=>q.cat==='epic'&&!used.has(q.id)).sort(byLv);if(ep.length)out.push(qGroup('arc_epic','그 밖의 메인 이야기',ep,sel,ep.some(q=>q.id===sel),`${ep.length}`));
+    const sb=qs.filter(q=>q.cat==='sub').sort(byLv);if(sb.length)out.push(qGroup('arc_sub','서브 스토리',sb,sel,sb.some(q=>q.id===sel),`${sb.length}`));
+    const rp=qs.filter(q=>q.cat==='repeat').sort(byLv);if(rp.length)out.push(qGroup('arc_rep','오늘 끝낸 데일리',rp,sel,rp.some(q=>q.id===sel),`${rp.length}`));
+    return out.join('');}
   if(tab==='epic'){const used=new Set();const groups=QCHAPTERS.map(([key,title,ids])=>{const L=ids.map(id=>qs.find(q=>q.id===id)).filter(Boolean);L.forEach(q=>used.add(q.id));return [key,title,L];});
     const rest=qs.filter(q=>!used.has(q.id));if(rest.length)groups.push(['ch_etc','그 밖의 이야기',rest]);
     return groups.filter(g=>g[2].length).map(([key,title,L])=>{const done=L.filter(q=>QDONE.includes(questStatus(q))).length;const cur=L.some(q=>q.id===sel)||done<L.length&&L.some(q=>questStatus(q)!=='locked');
       return qGroup(key,title,L,sel,cur,done===L.length?'완료':`${done}/${L.length}`);}).join('');}
   const byLv=(a,b)=>(a.level-b.level)||a.title.localeCompare(b.title,'ko');
   const live=qs.filter(q=>!QDONE.includes(questStatus(q))).sort(byLv),done=qs.filter(q=>QDONE.includes(questStatus(q))).sort(byLv);
-  return `${done.length?qGroup('done_'+tab,'완료 목록',done,sel,false,`${done.length}`):''}<div class="list">${live.map(q=>qLi(q,sel)).join('')||'<p class="empty" style="padding:6px 0">진행할 퀘스트가 없습니다.</p>'}</div>`;}  /* 완료 목록(접힘)을 진행할 퀘스트 위에 */
+  return `<div class="list">${live.map(q=>qLi(q,sel)).join('')||'<p class="empty" style="padding:6px 0">진행할 퀘스트가 없습니다.</p>'}</div>`;}  /* 완료 목록(접힘)을 진행할 퀘스트 위에 */
 function questDetail(q){
   const st=questStatus(q);const qp=S.qp[q.id];
   let h=`<div class="stack" style="gap:16px"><div><div class="row" style="justify-content:space-between"><span class="ph" style="margin:0">${{epic:'메인 스토리',sub:'서브 스토리',repeat:'데일리'}[q.cat]} · LV${q.level}</span><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>
@@ -655,6 +665,7 @@ function questDetail(q){
     h+=`<div><div class="ph">완료 보상${ends.length>1?' · 경로별':''}</div><div class="stack">${ends.map(e=>`<div class="row" style="justify-content:space-between;gap:12px"><span class="muted" style="font-size:13px">${esc(e.text)}</span>${rewardHTML(qReward(q,e.reward))}</div>`).join('')}</div></div>`;
   }
   if(st==='available')h+=`<div class="act-br"><button class="btn btn-primary btn-sm" data-act="acceptq" data-id="${q.id}">수락</button></div>`;
+  if((st==='done'||st==='doneToday')&&qp&&qp.history&&qp.history.length)h+=`<details class="qarch" ${S.sel.qtab==='archive'?'open':''}><summary>지나온 이야기 <span class="num faint">${qp.history.length}</span></summary><div class="qhist">${qp.history.map(x=>`<div><p>${esc(String(x.text).replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>'■'.repeat([...n].length)))}</p><p style="margin-top:4px"><b>▸ ${esc(x.label)}</b> — ${esc(x.result)}</p></div>`).join('')}</div></details>`;
   if(st==='done'||st==='doneToday'){
     const log=S.rewardLog.find(r=>r.source==='quest'&&r.questId===q.id);
     h+=`<p class="ok-t">${st==='doneToday'?'오늘 주기의 보상을 받았습니다. 오전 5시 이후 다시 수락할 수 있습니다.':'완료한 퀘스트입니다.'}${log?` 선택한 경로: ${esc(log.path||'')}`:''}</p>`;

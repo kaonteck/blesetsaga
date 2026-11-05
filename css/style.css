@@ -3220,3 +3220,10 @@ body.glx .wrap{clip-path:polygon(0 0,100% 0,100% 37%,96% 37%,96% 41%,100% 41%,10
 .sv-veil{background:#f1f3f6;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
 .sv-head{background:#d9cfc4}
 .sv-temple{background:linear-gradient(#fbfcfd,#e1e7ee);box-shadow:0 0 0 1px rgba(120,140,160,.15)}
+/* 퀘스트 서고: 완료한 퀘스트의 지나온 이야기 */
+.qarch{border:1px solid var(--rule);border-radius:10px;padding:8px 12px}
+.qarch>summary{cursor:pointer;font-size:13px;color:var(--muted);list-style:none}
+.qarch>summary::-webkit-details-marker{display:none}
+.qarch>summary::before{content:'▸ ';}
+.qarch[open]>summary::before{content:'▾ ';}
+.qarch .qhist{margin-top:8px}
