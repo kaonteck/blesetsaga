@@ -8,7 +8,7 @@ let SB=null,SB_UID=null,SB_ADMIN=false,cloudT=null,cloudBusy=false,cloudAgain=fa
 function cloudSave(now){if(now){clearTimeout(cloudT);cloudT=null;return cloudPush();}if(cloudT)return;cloudT=setTimeout(()=>{cloudT=null;cloudPush();},4000);}
 async function cloudPush(){
   if(!SB||!SB_UID||!S)return false;if(cloudBusy){cloudAgain=true;return false;}cloudBusy=true;
-  try{const {data:back,error}=await SB.from('saves').upsert({user_id:SB_UID,data:S,updated_at:new Date().toISOString()}).select('rev:data->adminRev,lv:data->me->level,ex:data->me->exp,gr:guard->rev,gd:data->me->gold');
+  try{const {data:back,error}=await SB.from('saves').upsert({user_id:SB_UID,data:slimOut(S,true),updated_at:new Date().toISOString()}).select('rev:data->adminRev,lv:data->me->level,ex:data->me->exp,gr:guard->rev,gd:data->me->gold');
     if(error)throw error;if(cloudFailN>=3)toast('서버 저장이 다시 연결되었습니다.','good');cloudFailN=0;admApply(back);grdApply(back);pfSync();return true;}
   catch(e){cloudFailN++;if(cloudFailN===3)toast('서버에 저장하지 못하고 있습니다. 이 기기에는 저장되어 있으며 계속 다시 시도합니다.','bad');clearTimeout(cloudT);cloudT=setTimeout(()=>{cloudT=null;cloudPush();},Math.min(60000,4000*cloudFailN));return false;}
   finally{cloudBusy=false;if(cloudAgain){cloudAgain=false;cloudSave();}}
@@ -40,13 +40,13 @@ function grdApply(back){const r=Array.isArray(back)?back[0]:back;if(!r||r.gr==nu
 async function cloudFlush(){
   clearTimeout(cloudT);cloudT=null;clearTimeout(saveT);
   for(let i=0;i<60&&cloudBusy;i++)await new Promise(r=>setTimeout(r,100));
-  S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}
+  S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(slimOut(S)));}catch(e){}
   return cloudPush();
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SB_UID&&S){clearTimeout(saveT);S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}cloudSave(true);}});
-async function sbLogout(){S.sel.pop=null;clearTimeout(saveT);try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}await cloudPush();await SB.auth.signOut();location.replace(location.pathname);}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SB_UID&&S){clearTimeout(saveT);S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(slimOut(S)));}catch(e){}cloudSave(true);}});
+async function sbLogout(){S.sel.pop=null;clearTimeout(saveT);try{localStorage.setItem(SAVE,JSON.stringify(slimOut(S)));}catch(e){}await cloudPush();await SB.auth.signOut();location.replace(location.pathname);}
 function loadLib(src){return new Promise((ok,no)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=no;document.head.appendChild(t);});}
-function migrateRaw(raw){try{let s=typeof raw==='string'?JSON.parse(raw):raw;if(s&&s.v===1){s=migrate(s);s.v=2;}if(s&&s.v===2)s=migrate3(s);if(s&&s.v===SAVE_V)return s;}catch(e){}return null;}
+function migrateRaw(raw){try{let s=typeof raw==='string'?JSON.parse(raw):raw;if(s&&s.v===1){s=migrate(s);s.v=2;}if(s&&s.v===2)s=migrate3(s);if(s&&s.v===SAVE_V)return slimIn(s);}catch(e){}return null;}
 const ID_DOMAIN='blesetsaga.vercel.app';
 const idMail=id=>id.includes('@')?id:`${id.toLowerCase()}@${ID_DOMAIN}`;
 function authView(msg,mode,keep){
@@ -94,6 +94,7 @@ async function sbEnter(user){
   if(error){sbEntered=false;SB_UID=null;$('#view').innerHTML=`<div class="wrap"><div class="create" style="align-items:center;text-align:center;max-width:420px"><p class="errs">서버에서 진행 기록을 불러오지 못했습니다.<br><small>${esc(error.message||'')}</small></p><button class="btn btn-primary" onclick="location.reload()">다시 시도</button></div></div>`;return;}
   const cloud=data&&migrateRaw(data.data);const local=migrateRaw(localStorage.getItem(SAVE));let st=null,imported=false;
   if(cloud&&local)st=(local.savedAt||0)>(cloud.savedAt||0)?local:cloud;else st=cloud||local;
+  if(st&&st===cloud&&local&&local.me&&st.me&&!st.me.portraitSrc&&local.me.portraitSrc&&local.me.portrait===st.me.portrait)st.me.portraitSrc=local.me.portraitSrc;
   // 운영자가 레벨을 조정했는데 이 기기의 로컬 세이브가 더 최근이면, 레벨·경험치만 서버 값으로
   if(st&&cloud&&st!==cloud&&st.me&&cloud.me&&(cloud.adminRev||0)>(st.adminRev||0)){st.me.level=cloud.me.level;st.me.exp=cloud.me.exp||0;st.adminRev=cloud.adminRev;delete st.me.hpPct;delete st.me.hpAt;}
   if(!st){let legacy=null;try{if(localStorage.getItem(SAVE0+':claimed')==null)legacy=migrateRaw(localStorage.getItem(SAVE0));}catch(e){}
@@ -227,11 +228,19 @@ document.addEventListener('visibilitychange',()=>{if(SB_UID)pfSync(document.visi
 // 게임 클래스 id인지 (CLASSES 객체의 기본 속성 이름 'constructor' 등은 제외)
 const isClass=j=>typeof j==='string'&&Object.prototype.hasOwnProperty.call(CLASSES,j);
 const ML_TTL=7*24*3600e3;
-let mlPlayers=[],mlNames={},mlT=null,mlPoll=null,mlSending=false;
+let mlIncAt=0,mlPlayers=[],mlNames={},mlT=null,mlPoll=null,mlSending=false;
 const mlSrvId=id=>String(id).startsWith('srv:')?String(id).slice(4):null;
+let mlFullAt=0;
 async function mlLoadPlayers(){
   if(!SB||!SB_UID)return;
-  const {data}=await SB.from('profiles').select('user_id,name,username,job,level,title,memo,status,last_seen').neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
+  /* 전송량 줄이기(메인 2026-11-06): 전체 목록은 10분마다, 그 사이에는 최근 활동(last_seen)한 블레서만 받아 합친다 */
+  const cols='user_id,name,username,job,level,title,memo,status,last_seen';const full=Date.now()-mlFullAt>600000||!mlPlayers.length;
+  if(!full){const since=new Date(mlIncAt-30000).toISOString();mlIncAt=Date.now();
+    const {data:inc}=await SB.from('profiles').select(cols).neq('user_id',SB_UID).not('name','is',null).gte('last_seen',since).limit(500);
+    if(inc){inc.forEach(p=>{if(p.job&&!isClass(p.job))p.job=null;const i=mlPlayers.findIndex(x=>x.user_id===p.user_id);if(i>=0)mlPlayers[i]=p;else mlPlayers.push(p);mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});mlPlayers.sort((a,b)=>String(a.name).localeCompare(String(b.name)));}
+    return;}
+  mlFullAt=Date.now();mlIncAt=Date.now();
+  const {data}=await SB.from('profiles').select(cols).neq('user_id',SB_UID).not('name','is',null).order('name').limit(500);
   // 모르는 직업 값은 비워 둔다(이상한 값 하나로 채팅·목록 그리기가 멈추지 않게 — 서버도 013에서 막음)
   if(data){data.forEach(p=>{if(p.job&&!isClass(p.job))p.job=null;});mlPlayers=data;data.forEach(p=>{mlNames[p.user_id]=p.name;CH.uid[p.name]=p.user_id;});}
 }
@@ -259,7 +268,7 @@ async function mlFetch(){
 function mlStart(){
   mlLoadPlayers();mlFetch();
   try{SB.channel('mail-live').on('postgres_changes',{event:'*',schema:'public',table:'mail',filter:`recipient=eq.${SB_UID}`},()=>{clearTimeout(mlT);mlT=setTimeout(mlFetch,500);}).subscribe();}catch(e){}
-  clearInterval(mlPoll);mlPoll=setInterval(mlFetch,60000);
+  clearInterval(mlPoll);mlPoll=setInterval(mlFetch,300000);   // 실시간(mail-live)이 주, 이건 놓친 것 대비
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')mlFetch();});
 }
 // 선물을 받거나 보낸 뒤 골드·인벤토리가 보이는 화면(캐릭터 카드·장비·상점 등)도 바로 다시 그린다. 우편 팝업은 그대로 열려 있음.
@@ -490,7 +499,7 @@ function chStart(){
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`recipient=eq.${SB_UID}`},p=>chOnInsert(p.new))
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'direct_messages',filter:`sender=eq.${SB_UID}`},p=>chOnInsert(p.new))
       .subscribe();}catch(e){console.warn('채팅 실시간 연결 실패',e);}
-  clearInterval(CH.poll);CH.poll=setInterval(()=>{chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel&&S.sel.pop==='online')renderPop();}catch(e){}});},60000);
+  CH.n=0;clearInterval(CH.poll);CH.poll=setInterval(()=>{if(++CH.n%5===0)chFetch();mlLoadPlayers().then(()=>{try{renderTopBadges();if(S.sel&&S.sel.pop==='online')renderPop();}catch(e){}});},60000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')chFetch();});
 }
 const chErr=e=>{const m=(e&&e.message)||'';
@@ -665,7 +674,7 @@ function fdStart(){
   try{SB.channel('feed-live')
     .on('postgres_changes',{event:'*',schema:'public',table:'feed_posts'},()=>{clearTimeout(FD.t);FD.t=setTimeout(fdFetch,600);})
     .on('postgres_changes',{event:'*',schema:'public',table:'feed_comments'},()=>{clearTimeout(FD.t);FD.t=setTimeout(fdFetch,600);}).subscribe();}catch(e){}
-  clearInterval(FD.poll);FD.poll=setInterval(fdFetch,60000);
+  clearInterval(FD.poll);FD.poll=setInterval(fdFetch,300000);   // 실시간(feed-live)이 주
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')fdFetch();});
 }
 const fdErr=e=>{const m=(e&&e.message)||'';
@@ -1086,7 +1095,7 @@ function ptLoop(){
 async function ptStart(){
   ptFetchRooms();
   try{PT.listCh=SB.channel('party-list').on('postgres_changes',{event:'*',schema:'public',table:'party_rooms'},pl=>{clearTimeout(PT.listT);PT.listT=setTimeout(()=>{ptFetchRooms();mtFetch();},700);}).subscribe();}catch(e){}
-  setInterval(ptFetchRooms,30000);setInterval(mtFetch,30000);mtFetch();
+  setInterval(ptFetchRooms,120000);setInterval(mtFetch,60000);   // 실시간(party-list)이 주mtFetch();
   clearInterval(PT.loop);PT.loop=setInterval(ptLoop,1000);
   const b=ptBattle();
   if(S.party&&S.party.shared)ptSubscribe(S.party.roomId);

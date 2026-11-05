@@ -783,7 +783,7 @@ const SAVE_V=3;
 let S=null;
 function freshState(){
   return {v:SAVE_V,me:null,qp:{},flags:{},claimedQ:{},claimedB:{},rewardLog:[],changeLog:[],reports:[],
-    data:{hpX2:1,monsters:ALL_MONSTERS(),quests:clone(DEFAULT_QUESTS),notices:clone(DEFAULT_NOTICES),banner:clone(DEFAULT_BANNER),config:clone(DEFAULT_CONFIG)},
+    data:freshData(),
     bots:freshBots(),
     rel:{'세린':'friend','아르덴':'friend','하윤':'in'},
     chat:{world:[
@@ -799,6 +799,15 @@ function freshState(){
     unread:{world:0,lobby:0,party:0,whisper:{'세린':1}},
     party:null,queue:null,match:null,battle:null,recruits:[],route:'main',sel:{chatTab:'lobby',whisperTo:'세린',adminTab:'monster'}};
 }
+function freshData(){return {hpX2:1,monsters:ALL_MONSTERS(),quests:clone(DEFAULT_QUESTS),notices:clone(DEFAULT_NOTICES),banner:clone(DEFAULT_BANNER),config:clone(DEFAULT_CONFIG)};}
+/* 저장 줄이기(메인 2026-11-06): 세이브에는 게임 데이터(S.data: 몬스터·퀘스트·공지·설정 등)를 넣지 않는다.
+   불러올 때 새 블레서와 똑같이 기본값으로 다시 만들고(→ 1회 보정·스토리 퀘스트 추가·운영 콘텐츠 덮기가 그 위에 다시 적용), 블레서별 값(상점 재고)만 따로 남긴다.
+   서버(cloud)에는 원본 사진(portraitSrc, 크기가 큼)도 빼고 올린다 — 이 기기 로컬에는 남김. */
+function slimOut(s,cloud){if(!s)return s;const o={...s};const D=s.data||{};
+  o.data={_slim:1,mk:Object.fromEntries((D.market||[]).filter(x=>x&&x.stock!=null).map(x=>[x.id,x.stock]))};
+  if(cloud&&s.me&&s.me.portraitSrc){o.me={...s.me};delete o.me.portraitSrc;}return o;}
+function slimIn(s){if(!s||(s.data&&!s.data._slim))return s;const mk=(s.data&&s.data.mk)||{};s.data=freshData();
+  if(Object.keys(mk).length){s.data.market=clone(DEFAULT_MARKET);s.data.market.forEach(x=>{if(mk[x.id]!=null)x.stock=mk[x.id];});}return s;}
 function freshBots(){return BOTS.map(([name,job,level],i)=>({name,job,level,online:![3,11,17].includes(i),status:'lobby',goldEarned:Math.round(level*level*32+(i*137%900))}));}
 function migrate(s){
   const map={knight:'defender',hunter:'shooter',priest:'priest'};
@@ -822,11 +831,11 @@ function migrate3(s){
   s.v=3;return s;
 }
 function load(){
-  try{const raw=localStorage.getItem(SAVE);if(raw){let s=JSON.parse(raw);if(s&&s.v===1){s=migrate(s);s.v=2;}if(s&&s.v===2)s=migrate3(s);if(s&&s.v===SAVE_V)return s;}}catch(e){}
+  try{const raw=localStorage.getItem(SAVE);if(raw){let s=JSON.parse(raw);if(s&&s.v===1){s=migrate(s);s.v=2;}if(s&&s.v===2)s=migrate3(s);if(s&&s.v===SAVE_V)return slimIn(s);}}catch(e){}
   return freshState();
 }
 let saveT=null;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{if(!S)return;S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}if(SB_UID)cloudSave();},150);}
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{if(!S)return;S.savedAt=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(slimOut(S)));}catch(e){}if(SB_UID)cloudSave();},150);}
 const cfg=()=>S.data.config;
 const AREA_MON={};
 function areaMons(aid){const I=MAP_INFO[aid];const spot=MAP_SPOTS.find(x=>x[0]===aid);if(!I||!spot)return [];const r=EXPLORE.find(x=>x.id===spot[3]);if(!r)return [];

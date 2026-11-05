@@ -61,7 +61,7 @@ function applyCrop(){
   const me=S.me,prev={portrait:me.portrait,portraitSrc:me.portraitSrc,portraitCrop:me.portraitCrop};
   if(crop.img){const c=document.createElement('canvas');c.width=480;c.height=640;drawCrop(c.getContext('2d'),480,640);
     me.portrait=c.toDataURL('image/jpeg',0.88);bump('portraitSet');me.portraitSrc=crop.src;me.portraitCrop={zoom:crop.zoom,cx:crop.cx,cy:crop.cy};}
-  try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){Object.assign(me,prev);toast('저장 공간이 부족해 이미지를 저장하지 못했습니다. 더 작은 이미지를 써 보세요.','bad');return;}
+  try{localStorage.setItem(SAVE,JSON.stringify(slimOut(S)));}catch(e){Object.assign(me,prev);toast('저장 공간이 부족해 이미지를 저장하지 못했습니다. 더 작은 이미지를 써 보세요.','bad');return;}
   crop=null;modal('');render();toast('캐릭터 이미지 설정을 적용했습니다.','good');
 }
 let rdrag=null;
