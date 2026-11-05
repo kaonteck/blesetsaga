@@ -42,7 +42,8 @@ function fPick(p,label,opts,o={}){const cur=o.val!==undefined?o.val:pget(FM.d,p)
   const key='cb'+(++cbN);CB[key]=opts;const hit=opts.find(x=>String(x[0])===curS);
   return `<div class="f ${o.wide?'wide':''}">${head}<div class="cb" data-cb="${key}" data-p="${p}" data-t="${t}" ${act}><input type="search" class="cb-in" value="${esc(hit?hit[1]:curS)}" placeholder="${esc(o.ph||'이름으로 검색')}" autocomplete="off" aria-label="${esc(label||'검색')}"><span class="cb-id faint">${esc(hit&&hit[1]!==curS?curS:'')}</span><div class="cb-list" hidden></div></div></div>`;}
 /* 켜고 끄는 묶음 */
-function fToggle(key,label,on,body){return `<div class="tg ${on?'on':''}"><label class="chk tg-h"><input type="checkbox" data-fa="toggle" data-k="${key}" ${on?'checked':''}> ${esc(label)}</label>${on?`<div class="tg-b">${body}</div>`:''}</div>`;}
+function fToggle(key,label,on,body){on=on||!!(FM&&FM.tgOn&&FM.tgOn[key]);   // 켠 직후 값이 비어 있어도 켜진 채로
+  return `<div class="tg ${on?'on':''}"><label class="chk tg-h"><input type="checkbox" data-fa="toggle" data-k="${key}" ${on?'checked':''}> ${esc(label)}</label>${on?`<div class="tg-b">${body}</div>`:''}</div>`;}
 
 /* ───────── 퀘스트 양식 ───────── */
 const ROUTE_RE=/\s*\((?:탐색 › [^)]+)\)\s*$/;
@@ -122,7 +123,7 @@ function sceneForm(q,k,i){const st=q.steps[k];const p='steps.'+k;const isB=!!st.
   </div>
   <div class="chs">${(st.choices||[]).map((c,j)=>choiceForm(q,k,c,j)).join('')}</div>
   <button type="button" class="btn btn-sm" data-fa="add-choice" data-k="${k}">+ 선택지</button></section>`;}
-function reqKind(r){if(!r)return '';if(r.item)return 'item';if(r.items)return 'items';if(r.gold)return 'gold';if(r.level)return 'level';if(r.flag)return 'flag';return '';}
+function reqKind(r){if(!r)return '';for(const k of ['item','items','gold','level','flag'])if(r[k]!=null)return k;return '';}   // 값이 아직 비어 있어도(item:'') 그 종류
 function choiceForm(q,k,c,j){const p=`steps.${k}.choices.${j}`;const rk=reqKind(c.req);
   const tgt=q.steps[c.next];const second=!!(tgt&&!tgt.end&&!tgt.battle&&tgt._second);
   if(c.glitch)return `<div class="ch"><div class="ch-h"><b>선택지 ${j+1}</b><span class="chip warn">일부러 넣은 오류 · 눌러도 1초 화면이 깨졌다 돌아옴</span><button type="button" class="btn btn-g btn-sm" data-fa="del-choice" data-k="${k}" data-i="${j}">삭제</button></div>${fText(p+'.label','선택지 문구')}</div>`;
@@ -138,7 +139,7 @@ function choiceForm(q,k,c,j){const p=`steps.${k}.choices.${j}`;const rk=reqKind(
     ${fPick(p+'.next','이어지는 곳',nextOpts(q,k),{wide:true,hint:c.next===k?'같은 장면 다시 = 준비가 안 됐을 때 되돌아오기':''})}
     <div class="wide">${fToggle(`second:${k}:${j}`,'2차 선택지 (이 선택 뒤에 한 번 더 고르기)',second,second?`<p class="faint small" style="margin:0">아래 「${esc(sceneName(q,c.next))}」에서 이어지는 선택지를 적으세요.</p>`:'')}</div>
     <div class="wide">${fToggle(`req:${k}:${j}`,'조건 (이 선택지를 고르려면)',!!rk,reqBody)}</div>
-    <div class="wide">${fToggle(`flag:${k}:${j}`,'기록 남기기 (다른 퀘스트·조건에서 확인)',!!c.flag,fText(p+'.flag','기록 이름 (영문)',null,{hint:flagName(c.flag)}))}</div>
+    <div class="wide">${fToggle(`flag:${k}:${j}`,'기록 남기기 (다른 퀘스트·조건에서 확인)',c.flag!=null,fText(p+'.flag','기록 이름 (영문)',null,{hint:flagName(c.flag)}))}</div>
   </div></div>`;}
 function itemsRows(p,label,takeToo){const o=pget(FM.d,p)||{};
   return `<div class="f wide"><span class="fl">${esc(label)}</span>${Object.entries(o).map(([id,n])=>{const nm=(ctx().items[id]||{}).name||id;
@@ -267,7 +268,7 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
     case 'hint':setP(el,v);break;
     case 'scene-text':{const st=q.steps[k];st.text=String(v)+hintOf(st);sync();return;}
     case 'route':{const st=q.steps[k];if(v)delete st._noRoute;else st._noRoute=true;fixHint(st);break;}
-    case 'toggle':{const key=el.dataset.k,[t,a1,a2]=key.split(':');
+    case 'toggle':{const key=el.dataset.k,[t,a1,a2]=key.split(':');FM.tgOn=FM.tgOn||{};if(v)FM.tgOn[key]=1;else delete FM.tgOn[key];
       if(t==='cond'){q.cond=v?(q.cond||{}):{};}
       else if(t==='give'){const st=q.steps[a1];if(v)st.give={land:FM.d.land||LANDS_L()[0][0],spot:'plaza',item:'',n:1,npc:'',text:''};else delete st.give;fixHint(st);}
       else if(t==='reward'){const st=q.steps[a1];if(v)st.reward={exp:10,gold:10};else delete st.reward;}
@@ -281,13 +282,13 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
     case 'add-battle':{const sid=newSid(q);scnSet().add(sid);q.steps[sid]={text:'',battle:'',winText:'',next:ensureEnd()};if(!q.start||!q.steps[q.start])q.start=sid;break;}
     case 'add-end':scnSet().add(ensureEnd());break;
     case 'make-start':q.start=k;break;
-    case 'del-scene':{if(!confirm(`「${sceneName(q,k)}」을(를) 지울까요? 이 장면으로 이어지던 선택지는 완료로 바뀝니다.`))return;delete q.steps[k];
+    case 'del-scene':{FM.tgOn={};if(!confirm(`「${sceneName(q,k)}」을(를) 지울까요? 이 장면으로 이어지던 선택지는 완료로 바뀝니다.`))return;delete q.steps[k];
       const e=firstEnd()||ensureEnd();Object.values(q.steps).forEach(st=>{if(st.next===k)st.next=e;(st.choices||[]).forEach(c=>{if(c.next===k)c.next=e;});});
       if(q.start===k)q.start=stepOrder(q).find(x=>!q.steps[x].end)||e;break;}
     case 'scene-type':{const st=q.steps[k];if(v==='battle'&&!st.battle){const nx=(st.choices&&st.choices[0]&&st.choices[0].next)||ensureEnd();delete st.choices;delete st.give;st.battle=st.battle||'';st.winText=st.winText||'';st.next=nx;st.text=String(st.text||'').replace(ROUTE_RE,'');}
       else if(v==='talk'&&st.battle){const nx=st.next||ensureEnd();delete st.battle;delete st.winText;delete st.next;st.choices=[{label:'',result:'',next:nx}];}break;}
     case 'add-choice':{const st=q.steps[k];st.choices=st.choices||[];st.choices.push({label:'',result:'',next:ensureEnd()});break;}
-    case 'del-choice':{const st=q.steps[k];st.choices.splice(i,1);break;}
+    case 'del-choice':{FM.tgOn={};const st=q.steps[k];st.choices.splice(i,1);break;}
     case 'req-kind':{const c=q.steps[k].choices[i];delete c.take;delete c.takeGold;
       c.req=v==='item'?{item:''}:v==='items'?{items:{}}:v==='gold'?{gold:100}:v==='level'?{level:q.level||1}:{flag:''};if(v==='items')c.take={};if(v==='gold')c.takeGold=100;break;}
     case 'list-add':{const p=el.dataset.lp;const arr=pget(q,p)||[];if(!arr.includes(v))arr.push(v);pset(q,p,arr);break;}
