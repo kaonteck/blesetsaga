@@ -246,8 +246,7 @@ function vCreate(){
       <span class="cfl-cloth"><span class="cfl-ic" style="-webkit-mask-image:url(img/class/${f}.png);mask-image:url(img/class/${f}.png)"></span><span class="cfl-sheen"></span></span><span class="cfl-name">${f==='ranged'?'슈터 · 메이지':CLASSES[job].name}</span></button>`;}).join('');
   const pair=cur==='ranged'?`<div class="cd-pair" role="group" aria-label="슈터 또는 메이지">${['shooter','mage'].map(k=>`<button type="button" data-act="pickjob" data-job="${k}" aria-pressed="${sel===k}">${CLASSES[k].name}<small>${CLASSES[k].en}</small></button>`).join('')}</div>`:'';
   return `<div class="cc-page"><div class="cc-smoke" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="cc-head"><img class="biglogo" src="${LOGO}" alt="BLESET SAGA"><div class="sub">블레셋 전기</div>
-      <p class="cc-lead">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 클래스와 이름을 정하세요.</p></div>
+    <div class="cc-head"><p class="cc-lead">라니아케아의 신들에게 축복받은 이방인, 블레서. 저주받은 땅 블라스파미아로 떠날 당신의 클래스와 이름을 정하세요.</p></div>
     <form class="cc-body" data-form="create">
       <div class="cc-flags" role="group" aria-label="클래스 선택">${flags}</div>
       <div class="cc-desc" aria-live="polite">${pair}
@@ -257,7 +256,7 @@ function vCreate(){
         <div class="cd-adv-h">| 2차 전직 |</div>
         <div class="cd-adv">${c.adv.map(a=>`<div class="cd-a"><span class="cd-lock">${LOCK_SVG}</span><div><b>${CLASSES[a].name}</b> <span class="faint">${CLASSES[a].en}</span><p>${esc(I.adv[a]||CLASSES[a].desc||'').replace(/\n/g,' <br>')}</p></div></div>`).join('')}</div>
         <div class="cd-name"><label for="new-name">블레서 이름</label><div class="row" style="gap:8px;flex-wrap:nowrap"><input type="text" id="new-name" maxlength="10" placeholder="2~10자" required autocomplete="off"><button class="btn btn-primary" type="submit">${esc(c.name)}${(c.name.charCodeAt(c.name.length-1)-0xAC00)%28&&(c.name.charCodeAt(c.name.length-1)-0xAC00)%28!==8?'으로':'로'} 시작</button></div>
-          <small class="faint">LV${cfg().jobAdvanceLevel}에 2차 전직 · 부름을 받는 곳 ${esc(ORIGIN[sel]||'')}</small></div>
+          <small class="faint">게임 닉네임을 입력해주세요.</small></div>
       </div></form></div>`;
 }
 /* ───────── 메인 ───────── */

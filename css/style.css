@@ -3352,3 +3352,17 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .cd-name .btn{white-space:nowrap}
 @media (max-width:900px){.cc-body{grid-template-columns:1fr;gap:24px}.cc-flags{max-width:520px;margin:0 auto;width:100%}}
 @media (max-width:520px){.cd-d br,.cd-a p br{display:none}.cc-flags{gap:8px}.cfl-name{font-size:11px}.cd-a{min-width:0;flex-basis:100%}.cd-name .row{flex-wrap:wrap!important}.cd-name .btn{width:100%}}
+/* 생성 확정 알림 · 블레서 정보 */
+.modal.ccm{max-width:380px}
+.cc-cf{display:flex;flex-direction:column;gap:6px;text-align:center}
+.cc-cf-q{font-size:16px;font-weight:700;margin:4px 0 0}.cc-cf-s{font-size:13px;color:var(--muted);margin:0}
+.cc-cf-dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:12px auto 4px;font-size:13.5px;text-align:left}.cc-cf-dl dt{color:var(--muted)}.cc-cf-dl dd{margin:0;font-weight:700}
+.cc-cf-b{justify-content:center;gap:8px;margin-top:10px}
+#rn-gate .rn-note{margin:0 0 6px;padding:0 0 10px 16px;font-size:11.5px;line-height:1.6;color:var(--muted);border-bottom:1px solid var(--rule)}
+#rn-gate .rn-f{display:flex;flex-direction:column;gap:5px;font-size:12.5px}#rn-gate .rn-f small{color:var(--muted);font-weight:400}
+#rn-gate h3{text-align:left}
+#rn-gate{background:radial-gradient(120% 80% at 30% 30%,#14161c 0%,#07080b 60%,#030304 100%);backdrop-filter:none}
+#rn-gate .rn-box{background:#15171d;border-color:rgba(255,255,255,.1);color:#e8e6e1}
+#rn-gate .rn-note,#rn-gate .rn-f small{color:#9aa0aa}#rn-gate .rn-note{border-color:rgba(255,255,255,.1)}
+#rn-gate input{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);color:#f1efe9;border-radius:6px;padding:10px 12px;font-size:15px}
+#rn-gate input:focus{outline:none;border-color:#e7cf9a}

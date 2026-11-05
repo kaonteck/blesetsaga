@@ -110,21 +110,11 @@ async function sbEnter(user){
    처음 접속할 때 반드시 입력(건너뛰기 없음). 서버에만 저장, 본인만 읽음. 게임에서는 6장 '반쯤 지워진 종잇조각'에만 쓰고 메모리(RN)에만 둔다.
    표를 못 읽으면(오류) 막지 않는다 — 입력 창 때문에 게임에 못 들어가는 일이 없게. */
 async function rnGate(){if(!SB||!SB_UID)return;let row=null;
-  try{const {data,error}=await SB.from('real_names').select('real_name').eq('user_id',SB_UID).maybeSingle();if(error)throw error;row=data;}catch(e){console.warn('실제 이름을 읽지 못했습니다',e);return;}
-  if(row&&row.real_name){RN=row.real_name;return;}
-  if(document.getElementById('rn-gate'))return;
-  const ov=document.createElement('div');ov.id='rn-gate';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','rn-t');
-  ov.innerHTML=`<form class="rn-box" autocomplete="off"><div class="md-lbl" style="justify-content:center"><i class="lbl-d" aria-hidden="true">◆</i>BLESET SAGA</div><h3 id="rn-t">당신의 실제 이름을 적어 주세요</h3>
-    <p class="faint">게임 안의 이름(닉네임)이 아니라 실제 이름입니다. 이 정보는 서버에만 저장되며 캐릭터 페이지나 다른 블레서에게 보이지 않습니다.</p>
-    <input id="rn-in" type="text" maxlength="30" required placeholder="실제 이름" aria-label="실제 이름"><p class="errs" id="rn-err" hidden></p>
-    <button class="btn btn-primary" type="submit">확인</button></form>`;
-  document.body.appendChild(ov);const inp=ov.querySelector('#rn-in');setTimeout(()=>inp.focus(),50);
-  ov.querySelector('form').onsubmit=async e=>{e.preventDefault();const v=inp.value.replace(/\s+/g,' ').trim().slice(0,30);const er=ov.querySelector('#rn-err');
-    if(!v){er.hidden=false;er.textContent='이름을 적어 주세요.';return;}const bt=ov.querySelector('button');bt.disabled=true;
-    const {error}=await SB.from('real_names').upsert({user_id:SB_UID,real_name:v,updated_at:new Date().toISOString()});
-    if(error){bt.disabled=false;er.hidden=false;er.textContent='저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';console.warn(error);return;}
-    RN=v;ov.remove();};}
-
+  try{const {data,error}=await SB.from('real_names').select('real_name,region').eq('user_id',SB_UID).maybeSingle();if(error)throw error;row=data;}catch(e){console.warn('실제 이름을 읽지 못했습니다',e);RN_OFF=true;return;}
+  if(row&&row.real_name){RN=row.real_name;RN_LOC=row.region||null;return;}
+  if(S&&S.me)rnForm();   // 캐릭터가 아직 없으면 캐릭터 생성(직업·닉네임 확정) 뒤에 05 ccCreate가 띄운다
+}
+async function rnSaveSrv(rec){const {error}=await SB.from('real_names').upsert({user_id:SB_UID,real_name:rec.real_name,region:rec.region,updated_at:new Date().toISOString()});if(error)console.warn(error);return error;}
 /* ───────── 운영 콘텐츠 (서버 content 표 → 게임) ─────────
    운영 페이지(admin.html)에서 공개한 값이 게임 코드 기본값을 덮는다.
    - 처음 덮을 때 원래 값을 S.data._srv[kind][id].base 에 남겨 두고,

@@ -2033,3 +2033,34 @@ Object.defineProperty(ITEMS.q_scrap,'readText',{enumerable:true,configurable:tru
   return `(접힌 종잇조각. 이 세계의 글씨가 아니다. 그런데 읽힌다.)\n\n이름: ${rnHalf(RN)}\n\n(게임 안의 이름이 아니다. 누가 이걸 여기에 끼워 두었을까.)`;}});
 /* 이미 6장을 마친 블레서에게 한 번 */
 (function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{if(S.me&&!S.me.scrapGiven&&S.qp.E23&&S.qp.E23.status==='done'){S.me.scrapGiven=1;S.me.inv.q_scrap=(S.me.inv.q_scrap||0)+1;save();}}catch(e){}};})();
+
+/* ───────── 캐릭터 생성 확정 → 블레서 정보(본명 · 접속 지역) (유저 요청 2026-11-06) ─────────
+   ① 직업·닉네임 확정 알림창 ② 확인하면 캐릭터를 만들고 바로 '블레서 정보' 화면(닫기·건너뛰기 없음)
+   서버(028·029 real_names)에만 저장, 본인만 읽음. 게임에서는 메모리(RN·RN_LOC)에만 두고 S·세이브·캐릭터 카드에 넣지 않는다.
+   서버 없이(로컬 시제품) 돌 때는 메모리에만. 서버 표를 못 읽으면(RN_OFF) 묻지 않는다. */
+var RN_LOC=null,RN_OFF=false;
+function ccAsk(name){S.sel.ccName=name;const job=CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender';
+  modal(`<div class="cc-cf"><p class="cc-cf-q">선택을 확정하시겠습니까?</p><p class="cc-cf-s">직업과 닉네임은 변경할 수 없습니다.</p>
+    <dl class="cc-cf-dl"><dt>직업</dt><dd>${esc(CLASSES[job].name)}</dd><dt>닉네임</dt><dd>${esc(name)}</dd></dl>
+    <div class="row cc-cf-b"><button class="btn btn-ghost" data-act="closemodal">취소</button><button class="btn btn-primary" data-act="cc-confirm">확인</button></div></div>`);
+  const m=$('.modal');if(m)m.classList.add('ccm');}
+function ccCreate(name){if(S.me)return;
+  S.me={name,job:CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender',level:1,exp:0,gold:100,inv:{potion:2},equip:{},admin:typeof SB_UID!=='undefined'&&SB_UID?SB_ADMIN:true,viewAsUser:false,createdAt:now()};
+  S.chat.lobby.push({id:uid('m'),sys:true,text:`${name}님이 라니아케아에 도착했습니다.`,ts:now()});
+  save();go('main');later(4000,()=>botSay('lobby','노아',`${name}님 환영해요!`));
+  if(RN==null&&!RN_OFF)rnForm(()=>toast('탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good'));else toast('탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good');}
+function rnForm(done){if(document.getElementById('rn-gate'))return;
+  const ov=document.createElement('div');ov.id='rn-gate';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','rn-t');
+  ov.innerHTML=`<form class="rn-box" autocomplete="off" novalidate>
+    <ul class="rn-note"><li>본 내용은 블레서님의 정보를 입력하는 용도입니다(진짜 개인 정보는 입력하지 말아 주세요).</li><li>캐릭터 카드에는 본 내용이 나오지 않습니다.</li></ul>
+    <h3 id="rn-t">블레서 정보</h3>
+    <label class="rn-f"><span>본명</span><input id="rn-in" type="text" maxlength="30" placeholder="본명" autocomplete="off"></label>
+    <label class="rn-f"><span>접속 지역 <small>(현재 위치)</small></span><input id="rn-loc" type="text" maxlength="40" placeholder="예: 서울" autocomplete="off"></label>
+    <p class="errs" id="rn-err" hidden></p><button class="btn btn-primary" type="submit">확인</button></form>`;
+  document.body.appendChild(ov);const inp=ov.querySelector('#rn-in'),loc=ov.querySelector('#rn-loc');setTimeout(()=>inp.focus(),50);
+  ov.querySelector('form').onsubmit=async e=>{e.preventDefault();const cl=x=>x.value.replace(/\s+/g,' ').trim();const v=cl(inp).slice(0,30),l=cl(loc).slice(0,40);const er=ov.querySelector('#rn-err');
+    if(!v||!l){er.hidden=false;er.textContent=!v?'본명을 적어 주세요.':'접속 지역을 적어 주세요.';(!v?inp:loc).focus();return;}
+    const bt=ov.querySelector('button[type=submit]');bt.disabled=true;
+    const err=typeof SB!=='undefined'&&SB&&SB_UID&&typeof rnSaveSrv==='function'?await rnSaveSrv({real_name:v,region:l}):null;
+    if(err){bt.disabled=false;er.hidden=false;er.textContent='저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';return;}
+    RN=v;RN_LOC=l;ov.remove();if(done)done();};}

@@ -29,9 +29,7 @@ document.addEventListener('submit',e=>{if(!S)return;
   if(k==='create'){const name=$('#new-name').value.trim();
     if(name.length<2){toast('이름은 2자 이상이어야 합니다.','warn');return;}
     if(S.bots.some(b=>b.name===name)){toast('이미 쓰이는 이름입니다. 다른 이름을 입력하세요.','warn');return;}
-    S.me={name,job:CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender',level:1,exp:0,gold:100,inv:{potion:2},equip:{},admin:SB_UID?SB_ADMIN:true,viewAsUser:false,createdAt:now()};
-    S.chat.lobby.push({id:uid('m'),sys:true,text:`${name}님이 라니아케아에 도착했습니다.`,ts:now()});
-    save();go('main');toast('탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good');later(4000,()=>botSay('lobby','노아',`${name}님 환영해요!`));return;}
+    ccAsk(name);return;}
   if(k==='notice-edit'){if(!isAdmin())return;const t=$('#ne-title').value.trim(),x=$('#ne-text').value.trim(),cat=$('#ne-cat').value;if(!t){toast('제목을 입력하세요.','warn');return;}
     const id=f.dataset.id;const d=new Date(now()+9*3600e3).toISOString();
     if(id){const n=S.data.notices.find(z=>z.id===id);if(!n)return;const ch=diff({cat:n.cat,title:n.title,text:n.text},{cat,title:t,text:x});n.cat=cat;n.title=t;n.text=x;if(ch.length){n.updatedAt=now();logChange('공지 · '+t,ch);}modal('');save();refreshNotices();noticeView(n);toast('공지를 수정했습니다.','good');}
@@ -425,6 +423,7 @@ const ACTS={
   'pv-att':()=>{S.sel.pvAtt=!S.sel.pvAtt;const mm=$('.modal');if(mm){const pv=mm.querySelector('.pv');if(pv)pv.outerHTML=planViewerHTML();}},
   'pv-next':(d,el)=>{const p=el&&el.closest('.pv');if(!p)return;p.classList.remove('nope');void p.offsetWidth;p.classList.add('nope');},
   'ghost-mira':()=>{toast('프로필을 불러올 수 없습니다.','warn');},
+  'cc-confirm':()=>{const n=S.sel.ccName;modal('');if(n)ccCreate(n);},
   'wish-save':()=>{const i=$('#wish-in');if(!i)return;S.me.myWish=i.value.replace(/\s+/g,' ').trim().slice(0,30);save();toast(S.me.myWish?'벽에 소원을 새겼다.':'아무것도 새기지 않았다.');render();},
   'seq-e28':()=>{seqE28();},
   'sub-fold':()=>{S.sel.subFold=!S.sel.subFold;if(S.battle&&S.battle.grid)renderFight();},
