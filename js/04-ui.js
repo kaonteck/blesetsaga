@@ -955,11 +955,12 @@ function autoConfirm(){
 let DMG_SNAP=null;
 function dmgFx(){
   const b=S&&S.battle;if(!b||!b.grid){DMG_SNAP=null;return;}const me=b.players.find(p=>p.isMe);if(!me)return;
-  const cur={id:b.id,turn:b.turn,dealt:me.dealt||0,hp:me.hp};
+  const cur={id:b.id,turn:b.turn,dealt:me.dealt||0,hp:me.hp,healed:me.healed||0};
   if(DMG_SNAP&&DMG_SNAP.id===b.id&&cur.turn!==DMG_SNAP.turn){
     const out=cur.dealt-DMG_SNAP.dealt,inn=DMG_SNAP.hp-cur.hp;const L=[];
     if(out>0)L.push(['out',`${out.toLocaleString('ko-KR')}`,'보스에게 입힌 피해']);
     if(inn>0)L.push(['in',`-${inn.toLocaleString('ko-KR')}`,'받은 피해']);
+    {const hl=cur.healed-(DMG_SNAP.healed||0);if(hl>0)L.push(['heal',`+${hl.toLocaleString('ko-KR')}`,'회복량']);}   /* 내 스킬로 회복한 양(아이템 제외) */
     if(L.length)showDmg(L);
   }
   DMG_SNAP=cur;
