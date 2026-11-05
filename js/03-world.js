@@ -137,12 +137,12 @@ function daily(){const c=kstCycle();if(!S.daily||S.daily.cycle!==c)S.daily={cycl
 function weekly(){const k=weekKey(now()-5*3600e3);if(!S.weekly||S.weekly.wk!==k)S.weekly={wk:k,done:{}};return S.weekly;}
 function mkind(m){return (m&&m.kind)||'party';}
 const MKIND={party:'데일리 파티 레이드',weekly:'토벌전',event:'만신전',field:'필드 몬스터',dungeon:'던전 보스',story:'퀘스트 전투'};
-/* 토벌전(백야의 신전 봉인 수호자) 임시 닫힘(유저 요청 2026-11-05, 풀라고 할 때 false로): 운영자만 */
+/* 토벌전(숨무스 폰티펙스): 8장 E31을 마친 블레서에게만 열림(유저 결정 2026-11-05). 운영자는 항상. WEEKLY_CLOSED=false면 모두에게 */
 const WEEKLY_CLOSED=true;
-function weeklyClosed(){return WEEKLY_CLOSED&&!(typeof isAdmin==='function'&&isAdmin());}
-function isGroupMon(m){return !!(m&&m.published&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!WEEKLY_CLOSED)));}
+function weeklyClosed(){if(!WEEKLY_CLOSED)return false;if(typeof isAdmin==='function'&&isAdmin())return false;return !(S&&S.qp&&S.qp.E31&&S.qp.E31.status==='done');}
+function isGroupMon(m){return !!(m&&m.published&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!weeklyClosed())));}
 function raidBlock(m){const k=mkind(m);
-  if(k==='weekly'&&weeklyClosed())return '토벌전은 잠시 닫혀 있습니다';
+  if(k==='weekly'&&weeklyClosed())return '백야의 신전 이야기를 끝까지 마치면 열립니다';
   if(['field','story'].includes(k))return '개인 전투 전용 몬스터입니다';
   if(k==='dungeon'&&daily().dungeon[m.id])return '오늘은 이미 클리어했습니다 (05:00 초기화)';
   if(k==='party'&&daily().raid>=RAID_MAX)return `오늘 파티 레이드 ${RAID_MAX}회를 모두 사용했습니다 (05:00 초기화)`;

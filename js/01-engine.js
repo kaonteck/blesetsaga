@@ -48,7 +48,7 @@ const ITEMS={
   leather:{name:'탐사대 가죽갑옷',type:'equip',slot:'armor',stats:{def:2,maxHp:15},desc:'탐사대 보급품',price:120},
   cloak:{name:'백야의 망토',type:'equip',slot:'armor',stats:{def:4,luk:1,maxHp:30},desc:'해가 지지 않는 땅의 빛을 머금은 망토'},
   amulet:{name:'라니아케아의 부적',type:'equip',slot:'acc',stats:{luk:5,maxHp:20},desc:'신들의 축복이 깃든 부적'},
-  crest:{name:'봉인 수호자의 문장',type:'equip',slot:'acc',stats:{atk:6,def:3,maxHp:40,luk:2},desc:'봉인 수호자를 쓰러뜨린 증표'}
+  crest:{name:'교황의 문장',type:'equip',slot:'acc',stats:{atk:6,def:3,maxHp:40,luk:2},desc:'백야의 신전 교황을 쓰러뜨린 증표'}
 };
 const SLOT={weapon:'무기',armor:'방어구',acc:'장신구'};
 /* ───────── 장비 단계 (지역 8단계 · 역할별 무기) ───────── */
@@ -146,8 +146,8 @@ const DEFAULT_MONSTERS=[
    singleName:'그림자 송곳니',singleMult:1.0,aoeName:'추적의 포효',aoeMult:0.6,aoeEvery:3,
    dotName:'저주 출혈',dotChance:0.35,dotDmg:12,
    exp:320,gold:150,drops:[['holywater',0.4],['bow',0.15],['shield',0.15],['staff',0.15]]},
-  {id:'guardian',kind:'weekly',name:'백야의 신전 봉인 수호자',art:'guardian',region:'백야의 신전',published:true,rev:1,
-   desc:'잠든 혼돈을 가두는 봉인을 지켜 온 거인. 봉인이 흔들리며 다가오는 모든 것을 적으로 여긴다.',
+  {id:'guardian',kind:'weekly',name:'숨무스 폰티펙스',art:'guardian',region:'백야의 신전',published:true,rev:1,
+   desc:'고대 혼돈의 신전의 교황이었던 자. 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 고통 받고 있다. 매주 월요일 05:00, 다시 깨어난다.',
    level:15,maxLevel:null,min:6,max:12,target:6,roles:{tank:1,dps:3,heal:2},
    hp:5000,hpScale:0.18,atk:170,def:0,
    singleName:'봉인의 사슬',singleMult:1.0,aoeName:'백야의 섬광',aoeMult:0.6,aoeEvery:3,
@@ -247,7 +247,7 @@ function createBattle(m,members,rng,cfg){
   const b={id:'B'+Date.now().toString(36)+Math.floor(rng()*1e8).toString(36),monsterId:m.id,
     mon:{name:m.name,art:m.art,hp,maxHp:hp,atk:m.atk,def:m.def||0,poison:null,burn:null,weaken:0,
       singleName:m.singleName,singleMult:m.singleMult,aoeName:m.aoeName,aoeMult:m.aoeMult,aoeEvery:Math.max(2,m.aoeEvery|0),
-      dotName:m.dotName,dotChance:m.dotChance,dotDmg:m.dotDmg,sphases:m.sphases?JSON.parse(JSON.stringify(m.sphases)):null,sph:0,baseAtk:m.atk},
+      dotName:m.dotName,dotChance:m.dotChance,dotDmg:m.dotDmg,sphases:m.sphases?JSON.parse(JSON.stringify(m.sphases)):null,sph:0,baseAtk:m.atk,...(m.fx?JSON.parse(JSON.stringify(m.fx)):{})},
     rules:{exp:m.exp,gold:m.gold,drops:m.drops.map(d=>d.slice()),turnSeconds:cfg.turnSeconds},
     players,order,turn:0,log:[],over:null,sup:null,partyBuffs:[],startedAt:Date.now()};
   b.log.push({t:'sys',text:`전투 시작 · ${n}인 · 몬스터 HP ${hp} · 몬스터 공격력 ${m.atk} · 행동 순서(행운): ${order.map(id=>players.find(p=>p.id===id).name).join(' → ')}`});
@@ -269,12 +269,13 @@ function telText(b){
 /* 개인 레이드 보스 페이즈(그리드 없음): m.sphases=[{at:HP%,name,atkMul,…덮어쓸 몬스터 값}] — HP가 at% 이하로 내려가면 다음 턴부터 적용 */
 function soloPhase(b){const m=b.mon,P=m.sphases;if(!P||!P.length)return;const pct=m.hp/m.maxHp*100;let k=0;P.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
   if(k===m.sph)return;m.sph=k;const ph=P[k];m.atk=Math.round(m.baseAtk*(ph.atkMul||1));
-  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
+  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.wipeIn)b.wipeAt=b.turn+ph.wipeIn;if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
   b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 공격력 ×${ph.atkMul||1}`});}
 function startTurn(b,rng){
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
   b.players.forEach(p=>{p.action=null;p.action2=null;p.confirmed=false;p.defending=false;p.protect=false;p.reduce=0;p.turnDealt=0;});
   const m=b.mon,alive=living(b);
+  if(!b.grid&&m.loop12&&b.turn>12){b.turn=1;const v=Math.round(m.maxHp*0.05);m.hp=Math.min(m.maxHp,m.hp+v);b.log.push({t:'warn',text:`내일은 오지 않는다 · 턴이 1로 돌아간다 · ${m.name} +${v}`});}
   if(b.grid){gridPhase(b);b.tel=gridTel(b,rng);}
   else if((soloPhase(b),b.turn%m.aoeEvery===0))b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
   else{
@@ -282,6 +283,11 @@ function startTurn(b,rng){
     const dot=rng()<m.dotChance;
     b.tel={type:dot?'dot':'single',name:dot?m.dotName:m.singleName,mult:m.singleMult,target:target.id};
     if(m.mirror&&!b.grid){b.tel={type:'single',name:'되비침',mult:m.singleMult,target:target.id,mirror:true};}
+  }
+  if(!b.grid){
+    if(m.janus){b.face=b.turn%2===1?'dawn':'dusk';b.tel.mult=(b.tel.mult||1)*(b.face==='dawn'?0.6:1.4);b.tel.name=`${b.face==='dawn'?'여명':'황혼'}의 얼굴 · ${b.tel.name}`;}
+    if(m.pacify&&b.tel.type!=='aoe'){b.tel={type:'single',name:'빛 화살',mult:0.5,target:(alive[0]||b.players[0]).id,pacify:true};}
+    if(b.wipeAt){if(b.turn>=b.wipeAt)b.tel={type:'aoe',name:'기적의 나팔',mult:1,wipe:true};else if(b.wipeAt-b.turn<=2)b.log.push({t:'warn',text:'나팔 소리가 가까워집니다'});}
   }
   b.log.push({t:'turn',text:`${b.turn}턴`});
   b.log.push({t:'warn',text:`예고 · ${telText(b)}`});
@@ -299,7 +305,8 @@ function canDouble(p,b){return p.doubleTurn===b.turn&&p.job==='dualist';}
 function checkAct(b,p,a,hasItem,primary){
   if(p.dead)return '전투 불능';
   if(!a||a.kind==='defend')return null;
-  if(p.bound>0)return p.boundBy==='root'?'뿌리 속박 · 스킬 사용 불가':'빛의 속박 중 · 스킬 사용 불가';
+  if(p.bound>0)return p.boundBy==='root'?'뿌리 속박 · 스킬 사용 불가':p.boundBy==='tentacle'?'휘감김 · 스킬 사용 불가':'빛의 속박 중 · 스킬 사용 불가';
+  if(a.kind==='skill'&&p.sealed&&p.sealed.turns>0&&p.sealed.skill===a.skill)return `봉인 · ${SKILLS[a.skill]?SKILLS[a.skill].name:''} 사용 불가`;
   if(a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].lv&&(p.level||1)<SKILLS[a.skill].lv)return `LV${SKILLS[a.skill].lv}부터 사용 가능`;
   if(a.kind==='item'){
     if(!hasItem||!hasItem(p.id,a.item))return '소지품 없음';
@@ -329,7 +336,7 @@ function checkAct(b,p,a,hasItem,primary){
 function resolveTurn(b,rng,hooks){
   hooks=hooks||{};
   const m=b.mon,T=b.turn,log=(t,text)=>b.log.push({t,text}),P=id=>b.players.find(p=>p.id===id);
-  const heal=(src,t,amt,label)=>{if(t.dead)return 0;if(b.healMult&&src&&src.id)amt=Math.round(amt*b.healMult);const miss=t.maxHp-t.hp;const h=Math.min(amt,miss);t.hp+=h;if(src&&src.id)src.healed=(src.healed||0)+h;
+  const heal=(src,t,amt,label)=>{if(t.dead)return 0;if(t.noHeal>0){log('sys',`${t.name} · 회복 불가 · ${label} 무효`);return 0;}if(t.healDown>0)amt=Math.round(amt*0.7);if(b.healMult&&src&&src.id)amt=Math.round(amt*b.healMult);const miss=t.maxHp-t.hp;const h=Math.min(amt,miss);t.hp+=h;if(src&&src.id)src.healed=(src.healed||0)+h;
     if(amt>miss&&supActive(b)){b.sup.overheal++;}
     log('heal',`${src.name} · ${label} → ${t.name} ${h} 회복${amt>miss?' (오버 힐)':''}`);return h;};
   const spend=(p,k)=>{if(SKILLS[k].uses)p.uses[k]=(p.uses[k]||0)+1;};
@@ -340,7 +347,7 @@ function resolveTurn(b,rng,hooks){
   for(const id of b.order){const p=P(id);if(p.dead||p.charm>0)continue;for(const a of acts(p)){if(a.kind!=='skill'||a.skill!=='dispel')continue;a.done=true;p.direct++;
     const err=checkAct(b,p,a,hooks.hasItem);if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
     spend(p,'dispel');const t=a.target?P(a.target):p;if(!t||t.dead){log('sys',`${p.name} · 디스펠 대상이 없음`);continue;}
-    const had=[t.poison&&t.poison.name,t.charm>0&&'매혹',t.boundBy==='root'&&t.bound>0&&'뿌리 속박'].filter(Boolean);t.poison=null;t.charm=0;if(t.boundBy==='root'){t.bound=0;t.boundBy=null;}log('heal',`${p.name} · 디스펠 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
+    const had=[t.poison&&t.poison.name,t.charm>0&&'매혹',t.boundBy==='root'&&t.bound>0&&'뿌리 속박',t.boundBy==='tentacle'&&t.bound>0&&'휘감김',t.sealed&&'봉인',t.noHeal>0&&'회복 불가',t.blind>0&&'실명'].filter(Boolean);t.poison=null;t.charm=0;if(t.boundBy==='root'||t.boundBy==='tentacle'){t.bound=0;t.boundBy=null;}t.sealed=null;t.noHeal=0;t.blind=0;t.healDown=0;log('heal',`${p.name} · 디스펠 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
   // ③-2 매혹된 블레서는 아이템 말고는 아무것도 하지 못한다
   for(const id of b.order){const p=P(id);if(p.dead||!(p.charm>0))continue;let skipped=false;for(const a of acts(p)){if(a.kind==='item'||a.done)continue;a.done=true;skipped=true;}
     if(skipped)log('mon',`${p.name} · 매혹되어 아무것도 하지 못했다`);}
@@ -398,6 +405,7 @@ function resolveTurn(b,rng,hooks){
     if(crit){mul*=CRIT_MULT;parts.push(`크리티컬 ×${CRIT_MULT}`);}
     let dmg=Math.max(0,Math.round((pure+add)*mul*(1-(m.def||0)/((m.def||0)+100))));
     if(a.addon==='carnage'&&dmg>=p.atk*2){addBuff(p,'carnage',T,T+2,{mul:2});dmg*=2;parts.push('대학살 발동 ×2');}
+    if(p.blind>0){dmg=Math.round(dmg*0.75);parts.push('실명 ×0.75');}
     if(buffOn(p,'null',T)){dmg=0;parts.push('대미지 무효');}
     m.hp=Math.max(0,m.hp-dmg);p.dealt+=dmg;p.turnDealt+=dmg;
     log('hit',`${p.name} · ${s.name}${a.addon?' + '+SKILLS[a.addon].name:''} → ${dmg} 대미지 (${parts.join(' · ')})${crit?' · 크리티컬!':''}`);
@@ -417,9 +425,12 @@ function resolveTurn(b,rng,hooks){
       const err=checkAct(b,p,a,hooks.hasItem,a===p.action2?p.action:null);
       if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
       if(a.kind==='item'){
+        if(a.item==='j2052'){if(m.journal==='react'){b.jUses=(b.jUses||0)+1;const pg=[null,['1쪽','"오늘도 나갈 방법은 없다…" 그녀가 당신의 목소리를 따라 소리 없이 입술을 움직인다.'],['6쪽','"한 명이 남겠다고 했다… 솔직히 조금 부러웠다." 그녀가 잠시 눈을 감는다.'],['13쪽','"…이거, 제가 쓴 거예요? 제 글씨 같아요."']][b.jUses];
+            if(!pg){log('sys','더 펼칠 쪽이 없다');continue;}b.stun=1;if(b.jUses===3)b.jRead13=true;log('act',`${p.name} · 탐사 일지 ${pg[0]}를 펼쳐 읽어 준다 → ${pg[1]} (그녀가 공격을 멈춘다)`);}
+          else log('sys',`${m.name}은(는) 일지를 보지 않습니다.`);continue;}
         hooks.useItem&&hooks.useItem(p.id,a.item);
         if(a.item==='potion')heal(p,p,Math.max(50,Math.round(p.maxHp*0.2)),'회복약');
-        else if(a.item==='holywater'){p.poison=null;p.charm=0;if(p.boundBy==='root'){p.bound=0;p.boundBy=null;}log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
+        else if(a.item==='holywater'){p.poison=null;p.charm=0;if(p.boundBy==='root'||p.boundBy==='tentacle'){p.bound=0;p.boundBy=null;}p.sealed=null;p.noHeal=0;p.blind=0;p.healDown=0;log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
         continue;
       }
       const s=SKILLS[a.skill];spend(p,a.skill);const t=a.target?P(a.target):null;
@@ -436,6 +447,7 @@ function resolveTurn(b,rng,hooks){
       }
     }
   }
+  if(m.floor&&m.hp<Math.round(m.maxHp*m.floor)){m.hp=Math.round(m.maxHp*m.floor);if(!b.floorHit){b.floorHit=1;log('sys',`${m.name}의 체력이 더 내려가지 않는다`);}b.wipeAt=Math.min(b.wipeAt||Infinity,T+1);}
   const salaP=b.players.find(p=>p.job==='salamander'&&p.turnDealt>=p.atk*2.5);const salaHit=!!salaP;
   if(m.hp<=0){m.hp=0;b.over='win';log('win',`${m.name} 처치 · 승리`);return;}
   if(salaHit){const v=Math.round(salaP.atk*0.15);b.players.forEach(x=>addBuff(x,'ember',T+1,T+1,{add:v}));log('act',`샐래맨더의 화염 공명 · 다음 턴 파티 대미지 +${v}`);}
@@ -447,12 +459,17 @@ function resolveTurn(b,rng,hooks){
     d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?0.88:1);d=Math.max(0,Math.round(d));
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
   };
+  if(m.janus&&b.face==='dawn'){const v=Math.round(m.maxHp*0.04);m.hp=Math.min(m.maxHp,m.hp+v);log('mon',`${m.name} · 여명의 얼굴 · 스스로 회복 (+${v})`);}
+  if(b.stun>0){b.stun--;log('mon',`${m.name}이(가) 일지를 따라 읽는다 · 이번 턴 공격하지 않는다`);}
+  else if(tel.wipe){living(b).forEach(p=>{p.hp=0;p.dead=true;});log('mon',`${m.name} · ${tel.name} → 회복·방어·무적을 무시한다 · 모두 쓰러짐`);}
+  else if(tel.pacify&&rng()<0.6){const t=living(b)[0];if(t){const v=Math.round(t.maxHp*0.08);const h=Math.min(v,t.maxHp-t.hp);t.hp+=h;log('mon',`${m.name} · 당신의 상처를 감싼다 (+${h})${rng()<0.4?' · "도망치세요."':''}`);}}
+  else
   if(tel.type==='area'){
     const hit=living(b).filter(p=>tel.cells.includes(p.pos));
     const parts=hit.map(p=>{const r=hitP(p,tel.mult);return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.length?parts.join(', '):'모두 피했다'}`);
   }else if(tel.type==='aoe'){
-    const parts=living(b).map(p=>{const r=hitP(p,tel.mult);return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}`;});
+    const parts=living(b).map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.join(', ')}`);
   }else{
     let t=P(tel.target),note='';
@@ -469,6 +486,8 @@ function resolveTurn(b,rng,hooks){
     if(t&&!mirrored){
       const r=hitP(t,tel.mult);let extra='';
       if(tel.type==='dot'&&!t.dead&&r.note!=='보호'){t.poison={turns:3,dmg:m.dotDmg,name:m.dotName};extra=` · ${m.dotName} 3턴`;}
+      if(m.wrapChance&&!t.dead&&r.note!=='보호'&&rng()<m.wrapChance){t.bound=Math.max(t.bound||0,2);t.boundBy='tentacle';extra+=' · 휘감김 (다음 턴 스킬 불가)';}
+      if(m.sealChance&&!t.dead&&r.note!=='보호'&&rng()<m.sealChance){const pool=CLASSES[t.job].skills.filter(k=>SKILLS[k]&&!['addon','passive'].includes(SKILLS[k].type)&&k!==basicSkill(t.job));const k=pool[Math.floor(rng()*pool.length)];if(k){t.sealed={skill:k,turns:2};extra+=` · 봉인 (${SKILLS[k].name} 2턴 사용 불가)`;}}
       if(m.rootChance&&!t.dead&&r.note!=='보호'&&rng()<m.rootChance){t.bound=Math.max(t.bound||0,2);t.boundBy='root';extra+=' · 뿌리 속박 (다음 턴 스킬 불가)';}
       if(m.charmChance&&!t.dead&&r.note!=='보호'&&rng()<m.charmChance){if(b.noCharm)extra+=' · 귀마개로 매혹을 막았다';else{t.charm=2;extra+=' · 매혹 (다음 턴 행동 불가)';}}
       log('mon',`${m.name} · ${tel.name} → ${t.name}${note} ${r.d} 대미지${r.note==='보호'?' (보호됨)':''}${t.dead?' · 쓰러짐':''}${extra}`);
@@ -480,6 +499,7 @@ function resolveTurn(b,rng,hooks){
     if(!p.dead&&p.hot){heal({name:'블레스'},p,p.hot.amt,'지속 회복');p.hot.turns--;if(p.hot.turns<=0)p.hot=null;}
     if(p.bound>0){p.bound--;if(!p.bound)p.boundBy=null;}
     if(p.charm>0)p.charm--;
+    if(p.sealed){p.sealed.turns--;if(p.sealed.turns<=0)p.sealed=null;}if(p.noHeal>0)p.noHeal--;if(p.blind>0)p.blind--;if(p.healDown>0)p.healDown--;
     const bz=p.buffs.find(x=>x.k==='berserk'&&x.to===T);if(bz){p.maxHp+=bz.cut||30;}
     p.buffs=p.buffs.filter(x=>x.to>T);
   }

@@ -878,7 +878,7 @@ function actionPanel(b,me){
   if(me.confirmed){
     return `<div class="row" style="justify-content:space-between"><div><div class="ph" style="margin:0 0 4px">행동 확정</div><p style="color:var(--silver)">${esc(actLabel(b,me.action))}${me.action2?' · 연사 '+esc(actLabel(b,me.action2)):''}</p></div><button class="btn" data-act="editact">행동 수정</button></div>`;
   }
-  if(me.bound>0)return `<div class="acts"><p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다.</p><div class="row"><button class="btn btn-primary" data-act="confirmdefend">방어 확정</button></div></div>`;
+  if(me.bound>0)return `<div class="acts"><p class="reason">${me.boundBy==='tentacle'?'휘감김':me.boundBy==='root'?'뿌리 속박':'빛의 속박'} · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다.</p><div class="row"><button class="btn btn-primary" data-act="confirmdefend">방어 확정</button></div></div>`;
   const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};
   const tab=S.sel.actTab||'attack';
   let opts='';
@@ -888,7 +888,7 @@ function actionPanel(b,me){
   else if(tab==='attack')opts=sk.filter(k=>SKILLS[k].type==='dice'||(SKILLS[k].type==='nodice'&&SKILLS[k].target==='enemy')).map(k=>actOpt(b,me,k,a)).join('');
   else if(tab==='skill'){
     opts=sk.filter(k=>['support','heal'].includes(SKILLS[k].type)||(SKILLS[k].type==='nodice'&&SKILLS[k].target!=='enemy')).map(k=>actOpt(b,me,k,a)).join('');
-    if(!b.grid)opts+=['potion','holywater'].map(k=>{const n=S.me.inv[k]||0;return `<button class="opt" data-act="pickact" data-kind="item" data-item="${k}" aria-pressed="${a.kind==='item'&&a.item===k}" ${n?'':'disabled'}><span>${ITEMS[k].name} <span class="num faint">×${n}</span></span><small>${ITEMS[k].desc}</small></button>`;}).join('');
+    if(!b.grid)opts+=['potion','holywater'].concat(b.mon&&b.mon.journal&&(S.me.inv.j2052||0)>0?['j2052']:[]).map(k=>{const n=S.me.inv[k]||0;return `<button class="opt" data-act="pickact" data-kind="item" data-item="${k}" aria-pressed="${a.kind==='item'&&a.item===k}" ${n?'':'disabled'}><span>${ITEMS[k].name} <span class="num faint">×${n}</span></span><small>${ITEMS[k].desc}</small></button>`;}).join('');
   }else opts=`<button class="opt" data-act="pickact" data-kind="defend" aria-pressed="${a.kind==='defend'}"><span>방어</span><small>이번 턴 받는 대미지 50% 감소 · 가장 먼저 처리</small></button>`;
   const addons=sk.filter(k=>SKILLS[k].type==='addon');
   const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
@@ -1212,7 +1212,7 @@ function adminNotice(){
   const evPanel=`<div class="panel"><h3>전광판 이벤트</h3><form class="form" data-form="tk-ev">
       <label>종류<select id="tk-kind">${Object.entries(EVKIND).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
       <label>지속 시간(분)<input type="number" id="tk-min" min="1" max="1440" value="30"></label>
-      <label class="wide">이름<input type="text" id="tk-title" maxlength="40" placeholder="예) 백야의 신전 봉인 수호자" required></label>
+      <label class="wide">이름<input type="text" id="tk-title" maxlength="40" placeholder="예) 숨무스 폰티펙스" required></label>
       <label>현재 위치<input type="text" id="tk-loc" maxlength="30" placeholder="예) 녹투성이 호수"></label>
       <label>보상<input type="text" id="tk-reward" maxlength="40" placeholder="예) 경험치·골드 1.5배"></label>
       <label class="wide">바로가기<select id="tk-link"><option value="">없음</option>${S.data.monsters.map(m=>`<option value="monster:${m.id}">몬스터 · ${esc(m.name)}</option>`).join('')}<option value="quest">퀘스트</option><option value="battle">레이드</option></select></label>
@@ -1312,7 +1312,7 @@ function startBattle(){
 function resetAct(){const me=S.battle&&S.battle.players.find(p=>p.isMe);S.sel.act=me?{kind:'skill',skill:basicSkill(me.job)}:null;S.sel.act2=null;S.sel.actTab='attack';S.sel.gitem=null;S.sel.gcell=null;}
 function gItemAct(b,me){const g=S.sel.gitem;if(!g||!g.item||!(S.me.inv[g.item]>0))return null;return {item:g.item,target:me.id};}
 function planBots(b){b.players.forEach(p=>{if(!p.isMe&&!p.dead)p.planAt=now()+rnd(1500,7000);});b.allAt=null;}
-const hooks={hasItem:(pid,k)=>pid==='me'?(S.me.inv[k]||0)>0&&!itemBlock(k):false,useItem:(pid,k)=>{if(pid==='me'&&S.me.inv[k]>0)S.me.inv[k]--;}};
+const hooks={hasItem:(pid,k)=>pid==='me'?(S.me.inv[k]||0)>0&&!itemBlock(k):false,useItem:(pid,k)=>{if(pid==='me'&&k!=='j2052'&&S.me.inv[k]>0)S.me.inv[k]--;}};
 function doResolve(){
   const b=S.battle;if(b.bless&&!b.bless.pick)applyBless(b,pick(b.bless.cards));if(b.grid)gridPre(b,Math.random,hooks);resolveTurn(b,Math.random,hooks);
   {const H=heroLinesOf(b);if(H&&!b.over&&Math.random()<0.4){const pool=H.say.filter(x=>x!==b.heroLast);const l=pick(pool.length?pool:H.say);b.heroLast=l;b.heroSay={text:l,turn:b.turn};b.log.push({t:'warn',text:`${b.mon.name} · “${l}”`});}}

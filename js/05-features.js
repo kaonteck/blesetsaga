@@ -315,7 +315,7 @@ Object.assign(ITEMS,{
   j2052:{name:'낡은 탐사 일지',type:'mat',tag:'이스터에그',desc:'늪 한가운데, 균열 가장자리에서 주운 가죽 표지의 일지. 표지 안쪽에 영문 이름이 긁혀 있다. A■R■■A. 대부분의 쪽이 물에 젖어 서로 붙어 있다. 사용하면 읽는다.',price:0}});
 /* AURORA 탐사대의 일지(아이템 id는 j2052 그대로): 챕터가 진행될수록 읽을 수 있는 쪽이 늘어난다. 3장 1쪽, 4장 E13·E14·E15 완료 때 한 쪽씩. 날짜·템빨/컨빨 언급 없음(시간선: AURORA 탐사대가 먼저 갇혔고, 템빨·컨빨은 다음에 들어와 탈출 → 라니아케아에 기록 없음) */
 const J2052_P1='(날짜 칸은 물에 번져 읽을 수 없다)\n오늘도 나갈 방법은 없다.\n그래도 하늘이 우리를 보고 있는 것 같다.\n\n— AURORA';
-const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.','신전 지하 벽화에 우리가 있었다. 머리띠를 쓰고, 빛나는 네모 앞에 앉아 있는 사람들. 수천 년 된 벽화라고 했다. 해시계는 우리가 들어간 시각을 가리키고 있었다.','문서고에서 기획서를 봤다. 우리가 플레이하던 게임의 첫 기획서. 첨부된 지도는 지금 내 지도와 똑같다. 의뢰인 칸에 신전에서 본 문양이 있었다.','게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜.','여관 거울 속 주인이 우리를 알아봤다. 거울 밖의 그는 처음 보는 사람처럼 웃었다. 둘 중 어느 쪽이 진짜 얼굴인지 모르겠다.','호수에 마을 사람 전부가 비쳤다. 다 우리 같은 사람이었다. 장비를 입고, 레벨이 있고, 퀘스트를 깼다. 백야의 신전까지.','나는 이곳에 남기로 했다. 남아서 신전을 지키는 성녀가 되어 마을 사람들과 함께 어우러져 사는 것을 선택했다. 고된 회사도, 돈을 벌어야 한다는 책임감도, 바쁘게 흘러가는 현실은 전부 잊고 블레서로의 새로운 삶을 시작하기로 했다.'];
+const J2052_LATER=['타임어택 접수 완료. 첫 공략이 우리 탐사대라니 아직도 실감이 안 난다.\n로그아웃 버튼이 회색이다. 운영진 공지 기다리는 중.','일주일째. 여기 사람들은 우리가 나갈 수 없다는 걸 아는 것 같다.','지역마다 이변이 있다. 다 해결하면 나갈 수 있대. 진짜일까.','바다 쪽에서 노래가 들린다. 우리 중 누구도 아는 노래가 아니라고 했는데, 다들 끝 소절을 따라 불렀다.','한 명이 남겠다고 했다. 돌아가 봐야 기다리는 사람이 없다고. 다들 말렸지만, 솔직히 조금 부러웠다.','밖에서 오던 연락이 끊겼다. 끊긴 게 아니라, 처음부터 없었던 것 같다. 남겠다던 사람의 이름을 쓰려는데 생각이 나지 않는다.','신전 지하 벽화에 우리가 있었다. 머리띠를 쓰고, 빛나는 네모 앞에 앉아 있는 사람들. 수천 년 된 벽화라고 했다. 해시계는 우리가 들어간 시각을 가리키고 있었다.','문서고에서 기획서를 봤다. 우리가 플레이하던 게임의 첫 기획서. 첨부된 지도는 지금 내 지도와 똑같다. 의뢰인 칸에 신전에서 본 문양이 있었다.','게임이 이 세계를 베낀 게 아니었다. 이 세계가 먼저 있었다. 누군가 이걸 그리라고 시켰다. 누가, 왜.','여관 거울 속 주인이 우리를 알아봤다. 거울 밖의 그는 처음 보는 사람처럼 웃었다. 둘 중 어느 쪽이 진짜 얼굴인지 모르겠다.','호수에 마을 사람 전부가 비쳤다. 다 우리 같은 사람이었다. 장비를 입고, 레벨이 있고, 퀘스트를 깼다. 백야의 신전까지.','나는 이곳에 남기로 했다. 남아서 신전을 지키는 교황이 되어 마을 사람들과 함께 어우러져 사는 것을 선택했다. 고된 회사도, 돈을 벌어야 한다는 책임감도, 바쁘게 흘러가는 현실은 전부 잊고 블레서로의 새로운 삶을 시작하기로 했다.'];
 function j2052Text(){const F=(S&&S.flags)||{};const n=1+['e13_vip','e14_logout','ch4_clear','e17_score','e18_bottle','ch5_clear','e21_mural','e22_plan','ch6_clear','e25_mirror','e26_lake','ch7_clear'].filter(f=>F[f]).length;const pages=[J2052_P1+(S&&S.flags&&S.flags.ch3_clear?'\n\n(1쪽 맨 아래, 아까는 없던 단어 하나가 번져 있다. 「히페리온」)':''),...J2052_LATER.slice(0,n-1)];
   const NOTE={4:'(4쪽 뒤에 젖은 악보 한 장이 끼워져 있다. 음표 아래 가사는 한 줄뿐이다. 「돌아오지 마」)',7:'(7쪽 뒤에 금빛 문양을 문질러 뜬 탁본 한 장이 끼워져 있다. 처음 보는 고대 문자다.)',10:'(10쪽 뒤에 깨진 거울 조각 하나가 끼워져 있다. 비친 얼굴이 내 얼굴이 아니다.)'};
   if(n>=7&&F.e19_listen)pages[6]+='\n그 사람이 바다에서 노래한다. 돌아오지 말라고.';
@@ -421,7 +421,7 @@ const STORY_QUESTS=[
  {id:'E8',cat:'epic',title:'안개 마스크',published:true,level:20,prereq:'E7',repeat:null,cond:{adv:true},
   desc:'늪 한가운데 보랏빛 균열이 열린 뒤로, 독안개가 마을까지 차오른다. 늪의 마을 로타스로 향한다. [3장 「독안개 아래」]',start:'s1',steps:{
   s1:{text:'늪의 땅으로 들어서자 숨이 턱 막힌다. 말뚝 위에 선 집들 사이로 보랏빛 안개가 낮게 깔려 있다. 마을 사람들은 모두 가죽 마스크를 쓰고 있다. 치료소의 약초꾼이 마스크를 만들어 준다고 한다. (탐색 › 늪의 땅 › 마을 › 치료소)',
-    give:{land:'swamp',spot:'clinic',item:'q_mask',n:1,npc:'약초꾼 이브',text:'"돌아오셨네요, AURORA 님." 이브가 반갑게 웃다가, 당신 얼굴을 다시 보고 멈칫한다. "…아, 죄송해요. 닮은 분이 계셨어요. 마스크가 없으시군요. 이 마스크에 늪 독샘을 먹이면 안개를 걸러 줘요."'},
+    give:{land:'swamp',spot:'clinic',item:'q_mask',n:1,npc:'약초꾼 이브',text:'"돌아오셨네요, 아우로라 님." 이브가 반갑게 웃다가, 당신 얼굴을 다시 보고 멈칫한다. "…아, 죄송해요. 닮은 분이 계셨어요. 마스크가 없으시군요. 이 마스크에 늪 독샘을 먹이면 안개를 걸러 줘요."'},
     choices:[{label:'마스크를 받아 든다',req:{item:'q_mask'},result:'이브가 늪 독샘 세 개가 필요하다고 한다. 늪의 생물에게서 얻을 수 있다.',next:'s2'},
       {label:'아직 치료소에 가지 못했다',result:'로타스 치료소의 약초꾼을 찾아야 한다.',next:'s1'}]},
   s2:{text:'이브: "독샘 세 개면 충분해요. 독으로 독을 막는 거예요. 이상하게 들리죠?" (늪 독샘 3개 · 늪의 땅 필드 사냥)',choices:[
@@ -729,7 +729,7 @@ const HERO_LINES={
   d_lake:{say:['돈이면 다 된다고 했잖아.','갈증이 멈추지 않아. 남은 대가야.','네 지갑도 곧 비게 될 거다.'],last:'돌아가는 쪽을… 골랐어야 했어.'},
   d_siren:{say:['돌아오지 마, 돌아오지 마.','이 노래는 경고야. 아무도 듣질 않지.','바다 밑에 우리 이름이 잠겨 있어.'],last:'노래를… 들어 줘서 고마워.'},
   d_mirror:{say:['거울을 봐. 그게 진짜 너야.','NPC들 얼굴, 자세히 본 적 있어?','나는 가장 오래 남은 사람이야.'],last:'다음은… 너야.'},
-  guardian:{say:['신전 문을 열지 마.','우리는 이겼어. 그리고 졌지.','소원은 하나뿐이야. 잘 골라.'],last:'…접수… 마감이… 몇 시였더라…'}};
+  guardian:{say:['기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니.','모두가 왕좌 앞으로 모으리라.','죽음과 자연은 경악할 지어다.'],last:'…출근, 늦겠다.'}};
 /* 마을 글리치 대사 */
 const VIL_GLITCH_SOFT=['어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','(대답 대신 한참 동안 웃기만 한다.)','오늘도 날씨가 좋네요. 어제도. 내일도.','…방금 저랑 얘기하셨던가요?','(고개를 돌렸다가 다시 보니, 같은 자세로 같은 곳을 보고 있다.)'];
 const VIL_GLITCH=['(메뉴를 여는 당신의 손끝을 보다가, 로그아웃 버튼 쪽을 힐끗 본다.)','여기 계속 계셔도 돼요.','돌아갈 데가 있긴 하세요?','{N}님, 오늘도 오셨네요. …아, 아니, 이름을 잘못 불렀네요.','여기 계속 계셔도 돼요. 여기 계속 계셔도 돼요.','어서 오세요, 이방인. 어서 오세요, 이방인. 어서 오','당신도 곧 익숙해질 거예요. 다들 그랬거든요.','…로그아웃? 그게 뭐죠?'];
@@ -770,7 +770,7 @@ function ensureVilQuest(){if(!S.data||!S.data.quests)return;let ch=false;
   if(S.me&&S.me.cjobs&&S.me.cjobs.repair&&S.me.cjobs.repair.end>now())S.me.cjobs.repair.end=now();
   if(S.me&&!S.me.testItemsOff){S.me.testItemsOff=1;delete S.me.inv.jobticket;if(S.testElixir){S.me.inv.elixir=Math.max(0,(S.me.inv.elixir||0)-2);if(!S.me.inv.elixir)delete S.me.inv.elixir;}S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.src!=='elixir'||!S.testElixir);if(Array.isArray(S.me.shelf))S.me.shelf=S.me.shelf.map(k=>k==='jobticket'?null:k);ch=true;}
   if(S.me&&!S.me.duraV35){const D=S.me.dura||{};for(const k in D)D[k]=Math.min(DURA_MAX,Math.round(D[k]*3.5));S.me.duraV35=1;ch=true;}
-  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14',E16:'E15',E17:'E16',E18:'E17',E19:'E18',E20:'E19',E21:'E20',E22:'E21',E23:'E22',E24:'E23',E25:'E24',E26:'E25',E27:'E26'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
+  if(!S.spellFix1){const fixed=JSON.parse(JSON.stringify(S).split('블라스'+'페미아').join('블라스파미아'));Object.keys(S).forEach(k=>{if(k!=='sel')S[k]=fixed[k];});S.spellFix1=1;ch=true;}for(const Q of [VIL_QUEST,THEFT_QUEST,...ADV_QUESTS,...STORY_QUESTS])if(!S.data.quests.some(q=>q.id===Q.id)){const QS=S.data.quests;const prev={E4:'E3',E5:'E4',E6:'E5',E7:'E6',E8:'E7',E9:'E8',E10:'E9',E11:'E10',E12:'E11',E13:'E12',E14:'E13',E15:'E14',E16:'E15',E17:'E16',E18:'E17',E19:'E18',E20:'E19',E21:'E20',E22:'E21',E23:'E22',E24:'E23',E25:'E24',E26:'E25',E27:'E26',E28:'E27',E29:'E28',E30:'E29',E31:'E30'}[Q.id];const at=Q.id==='E0'?QS.findIndex(q=>q.id==='E1'):prev?QS.findIndex(q=>q.id===prev)+1:-1;if(at>=0)QS.splice(at,0,clone(Q));else QS.push(clone(Q));ch=true;}
   for(const M of [...STORY_MONS,...ADV_MONS,...PARTY_BOSSES])if(!S.data.monsters.some(m=>m.id===M.id)){S.data.monsters.push(clone(M));ch=true;}
   for(const Q of [...ADV_QUESTS,...STORY_QUESTS]){const i=S.data.quests.findIndex(q=>q.id===Q.id);if(i>=0&&JSON.stringify(S.data.quests[i].steps)!==JSON.stringify(Q.steps)){S.data.quests[i]=clone(Q);ch=true;}}
   const e1=quest('E1');if(e1&&!e1.prereq&&!S.qp.E1){e1.prereq='E0';ch=true;}
@@ -1164,7 +1164,7 @@ function weeklyPanel(){
 /* ───────── 커뮤니티 피드 ───────── */
 const EMOJIS=['😀','😂','🥹','😍','😎','🤔','😭','😡','👍','👏','🙏','💪','🔥','✨','🎉','💯','❤️','💔','⭐','🌙','☀️','🌧','❄️','🌊','🐟','🎣','🐌','🍞','🍲','⚔️','🛡','🏹','🔮','💰','🎲','🏆','👑','💀','👻','🐉'];
 const FEED_SEED=[
-  ['카이로','오늘 백야의 신전 근처까지 갔다가 봉인 수호자 그림자만 보고 도망쳤다… 다음 주에 토벌대 모집합니다 ⚔️',5,['세린','아르덴'],[['아르덴','저 껴 주세요! 탱 가능합니다 🛡',[['카이로','오 환영합니다 👍']]],['노아','그림자만 봐도 무섭죠 ㅋㅋ',[]]]],
+  ['카이로','오늘 백야의 신전 근처까지 갔다가 나팔 소리 같은 걸 듣고 도망쳤다… 다음 주에 다시 가 봅니다 ⚔️',5,['세린','아르덴'],[['아르덴','저 껴 주세요! 탱 가능합니다 🛡',[['카이로','오 환영합니다 👍']]],['노아','그림자만 봐도 무섭죠 ㅋㅋ',[]]]],
   ['벨라','벤테 어시장 아줌마가 꽃게 덤으로 줬어요 🦀 바다의 땅 최고!',9,['이안','엘라','노아'],[['이안','벨라 님 낚시 랭킹 1위 노리시는 거죠? 🎣',[['벨라','들켰다 😎']]]]],
   ['소하','달팽이 레이스 3연속 우승 실화냐… 모래폭풍 사랑해 🐌🐌🐌',14,['카이로','하윤','도겸','레아'],[['도겸','저는 번개한테 전 재산 날렸습니다 😭',[]],['하윤','도박꾼 칭호 부럽다…',[]]]],
   ['엘라','에우도라 빵집 밀빵 진짜 맛있어요. 초보 블레서분들 꼭 들러 보세요 🍞',22,['세린','소하'],[]],
@@ -1289,7 +1289,7 @@ const TITLES=[
   T('t_w20','combat','노련한 탐사대원','레이드 승리 20회','raidsWon',20),
   T('t_kf','combat','고목 벌채꾼','변이된 숲의 파수꾼 처치 10회',null,10,{get:()=>kills('forest')}),
   T('t_kt','combat','추적자의 추적자','블라스파미아 추적자 처치 10회',null,10,{get:()=>kills('tracker')}),
-  T('t_kg','combat','봉인의 파수꾼','백야의 신전 봉인 수호자 처치',null,1,{get:()=>kills('guardian')}),
+  T('t_kg','combat','봉인의 파수꾼','백야의 신전 토벌전 처치',null,1,{get:()=>kills('guardian')}),
   T('t_cr','combat','치명적인','크리티컬 30회','crits',30),
   T('t_dm','combat','파괴의 화신','누적 대미지 10,000','damage',10000),
   T('t_hl','combat','생명의 손길','누적 회복 3,000','healing',3000),
@@ -1313,7 +1313,7 @@ const TITLES=[
   T('t_house','life','내 집 마련의 꿈','주간 행운권 1등 당첨','lotto1',1),
   T('t_vip','life','골든 오아시스 VIP','카지노에서 누적 1,000,000골드 사용','casinoSpent',1000000),
   T('t_kkm','legend','까맥귀','모든 블레서 중 골드 획득량 1위인 사람에게 주어지는 칭호. 과거 마지막 레이드 버프로 골드 획득 버프를 뽑은 유저를 기념한다. 1위를 내주면 칭호도 넘어간다.',null,1,{rank:true}),
-  T('t_wn','legend','백야의 정복자','봉인 수호자 10회 처치',null,10,{get:()=>kills('guardian')}),
+  T('t_wn','legend','백야의 정복자','백야의 신전 토벌전 10회 처치',null,10,{get:()=>kills('guardian')}),
   T('t_max','legend','블레셋의 전설','최대 레벨 달성',null,1,{get:()=>S.me.level>=cfg().levelCap?1:0}),
   T('t_all','legend','신들의 총애','일반·전투·생활 칭호를 각각 5개 이상 획득',null,3,{get:()=>['normal','combat','life'].filter(c=>TITLES.filter(t=>t.cat===c&&hasTitle(t.id)).length>=5).length})
 ];
@@ -1612,7 +1612,7 @@ STORY_MONS.push(
   soloMon({id:'st_frostshade',name:'거울에서 나온 서리 그림자',art:'spirit',kind:'story',region:'칼리로에 여관 복도',level:68,statLevel:69,tier:'story',desc:'덮개가 벗겨진 거울에서 기어 나온 그림자. 당신과 같은 자세로 움직인다.',singleName:'서리 손',aoeName:'성에',dotName:'냉기',dotChance:0.25}),
   soloMon({id:'st_lakespirit',name:'호수의 서리 정령',art:'spirit',kind:'story',region:'얼음 호수 가장자리',level:72,statLevel:73,tier:'story',desc:'호수 표면에 비친 것들이 한데 엉겨 생긴 정령. 얼굴이 계속 바뀐다.',singleName:'얼음 파편',aoeName:'반사광',dotName:'냉기',dotChance:0.25}),
   soloMon({id:'st_prisoner',name:'거울 속 죄수',art:'spirit',kind:'story',region:'거울 감옥 · 얼음 호수 밑',level:76,statLevel:77,tier:'story',desc:'가장 먼저 남은 블레서. "이 세계를 영원히 볼 수 있게"를 빌었다. 볼 수만 있고 닿을 수는 없는 거울 안에 남았다. [7장 보스]',singleName:'서리 손톱',aoeName:'얼음 거울',dotName:'동상',dotChance:0.2,
-    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 되비침',say:'거울은 당신을 따라 합니다',atkMul:1.3,mirror:true,aoeName:'얼음 거울',aoeEvery:3},{at:25,name:'3페이즈 · 깨진 거울',say:'"성녀님은 아직 신전에 계셔? …아니, 이제 성녀가 아니겠구나. 문지기가 됐다지."',atkMul:1.6,mirror:false,aoeName:'깨진 거울',aoeMult:0.75,aoeEvery:2}]}));
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 되비침',say:'거울은 당신을 따라 합니다',atkMul:1.3,mirror:true,aoeName:'얼음 거울',aoeEvery:3},{at:25,name:'3페이즈 · 깨진 거울',say:'"교황 성하는 아직 신전에 계셔? …아니, 이제 그분이 아니겠구나. 기억을 다 내줬다지."',atkMul:1.6,mirror:false,aoeName:'깨진 거울',aoeMult:0.75,aoeEvery:2}]}));
 var PR_HP=1.75,PR_ATK=1.3;
 {const m=STORY_MONS.find(x=>x.id==='st_prisoner');m.hp=Math.round(m.hp*PR_HP);m.atk=Math.round(m.atk*PR_ATK);m.dotDmg=Math.round(m.atk*0.15);}
 Object.assign(HERO_LINES,{st_prisoner:{say:['그레고르는 내 공대장이었어. 이젠 날 몰라.','너도 곧 이쪽이야. 다들 거울 앞에서 웃더라.','내 이름? 거울에 물어봐.'],last:'이제… 네가 보여. 거울 말고.'}});
@@ -1639,7 +1639,7 @@ function ledgerHTML(){const rows=[['그레고르','✓','—'],['캐서린','✓
   return `<div class="ledger"><div class="row" style="justify-content:space-between"><b>칼리로에 여관 숙박부</b><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
     <table><thead><tr><th>이름</th><th>체크인</th><th>체크아웃</th></tr></thead><tbody>${rows.map(([n,a,b],i)=>`<tr class="${i===rows.length-1?'me':''}"><td>${esc(n)}</td><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table>
     <p class="faint" style="font-size:11.5px;margin:6px 0 0">체크아웃 칸은 전부 비어 있다. 맨 아래 줄의 이름은 당신의 글씨가 아니다.</p></div>`;}
-/* 녹지 않는 눈송이: 하얀 신전, 등 돌린 성녀가 천천히 돌아보다가 얼굴 직전에 닫힘(약 6초, 다시 열면 처음부터) */
+/* 녹지 않는 눈송이: 하얀 신전, 등 돌린 교황이 천천히 돌아보다가 얼굴 직전에 닫힘(약 6초, 다시 열면 처음부터) */
 function snowViewerHTML(){return `<div class="snowv" aria-label="녹지 않는 눈송이 속"><div class="sv-temple"></div><div class="sv-fig"><i class="sv-head"></i><i class="sv-veil"></i><i class="sv-robe"></i></div><div class="sv-flakes"></div></div>`;}
 let SNOW_T=0;
 (function(){const f=openViewer;openViewer=function(kind){if(kind==='snow'){clearTimeout(SNOW_T);modal(snowViewerHTML());const mm=$('.modal');if(mm)mm.classList.add('snow-modal');SNOW_T=setTimeout(()=>{if(document.querySelector('.snowv'))modal('');},6100);return;}return f(kind);};})();
@@ -1755,3 +1755,184 @@ STORY_QUESTS.push(
   s2:{text:'먼지 쌓인 책상 위에 반쯤 쓴 편지가 있다. 받는 사람 칸은 이 세계의 글자가 아니다. 바다에서 띄운 병 편지와 같은 글자다.',choices:[
     {label:'편지를 읽는다',result:'본문은 읽을 수 없다. 끝줄만 이 세계의 글자로 적혀 있다. 「곧 갈게.」',next:'end',flag:'s7b_room'}]},
   end:{end:true,text:'7호실의 편지',reward:{exp:5600,gold:600,items:{q_letter7:1}}}}});
+
+/* ───────── 8장 「백야의 신전」 (블라스파미아 · LV80–99 · E28–E31 + S8a·S8b, 기획 claude/chapter8-draft.md v2.1 + 유저 결정 2026-11-05) ─────────
+   4 PART: 서장 · 중장 · □□ · 종장. "이곳은 게임이 아니다" — PART가 넘어갈수록 게임 UI가 하나씩 사라진다(신전 안에서만).
+   표기: 문서·기록(일지·명부·탐사 기록·편지)은 AURORA, 몬스터 이름·대사처럼 보이는 이름은 아우로라. */
+Object.assign(ITEMS,{
+  q_bits:{name:'블레서 장비 조각',type:'mat',tag:'기념품',desc:'지하 제단 구석에 쌓여 있던 장비 조각들. 사용하면 읽는다.',price:0,readText:'(장비 조각 여러 개. 클래스도 레벨도 제각각이다. 이름은 남아 있다.)\n\n착용자: (빈칸)\n착용자: (빈칸)\n착용자: (빈칸)\n착용자: (빈칸)'},
+  d_clock:{name:'멈춘 시계 그림',type:'deco',tag:'장식품',desc:'이 세계의 글자로 그린 시계. 바늘이 9시에 멈춰 있다.',price:0}});
+STORY_MONS.push(
+  soloMon({id:'st_drowned',name:'지하의 익사한 신도들',art:'spirit',kind:'story',region:'백야의 신전 지하 제단',level:80,statLevel:81,tier:'story',desc:'물에 잠긴 지하 제단에서 기도문을 외던 신도들. 쓰러뜨려도 사라지지 않는다.',singleName:'젖은 손',aoeName:'기도문',dotName:'한기',dotChance:0.2}),
+  soloMon({id:'st_cephalo',name:'지하 신전의 사제, 케팔로포다',art:'beast',kind:'story',region:'백야의 신전 지하 제단',level:82,statLevel:83,tier:'story',desc:'두 팔과 여덟 개의 다리를 가진 고대 혼돈의 사제. 신과 함께 타락한 기운을 흡수하여 그 모습이 흉측하게 변했다. [8장 서장 보스]',singleName:'두 팔 내려치기',aoeName:'먹물 물결',dotName:'먹물',dotChance:0.15,
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 여덟 다리',say:'기도문이 빨라진다. 휘감기면 다음 턴 스킬을 쓸 수 없고, 먹물에 맞으면 다음 턴 대미지가 줄어든다(정화의 성수·디스펠로 해제)',atkMul:1.3,singleName:'여덟 다리 휘감기',wrapChance:0.3,aoeName:'먹물 물결',blindChance:0.6,aoeEvery:3},{at:25,name:'3페이즈 · 혼돈의 기도',say:'기도문이 멈추고 물방울 소리만 남는다',atkMul:1.6,aoeName:'혼돈의 기도',aoeMult:0.75,aoeEvery:2,wrapChance:0.15,blindChance:0}]}),
+  soloMon({id:'st_shadowpriest',name:'회랑의 그림자 신관',art:'spirit',kind:'story',region:'백야의 신전 회랑',level:86,statLevel:87,tier:'story',desc:'끝없는 회랑에서 소원의 벽을 지키는 그림자들.',singleName:'그림자 손',aoeName:'저녁 기도',dotName:'어둠',dotChance:0.2}),
+  soloMon({id:'st_janus',name:'타락한 신의 힘을 흡수한 주교, 야누스',art:'golem',kind:'story',region:'대주교의 문 앞',level:88,statLevel:89,tier:'story',desc:'제사를 관장하던 고대 혼돈의 신전의 대주교. 타락한 힘을 흡수한 뒤 생전의 모습을 잃고, 여명과 황혼 사이에 갇혀 내일을 맞이하지 못하고 있다. [8장 중장 보스]',singleName:'황혼의 낫',aoeName:'영원한 황혼',dotName:'저녁 그림자',dotChance:0.15,fx:{janus:true},
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 여명과 황혼',say:'여명의 얼굴은 스스로 회복하고, 황혼의 얼굴은 강하게 친다',atkMul:1.3,aoeName:'여명의 기도',aoeEvery:4},{at:25,name:'3페이즈 · 내일 없음',say:'12턴이 지나면 하루가 처음으로 돌아간다',atkMul:1.6,loop12:true,aoeName:'영원한 황혼',aoeMult:0.75,aoeEvery:2}]}),
+  soloMon({id:'st_aurora',name:'<여?일??? 아□로□>',art:'spirit',kind:'story',region:'교황의 제단',level:92,statLevel:93,tier:'story',desc:'고대 혼돈의 신전의 교황이었던 자. ??들의 ?□□로 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 그□□ □희□□□ ?□되고 있다.',singleName:'빛 화살',aoeName:'백광',dotName:'빛',dotChance:0,fx:{pacify:true,floor:0.3,journal:'react'},
+    sphases:[{at:100,name:'1페이즈 · 망설임'},{at:50,name:'2페이즈 · 개입',say:'"…아우로라. 그거, 제 닉네임이었어요. 이름은 따로 있었는데, 그건 기억이 안 나요." 그녀의 말투가 기도문으로 바뀐다',atkMul:1.6,pacify:false,wipeIn:3,aoeName:'백광',aoeEvery:2}]}),
+  soloMon({id:'st_summus',name:'숨무스 폰티펙스',art:'spirit',kind:'story',region:'교황의 제단',level:95,statLevel:96,tier:'story',desc:'고대 혼돈의 신전의 교황이었던 자. 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 고통 받고 있다. [8장 종장 보스]',singleName:'심판의 빛',aoeName:'왕좌 앞으로',dotName:'심판',dotChance:0,fx:{journal:'ignore',pullHeal:true},
+    sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 경악',say:'경악에 맞으면 회복할 수 없고, 봉인의 사슬에 맞으면 스킬 하나가 2턴 봉인된다(정화의 성수·디스펠로 해제)',atkMul:1.3,pullHeal:false,noHealAoe:true,singleName:'봉인의 사슬',sealChance:0.4,aoeName:'경악',aoeEvery:3},{at:25,name:'3페이즈 · 기적의 나팔',say:'나팔 소리만 남는다',atkMul:1.6,noHealAoe:false,sealChance:0.2,aoeName:'기적의 나팔',aoeMult:0.8,aoeEvery:2}]}));
+var CE_HP=1.8*1.3,CE_ATK=1.3*1.15,JA_HP=1.9*1.3,JA_ATK=1.35*1.15,AU_HP=1.2,SU_HP=2.2*1.6,SU_ATK=1.4*1.45;
+[['st_cephalo',CE_HP,CE_ATK],['st_janus',JA_HP,JA_ATK],['st_aurora',AU_HP,1],['st_summus',SU_HP,SU_ATK]].forEach(([id,h,a])=>{const m=STORY_MONS.find(x=>x.id===id);m.hp=Math.round(m.hp*h);m.atk=Math.round(m.atk*a);m.dotDmg=Math.round(m.atk*0.15);});
+Object.assign(HERO_LINES,{
+  st_cephalo:{say:['나팔이 울리기 전에, 제물은 제단으로.','부활은 축복이다. 축복은 거절할 수 없다.'],last:'…다음 제물은, 이미 와 있구나.'},
+  st_janus:{say:['오늘이 끝나면 내일이 온다고, 다들 그렇게 믿고 들어왔지.','나는 아침을 기다렸다. 아직 기다린다.'],last:'…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다.'},
+  st_aurora:{say:['아홉 시. 아홉 시까지 어딘가에 가야 했던 것 같은데, 어디였는지 모르겠어요.','지하철… 이라는 게 있었어요. 사람이 아주 많은 상자였어요. 다들 작은 빛나는 판을 보고 있었고요.','그쪽 세계에도 비가 오나요? 우산을 두고 와서… 아, 무슨 얘기를 하는 거죠, 제가.','로그아웃. 그 단어, 저도 찾았었어요. 메뉴를 아무리 열어도 없었어요.','여기 계속 계셔도 돼요.'],last:''},
+  st_summus:{say:['기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니.','모두가 왕좌 앞으로 모으리라.','죽음과 자연은 경악할 지어다.'],last:'…출근, 늦겠다.'}});
+const AURORA_PRAY=['기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니, 모두가 왕좌 앞으로 모으리라.','심판에 응하기 위하여 모든 피조물들이 소생할 때 죽음과 자연은 경악할 지어다.'];
+(function(){const f=heroLinesOf;heroLinesOf=function(b){if(b&&b.monsterId==='st_aurora'&&b.mon&&(b.mon.sph||0)>=1)return {say:AURORA_PRAY,last:''};return f(b);};})();
+/* 신전 안 PART: 8장 퀘스트를 진행 중이고, 그 퀘스트 화면이나 8장 전투 화면을 보고 있을 때만(밖으로 나가면 평소 UI) */
+const T8=['E28','E29','E30','E31'],T8_NAME=['서장','중장','□□','종장'];
+function templePart(){if(typeof S==='undefined'||!S||!S.qp||!S.me)return 0;const i=T8.findIndex(id=>S.qp[id]&&['active','claim'].includes(S.qp[id].status));if(i<0)return 0;
+  const view=(S.route==='quest'&&T8.includes(S.sel.quest))||(S.route==='battle'&&S.battle&&S.battle.ctx&&T8.includes(S.battle.ctx.qid));return view?i+1:0;}
+function templeClockHTML(){const part=templePart();if(!part)return '';if(!S.me.templeT){S.me.templeT=now();save();}
+  const p2=n=>String(n).padStart(2,'0');const plus=(S.qp.E31&&(S.qp.E31.step==='s4'||S.qp.E31.status!=='active'))?60000:0;const d=new Date(S.me.templeT+plus);
+  const b=S.battle;const face=S.route==='battle'&&b&&!b.over&&b.monsterId==='st_janus'&&b.face?(b.face==='dawn'?'여명':'황혼'):null;
+  return `<div class="tclock" aria-label="신전 시각"><b>${T8_NAME[part-1]}</b><span class="num">${face?`<em class="tc-face ${b.face}">${face}</em>`:`백야 · ${p2(d.getHours())}:${p2(d.getMinutes())}`}</span></div>`;}
+/* 심박(bpm): 체력이 줄수록 빨라진다 */
+const bpmOf=p=>p.dead?0:Math.round(60+(1-p.hp/Math.max(1,p.maxHp))*100);
+(function(){const f=fighterCard;fighterCard=function(b,p){let h=f(b,p);const part=templePart();
+  if(p.bound>0&&p.boundBy==='tentacle')h=h.replace(`빛의 속박 ${p.bound}`,`휘감김 ${p.bound}`);
+  const ex=[];if(p.sealed)ex.push(`봉인 · ${SKILLS[p.sealed.skill]?SKILLS[p.sealed.skill].name:''} ${p.sealed.turns}`);if(p.noHeal>0)ex.push('회복 불가');if(p.healDown>0)ex.push('회복 −30%');if(p.blind>0)ex.push('실명');
+  if(ex.length)h=h.replace('</div>\n    <div class="bar hp">',ex.map(x=>`<span class="chip st-debuff">${esc(x)}</span>`).join('')+'</div>\n    <div class="bar hp">');
+  if(part>=2)h=h.replace(/<span class="chip num dim">LV\d+<\/span>/,'');
+  if(part>=3)h=h.replace(/<span>HP \d+\/\d+<\/span>/,`<span class="bpm">♥ ${bpmOf(p)} bpm</span>`);return h;};})();
+(function(){const f=rewardHTML;rewardHTML=function(r){let h=f(r);if(templePart()>=1)h=h.replace(/<span>EXP <b class="num">\d+<\/b><\/span>/,'');return h;};})();
+(function(){const f=setBody;setBody=function(){let h=f();const part=templePart();
+  if(part>=1)h=h.replace(/<button class="ibtn" data-act="acc-logout"[^>]*>[\s\S]*?<\/button>/,'');
+  if(part>=3)h=h.replace('<div class="row" style="justify-content:space-between;border-top:1px solid var(--rule);padding-top:10px"><span class="faint" style="font-size:12px">계정','<div class="row pain-row" style="justify-content:space-between;border-top:1px solid var(--rule);padding-top:10px"><span style="font-size:12.5px">통각 보정</span><span class="pain-v"><input type="range" min="0" max="100" value="100" disabled aria-label="통각 보정 100%"> <b class="num">100%</b></span></div>\n    <div class="row" style="justify-content:space-between;border-top:1px solid var(--rule);padding-top:10px"><span class="faint" style="font-size:12px">계정');
+  return h;};})();
+/* 문서 속 긁힌 이름: 종장을 마치면 AURORA로 돌아온다(알리지 않음) */
+function restoreAurora(s){if(!s||!(S&&S.flags&&S.flags.ch8_clear))return s;return String(s).split('A■R■■A').join('AURORA').split('「AU…」').join('「AURORA」');}
+(function(){const f=questDetail;questDetail=function(q){let h=f(q);if(T8.includes(q.id))h=templeClockHTML()+h+(q.id==='E28'&&S.qp.E28?'<div class="row" style="margin-top:8px"><button class="btn btn-sm btn-ghost" data-act="seq-e28">처음 들은 말</button></div>':'');return restoreAurora(h);};})();
+(function(){const f=vFight;vFight=function(){let h=f();const part=templePart();if(!part)return h;
+  const corpses=part===1&&(S.me.corpses||[]).length?`<div class="corpses" aria-label="쓰러진 채 남아 있는 것">${S.me.corpses.map(n=>`<span>${esc(n)}</span>`).join('')}</div>`:'';
+  const i=h.indexOf('>');return h.slice(0,i+1)+templeClockHTML()+corpses+h.slice(i+1);};})();
+(function(){const f=outcomeHTML;outcomeHTML=function(b){let h=f(b);const ctx=b.ctx||{};const part=templePart();
+  if(b.over==='win'&&ctx.qid==='E28'&&!b.corpseRec){b.corpseRec=1;S.me.corpses=S.me.corpses||[];if(!S.me.corpses.includes(b.mon.name))S.me.corpses.push(b.mon.name);save();}
+  if(b.over==='lose'&&ctx.type==='quest'&&part>=2){
+    if(b.monsterId==='st_aurora'){h=h.replace(/<h2>패배<\/h2>\s*<p class="muted">[^<]*<\/p>/,'<h2>사망하였습니다.</h2><p class="muted">…</p>');if(!b.flatPlayed){b.flatPlayed=1;flatline();if(navigator.vibrate){try{navigator.vibrate(0);}catch(e){}}}}
+    else{h=h.replace(/<h2>패배<\/h2>\s*<p class="muted">[^<]*<\/p>/,'<h2>사망하였습니다.</h2><p class="revive">부활합니다.</p>');if(!b.revBuzz){b.revBuzz=1;if(navigator.vibrate){try{navigator.vibrate(60);}catch(e){}}}}}
+  if(b.over==='win'&&b.monsterId==='st_summus')h=h.replace('<h2>승리</h2>','<h2>승리</h2><p class="nm-flick"><span class="nf-a">숨무스 폰티펙스</span><span class="nf-b">&lt;여?일??? 아□로□&gt;</span></p>');
+  return h;};})();
+/* 소원과 대가(탐사 기록) · 직접 쓰는 소원 myWish(30자, 내 화면에만) */
+function wishRows(){const F=S.flags||{},done=id=>S.qp[id]&&S.qp[id].status==='done';const r=[];
+  if(done('E15'))r.push(['다시는 가난하지 않게','소금으로 굳은 금화 속에 갇힘 (염수의 군주)']);
+  if(done('E19'))r.push([F.e19_listen?'누구에게도 잊히지 않게':'누구에게도 ……','모두에게서 지워짐 (심해의 세이렌)']);
+  if(done('E27'))r.push(['이 세계를 영원히 볼 수 있게','볼 수만 있는 거울 안에 갇힘 (거울 속 죄수)']);
+  r.push(['신전을 지키는 교황이 되게',F.ch8_clear?'기억을 잃고 신전을 지키는 것이 되었다.':'']);return r;}
+function wishTableHTML(edit){const w=S.me.myWish||'';return `<table class="wish"><thead><tr><th>소원</th><th>대가</th></tr></thead><tbody>${wishRows().map(([a,b])=>`<tr><td>${esc(a)}</td><td>${b?esc(b):'<span class="faint">　</span>'}</td></tr>`).join('')}
+  <tr class="mine"><td>${edit?`<input id="wish-in" maxlength="30" value="${esc(w)}" placeholder="|" autocomplete="off" aria-label="소원 (30자)">`:(w?esc(w):'<span class="faint">　</span>')}</td><td><span class="faint">　</span></td></tr></tbody></table>
+  ${edit?`<div class="row" style="justify-content:flex-end;gap:6px"><small class="faint">쓰지 않고 넘어가도 된다 · 30자</small><button class="btn btn-sm" data-act="wish-save">새긴다</button></div>`:''}`;}
+const R8_TEXT=[['공략□   ?  하였습니다.','공략에 성공하지 못하였습니다.'],['<아?로?>   기원?□ □?□      필드 위 모든 생명?□','<아우로라>여 기원하지 마시오, 필드 위 모든 생명체를'],['모든 생명체를 부활시키      시오.','모든 생명체를 부활시키지 마시오.'],['부활  ?합니다.','부활 못 합니다.'],['힘을 소진한 <아?로?>          일시적인 잠에 들        다.','힘을 소진한 <아?로?>를 억지로 일시적인 잠에 들게 합니다.']];
+(function(){const f=recordsHTML;recordsHTML=function(flags){const F=S.flags||{};let h=f((flags||[]).filter(x=>x!=='death1'));
+  if(F.e29_wall)h+=`<section class="recg wishrec"><div class="recg-h"><span class="rec-q">소원과 대가</span></div>${wishTableHTML(false)}</section>`;
+  if(F.ch8_clear)h+=`<section class="recg"><div class="recg-h"><span class="rec-q">□□</span></div>${R8_TEXT.map(([a,b])=>`<p class="rec-t">${esc(a)}<br><span class="faint">→ ${esc(b)}</span></p>`).join('')}<p class="rec-t">시스템은 부활을 막으려 했고, 그녀는 마지막 힘으로 모두를 되살렸다.</p></section>`;
+  if(F.death1)h+=`<p class="rec-death">사망 1회</p>`;return h;};})();
+/* 소리(합성음): 먼 나팔 · 경고음 · 심전도 정지음 · 새소리 · 종소리 */
+function trumpet(far){const c=audio();if(!c)return;const v=(far?0.025:0.05)*sndVol('bgm');if(v<=0)return;try{const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=far?900:1600;lp.connect(c.destination);
+  [233.08,293.66,349.23].forEach((fq,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sawtooth';o.frequency.value=fq;const t=c.currentTime+i*0.02;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+0.25);g.gain.setValueAtTime(v,t+1.1);g.gain.exponentialRampToValueAtTime(0.0001,t+1.8);o.connect(g).connect(lp);o.start(t);o.stop(t+1.9);});}catch(e){}}
+function warnBeep(){if(!audio())return;blip(880,0.12,0.05*sndVol('alarm'),'square');blip(880,0.12,0.05*sndVol('alarm'),'square',0.18);}
+function flatline(){const c=audio();if(!c)return;setTimeout(()=>blip(1000,2.4,0.05*Math.max(sndVol('bgm'),sndVol('alarm')),'sine'),900);}
+function birds(){if(!audio())return;const v=0.03*sndVol('bgm');[0,0.18,0.5,0.66].forEach((w,i)=>blip(2600+i*240,0.09,v,'sine',w));}
+function bell(){if(!audio())return;const v=0.04*sndVol('bgm');blip(523.25,1.6,v,'sine');blip(1046.5,1.2,v*0.4,'sine',0.01);}
+function windGust(){const c=SND.ctx;if(!c)return;try{const s=c.createBufferSource();s.buffer=noiseBuf(c);const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=500;const g=c.createGain();const t=c.currentTime,v=0.03*sndVol('bgm');g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+1);g.gain.exponentialRampToValueAtTime(0.0001,t+3);s.loop=true;s.connect(f).connect(g).connect(c.destination);s.start(t);s.stop(t+3.1);}catch(e){}}
+/* 검은 화면 연출(클릭으로 넘길 수 없음) */
+const SEQ={on:false};
+function playSeq(items,done){if(typeof document==='undefined'||SEQ.on)return;SEQ.on=true;try{updateBgm();}catch(e){}const ov=document.createElement('div');ov.id='seq-ov';ov.setAttribute('role','log');document.body.appendChild(ov);let t=600;
+  items.forEach(it=>{t+=it.d||1200;setTimeout(()=>{if(it.k!=='gap'){const el=document.createElement('p');el.className='sq-'+it.k;el.textContent=it.t;ov.appendChild(el);ov.scrollTop=ov.scrollHeight;}if(it.s)it.s();},t);});
+  setTimeout(()=>{ov.classList.add('out');setTimeout(()=>{ov.remove();SEQ.on=false;try{updateBgm();}catch(e){}if(done)done();},600);},t+3000);}
+const SEQ_E28=['가□ 강   이  □    여, 그    은 이 세계   멸□을   을 실       지  .','이  에   림하야 그□  의   명을 다   록 하  라.','이것   그□들의    축복   될  어다.','혼돈   나팔   저   고 대□에 축복   깃□   하라.'];
+function seqE28(done){playSeq(SEQ_E28.map(t=>({k:'raw',t,d:2600,s:()=>trumpet(true)})),done);}
+function seqE30(done){const L=[];const sys=t=>L.push({k:'sys',t,d:1300,s:()=>keyClick(0.03*sndVol('click'))});
+  sys('✉ SYSTEM · 공략에 참여 가능한 인원이 더 이상 존재하지 않습니다.');sys('✉ SYSTEM · 공략에 실패하였습니다.');sys('✉ SYSTEM · 공략□   ?  하였습니다.');
+  L.push({k:'err',t:'! ERROR',d:900,s:warnBeep},{k:'err',t:'! ERROR',d:700,s:warnBeep});
+  L.push({k:'say',t:'아우로라 : '+AURORA_PRAY[0],d:2200,s:()=>trumpet(true)},{k:'say',t:'아우로라 : '+AURORA_PRAY[1],d:3000},{k:'sys',t:'<아?로?>가 기원?□다.',d:2400});
+  L.push({k:'err',t:'! E□R□□',d:1600,s:warnBeep},{k:'narr',t:'따스한 볕이 내렸다.',d:2400,s:()=>{birds();windGust();}});
+  L.push({k:'sys',t:'<아?로?>   기원?□ □?□      필드 위 모든 생명?□',d:2600},{k:'err',t:'! □□□□□',d:1400,s:warnBeep},{k:'sys',t:'모든 생명체를 부활시키      시오.',d:1800},{k:'sys',t:'부활  ?합니다.',d:2000},{k:'sys',t:'힘을 소진한 <아?로?>          일시적인 잠에 들        다.',d:2400});
+  playSeq(L,done);}
+/* 단계 연출: 소원의 벽 · E30 전멸 후 메시지 */
+(function(){const f=stepFx;stepFx=function(q,qp,step){if(!step)return null;
+  if(step.wishWall)return {html:wishTableHTML(true),hold:false,text:null};
+  if(step.seq){const key=q.id+':'+qp.step;S.sel.seqSeen=S.sel.seqSeen||{};if(!S.sel.seqSeen[key]){S.sel.seqSeen[key]=1;(step.seq==='e30'?seqE30:seqE28)(()=>{if(S.route==='quest')render();});return {hold:true,html:'<div class="qsilence"></div>'};}if(SEQ.on)return {hold:true,html:'<div class="qsilence"></div>'};}
+  if(step.clockPlus)return {html:templeClockHTML(),hold:false,text:null};
+  return f(q,qp,step);};})();
+/* 퀘스트 받을 때: E28은 검은 화면의 깨진 말부터 */
+function questAcceptFx(id){if(id==='E28')seqE28();}
+/* 보상 받을 때: E31 → AURORA 편지(보관 가능), S8b → 멈춘 시계 그림(획득 경로: AURORA) */
+(function(){const f=storyClaimFx;storyClaimFx=function(id){f(id);
+  if(id==='E31')setTimeout(()=>{deliverMail('AURORA','[다음에 오는 블레서에게]\n\n이 편지가 닿았다면, 저는 이제 저를 기억하지 못하겠죠.\n여긴 게임이 아니에요. 아픈 건 진짜 아프고, 죽는 것도 진짜예요. 처음엔 저도 몰랐어요.\n소원은 꼭, 소원 그대로 이루어져요. 그러니까 잘 골라요.',{},{});save();},1500);
+  if(id==='S8b'){try{noteDeco('d_clock',{t:'etc',v:'AURORA'});}catch(e){}}};})();
+/* 8장 소리·심박 루프 */
+const T8FX={turn:-1,ph:-1,buzz:0,flick:0};
+(function(){const f=bgmMul;bgmMul=function(){if(SEQ.on)return 0;const b=S&&S.battle;if(b&&!b.over&&b.monsterId==='st_summus'&&(b.mon.sph||0)>=2)return 0;return f();};})();
+setInterval(()=>{if(typeof document==='undefined'||!S||!S.me)return;const b=S.battle;
+  if(b&&!b.over&&['st_janus','st_summus','st_aurora'].includes(b.monsterId)){
+    if(b.turn!==T8FX.turn){T8FX.turn=b.turn;if(b.monsterId==='st_janus'&&b.face)(b.face==='dawn'?birds:bell)();if(b.tel&&b.tel.wipe)trumpet(false);else if(b.wipeAt&&b.wipeAt-b.turn<=2)trumpet(true);if(b.monsterId==='st_summus'&&(b.mon.sph||0)>=2&&b.tel&&b.tel.type==='aoe')trumpet(false);}
+    const ph=b.mon.sph||0;if(b.monsterId==='st_aurora'&&ph>=1&&T8FX.ph<1&&!b.flicked){b.flicked=1;const n0=b.mon.name;b.mon.name='<여?일??? 아우로라>';try{renderFight();}catch(e){}setTimeout(()=>{if(S.battle===b){b.mon.name=n0;try{renderFight();}catch(e){}}},1000);}T8FX.ph=ph;}
+  else T8FX.turn=-1;
+  const part=templePart();if(typeof document!=='undefined'&&document.body){[1,2,3,4].forEach(i=>document.body.classList.toggle('tp-'+i,part>=i));}
+  if(part>=3&&S.route==='battle'&&b&&!b.over&&navigator.vibrate&&matchMedia('(pointer:coarse)').matches){const me=b.players.find(p=>p.isMe);const bpm=me?bpmOf(me):0;if(bpm&&now()>=T8FX.buzz){T8FX.buzz=now()+60000/bpm;try{navigator.vibrate(12);}catch(e){}}}
+},250);
+/* 기존 세이브: 토벌전 보스 이름·설명, 메인 배너·공지 */
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{let ch=false;const g=S.data&&S.data.monsters&&S.data.monsters.find(x=>x.id==='guardian');const G=DEFAULT_MONSTERS.find(x=>x.id==='guardian');
+  if(g&&G&&g.name!==G.name&&/봉인 수호자/.test(g.name||'')){g.name=G.name;g.desc=G.desc;ch=true;}
+  if(S.data.banner&&/봉인/.test(S.data.banner.title+S.data.banner.text)){S.data.banner=clone(DEFAULT_BANNER);ch=true;}
+  const n3=(S.data.notices||[]).find(n=>n.id==='n3');if(n3&&/봉인 수호자/.test(n3.title)){Object.assign(n3,DEFAULT_NOTICES.find(n=>n.id==='n3'));ch=true;}
+  if(ch)save();}catch(e){}};})();
+STORY_QUESTS.push(
+ {id:'E28',cat:'epic',title:'서장 · 지하 신전',published:true,level:80,prereq:'E27',repeat:null,cond:{},
+  desc:'7장 일지 뒤의 녹지 않는 눈송이를 들고 블라스파미아로 간다. 해가 지지 않는 언덕 꼭대기에 백야의 신전이 있다. [8장 「백야의 신전」]',start:'s1',steps:{
+  s1:{text:'블라스파미아. 해가 지지 않는다. 언덕 꼭대기, 백야의 신전 정문은 닫혀 있다. 손바닥 위의 눈송이가 처음으로 녹아 물이 된다. 정문 옆으로 난 계단이 지하로 이어진다.',choices:[
+    {label:'지하로 내려간다',result:'계단을 내려갈수록 물소리가 커진다. 문득 메뉴를 열어 본다. …로그아웃 버튼이 어디 있더라?',next:'s2'}]},
+  s2:{text:'지하 제단 앞. 무릎까지 물이 차 있다. 물속에서 익사한 신도들이 일어선다.',battle:'st_drowned',next:'s3',winText:'신도들이 물 위에 쓰러진다. 시체는 사라지지 않는다. 물 위에 떠서, 그대로 있다.'},
+  s3:{text:'제단 한가운데에서 무언가가 기도문을 왼다. 두 팔과 여덟 개의 다리. 지하 신전의 사제, 케팔로포다. (권장 LV82 · 회복약 3개, 정화의 성수 2개 이상)',choices:[
+    {label:'물을 헤치고 다가간다',result:'기도문이 멈춘다. 여덟 개의 다리가 물 위로 올라온다.',next:'s4'},
+    {label:'물러나 준비한다',result:'물에 뜬 시체들이 당신이 돌아올 때까지 그대로 떠 있다.',next:'s3'}]},
+  s4:{text:'"나팔이 울리기 전에, 제물은 제단으로." 체력이 줄면 다리로 휘감고 먹물을 뿜으며(60%), 끝에는 혼돈의 기도를 왼다(25%).',battle:'st_cephalo',next:'s5',winText:'케팔로포다가 물 위로 쓰러진다. 시체는 제단 물 위에 떠 있다.'},
+  s5:{text:'제단 뒤로 위층으로 이어지는 문이 열린다. 물에 뜬 시체들 사이로 길이 나 있다.',choices:[
+    {label:'위층으로 올라간다',result:'뒤를 돌아본다. 시체들은 그대로 있다. 사라지지 않는다.',next:'end',flag:'e28_under'}]},
+  end:{end:true,text:'물에 잠긴 지하 제단',reward:{exp:20000,gold:3200,items:{potion:2,holywater:1}}}}},
+ {id:'E29',cat:'epic',title:'중장 · 여명과 황혼 사이',published:true,level:86,prereq:'E28',repeat:null,cond:{},
+  desc:'지하에서 올라오면 끝없이 긴 회랑. 회랑 끝 대주교의 문 앞에서 누군가 기다린다. [8장 「백야의 신전」]',start:'s1',steps:{
+  s1:{text:'끝없이 긴 회랑. 벽 가득 문장이 새겨져 있다. 회랑의 그림자 속에서 신관들이 걸어 나온다.',battle:'st_shadowpriest',next:'s2',winText:'그림자 신관들이 벽 속으로 스며든다. 벽의 문장들이 드러난다.'},
+  s2:{text:'소원의 벽. 새겨진 문장들이 낯익다. 소원과, 그 소원이 이루어진 모양. 맨 아래 줄은 비어 있고, 그 칸에 커서가 깜빡인다.',wishWall:true,choices:[
+    {label:'회랑 끝으로 걷는다',result:'회랑은 끝이 없을 것처럼 길다. 창밖은 여명이었다가, 황혼이었다가, 다시 여명이다. 내일은 오지 않는다.',next:'s3',flag:'e29_wall'}]},
+  s3:{text:'회랑 끝, 대주교의 문. 두 얼굴을 가진 주교가 기다린다. 한쪽은 여명, 한쪽은 황혼이다. (권장 LV88 · 회복약 3개 이상)',choices:[
+    {label:'문 앞으로 간다',result:'"오늘이 끝나면 내일이 온다고, 다들 그렇게 믿고 들어왔지."',next:'s4'},
+    {label:'물러나 준비한다',result:'창밖이 여명에서 황혼으로 바뀐다. 다시 여명으로.',next:'s3'}]},
+  s4:{text:'야누스가 얼굴을 바꾼다. 여명의 얼굴일 때는 스스로 회복하며 약하게 치고, 황혼의 얼굴일 때는 강하게 친다. 위쪽 시각 칸을 보면 이번 턴의 얼굴을 알 수 있다. 끝에는 12턴이 지나면 하루가 처음으로 돌아간다(25%).',battle:'st_janus',next:'s5',winText:'야누스가 무릎을 꿇는다. "…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다."'},
+  s5:{text:'대주교의 문 너머, 신전 가장 안쪽으로 이어지는 계단.',choices:[
+    {label:'계단을 오른다',result:'계단 끝에서 따뜻한 빛이 새어 나온다.',next:'end',flag:'e29_janus'}]},
+  end:{end:true,text:'여명과 황혼 사이',reward:{exp:24000,gold:3800,items:{potion:3},gearTier:8}}}},
+ {id:'E30',cat:'epic',title:'□□',published:true,level:92,prereq:'E29',repeat:null,cond:{},
+  desc:'신전 가장 안쪽, 교황의 제단. [8장 「백야의 신전」]',start:'s1',steps:{
+  s1:{text:'교황의 제단. 교황 옷을 입은 사람이 등을 돌리고 서 있다. 눈송이 속에서 본 그 뒷모습이다. 그녀가 천천히 돌아본다. 얼굴이 다정하다. "어서 오세요, 블레서님. 이곳까지 오시느라 힘드셨죠."',choices:[
+    {label:'"…당신은?"',result:'"…블레서. 이상하죠, 저도 그렇게 불렸던 것 같아요." 그녀의 이름표가 깨져 있다. <여?일??? 아□로□>',next:'s2'}]},
+  s2:{text:'그녀는 싸우고 싶어 하지 않는다. (전투 중 낡은 탐사 일지를 펼쳐 읽어 줄 수 있다 · 전투당 3회)',battle:'st_aurora',next:'s3',loseTo:'s3',winText:''},
+  s3:{text:'…눈을 뜬다. 신전 가장 안쪽, 그녀를 만나기 직전의 자리다. 모든 게 그대로다. 그런데 캐릭터 카드의 탐사 기록 맨 아래에 한 줄이 남아 있다. 「사망 1회」.',seq:'e30',choices:[
+    {label:'일어선다',result:'제단 쪽에서 나팔 소리가 아주 멀리 한 번 울린다.',next:'end',flag:'death1'}]},
+  end:{end:true,text:'□□',reward:{exp:15000,gold:0,items:{}}}}},
+ {id:'E31',cat:'epic',title:'종장 · 숨무스 폰티펙스',published:true,level:95,prereq:'E30',repeat:null,cond:{},
+  desc:'같은 제단, 같은 자리. 권장 LV97 · 회복약 5개, 정화의 성수 3개 이상 준비. [8장 「백야의 신전」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'같은 제단, 같은 자리. 그러나 제단 앞에 서 있는 것은 더 이상 그녀가 아니다. 이름표가 깨끗하다. <숨무스 폰티펙스>. 다정함도, 존댓말도 없다. (권장 LV97 · 회복약 5개, 정화의 성수 3개 이상)',choices:[
+    {label:'제단 앞으로 나선다',result:'"기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니."',next:'s2'},
+    {label:'물러나 준비한다',result:'기도문은 멈추지 않는다.',next:'s1'}]},
+  s2:{text:'숨무스 폰티펙스가 왕좌 앞으로 끌어당긴다. 체력이 줄면 회복을 막고 스킬을 봉인하며(60%), 끝에는 기적의 나팔을 분다(25%). 일지는 펼쳐도 소용이 없다.',battle:'st_summus',next:'s3',winText:'숨무스 폰티펙스가 무너진다. 나팔이 마지막으로 한 번, 아주 작게 울린다.'},
+  s3:{text:'이름표가 1초 동안 다시 깨진다. <여?일??? 아□로□>. 대사 창에 이름 없이 한 줄이 떠오른다. "…출근, 늦겠다."',choices:[
+    {label:'…',result:'탐사 기록에 한 이름이 깨지지 않고 남는다. 「AURORA」.',next:'s4'}]},
+  s4:{text:'아무 메시지도 없다. 신전 시각 칸의 숫자가 처음으로 1분 넘어간다.',clockPlus:true,choices:[
+    {label:'제단을 바라본다',result:'해가 아주 조금 기운다.',next:'end',flag:'ch8_clear'}]},
+  end:{end:true,text:'8장 「백야의 신전」 완료',reward:{exp:45000,gold:6500,items:{potion:3}}}}},
+ {id:'S8a',cat:'sub',title:'시체가 있던 자리',published:true,level:82,prereq:null,repeat:null,cond:{quests:['E28']},
+  desc:'지하 제단의 시체들이 아직 물 위에 떠 있다.',start:'s1',steps:{
+  s1:{text:'서장에서 쓰러뜨린 신도들의 시체가 아직 물 위에 떠 있다. 시체가 흘러가는 쪽을 따라가면 제단 구석에 무언가가 쌓여 있다.',choices:[
+    {label:'다가간다',result:'블레서 장비 조각들이다. 클래스도 레벨도 제각각. 장비 이름 옆 착용자 칸은 모두 비어 있다.',next:'end',flag:'s8a_bits'}]},
+  end:{end:true,text:'시체가 있던 자리',reward:{exp:6400,gold:600,items:{chaos:3,q_bits:1}}}}},
+ {id:'S8b',cat:'sub',title:'아홉 시',published:true,level:96,prereq:null,repeat:null,cond:{quests:['E31']},
+  desc:'교황의 제단 뒤에 작은 문이 있다.',start:'s1',steps:{
+  s1:{text:'제단 뒤 작은 방. 교황의 침실이다. 벽에 이 세계의 글자로 시계가 그려져 있고, 바늘은 9시에 멈춰 있다.',choices:[
+    {label:'침대 밑을 본다',result:'접힌 종이 한 장. 이 세계의 글자가 아닌 글씨로 한 줄이 적혀 있다. 읽을 수 없다. 그런데 어딘가 익숙한 모양이다.',next:'end',flag:'s8b_nine'}]},
+  end:{end:true,text:'아홉 시',reward:{exp:8000,gold:800,items:{d_clock:1}}}}});
+QCHAPTERS.push(['ch8','8장 「백야의 신전」',['E28','E29','E30','E31']]);

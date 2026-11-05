@@ -1,7 +1,7 @@
 'use strict';
 /* 기본 콘텐츠 데이터 (퀘스트 · 몬스터 · 설정) · 유틸 */
 /* ───────── 콘텐츠 ───────── */
-const FLAG_NAMES={e24_snow:'눈이 지운 길',e25_mirror:'여관의 덮어 둔 거울',e26_lake:'얼음 호수에 비친 마을',ch7_clear:'7장 「거울 속 죄수」 완료',s7a_til:'덮개를 들추는 아이',s7b_room:'7호실의 편지',e20_steps:'붉은 모래사막의 발자국',e21_mural:'셀로나 신전 지하 벽화',e22_plan:'문서고의 기획서',ch6_clear:'6장 「고대 문명의 기억」 완료',s6a_steps:'지워지지 않는 발자국',s6b_fire:'꺼지지 않는 불',e16_port:'벤테 밤 부두',e17_score:'젖은 악보의 노래',e18_bottle:'병 속의 편지',e19_plug:'귀마개를 낌',e19_listen:'노래를 들음',ch5_clear:'5장 「세이렌의 부름」 완료',s5a_photo:'젖은 사진',s5b_conch:'소라 껍데기',e12_permit:'히페리온 체류 허가',e13_casino:'골든 오아시스 한 판',e13_vip:'VIP 명부의 긁힌 이름',e14_logout:'하산의 대답',ch4_clear:'4장 「황금의 갈증」 완료',s4a_vault:'열쇠 구멍 없는 금고',s4b_seat:'매일 같은 자리의 손님',e1_rescue:'탐사대 증언',e1_seal:'봉인 연구 기록',e1_path:'안전 경로 기록',e2_sealed:'검은 결정 봉인',e2_taken:'검은 결정 보관',e3_scout:'단독 정찰 기록',e3_nest:'추적자 둥지 위치',e3_resonance:'결정의 공명',s1_compass:'멈춘 나침반',s2_charm:'위조 부적',s3_map:'블라스파미아 지도'};
+const FLAG_NAMES={e28_under:'물에 잠긴 지하 제단',e29_wall:'소원의 벽',e29_janus:'여명과 황혼 사이',death1:'사망 1회',ch8_clear:'8장 「백야의 신전」 완료',s8a_bits:'시체가 있던 자리',s8b_nine:'아홉 시',e24_snow:'눈이 지운 길',e25_mirror:'여관의 덮어 둔 거울',e26_lake:'얼음 호수에 비친 마을',ch7_clear:'7장 「거울 속 죄수」 완료',s7a_til:'덮개를 들추는 아이',s7b_room:'7호실의 편지',e20_steps:'붉은 모래사막의 발자국',e21_mural:'셀로나 신전 지하 벽화',e22_plan:'문서고의 기획서',ch6_clear:'6장 「고대 문명의 기억」 완료',s6a_steps:'지워지지 않는 발자국',s6b_fire:'꺼지지 않는 불',e16_port:'벤테 밤 부두',e17_score:'젖은 악보의 노래',e18_bottle:'병 속의 편지',e19_plug:'귀마개를 낌',e19_listen:'노래를 들음',ch5_clear:'5장 「세이렌의 부름」 완료',s5a_photo:'젖은 사진',s5b_conch:'소라 껍데기',e12_permit:'히페리온 체류 허가',e13_casino:'골든 오아시스 한 판',e13_vip:'VIP 명부의 긁힌 이름',e14_logout:'하산의 대답',ch4_clear:'4장 「황금의 갈증」 완료',s4a_vault:'열쇠 구멍 없는 금고',s4b_seat:'매일 같은 자리의 손님',e1_rescue:'탐사대 증언',e1_seal:'봉인 연구 기록',e1_path:'안전 경로 기록',e2_sealed:'검은 결정 봉인',e2_taken:'검은 결정 보관',e3_scout:'단독 정찰 기록',e3_nest:'추적자 둥지 위치',e3_resonance:'결정의 공명',s1_compass:'멈춘 나침반',s2_charm:'위조 부적',s3_map:'블라스파미아 지도'};
 const FLAG_REC={
   e1_rescue:{q:'E1',t:'정찰병은 살았다. 그가 끝내 부르지 못한 동료들의 이름만 안개 속에 남았다.'},
   e1_seal:{q:'E1',t:'부적은 다시 맞춰졌다. 비어 있던 한 조각은 끝내 찾지 못했다.'},
@@ -60,8 +60,8 @@ const DEFAULT_QUESTS=[
     {label:'발자국을 따라 둥지를 확인한다',result:'추적자의 둥지를 지도에 표시했다. 공격대에게 쓸모 있는 정보다.',next:'g3',flag:'e3_nest'},
     {label:'검은 결정의 공명을 따라간다',req:{flag:'e2_taken'},result:'결정이 가리키는 방향으로 걷자 지름길이 열렸다.',next:'g3',flag:'e3_resonance'}]},
   g3:{text:'언덕 위, 둥지를 지키던 어린 추적자가 이빨을 드러내며 길을 막아선다. 선발대는 아직 뒤에 있다. 혼자 상대해야 한다.',battle:'st_pup',next:'s3',winText:'어린 추적자가 울음소리를 남기고 경계 너머로 물러났다.'},
-  s3:{text:'마침내 지평선 끝에 해가 지지 않는 신전이 보인다. 문 앞에는 봉인 수호자가 미동도 없이 서 있다.',choices:[
-    {label:'신전에 보고하고 공격대를 기다린다',result:'보고서가 신전에 전달되었다. 봉인 수호자 공략 준비가 시작된다.',next:'end'}]},
+  s3:{text:'마침내 지평선 끝에 해가 지지 않는 신전이 보인다. 문은 굳게 닫혀 있다. 안쪽에서 아주 멀리, 나팔 소리 같은 것이 들린다.',choices:[
+    {label:'신전에 보고하고 공격대를 기다린다',result:'보고서가 신전에 전달되었다. 신전 공략 준비가 시작된다.',next:'end'}]},
   end:{end:true,text:'백야의 신전 도달',reward:{exp:450,gold:150,items:{amulet:1}}}}},
  {id:'S1',cat:'sub',title:'정찰병의 부탁',published:true,level:2,prereq:null,repeat:null,cond:{quests:['E1']},
   desc:'회복 중인 정찰병이 잃어버린 나침반을 찾아 달라고 부탁한다.',start:'s1',steps:{
@@ -143,9 +143,9 @@ const DEFAULT_QUESTS=[
 const DEFAULT_NOTICES=[
   {id:'n1',date:'10.25',title:'블레셋 전기 시제품을 열었습니다',text:'기본 클래스 5종과 ★ 상위 클래스 8종, 퀘스트 9개, 몬스터 3종으로 시작합니다. 진행 기록은 이 브라우저에 저장됩니다.'},
   {id:'n2',date:'10.25',title:'일일 의뢰는 오전 5시에 초기화됩니다',text:'반복 퀘스트 보상은 같은 주기에 한 번만 받을 수 있습니다.'},
-  {id:'n3',cat:'update',date:'10.24',title:'봉인 수호자 공략 안내',text:'LV15 이상, 6인 이상. 탱커 1 · 딜러 3 · 힐러 2가 필요합니다.'}
+  {id:'n3',cat:'update',date:'10.24',title:'백야의 신전 토벌전 안내',text:'백야의 신전 이야기를 끝까지 마친 블레서에게 토벌전이 열립니다. 6인 이상 · 탱커 1 · 딜러 3 · 힐러 2.'}
 ];
-const DEFAULT_BANNER={eyebrow:'백야의 신전 소식',title:'잠든 혼돈이 봉인을 두드린다',text:'백야의 신전 봉인 수호자가 깨어났습니다. LV15 이상의 블레서 여섯 명이 모이면 공략에 나설 수 있습니다.',linkLabel:'봉인 수호자 보기',link:'monster:guardian'};
+const DEFAULT_BANNER={eyebrow:'백야의 신전 소식',title:'해가 지지 않는 신전',text:'블라스파미아 언덕 꼭대기, 백야의 신전의 문은 아직 닫혀 있습니다. 안쪽에서 아주 멀리 나팔 소리가 들린다고 합니다.',linkLabel:'탐색에서 보기',link:'explore'};
 const DEFAULT_CONFIG={levelCap:99,turnSeconds:45,acceptSeconds:30,expBase:100,expStep:50,expQuad:2,jobAdvanceLevel:20};
 const BOTS=[['아르덴','knight',16],['세린','demigod',15],['카이로','destroyer',17],['미라엘','priest',9],['하윤','shooter',4],['도겸','defender',9],['루시안','salamander',15],['엘라','priest',3],['테오','defender',4],['비안카','mage',8],['노아','warrior',18],['리엔','summoner',17],['소하','infighter',6],['이안','defender',7],['레아','priest',5],['진후','mystic',16],['다온','demigod',12],['유키','dualist',15],['벨라','warrior',13]];
 const PARTY_NAMES=['새벽 토벌대','은빛 순례단','백야 원정대','라니아케아 수호대','안개 추적단','첫 별 탐사대','회색 늑대단','검은 결정 조사대','잿빛 등불단','북쪽 경계 정찰대','푸른 불꽃 결사','고목 벌채단'];
