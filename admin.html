@@ -280,6 +280,13 @@ textarea.code.sm{min-height:0;font-size:12px}
 .scn.battle{border-left:3px solid var(--bad)}.scn.end{border-left:3px solid var(--ok)}
 .scn>.fm-sec{border:0;border-top:1px solid var(--rule);border-radius:0;margin:0}
 .scn>.fm-sec.scene.battle,.scn>.fm-sec.scene.end{border-left:0}
+/* 몬스터 · 만신전 패턴 표 */
+.fm .pt{width:100%;border-collapse:collapse;font-size:12.5px}
+.fm .pt th{text-align:left;font-weight:600;color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--rule)}
+.fm .pt td{padding:4px 6px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.fm .pt td:first-child{min-width:150px}.fm .pt td:first-child small{display:block;font-size:11px;line-height:1.35}
+.fm .pt input{width:100%}.fm .pt td:nth-child(3){width:84px}
+@media(max-width:760px){.fm .pt thead{display:none}.fm .pt tr{display:grid;grid-template-columns:1fr 84px;gap:4px;padding:6px 0;border-bottom:1px solid var(--rule)}.fm .pt td{border:0;padding:0}.fm .pt td:first-child{grid-column:1/-1}.fm .pt td:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body>

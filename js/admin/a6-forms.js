@@ -164,12 +164,19 @@ const FPICK={
 };
 // 칸 묶음 [제목, 작은 설명, 칸들] — 묶음에 없는 칸은 '그 밖의 값'
 const FGROUP={
-  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','단일 · 광역 · 지속 피해',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg']],['보상','',['exp','gold','drops']]],
+  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
   item:[['기본 정보','',['id','type','name','tag','desc','art','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
 };
 function genericForm(k,d){
   const keys=Object.keys(d);const P=FPICK[k]||{};
+  const isMass=k==='monster'&&d.kind==='event';
+  if(k==='monster')(isMass?['drops','mass']:['drops','sphases']).forEach(x=>{if(!keys.includes(x))keys.push(x);});
   const row=key=>{const v=d[key];const lab=FLABEL[key]?FLABEL[key]+KSEP+key:key;
+    if(k==='monster'){
+      if(key==='kind')return isMass?'':fPick('kind',lab,MON_CAT);
+      if(key==='drops')return dropsRows();
+      if(key==='sphases')return phasesForm();
+      if(key==='mass')return massForm();}
     if(k==='market'&&key==='item')return fPick(key,lab,itemsL(),{wide:true});
     if(P[key])return fPick(key,lab,P[key]);
     if(typeof v==='boolean')return `<div class="f">${fCheck(key,lab)}</div>`;
@@ -184,6 +191,29 @@ function genericForm(k,d){
   const addRow=`<div class="row" style="margin-top:8px"><input type="text" id="fm-newkey" placeholder="새 칸 이름 (영문)" style="max-width:200px"><button type="button" class="btn btn-sm" data-fa="add-key">+ 칸 더하기</button></div>`;
   return `<div class="fm">${secs.map((x,i)=>`<section class="fm-sec"><h4>${esc(x.t)}${x.sub?` <i>${esc(x.sub)}</i>`:''}</h4><div class="fgrid">${x.body}</div>${i===secs.length-1?addRow:''}</section>`).join('')}</div>`;}
 
+/* ── 몬스터: 아이템 보상(드롭) — 검색해서 더하고 확률(%)만 적기 ── */
+function dropsRows(){const arr=Array.isArray(FM.d.drops)?FM.d.drops:[];const nm=id=>(ctx().items[id]||{}).name||id;
+  return `<div class="f wide"><span class="fl">${labH('아이템 보상'+KSEP+'drops')} <small class="faint">이기면 아이템마다 확률대로 1개씩</small></span>
+    ${arr.map(([id,c],i)=>`<div class="row ir"><span class="grow">${esc(nm(id))} <small class="faint">${esc(id)}</small></span><input type="number" min="0" max="100" step="0.5" class="nsm" data-fa="drop-n" data-i="${i}" value="${Math.round((+c||0)*1000)/10}" aria-label="${esc(nm(id))} 확률(%)"><span class="faint small">%</span><button type="button" class="btn btn-g btn-sm" data-fa="drop-del" data-i="${i}">빼기</button></div>`).join('')||'<p class="faint small" style="margin:0 0 6px">아직 없습니다.</p>'}
+    ${fPick('',null,itemsL().filter(x=>!arr.some(d=>d[0]===x[0])),{val:'',act:'drop-add',ph:'아이템 검색해서 더하기'})}</div>`;}
+/* ── 몬스터(만신전 말고): 체력에 따라 바뀌는 공격 패턴(sphases) ── */
+const SPH_F=[['at','체력 % 이하','num'],['name','패턴 이름'],['atkMul','공격력 배율','num'],['say','바뀔 때 대사'],['singleName','단일 공격 이름'],['singleMult','단일 배율','num'],['aoeName','광역 공격 이름'],['aoeMult','광역 배율','num'],['aoeEvery','광역 주기(턴)','num'],['dotName','지속 피해 이름'],['dotChance','지속 피해 확률','num']];
+function phasesForm(){const P=Array.isArray(FM.d.sphases)?FM.d.sphases:[];
+  return `<div class="f wide"><span class="fl">${labH('공격 패턴 더하기'+KSEP+'sphases')} <small class="faint">체력이 정한 % 아래로 내려가면 다음 턴부터 그 패턴으로 바뀜 · 비운 칸은 위 기본 공격 그대로</small></span>
+    ${P.map((ph,i)=>{const extra=Object.keys(ph).filter(f=>!SPH_F.some(x=>x[0]===f));
+      return `<div class="ch"><div class="ch-h"><b>패턴 ${i+1}${ph.name?' · '+esc(ph.name):''}</b><button type="button" class="btn btn-g btn-sm" data-fa="sph-del" data-i="${i}">삭제</button></div><div class="fgrid">${SPH_F.map(([f,l,t])=>fText(`sphases.${i}.${f}`,l+KSEP+f,null,{num:t==='num',t:t==='num'?'num':'stropt',wide:f==='say'})).join('')}</div>${extra.length?`<p class="faint small" style="margin:6px 0 0">그 밖의 값 (코드에서): ${esc(extra.join(', '))}</p>`:''}</div>`;}).join('')}
+    <div class="row"><button type="button" class="btn btn-sm" data-fa="sph-add">+ 공격 패턴</button></div></div>`;}
+/* ── 만신전: 이 보스만의 패턴·페이즈(mass) ── */
+const MPATS=()=>fget('DEFAULT_PATS',{});const MPDESC=()=>fget('PAT_DESC',{});
+function massForm(){const M=FM.d.mass;const D=MPATS();const on=!!(M&&(M.patterns||M.phases));
+  const body=on?`<table class="pt"><thead><tr><th>패턴</th><th>이름</th><th>배율</th><th>보스 대사</th></tr></thead><tbody>${Object.keys(D).map(pk=>{const cur=(M.patterns||{})[pk]||{};
+      return `<tr><td><b>${esc(D[pk].name)}</b><small class="faint">${esc(MPDESC()[pk]||pk)}</small></td><td><input type="text" data-p="mass.patterns.${pk}.name" data-t="stropt" value="${esc(cur.name??D[pk].name)}" aria-label="${esc(D[pk].name)} 이름"></td><td><input type="number" step="0.05" min="0" data-p="mass.patterns.${pk}.mult" data-t="num" value="${cur.mult??D[pk].mult}" aria-label="${esc(D[pk].name)} 배율"></td><td><input type="text" data-p="mass.lines.${pk}" data-t="stropt" value="${esc((M.lines||{})[pk]||'')}" placeholder="비우면 기본 대사" aria-label="${esc(D[pk].name)} 대사"></td></tr>`;}).join('')}</tbody></table>
+    <div class="stack" style="gap:6px;margin-top:8px">${(M.phases||[]).map((ph,i)=>`<div class="ch"><div class="ch-h"><b>페이즈 ${i+1}</b><button type="button" class="btn btn-g btn-sm" data-fa="mph-del" data-i="${i}">삭제</button></div><div class="fgrid">
+      ${fText(`mass.phases.${i}.at`,'체력 % 이하'+KSEP+'at',null,{num:true})}${fText(`mass.phases.${i}.name`,'페이즈 이름'+KSEP+'name')}${fText(`mass.phases.${i}.atkMul`,'공격력 배율'+KSEP+'atkMul',null,{num:true})}
+      <div class="f wide"><span class="fl">이 페이즈에 쓰는 패턴</span><div class="row" style="gap:4px 12px">${Object.keys(D).map(pk=>`<label class="chk"><input type="checkbox" data-fa="mph-pat" data-i="${i}" data-k="${pk}" ${(ph.patterns||[]).includes(pk)?'checked':''}> ${esc(((M.patterns||{})[pk]||{}).name||D[pk].name)}</label>`).join('')}</div></div></div></div>`).join('')}
+      <div class="row"><button type="button" class="btn btn-sm" data-fa="mph-add">+ 페이즈</button></div></div>`:'';
+  return `<div class="wide">${`<div class="tg ${on?'on':''}"><label class="chk tg-h"><input type="checkbox" data-fa="mass-own" ${on?'checked':''}> 이 보스만의 공격 패턴 쓰기 <small class="faint">끄면 만신전 공통 규칙(설정)의 패턴을 씀</small></label>${on?`<div class="tg-b">${body}</div>`:''}</div>`}</div>`;}
+
 /* ───────── 그리기 · 연결 ───────── */
 function formHTML(k,id,cur){FM={k,id,d:clone(cur)};Object.keys(CB).forEach(x=>delete CB[x]);
   if(k==='setting')return '';   // 설정은 값이 많아 코드로
@@ -193,7 +223,7 @@ function redrawForm(){const box=$('#fm-box');if(!box||!FM)return;const y=window.
 function readVal(el,raw){const t=el.dataset.t;let v=raw!==undefined?raw:el.type==='checkbox'?el.checked:el.value;
   if(t==='bool')return !!v;if(t==='num'){if(v===''||v==null)return undefined;const n=Number(v);return isNaN(n)?undefined:n;}
   if(t==='numnull'){if(v===''||v==null)return null;const n=Number(v);return isNaN(n)?null:n;}
-  if(t==='strnull')return v===''?null:v;if(t==='json'){try{return JSON.parse(v);}catch(e){el.classList.add('bad');return Symbol.for('bad');}}
+  if(t==='strnull')return v===''?null:v;if(t==='stropt')return v===''?undefined:v;if(t==='json'){try{return JSON.parse(v);}catch(e){el.classList.add('bad');return Symbol.for('bad');}}
   return v;}
 function setP(el,raw){const p=el.dataset.p;if(!p)return;const v=readVal(el,raw);if(v===Symbol.for('bad'))return;el.classList&&el.classList.remove('bad');
   pset(FM.d,p,v);if(p.startsWith('steps.')){const sk=p.split('.')[1];fixHint(FM.d.steps[sk]);}
@@ -264,6 +294,17 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
       if(a==='items-add')o[id]=1;else if(a==='items-n'){const n=Math.max(1,parseInt(v,10)||1);o[id]=n;}else delete o[id];pset(q,p,o);
       if(el.dataset.take){const tp=p.replace(/\.req\.items$/,'.take');pset(q,tp,{...o});}
       if(a==='items-n'){sync();return;}break;}
+    case 'drop-add':{const arr=Array.isArray(q.drops)?q.drops:[];arr.push([v,0.1]);q.drops=arr;break;}
+    case 'drop-n':{const n=Math.max(0,Math.min(100,parseFloat(v)||0));if(q.drops&&q.drops[i])q.drops[i][1]=Math.round(n*10)/1000;sync();return;}
+    case 'drop-del':{q.drops.splice(i,1);break;}
+    case 'sph-add':{const P=Array.isArray(q.sphases)?q.sphases:[];if(!P.length)P.push({at:100,name:'1페이즈'});const last=P[P.length-1];
+      P.push({at:Math.max(5,(last.at||100)-(P.length===1?40:25)),name:`${P.length+1}페이즈`,atkMul:Math.round(((last.atkMul||1)+0.3)*10)/10});q.sphases=P;break;}
+    case 'sph-del':{q.sphases.splice(i,1);if(!q.sphases.length)delete q.sphases;break;}
+    case 'mass-own':{if(v){const C0=fget('massCfg()',{})||{};q.mass={...(q.mass||{}),patterns:clone(MPATS()),phases:clone(C0.phases||[{at:100,name:'1페이즈',atkMul:1,patterns:['single']}])};}
+      else if(q.mass){delete q.mass.patterns;delete q.mass.phases;delete q.mass.lines;if(!Object.keys(q.mass).length)delete q.mass;}break;}
+    case 'mph-add':{const P=q.mass.phases=q.mass.phases||[];const last=P[P.length-1]||{at:100,atkMul:1};P.push({at:P.length?Math.max(5,last.at-25):100,name:`${P.length+1}페이즈`,atkMul:P.length?Math.round(((last.atkMul||1)+0.1)*100)/100:1,patterns:['single']});break;}
+    case 'mph-del':{q.mass.phases.splice(i,1);break;}
+    case 'mph-pat':{const ph=q.mass.phases[i];const a=ph.patterns=ph.patterns||[];if(v){if(!a.includes(k))a.push(k);}else ph.patterns=a.filter(x=>x!==k);break;}
     case 'add-key':{const nk=($('#fm-newkey').value||'').trim();if(!/^[A-Za-z_]\w*$/.test(nk))return toast('칸 이름은 영문·숫자·_로 적어 주세요.','bad');if(nk in q)return toast('이미 있는 칸입니다.','bad');q[nk]='';break;}
   }
   // 골드 내기는 낼 골드도 같이

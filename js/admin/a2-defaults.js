@@ -15,7 +15,7 @@ const KINDS={
   event:{label:'전광판',title:d=>d.title,sub:d=>[{boss:'보스 출현',event:'이벤트',maint:'점검'}[d.kind]||d.kind,d.loc].filter(Boolean).join(' · ')},
   setting:{label:'설정',title:(d,ctx,id)=>({config:'성장 · 전투 규칙',mass:'만신전 공통 규칙',banner:'메인 배너'}[id]||id),sub:(d,ctx,id)=>id},
 };
-const KIND_MON={party:'파티 레이드',weekly:'토벌전',event:'만신전',field:'필드',dungeon:'던전',story:'퀘스트 전투'};
+const KIND_MON={party:'파티 레이드',weekly:'토벌전',event:'만신전',field:'필드 사냥',dungeon:'던전',story:'퀘스트 전투'};
 // 새로 만들 때 채워 줄 뼈대
 const BLANK={
   monster:{kind:'field',name:'새 몬스터',region:'',level:1,min:1,max:1,target:1,roles:{tank:0,dps:0,heal:0},hp:100,hpScale:0,atk:10,def:0,singleName:'공격',singleMult:1,aoeName:'',aoeMult:0,aoeEvery:0,dotName:'',dotChance:0,dotDmg:0,exp:10,gold:10,published:true},
