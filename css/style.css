@@ -3271,3 +3271,13 @@ table.wish input:focus{outline:none;border-bottom-color:var(--accent)}
 body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 /* 8장 토벌전(4인) */
 .mass-roster .mr.r4-empty{border-style:dashed;opacity:.55}
+/* 몬스터 이미지(운영 페이지에서 올린 그림) — ASCII 자리 그대로 */
+.mon-img{display:block;width:100%;max-width:220px;aspect-ratio:1/1;object-fit:contain;background:var(--night);border:1px solid var(--rule);border-radius:4px;margin:0}
+.mon-img.big{max-width:280px}
+.boss .mon-img{flex:none;width:180px}
+.qfight .mon-img{width:96px;flex:none}
+.mcard-h .mon-img{flex:none;width:150px}
+.rc-art .mon-img{width:100%;max-width:none;border:0;background:transparent}
+.mdex .mon-img{width:100%;max-width:120px;margin:0 auto}
+.mon-art .mon-img{width:160px}
+@media (max-width:640px){.boss .mon-img{width:120px}}

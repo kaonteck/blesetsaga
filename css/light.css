@@ -1545,6 +1545,8 @@ html[data-theme="light"] #seq-ov .sq-sys{color:#9ab}
 html[data-theme="light"] #seq-ov .sq-err{color:#e05555}
 html[data-theme="light"] #seq-ov .sq-say{color:#f0e6c8}
 html[data-theme="light"] #seq-ov .sq-narr{color:#fff}
+html[data-theme="light"] .mon-img{background:var(--night);border:1px solid var(--rule)}
+html[data-theme="light"] .rc-art .mon-img{border:0;background:transparent}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

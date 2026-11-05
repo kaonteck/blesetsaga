@@ -14,6 +14,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NAV_OPEN){NAV_OPEN=
 const QUEST_HIDDEN=true;
 const questHidden=()=>QUEST_HIDDEN&&!isAdmin();
 function go(route,sel){if(route==='quest'&&questHidden()){toast('퀘스트 페이지는 잠시 준비 중입니다.','warn');return;}S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
+/* 몬스터 그림: 운영 페이지에서 올린 이미지(monster-art 버킷 주소만)가 있으면 그것, 없으면 ASCII */
+const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/public/monster-art/';
+function monImg(m){const u=m&&m.img;return typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';}
+function monPic(m,cls,extra){const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<pre class="ascii ${cls||''}" ${extra||''}>${esc(ART[m&&m.art]||ART.generic)}</pre>`;}
 function openLink(l){
   if(!l)return;const [k,v]=l.split(':');
   if(k==='monster')go('battle',{monster:v});else if(k==='quest')go('quest',{quest:v});else go(k);
@@ -377,7 +381,7 @@ function recruitCard(r){
   const m=monster(r.monsterId);if(!m)return '';
   const c=roleCounts(r);const reason=joinReason(r);const busy=busyReason();
   return `<article class="rcard${r.real?' rc-real':''}">
-    <button class="rc-art" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기"><pre aria-hidden="true">${esc(ART[m.art]||ART.generic)}</pre>${r.real?'<span class="rc-real-b">블레서</span>':''}<span class="rc-mon">${esc(m.name)} · LV${m.level}+</span></button>
+    <button class="rc-art" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기">${monImg(m)?monPic(m,'','aria-hidden="true"'):`<pre aria-hidden="true">${esc(ART[m.art]||ART.generic)}</pre>`}${r.real?'<span class="rc-real-b">블레서</span>':''}<span class="rc-mon">${esc(m.name)} · LV${m.level}+</span></button>
     <div class="rc-body">
       <div class="rc-top"><b class="rc-name">${esc(r.name||m.name)}</b><span class="num rc-count" aria-label="현재 ${r.members.length}명, 마감 ${r.target}명">${r.members.length}/${r.target}</span></div>
       <small class="muted">파티장 ${esc(r.leader)}</small>
@@ -684,12 +688,12 @@ function questDetail(q){
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="nextq" data-id="${q.id}">다음 단계</button></div>`;
     }else if(step.raid){
       const m=monster(step.raid);const open=m&&!weeklyClosed(m);
-      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">${m.questOnly?'퀘스트 전용 토벌 · 초대 전용':`토벌전 · ${m.min}~${m.max}인`}</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}${m.questOnly?'':' · 레이드 › 토벌전'}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
+      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`${monPic(m)}<div class="stack" style="gap:4px"><span class="ph" style="margin:0">${m.questOnly?'퀘스트 전용 토벌 · 초대 전용':`토벌전 · ${m.min}~${m.max}인`}</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}${m.questOnly?'':' · 레이드 › 토벌전'}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
         ${qp.lost?'<p class="reason">지난 토벌에 실패했습니다. 토벌에 성공해야 이야기가 이어집니다.</p>':''}
         <div class="row"><button class="btn btn-primary" data-act="link" data-link="monster:${step.raid}" ${!m||!open?'disabled':''}>${m&&m.questOnly?'토벌대 꾸리기':'토벌전으로 가기'}</button><span class="faint" style="font-size:12px">토벌에 성공하면 이 이야기가 이어집니다.</span></div>`;
     }else if(step.battle){
       const m=monster(step.battle);const busy=busyReason();
-      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
+      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`${monPic(m)}<div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
         ${qp.lost?'<p class="reason">지난 전투에서 쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.</p>':''}
         <div class="row"><button class="btn btn-primary" data-act="qfight" data-id="${q.id}" ${busy||!m?'disabled':''}>${qp.lost?'다시 도전':'전투 시작'}</button>${busy?`<span class="reason">${esc(busy)}</span>`:''}</div>`;
     }else{
@@ -717,7 +721,7 @@ function vMonster(m){
     <div><button class="link" data-act="backmon">← ${MKIND[mkind(m)]||'레이드'} 목록</button></div>
     <div class="split-r">
       <div class="stack" style="gap:16px">
-        <div class="panel"><div class="boss"><pre class="ascii big">${esc(ART[m.art]||ART.generic)}</pre>
+        <div class="panel"><div class="boss">${monPic(m,'big')}
           <div class="stack"><div class="ph" style="margin:0">${esc(m.region||'')}</div><h2 class="mname" style="font-size:26px">${esc(m.name)}</h2><p class="muted">${esc(m.desc||'')}</p></div></div>
           <div class="facts" style="margin-top:16px"><div><small>입장 레벨</small><b class="num">LV${m.level}${m.maxLevel?'~'+m.maxLevel:'+'}</b></div><div><small>참가 인원</small><b class="num">${m.min}~${m.max}명</b></div><div><small>필요 역할</small><b class="ri-row">${['tank','dps','heal'].filter(r=>m.roles[r]).map(r=>`<span class="ri r-${r}" title="${ROLE[r]}" aria-label="${ROLE[r]} ${m.roles[r]}명">${ROLE_ICON[r]}<span class="num" aria-hidden="true">${m.roles[r]}</span></span>`).join('')}</b></div></div>
           ${m.hpScale?`<p class="faint" style="font-size:12px;margin-top:8px">* ${m.min}명을 넘는 1명마다 보스 체력이 +${Math.round(m.hpScale*100)}% 늘어납니다 · 전투 시작 시 확정</p>`:''}
@@ -818,7 +822,7 @@ function monSayText(b){const H=heroLinesOf(b);if(!H)return '';
   if(b.over)return b.over==='win'?H.last:'';if(b.heroSay&&b.heroSay.turn===b.turn)return b.heroSay.text;return b.turn===1?H.say[0]:'';}
 function monSayHTML(b){const t=(monSayText(b)||'').trim();if(!t)return '';const paren=/^\(.*\)$/s.test(t);  /* (지문)은 따옴표 없이 */
   return `<div class="tele say" role="status">${esc(paren?t:`“${t}”`)}</div>`;}
-function monArtHTML(b,win){return `<div class="mon-art"><pre class="ascii" ${b.over?`style="opacity:${win?.35:1}"`:''}>${esc(ART[b.mon.art]||ART.generic)}</pre></div>`;}
+function monArtHTML(b,win){const mm=(typeof monster==='function'&&monster(b.monsterId))||{art:b.mon.art,name:b.mon.name};return `<div class="mon-art">${monPic({...mm,art:b.mon.art},'',b.over?`style="opacity:${win?.35:1}"`:'')}</div>`;}
 function fightMain(){
   const b=S.battle,m=b.mon,me=b.players.find(p=>p.isMe);
   if(b.over)return outcomeHTML(b)+flogHTML();

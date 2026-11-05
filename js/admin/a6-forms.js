@@ -156,7 +156,7 @@ function endForm(q,k){const st=q.steps[k];const p='steps.'+k;const r=st.reward;
 const FLABEL={name:'이름',title:'제목',kind:'종류',region:'지역',level:'레벨',hp:'체력',atk:'공격력',def:'방어력',exp:'경험치',gold:'골드',published:'유저에게 보이기',desc:'설명',
   type:'종류',price:'가격',sell:'판매가',stock:'재고 (비우면 무제한)',item:'아이템',text:'내용',date:'날짜',loc:'위치',reward:'보상',link:'바로가기',min:'최소 인원',max:'최대 인원',target:'목표 인원',
   singleName:'단일 공격 이름',singleMult:'단일 공격 배율',aoeName:'광역 공격 이름',aoeMult:'광역 배율',aoeEvery:'광역 주기(턴)',dotName:'지속 피해 이름',dotChance:'지속 피해 확률',dotDmg:'지속 피해량',
-  hpScale:'인원당 체력 증가',art:'그림',tag:'분류 표시',slot:'장착 칸',levelReq:'착용 레벨',maxOwn:'최대 보유',roles:'필요 역할',drops:'드롭',stats:'능력치',buff:'버프',maxLevel:'최대 레벨'};
+  hpScale:'인원당 체력 증가',art:'그림',img:'이미지',tag:'분류 표시',slot:'장착 칸',levelReq:'착용 레벨',maxOwn:'최대 보유',roles:'필요 역할',drops:'드롭',stats:'능력치',buff:'버프',maxLevel:'최대 레벨'};
 const FPICK={
   monster:{kind:Object.entries({field:'필드',dungeon:'던전',party:'파티 레이드',weekly:'토벌전',event:'만신전',story:'퀘스트 전투'}),art:[['beast','짐승'],['golem','골렘'],['spirit','정령'],['dragon','용'],['human','인간']]},
   item:{type:[['use','소모품'],['equip','장비'],['mat','재료'],['deco','장식품']],slot:[['weapon','무기'],['armor','방어구'],['acc','장신구']]},
@@ -164,17 +164,19 @@ const FPICK={
 };
 // 칸 묶음 [제목, 작은 설명, 칸들] — 묶음에 없는 칸은 '그 밖의 값'
 const FGROUP={
-  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
+  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','img','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
   item:[['기본 정보','',['id','type','name','tag','desc','art','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
 };
 function genericForm(k,d){
   const keys=Object.keys(d);const P=FPICK[k]||{};
   const isMass=k==='monster'&&d.kind==='event';
   if(k==='monster')(isMass?['drops','mass']:['drops','sphases']).forEach(x=>{if(!keys.includes(x))keys.push(x);});
+  if(k==='monster'&&!keys.includes('img'))keys.splice(Math.max(0,keys.indexOf('art')+1),0,'img');
   const row=key=>{const v=d[key];const lab=FLABEL[key]?FLABEL[key]+KSEP+key:key;
     if(k==='monster'){
       if(key==='kind')return isMass?'':fPick('kind',lab,MON_CAT);
       if(key==='drops')return dropsRows();
+      if(key==='img')return monImgRow();
       if(key==='sphases')return phasesForm();
       if(key==='mass')return massForm();}
     if(k==='market'&&key==='item')return fPick(key,lab,itemsL(),{wide:true});
@@ -312,3 +314,27 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
   redrawForm();}
 // 코드 → 양식
 function codeToForm(){const d=parseEditor();if(!d)return;FM.d=d;redrawForm();showCheck(null,'코드 내용을 양식에 반영했습니다.');}
+
+/* ── 몬스터 이미지(img): 올리면 monster-art 버킷에 저장하고 주소를 img 칸에 넣는다 · 메인 2026-11-05 ──
+   PNG·JPG·WEBP·GIF, 긴 변 512px로 줄여 WEBP로 저장(GIF는 움직임 유지를 위해 그대로, 2MB 이하). 지우면 게임은 ASCII 그림으로 돌아감 */
+const MONART_BUCKET='monster-art';
+function monImgRow(){const u=FM.d.img||'';
+  return `<div class="f wide monimg"><span class="fl">${labH('이미지'+KSEP+'img')} <small class="faint">비우면 위 ASCII 그림 · 긴 변 512px로 줄여 저장</small></span>
+    <div class="row" style="gap:12px;align-items:flex-start">
+      <div class="monimg-pv">${u?`<img src="${esc(u)}" alt="미리보기">`:'<span class="faint small">이미지 없음</span>'}</div>
+      <div class="stack" style="gap:6px"><label class="btn btn-sm">이미지 올리기<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hide" data-fimg="1"></label>
+        ${u?'<button type="button" class="btn btn-g btn-sm" data-fa="img-clear">이미지 빼기</button>':''}<small class="faint" id="monimg-st"></small></div></div></div>`;}
+function monImgResize(file){return new Promise((res,rej)=>{if(file.type==='image/gif'){if(file.size>2097152)rej(new Error('GIF는 2MB 이하만 올릴 수 있습니다'));else res(file);return;}
+  const url=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const k=Math.min(1,512/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);c.toBlob(b=>b?res(b):rej(new Error('이미지를 변환하지 못했습니다')),'image/webp',0.9);};
+  im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('이미지를 읽지 못했습니다'));};im.src=url;});}
+async function monImgUpload(file){const st=$('#monimg-st');if(st)st.textContent='올리는 중…';
+  try{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type))throw new Error('PNG·JPG·WEBP·GIF만 올릴 수 있습니다');
+    const blob=await monImgResize(file);const ext=blob.type==='image/gif'?'gif':'webp';const id=String(FM.d.id||FM.id||'monster').replace(/[^a-zA-Z0-9_-]/g,'_');
+    const path=`${id}/${Date.now().toString(36)}.${ext}`;
+    const {error}=await A.sb.storage.from(MONART_BUCKET).upload(path,blob,{contentType:blob.type,upsert:false,cacheControl:'31536000'});if(error)throw error;
+    const {data}=A.sb.storage.from(MONART_BUCKET).getPublicUrl(path);FM.d.img=data.publicUrl;sync();redrawForm();toast('이미지를 올렸습니다. 저장(게시)하면 게임에 나타납니다.','good');}
+  catch(e){if(st)st.textContent='';toast('이미지 올리기 실패 · '+((e&&e.message)||e),'bad');}}
+(function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
+  $$('input[data-fimg]',box).forEach(el=>el.onchange=()=>{const fl=el.files&&el.files[0];if(fl)monImgUpload(fl);el.value='';});};})();
+(function(){const f=fAct;fAct=function(a,el,v){if(a==='img-clear'){delete FM.d.img;sync();redrawForm();return;}return f(a,el,v);};})();
