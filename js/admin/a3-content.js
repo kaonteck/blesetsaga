@@ -21,7 +21,11 @@ const CATS={
   market:{opts:ITEM_CAT,of:(id,d)=>itemCatOf(d.item,ctx().items[d.item])},
 };
 C.cats={};
-const viewIds=k=>k!=='monster'?idsOf(k):idsOf(k).filter(id=>isMassMon(id)===(C.mon==='mass'));
+// 몬스터·퀘스트·아이템은 레벨 낮은 순(레벨 없는 것은 0으로, 같은 레벨은 원래 순서)
+const LV_KEY={monster:'level',quest:'level',item:'levelReq'};
+const lvOf=(k,id)=>{const v=+anyData(k,id)[LV_KEY[k]];return isFinite(v)?v:0;};
+const byLevel=(k,ids)=>!LV_KEY[k]?ids:ids.map((id,i)=>[id,i,lvOf(k,id)]).sort((a,b)=>a[2]-b[2]||a[1]-b[1]).map(x=>x[0]);
+const viewIds=k=>byLevel(k,k!=='monster'?idsOf(k):idsOf(k).filter(id=>isMassMon(id)===(C.mon==='mass')));
 const viewLabel=k=>k==='monster'&&C.mon==='mass'?'만신전':KINDS[k].label;
 
 async function loadServerContent(){
