@@ -16,6 +16,9 @@ const questHidden=()=>QUEST_HIDDEN&&!isAdmin();
 function go(route,sel){if(route==='quest'&&questHidden()){toast('퀘스트 페이지는 잠시 준비 중입니다.','warn');return;}S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
 /* 몬스터 그림: 운영 페이지에서 올린 이미지(monster-art 버킷 주소만)가 있으면 그것, 없으면 ASCII */
 const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/public/monster-art/';
+/* 아이템·퀘스트 장면 그림도 같은 버킷(monster-art)에 올린 주소만 씀 · 상점은 같은 id 아이템 그림을 그대로 */
+const artUrl=u=>typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';
+const itemImgSrc=it=>artUrl(it&&it.img)||ITEM_IMG;
 function monImg(m){const u=m&&m.img;return typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';}
 function monPic(m,cls,extra){const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<pre class="ascii ${cls||''}" ${extra||''}>${esc(ART[m&&m.art]||ART.generic)}</pre>`;}
 function openLink(l){
@@ -680,6 +683,7 @@ function questDetail(q){
   if(qp&&(st==='active'||st==='claim')){
     if(qp.history.length)h+=`<div class="qhist">${qp.history.map(x=>`<div><p>${esc(String(x.text).replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>'■'.repeat([...n].length)))}</p><p style="margin-top:4px"><b>▸ ${esc(x.label)}</b> — ${esc(x.result)}</p></div>`).join('')}</div>`;
     const step=q.steps[qp.step];
+    const sImg=artUrl(step.img);if(sImg)h+=`<figure class="qimg"><img src="${sImg}" alt="" loading="lazy"></figure>`;
     if(step.end){
       h+=`<div class="result"><div class="ph" style="margin-bottom:6px">완료 · ${esc(step.text)}</div>${rewardHTML(qReward(q,step.reward))}</div>
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="claimq" data-id="${q.id}">보상 수령</button></div>`;
@@ -955,11 +959,12 @@ function autoConfirm(){
 let DMG_SNAP=null;
 function dmgFx(){
   const b=S&&S.battle;if(!b||!b.grid){DMG_SNAP=null;return;}const me=b.players.find(p=>p.isMe);if(!me)return;
-  const cur={id:b.id,turn:b.turn,dealt:me.dealt||0,hp:me.hp};
+  const cur={id:b.id,turn:b.turn,dealt:me.dealt||0,hp:me.hp,healed:me.healed||0};
   if(DMG_SNAP&&DMG_SNAP.id===b.id&&cur.turn!==DMG_SNAP.turn){
     const out=cur.dealt-DMG_SNAP.dealt,inn=DMG_SNAP.hp-cur.hp;const L=[];
     if(out>0)L.push(['out',`${out.toLocaleString('ko-KR')}`,'보스에게 입힌 피해']);
     if(inn>0)L.push(['in',`-${inn.toLocaleString('ko-KR')}`,'받은 피해']);
+    {const hl=cur.healed-(DMG_SNAP.healed||0);if(hl>0)L.push(['heal',`+${hl.toLocaleString('ko-KR')}`,'회복량']);}   /* 내 스킬로 회복한 양(아이템 제외) */
     if(L.length)showDmg(L);
   }
   DMG_SNAP=cur;
@@ -994,13 +999,13 @@ function vChar(){
         if(!it)return `<div class="eqrow empty"><span class="eq-sl">${SLOT[sl]}</span><span class="eq-n faint">비어 있음</span></div>`;
         const open=S.sel.eqOpen===sl;
         return `<div class="eqitem ${open?'open':''}"><button class="eqrow" data-act="eq-toggle" data-slot="${sl}" aria-expanded="${open}"><span class="eq-sl">${SLOT[sl]}</span><span class="eq-n">${itemNameH(id)}<span class="eq-dura ${dura(id)===0?'broken':dura(id)<=Math.ceil(DURA_MAX*0.2)?'low':''}" title="내구도">${dura(id)===0?'파손':'내구도 '+dura(id)+'/'+DURA_MAX}</span></span><span class="fold-ic" aria-hidden="true"></span></button>
-          ${open?`<div class="eqdet"><img src="${ITEM_IMG}" alt=""><div class="invd-t"><span class="bpill eqb sm" style="align-self:flex-start">${statText(itemStats(id,enhOf(id)))}</span><p>${esc(it.desc)}</p><small class="faint">강화 +${enhOf(id)} / ${ENH_MAX}</small>
+          ${open?`<div class="eqdet"><img src="${itemImgSrc(it)}" alt=""><div class="invd-t"><span class="bpill eqb sm" style="align-self:flex-start">${statText(itemStats(id,enhOf(id)))}</span><p>${esc(it.desc)}</p><small class="faint">강화 +${enhOf(id)} / ${ENH_MAX}</small>
             <div class="row"><button class="btn btn-sm btn-primary" data-act="enh-open" data-id="${id}">강화</button><button class="btn btn-sm" data-act="unequip" data-slot="${sl}">해제</button></div></div></div>`:''}</div>`;}).join('')}</div></div>
       
       <div class="panel"><h3>${hTitle('box','인벤토리')} <span class="faint num" style="letter-spacing:0;font-weight:400">${invSlots.length}/30</span></h3>
         <div class="mtabs invtabs" role="tablist">${[['equip','장비'],['use','소모품'],['mat','재료'],['deco','장식품']].map(([k,l])=>`<button role="tab" data-act="inv-cat" data-cat="${k}" aria-selected="${icat===k}">${l} <span class="num faint">${invAll.filter(([x])=>catOf(x)===k).length}</span></button>`).join('')}</div>
         <div class="invgrid" role="list">${Array.from({length:Math.max(30,invSlots.length)},(_,x)=>{const e=invSlots[x];if(!e)return '<div class="invcell empty" role="listitem"></div>';const [k,n,tot]=e;const it=ITEMS[k];const eq=it.type==='equip';const on=eqIds.includes(k);
-          return `<button class="invcell ${on?'on':''} ${eq?'eqp':'use'}" role="listitem" data-act="inv-sel" data-id="${k}" aria-pressed="${S.sel.invSel===k}" title="${esc(it.name)} ×${n}${tot>n?` (총 ${tot})`:''} · ${eq?SLOT[it.slot]+' · '+statText(it.stats)+' · ':typeLabel(it)+' · '}${esc(it.desc)}${eq?(on?' · 눌러서 해제':' · 눌러서 착용'):''}" aria-label="${esc(it.name)} ${n}개${tot>n?` (총 ${tot}개)`:''}${on?' 착용 중':''}${shelfCount(k)?' 장식 중':''}">${it.icon?`<span class="ic-svg">${it.icon}</span>`:`<img src="${ITEM_IMG}" alt="">`}${n>1?`<span class="ic-n num">${n}</span>`:''}${on?'<span class="ic-on">E</span>':''}${shelfCount(k)?'<span class="ic-deco">장식 중</span>':''}${enhOf(k)?`<span class="ic-enh num">+${enhOf(k)}</span>`:''}</button>`;}).join('')}</div>
+          return `<button class="invcell ${on?'on':''} ${eq?'eqp':'use'}" role="listitem" data-act="inv-sel" data-id="${k}" aria-pressed="${S.sel.invSel===k}" title="${esc(it.name)} ×${n}${tot>n?` (총 ${tot})`:''} · ${eq?SLOT[it.slot]+' · '+statText(it.stats)+' · ':typeLabel(it)+' · '}${esc(it.desc)}${eq?(on?' · 눌러서 해제':' · 눌러서 착용'):''}" aria-label="${esc(it.name)} ${n}개${tot>n?` (총 ${tot}개)`:''}${on?' 착용 중':''}${shelfCount(k)?' 장식 중':''}">${artUrl(it.img)?`<img src="${artUrl(it.img)}" alt="">`:it.icon?`<span class="ic-svg">${it.icon}</span>`:`<img src="${ITEM_IMG}" alt="">`}${n>1?`<span class="ic-n num">${n}</span>`:''}${on?'<span class="ic-on">E</span>':''}${shelfCount(k)?'<span class="ic-deco">장식 중</span>':''}${enhOf(k)?`<span class="ic-enh num">+${enhOf(k)}</span>`:''}</button>`;}).join('')}</div>
       ${invDetail(inv,eqIds)}</div>
       <div class="panel"><h3>${hTitle('bolt','스킬')} <span class="faint num" style="letter-spacing:0;font-weight:400">${c.skills.length}</span></h3>${skillTabs()}</div></div>`}</div>`;
 }
@@ -1034,7 +1039,7 @@ function invDetail(inv,eqIds){
   const k=S.sel.invSel;const e=inv.find(([x])=>x===k);
   if(!e)return `<p class="inv-hint faint">아이템을 누르면 상세 설명이 여기에 나옵니다.</p>`;
   const [,n]=e,it=ITEMS[k],eq=it.type==='equip',on=eqIds.includes(k);
-  return `<div class="invd">${it.icon?`<span class="deco-ic">${it.icon}</span>`:`<img src="${ITEM_IMG}" alt="">`}<div class="invd-t"><div class="row" style="gap:6px"><b>${itemNameH(k)}</b>${it.tag?`<span class="chip deco-tag">${it.tag}</span>`:''}${shelfCount(k)?'<span class="chip deco-on">장식 중</span>':''}<span class="faint num" style="font-size:12px">×${n}</span>${on?'<span class="chip warn">착용 중</span>':''}</div>
+  return `<div class="invd">${artUrl(it.img)?`<img src="${artUrl(it.img)}" alt="">`:it.icon?`<span class="deco-ic">${it.icon}</span>`:`<img src="${ITEM_IMG}" alt="">`}<div class="invd-t"><div class="row" style="gap:6px"><b>${itemNameH(k)}</b>${it.tag?`<span class="chip deco-tag">${it.tag}</span>`:''}${shelfCount(k)?'<span class="chip deco-on">장식 중</span>':''}<span class="faint num" style="font-size:12px">×${n}</span>${on?'<span class="chip warn">착용 중</span>':''}</div>
     <small class="faint">${eq?SLOT[it.slot]+(enhOf(k)?` · 강화 +${enhOf(k)}`:''):typeLabel(it)}</small>
     ${eq?`<span class="bpill eqb sm" style="align-self:flex-start">${statText(itemStats(k,enhOf(k)))}</span>`:''}
     <p>${esc(it.desc)}</p>${it.type==='deco'&&decoSrcText(k)?`<small class="sh-src">${esc(decoSrcText(k))}</small>`:''}${reqText(it)?`<small class="${itemBlock(k)?'reason':'faint'}">${esc(reqText(it))}</small>`:''}
@@ -1679,10 +1684,10 @@ function vMarket(){
   const pill=(k,l)=>`<button class="mk-pill" data-act="mk-tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`;
   return `<div class="wrap page"><div class="page-head"><div><h2>거래소<small class="en">Market</small></h2><p>운영진이 올린 아이템을 사고, 가진 아이템을 거래소에 팔 수 있습니다. 유저끼리는 거래할 수 없습니다.</p></div><div class="row">${goldHTML(S.me.gold)}</div></div>
     <div class="mk-tabs">${pill('buy','구매')}${pill('sell','판매')}${adm?`<span class="mk-tabs-r">${pill('admin','등록 관리')}</span>`:''}</div>
-    ${tab==='buy'?(buyL.length?`<div class="mk-secs">${mkSections('buy',buyL,x=>x.item,x=>{const it=ITEMS[x.item];if(!it||it.off)return '';const out=x.stock===0;return `<div class="panel mkcard"><div class="row" style="gap:10px"><img class="mkimg" src="${ITEM_IMG}" alt=""><div class="t" style="min-width:0"><b>${esc(it.name)}</b><small class="faint">${typeLabel(it)}${x.stock!=null?` · 재고 ${x.stock}`:''}</small></div></div>
+    ${tab==='buy'?(buyL.length?`<div class="mk-secs">${mkSections('buy',buyL,x=>x.item,x=>{const it=ITEMS[x.item];if(!it||it.off)return '';const out=x.stock===0;return `<div class="panel mkcard"><div class="row" style="gap:10px"><img class="mkimg" src="${itemImgSrc(it)}" alt=""><div class="t" style="min-width:0"><b>${esc(it.name)}</b><small class="faint">${typeLabel(it)}${x.stock!=null?` · 재고 ${x.stock}`:''}</small></div></div>
         ${it.stats?`<span class="bpill eqb sm" style="align-self:flex-start">${statText(it.stats)}</span>`:''}<p class="muted" style="font-size:12.5px">${esc(it.desc)}</p>${reqText(it)?`<small class="faint">${esc(reqText(it))}</small>`:''}
         <div class="row" style="justify-content:space-between;margin-top:auto">${goldHTML(x.price)}<button class="btn btn-sm btn-primary" data-act="mk-buy" data-id="${x.id}" ${out||S.me.gold<x.price?'disabled':''}>${out?'품절':S.me.gold<x.price?'골드 부족':'구매'}</button></div></div>`;},'mkgrid')}</div>`:'<p class="empty">판매 중인 아이템이 없습니다.</p>'):''}
-    ${tab==='sell'?(sellable.length?`<div class="mk-secs">${mkSections('sell',sellable,e=>e[0],([k,n])=>`<div class="li"><div class="row" style="gap:10px;flex:1;min-width:0"><img class="mkimg sm" src="${ITEM_IMG}" alt=""><div class="t"><b>${itemNameH(k)}</b> <span class="faint num">×${availItem(k)}</span><small>${typeLabel(ITEMS[k])}${enhOf(k)?' · 강화 단계만큼 매입가가 오릅니다':''}</small></div></div><span class="row" style="gap:8px">${goldHTML(sellPrice(k))}<button class="btn btn-sm" data-act="mk-sell" data-id="${k}">판매</button></span></div>`,'panel list mk-sell')}</div>`:'<div class="panel"><p class="empty">팔 수 있는 아이템이 없습니다. 착용 중인 장비는 팔 수 없습니다.</p></div>'):''}
+    ${tab==='sell'?(sellable.length?`<div class="mk-secs">${mkSections('sell',sellable,e=>e[0],([k,n])=>`<div class="li"><div class="row" style="gap:10px;flex:1;min-width:0"><img class="mkimg sm" src="${itemImgSrc(ITEMS[k])}" alt=""><div class="t"><b>${itemNameH(k)}</b> <span class="faint num">×${availItem(k)}</span><small>${typeLabel(ITEMS[k])}${enhOf(k)?' · 강화 단계만큼 매입가가 오릅니다':''}</small></div></div><span class="row" style="gap:8px">${goldHTML(sellPrice(k))}<button class="btn btn-sm" data-act="mk-sell" data-id="${k}">판매</button></span></div>`,'panel list mk-sell')}</div>`:'<div class="panel"><p class="empty">팔 수 있는 아이템이 없습니다. 착용 중인 장비는 팔 수 없습니다.</p></div>'):''}
     ${tab==='admin'&&adm?mkAdmin():''}</div>`;
 }
 function mkAdmin(){
@@ -1752,7 +1757,7 @@ function enhHTML(id,res){
   const it=ITEMS[id];const lv=enhOf(id);const nx=lv+1;const max=lv>=ENH_MAX;
   const cur=itemStats(id,lv),nxt=itemStats(id,Math.min(nx,ENH_MAX));const fail=Math.min(1,(ENH_FAIL[nx]||0)+(guildRain('craft')?RAIN_FAIL:0));const cost=enhCost(nx);
   return `<div class="enh"><div class="row" style="justify-content:space-between"><h3>장비 강화</h3><button class="btn btn-sm btn-ghost" data-act="enh-close">닫기</button></div>
-    <div class="enh-item ${res?'r-'+res:''}"><img src="${ITEM_IMG}" alt=""><div><b>${esc(it.name)}</b> <span class="enh-lv num">+${lv}</span><small class="faint">${SLOT[it.slot]} · 최대 +${ENH_MAX}</small></div></div>
+    <div class="enh-item ${res?'r-'+res:''}"><img src="${itemImgSrc(it)}" alt=""><div><b>${esc(it.name)}</b> <span class="enh-lv num">+${lv}</span><small class="faint">${SLOT[it.slot]} · 최대 +${ENH_MAX}</small></div></div>
     <div class="enh-pips" aria-label="강화 단계 ${lv}/${ENH_MAX}">${Array.from({length:ENH_MAX},(_,i)=>`<span class="${i<lv?'on':''} ${i>=6?'risk':''}"></span>`).join('')}</div>
     ${res?`<p class="enh-res ${res}">${res==='ok'?`강화 성공 · +${lv}`:`강화 실패 · +${lv} 유지`}</p>`:''}
     ${max?'<p class="ok-t">최대 강화 단계에 도달했습니다.</p>':`<div class="enh-cmp">${Object.keys(cur).map(k=>`<div><span class="faint">${STATK[k]}</span><span class="num">${cur[k]}</span><span class="faint">→</span><b class="num">${nxt[k]}</b></div>`).join('')}</div>

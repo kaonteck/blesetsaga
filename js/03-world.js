@@ -578,7 +578,7 @@ function gfAct(b,me){
       <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="wait">예, 대기합니다</button><button class="btn" data-act="g-mode" data-mode="fight">아니요</button></div></div>`;
   else if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(k=>ITEMS[k]);
     body=`<div class="gact-h"><span class="hud-tag">ITEM</span>아이템 <small>자신에게만 사용 · 다른 행동과 함께 · 한 턴에 하나</small></div>
-      <div class="ginv">${items.map(k=>{const n=S.me.inv[k]||0;return `<button class="invcell use ${gi&&gi.item===k?'on':''}" data-act="g-item" data-item="${gi&&gi.item===k?'':k}" ${n?'':'disabled'} title="${esc(ITEMS[k].desc)}"><img src="${ITEM_IMG}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[k].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>
+      <div class="ginv">${items.map(k=>{const n=S.me.inv[k]||0;return `<button class="invcell use ${gi&&gi.item===k?'on':''}" data-act="g-item" data-item="${gi&&gi.item===k?'':k}" ${n?'':'disabled'} title="${esc(ITEMS[k].desc)}"><img src="${itemImgSrc(ITEMS[k])}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[k].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>
       ${gi?`<p class="gact-sum" style="font-size:13px">선택 · ${esc(ITEMS[gi.item].name)} → 나</p>`:'<p class="muted" style="font-size:12.5px">사용할 아이템을 누르세요. 다시 누르면 선택이 풀립니다. 아이템은 자신에게만 쓸 수 있습니다.</p>'}
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
   else body=`<div class="gact-h is-fight"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
@@ -669,7 +669,7 @@ function qsCfg(){const q=S.me.qslot||(S.me.qslot={s:[null,null,null,null],dir:'h
 function qsPosStyle(){const q=qsCfg();return q.x!=null&&q.y!=null?`left:${q.x}px;top:${q.y}px;right:auto;bottom:auto`:'';}
 function qsOptions(me){const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);
   const skills=[basic,...sk.filter(k=>k!==basic&&SKILLS[k]&&SKILLS[k].type!=='passive'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv))];
-  return [...skills.map(k=>({v:'sk:'+k,name:k===basic?'기본 공격':SKILLS[k].name,img:skillImg(k)})),...QS_ITEMS.filter(k=>ITEMS[k]).map(k=>({v:'it:'+k,name:ITEMS[k].name,img:ITEM_IMG}))];}
+  return [...skills.map(k=>({v:'sk:'+k,name:k===basic?'기본 공격':SKILLS[k].name,img:skillImg(k)})),...QS_ITEMS.filter(k=>ITEMS[k]).map(k=>({v:'it:'+k,name:ITEMS[k].name,img:itemImgSrc(ITEMS[k])}))];}
 function gfQs(b,me){const q=qsCfg();const opts=qsOptions(me);const lock=me.confirmed||me.dead;const a=S.sel.act||{};const mode=S.sel.gmode||'fight';
   const cell=(v,i)=>{const o=v&&opts.find(x=>x.v===v);
     if(!o)return `<button class="gqs-s empty" data-act="qs-edit" data-i="${i}" title="눌러서 스킬·아이템 지정"><span>+</span></button>`;

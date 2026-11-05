@@ -11,7 +11,21 @@ const C={kind:'monster',id:null,search:'',filter:'all',pane:'kind',mon:'normal',
 const MON_CAT=[['field','필드 사냥'],['dungeon','던전'],['party','파티 레이드'],['weekly','토벌전'],['story','퀘스트 전투']];
 const monData=id=>((A.drafts.monster||{})[id]||{}).data||liveData('monster',id)||{};
 const isMassMon=id=>monData(id).kind==='event';
-const viewIds=k=>k!=='monster'?idsOf(k):idsOf(k).filter(id=>isMassMon(id)===(C.mon==='mass'));
+// 퀘스트·아이템·상점 상품 분류(목록 위 드롭다운)
+const ITEM_CAT=[['equip','장비'],['use','소모품'],['mat','재료'],['quest','퀘스트 아이템'],['etc','기타'],['deco','장식품']];
+function itemCatOf(id,d){d=d||{};if(/^q_/.test(id||'')||d.tag==='퀘스트 아이템'||d.tag==='이스터에그')return 'quest';return ['equip','use','mat','deco'].includes(d.type)?d.type:'etc';}
+const anyData=(k,id)=>((A.drafts[k]||{})[id]||{}).data||liveData(k,id)||{};
+const CATS={
+  quest:{opts:[['epic','메인'],['sub','서브'],['repeat','데일리']],of:(id,d)=>d.cat==='repeat'||d.repeat?'repeat':d.cat==='epic'?'epic':'sub'},
+  item:{opts:ITEM_CAT,of:(id,d)=>itemCatOf(id,d)},
+  market:{opts:ITEM_CAT,of:(id,d)=>itemCatOf(d.item,ctx().items[d.item])},
+};
+C.cats={};
+// 몬스터·퀘스트·아이템은 레벨 낮은 순(레벨 없는 것은 0으로, 같은 레벨은 원래 순서)
+const LV_KEY={monster:'level',quest:'level',item:'levelReq'};
+const lvOf=(k,id)=>{const v=+anyData(k,id)[LV_KEY[k]];return isFinite(v)?v:0;};
+const byLevel=(k,ids)=>!LV_KEY[k]?ids:ids.map((id,i)=>[id,i,lvOf(k,id)]).sort((a,b)=>a[2]-b[2]||a[1]-b[1]).map(x=>x[0]);
+const viewIds=k=>byLevel(k,k!=='monster'?idsOf(k):idsOf(k).filter(id=>isMassMon(id)===(C.mon==='mass')));
 const viewLabel=k=>k==='monster'&&C.mon==='mass'?'만신전':KINDS[k].label;
 
 async function loadServerContent(){
@@ -61,6 +75,7 @@ function drawContent(){
   const shown=ids.filter(id=>{
     if(term&&!(id.toLowerCase().includes(term)||String(titleOf(k,id)).toLowerCase().includes(term)||subOf(k,id).toLowerCase().includes(term)))return false;
     if(monTab){if(C.mon==='mass'||C.mcat==='all')return true;const mk=monData(id).kind||'party';return mk===C.mcat;}
+    if(CATS[k]){const c=C.cats[k]||'all';return c==='all'||CATS[k].of(id,anyData(k,id))===c;}
     const s=rowState(k,id);
     return C.filter==='all'||(C.filter==='server'&&s.srv)||(C.filter==='changed'&&s.srv&&s.def&&JSON.stringify(DEF[k][id])!==JSON.stringify(A.content[k][id].data))||(C.filter==='draft'&&s.draft)||(C.filter==='code'&&!s.srv);
   });
@@ -87,7 +102,7 @@ function drawContent(){
         <h3><span class="row" style="gap:6px"><button class="btn btn-g btn-sm back" data-pane="kind">‹ 종류</button>${viewLabel(k)} <span class="faint" style="font-weight:400">${shown.length}</span></span><button class="btn btn-sm" id="c-new">+ 새로 만들기</button></h3>
         <div class="stack" style="gap:6px;margin-bottom:10px">
           <input type="search" id="c-search" placeholder="이름·id 검색" value="${esc(C.search)}">
-          ${monTab&&C.mon==='mass'?'':monTab?`<select id="c-mcat" aria-label="몬스터 분류">${[['all','전체 분류'],...MON_CAT].map(([v,l])=>`<option value="${v}" ${C.mcat===v?'selected':''}>${l}</option>`).join('')}</select>`:`<select id="c-filter">${[['all','전체'],['server','서버에 있는 것'],['changed','기본값과 다른 것'],['draft','초안 있는 것'],['code','코드 기본값만']].map(([v,l])=>`<option value="${v}" ${C.filter===v?'selected':''}>${l}</option>`).join('')}</select>`}
+          ${monTab&&C.mon==='mass'?'':monTab?`<select id="c-mcat" aria-label="몬스터 분류">${[['all','전체 분류'],...MON_CAT].map(([v,l])=>`<option value="${v}" ${C.mcat===v?'selected':''}>${l}</option>`).join('')}</select>`:CATS[k]?`<select id="c-cat" aria-label="${KINDS[k].label} 분류">${[['all','전체 분류'],...CATS[k].opts].map(([v,l])=>`<option value="${v}" ${(C.cats[k]||'all')===v?'selected':''}>${l}</option>`).join('')}</select>`:`<select id="c-filter">${[['all','전체'],['server','서버에 있는 것'],['changed','기본값과 다른 것'],['draft','초안 있는 것'],['code','코드 기본값만']].map(([v,l])=>`<option value="${v}" ${C.filter===v?'selected':''}>${l}</option>`).join('')}</select>`}
         </div>
         <div class="list">${shown.map(id=>{const s=rowState(k,id);return `<div class="li" data-id="${esc(id)}" aria-current="${id===C.id}" tabindex="0"><div class="t"><b>${esc(titleOf(k,id))}</b><small>${esc(id)}${subOf(k,id)?' · '+esc(subOf(k,id)):''}</small></div><div class="chips">${s.chips.map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join('')}</div></div>`;}).join('')||'<p class="empty">항목이 없습니다.</p>'}</div>
       </div>
@@ -149,6 +164,7 @@ function bindContent(){
   $$('.li[data-id]').forEach(r=>{const open=()=>{C.id=r.dataset.id;C.pane='ed';drawContent();window.scrollTo({top:0});};r.onclick=open;r.onkeydown=e=>{if(e.key==='Enter')open();};});
   const s=$('#c-search');if(s)s.oninput=()=>{C.search=s.value;const pos=s.selectionStart;drawContent();const n=$('#c-search');n.focus();n.setSelectionRange(pos,pos);};
   const f=$('#c-filter');if(f)f.onchange=()=>{C.filter=f.value;drawContent();};
+  const cc=$('#c-cat');if(cc)cc.onchange=()=>{C.cats[C.kind]=cc.value;drawContent();};
   const mc=$('#c-mcat');if(mc)mc.onchange=()=>{C.mcat=mc.value;drawContent();};
   $('#c-new').onclick=newItem;
   $('#c-seed').onclick=seedDefaults;

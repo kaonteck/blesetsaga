@@ -890,7 +890,7 @@ function drunHud(R,k){const me=S.me,st=myStats(),maxHp=st.maxHp,hp=Math.max(0,Ma
   let body;
   if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(x=>ITEMS[x]);
     body=`<div class="gact-h"><span class="hud-tag">ITEM</span>아이템 <small>던전 안에서는 회복약만 쓸 수 있습니다 · HP 50 회복</small></div>
-      <div class="ginv">${items.map(x=>{const n=me.inv[x]||0;const ok=x==='potion'&&n>0&&R.hp<1;return `<button class="invcell use" data-act="dr-potion" data-item="${x}" ${ok?'':'disabled'} title="${esc(ITEMS[x].desc)}"><img src="${ITEM_IMG}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[x].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>`;}
+      <div class="ginv">${items.map(x=>{const n=me.inv[x]||0;const ok=x==='potion'&&n>0&&R.hp<1;return `<button class="invcell use" data-act="dr-potion" data-item="${x}" ${ok?'':'disabled'} title="${esc(ITEMS[x].desc)}"><img src="${itemImgSrc(ITEMS[x])}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[x].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>`;}
   else body=`<div class="gact-h"><span class="hud-tag">STATUS</span>상태</div>
       <div class="dr-stats">${[['공격력',st.atk],['마력',st.mag],['방어력',st.def],['행운',st.luk]].map(([l,v])=>`<div><small>${l}</small><b class="num">${v}</b></div>`).join('')}</div>
       <p class="faint" style="font-size:12px;margin:8px 0 0">던전 안에서는 체력이 자동으로 회복되지 않습니다. 나가면 남은 체력이 그대로 유지됩니다.</p>`;
@@ -1228,7 +1228,7 @@ function ensureDeco(){const me=S.me;if(!me)return;const sh=shelf();let ch=false;
 function shelfPanel(){
   const sh=shelf();const cnt=sh.filter(Boolean).length;
   return `<div class="panel shelf-p"><h3>${hTitle('spark','장식장')} <span class="faint num" style="letter-spacing:0;font-weight:400">${cnt}/${SHELF_N}</span></h3>
-    <div class="shelf">${sh.map((k,i)=>{const it=k&&ITEMS[k];return it?`<button class="sh-slot on" data-act="shelf-slot" data-i="${i}" data-tip="${esc(it.name)}" aria-label="${esc(it.name)}">${it.icon||`<img src="${ITEM_IMG}" alt="">`}</button>`:`<button class="sh-slot" data-act="shelf-slot" data-i="${i}" aria-label="빈 칸 · 장식품 올리기"><span class="sh-plus" aria-hidden="true">+</span></button>`;}).join('')}</div>
+    <div class="shelf">${sh.map((k,i)=>{const it=k&&ITEMS[k];return it?`<button class="sh-slot on" data-act="shelf-slot" data-i="${i}" data-tip="${esc(it.name)}" aria-label="${esc(it.name)}">${artUrl(it.img)?`<img src="${artUrl(it.img)}" alt="">`:it.icon||`<img src="${ITEM_IMG}" alt="">`}</button>`:`<button class="sh-slot" data-act="shelf-slot" data-i="${i}" aria-label="빈 칸 · 장식품 올리기"><span class="sh-plus" aria-hidden="true">+</span></button>`;}).join('')}</div>
     <p class="faint sh-hint">선물로 받거나 획득한 '장식품' 아이템을 올려 둘 수 있습니다.</p></div>`;
 }
 function shelfDlg(i){

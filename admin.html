@@ -298,6 +298,14 @@ details.cp>summary{cursor:pointer;list-style:none}
 .fm .pt td:first-child{min-width:150px}.fm .pt td:first-child small{display:block;font-size:11px;line-height:1.35}
 .fm .pt input{width:100%}.fm .pt td:nth-child(3){width:84px}
 @media(max-width:760px){.fm .pt thead{display:none}.fm .pt tr{display:grid;grid-template-columns:1fr 84px;gap:4px;padding:6px 0;border-bottom:1px solid var(--rule)}.fm .pt td{border:0;padding:0}.fm .pt td:first-child{grid-column:1/-1}.fm .pt td:last-child{grid-column:1/-1}}
+/* 양식 고르기 버튼 한 줄 (분류·종류 등) */
+.fm .seg{flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}.fm .seg::-webkit-scrollbar{display:none}
+.fm .sg{white-space:nowrap;flex:none;padding:5px 10px}
+@media (min-width:1280px){.fm>.fm-sec:not(.scene)>.fgrid>.f:has(>.seg>.sg:nth-child(4)){grid-column:span 2}}
+/* '그 밖의 값' 칸 삭제 버튼(작게, 칸 오른쪽 위) */
+.fm .kd{position:relative;min-width:0}.fm .kd.wide{grid-column:1/-1}.fm .kd>.f{width:100%}
+.fm .kd-x{position:absolute;top:0;right:0;padding:1px 7px;font-size:11px;line-height:1.5;border-radius:999px;border:1px solid var(--rule-2);background:transparent;color:var(--muted);cursor:pointer}
+.fm .kd-x:hover{color:#e57373;border-color:#e57373}
 </style>
 </head>
 <body>
