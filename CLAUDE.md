@@ -452,6 +452,7 @@
 - **[메인 2026-11-05] 몬스터 이미지 업로드** — 운영 페이지 몬스터 양식 '기본 정보'에 `img` 칸(이미지 올리기/빼기, 긴 변 512px WEBP로 줄여 저장, GIF는 그대로 2MB 이하). 저장소: **027_monster_art.sql 적용됨** — 공개 버킷 `monster-art`, 쓰기 정책은 `is_admin()`만. 게임: `monPic(m,cls)`/`monImg(m)`(04-ui)가 `img`가 monster-art 버킷 주소일 때만 `<img class="mon-img">`, 아니면 ASCII. 적용 위치: 레이드 카드·보스 상세·만신전 카드·퀘스트 전투 칸·결과 화면·오른쪽 레이드 카드·도감. **백엔드:** a6-forms.js에 `monImgRow`/`monImgUpload` 추가(파일 끝), admin.html에 `.monimg-pv` 스타일.
 - **[메인 2026-11-05] 퀘스트 완료 후 서고로 자동 이동 안 함** — vQuest: 방금 완료한 퀘스트는 지금 탭(메인/서브/데일리)에서 완료 화면 그대로 보여 줌. 다른 분류의 완료 퀘스트로 링크해 온 경우만 서고 탭으로.
 - **[메인 2026-11-05] 만신전 광역 패턴 직접 만들기(칸 찍기)** — 운영 페이지 만신전 보스 양식 '공격 패턴' 아래 「직접 만든 광역 패턴」: `mass.patterns.cN={name,mult,custom:true,aim,cells|offs}`. 고정 위치=10×10에서 칸 선택(보스 2×2 제외, 빠른 채우기), 대상 기준=무작위 1명(★) 중심 7×7 상대 위치. 페이즈 체크박스에 같이 나옴, 대사는 `mass.lines.cN`. 엔진 `gridTel`이 `b.pats[pat].cells/offs`가 있으면 그 칸으로 area 예고(칸이 비면 기본 단일 공격). **백엔드:** a6-forms.js 끝(`cpForm`·`cpBoard`)과 fAct의 cp-* 케이스, admin.html `.cpg/.cpc` 스타일.
+- **[메인 2026-11-06] 프론트 `frontend/admin-cats` 병합(유저 요청 "프론트에서 요청한거 적용") + 메인 참고 반영** — 만신전 아이템 칸(03 그리드 아이템)·퀵슬롯 아이템 그림(03 `QS_ITEMS`)·던전 HUD 아이템(05)·장식장(05, 올린 그림이 있으면 아이콘보다 우선)을 `ITEM_IMG` → `itemImgSrc(ITEMS[k])`/`artUrl(it.img)`. 스모크·ch8 진행·그리드 회복 표시 테스트 통과, 콘솔 오류 0.
 
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
