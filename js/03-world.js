@@ -181,7 +181,7 @@ function startSolo(m,ctx){
 const RTABS=[['dungeon','던전'],['daily','파티 레이드'],['weekly','토벌전'],['event','만신전']];
 function monCard(m,extra){const lr=levelReason(m,S.me.level)||raidBlock(m);
   return `<div class="panel mcard" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
-      <pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre>
+      ${monPic(m)}
       <div><div class="mname">${esc(m.name)}</div><p class="muted" style="font-size:12.5px">${esc(m.region||'')}</p></div>
       <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div>
       ${extra?`<div class="row" style="gap:6px">${extra}</div>`:''}${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t" style="font-size:12.5px">입장 가능</p>'}</div>`;}
@@ -463,7 +463,7 @@ function massPanel(){
   const m=monster(M.monsterId);const ev=massEv();const c=massRoles(M);const need=massNeed(M);const meIn=M.roster.some(x=>x.isMe);const busy=busyReason();
   const lr=m?levelReason(m,S.me.level)||(m.id==='guardian'?summusLock():''):'';const leader=M.leader;const iLead=leader===S.me.name;
   const left=ev?Math.max(0,ev.until-now()):0;
-  return `<div class="panel mass-card"><div class="boss"><pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:8px">
+  return `<div class="panel mass-card"><div class="boss">${monPic(m)}<div class="stack" style="gap:8px">
       <div class="row" style="gap:6px"><span class="chip warn">만신전</span><span class="chip">${esc(ev?ev.loc:'')}</span><span class="chip num">집결 마감 ${fmtDur(left)}</span></div>
       ${massDef(m).title?`<p class="md-lbl" style="margin:0">${esc(massDef(m).title)}</p>`:''}<h2 class="mname" style="font-size:24px">${esc(m.name)}</h2><p class="muted" style="font-size:13px">${esc(m.desc||'')}</p>
       <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${M.roster.length} / ${C.maxPlayers}명</span>
