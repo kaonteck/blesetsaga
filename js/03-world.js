@@ -137,8 +137,12 @@ function daily(){const c=kstCycle();if(!S.daily||S.daily.cycle!==c)S.daily={cycl
 function weekly(){const k=weekKey(now()-5*3600e3);if(!S.weekly||S.weekly.wk!==k)S.weekly={wk:k,done:{}};return S.weekly;}
 function mkind(m){return (m&&m.kind)||'party';}
 const MKIND={party:'데일리 파티 레이드',weekly:'토벌전',event:'만신전',field:'필드 몬스터',dungeon:'던전 보스',story:'퀘스트 전투'};
-function isGroupMon(m){return !!(m&&m.published&&['party','weekly'].includes(mkind(m)));}
+/* 토벌전(백야의 신전 봉인 수호자) 임시 닫힘(유저 요청 2026-11-05, 풀라고 할 때 false로): 운영자만 */
+const WEEKLY_CLOSED=true;
+function weeklyClosed(){return WEEKLY_CLOSED&&!(typeof isAdmin==='function'&&isAdmin());}
+function isGroupMon(m){return !!(m&&m.published&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!WEEKLY_CLOSED)));}
 function raidBlock(m){const k=mkind(m);
+  if(k==='weekly'&&weeklyClosed())return '토벌전은 잠시 닫혀 있습니다';
   if(['field','story'].includes(k))return '개인 전투 전용 몬스터입니다';
   if(k==='dungeon'&&daily().dungeon[m.id])return '오늘은 이미 클리어했습니다 (05:00 초기화)';
   if(k==='party'&&daily().raid>=RAID_MAX)return `오늘 파티 레이드 ${RAID_MAX}회를 모두 사용했습니다 (05:00 초기화)`;
@@ -193,6 +197,8 @@ function vBattle(){
   if(S.drun&&monster(S.drun.mid))return vDrun();
   if(S.match||S.queue)return vQueue();
   if(S.party)return vParty();
+  if(S.sel.monster&&monster(S.sel.monster)&&mkind(monster(S.sel.monster))==='weekly'&&weeklyClosed()){S.sel.monster=null;S.sel.rtab='dungeon';}
+  if(S.sel.rtab==='weekly'&&weeklyClosed())S.sel.rtab='dungeon';
   if(S.sel.monster&&monster(S.sel.monster)){if(mkind(monster(S.sel.monster))==='event'){S.sel.monster=null;S.sel.rtab='event';}else return vMonster(monster(S.sel.monster));}
   const tab=S.sel.rtab||'dungeon';const d=daily(),w=weekly();
   const ms=S.data.monsters.filter(m=>m.published);
@@ -213,10 +219,10 @@ function vBattle(){
     body=massPanel();
   }
   return `<div class="wrap page"><div class="page-head"><div><h2>레이드<small class="en">Raid</small></h2><p>던전 · 파티 레이드 · 토벌전 · 만신전을 고르세요. 던전은 혼자 또는 최대 4인 파티로, 파티 레이드는 최소 3인으로 출발합니다.</p></div></div>
-    <div class="qtabs" role="tablist">${RTABS.map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
+    <div class="qtabs" role="tablist">${RTABS.filter(([k])=>k!=='weekly'||!weeklyClosed()).map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }
-const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11'};
+const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19',frost:'E23',chaos:'E27'};
 function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
@@ -338,7 +344,7 @@ function mapDlg(land,focus,page){
   let dg='';
   ins.filter(s=>s[1]==='dungeon').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};const m=monster(id);const img=SPOT_IMG[id];const tg=dtg(m?m.id:id);
     let act='';
-    if(id==='temple'){const g=S.data.monsters.find(x=>mkind(x)==='weekly');act=g?`<div class="row md-btns"><button class="btn btn-primary" data-act="map-goto" data-link="monster:${g.id}">토벌전 · ${esc(g.name)}</button></div><p class="faint" style="font-size:12px">현재 시제품에서는 봉인 수호자 토벌전(LV${g.level}+ · ${g.min}~${g.max}인)으로 열려 있습니다.</p>`:'';}
+    if(id==='temple'){const g=S.data.monsters.find(x=>mkind(x)==='weekly');act=weeklyClosed()?'<p class="faint" style="font-size:12px">백야의 신전은 지금 닫혀 있습니다.</p>':g?`<div class="row md-btns"><button class="btn btn-primary" data-act="map-goto" data-link="monster:${g.id}">토벌전 · ${esc(g.name)}</button></div><p class="faint" style="font-size:12px">현재 시제품에서는 봉인 수호자 토벌전(LV${g.level}+ · ${g.min}~${g.max}인)으로 열려 있습니다.</p>`:'';}
     else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,tg);
       act=`<p class="faint" style="font-size:12px">보스 · ${esc(m.name)} · ${tg==='exp'?`EXP ${R.exp} · ${R.gold}골드`:`아이템 1개 확정 (${lootText(m)})`}</p>
         <div class="row md-btns">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':`<button class="btn btn-primary" data-act="dfight" data-id="${m.id}" ${lr||busy?'disabled':''}>${lr?esc(`LV${m.level} 이상 필요`):'개인 레이드 도전'}</button>`}</div>`;}
@@ -351,7 +357,7 @@ function mapDlg(land,focus,page){
   if(!page)ins.filter(s=>s[1]==='gate').forEach(([id,,n])=>{const I=MAP_INFO[id]||{};
     h+=sec(id,`<div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>워프게이트</div><h3 class="md-title">${esc(n)}${I.job?` <span class="chip cls ${roleOf(I.job)}" style="vertical-align:middle">${CLASSES[I.job].name}</span>`:''}</h3><p class="md-text">${I.text||''}</p>`);});
   const cnt=x=>(x.match(/<section /g)||[]).length;
-  return page?`${VIL_TOWN[land]?`<div class="exr-row" style="--n:1">${villageHTML(land)}</div>`:''}${land===CASINO_LAND?`<div class="exr-row" style="--n:1">${casinoHTML()}</div>`:''}${FISH_LANDS[land]?`<div class="exr-row" style="--n:1">${fishCard(land)}</div>`:''}<div class="exr-row" style="--n:${cnt(h)}">${h}</div>`:h+dg;
+  return page?`${VIL_TOWN[land]?`<div class="exr-row" style="--n:1">${villageHTML(land)}</div>`:''}${land===CASINO_LAND?`<div class="exr-row" style="--n:1">${casinoHTML()}</div>`:''}${FISH_LANDS[land]?`<div class="exr-row" style="--n:1">${fishCard(land)}</div>`:''}${h.split(/(?=<section )/).filter(x=>x.trim()).map(x=>`<div class="exr-row" style="--n:1">${x}</div>`).join('')}`:h+dg;  /* 지역 탐색 · 탐험 지역은 각각 한 단락씩 */
 }
 function openMap(land,focus){S.sel.mapLand=land;S.sel.mapFocus=focus||'';modal(mapDlg(land,focus));const mm=$('.modal');if(mm){mm.classList.add('mapmodal');const el=focus&&$('#md-'+focus);if(el)mm.scrollTop=Math.max(0,el.offsetTop-12);}}
 function refreshMap(){const mm=$('.modal.mapmodal');if(!mm)return;const st=mm.scrollTop;modal(mapDlg(S.sel.mapLand,S.sel.mapFocus));const m2=$('.modal');if(m2){m2.classList.add('mapmodal');m2.scrollTop=st;}}
@@ -431,7 +437,7 @@ function massStart(){
   S.route='battle';save();render();notify(`${m.name} 만신전 시작 · ${n}인`,'good');
   showBless(false);
 }
-function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
+function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');const B0=S.battle;if(B0&&B0.bless&&B0.bless.pick){const bid=B0.id;clearTimeout(showBless._t);showBless._t=setTimeout(()=>{const B=S.battle;if(B&&B.id===bid&&$('.modal.bless'))modal('');},anim?3200:2200);}  /* 가호가 정해지면 잠시 보여 준 뒤 자동으로 닫음 */if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
 function massTick(t){
   const M=S.mass;if(!M||M.phase!=='gather')return;
   const m=monster(M.monsterId);const C=massCfg();
@@ -530,20 +536,35 @@ function gfTop(b){
 function telLine(b){const tel=b.tel,m=b.mon;if(!tel)return '';const dmg=Math.round(m.atk*(tel.mult||1));
   if(tel.type==='single'||tel.type==='dot'){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);return `${tel.name}｜대미지 ${dmg}｜(타겟:${t?t.name:'-'})`;}
   return `${tel.name}｜대미지 ${dmg}｜광역`;}
+// 다음 공격 예고: PC 전체 화면(.gfx)에서는 턴마다 잠깐 떴다 사라짐(전투 로그에는 '예고 · …'로 남음). 다시 그려도 처음부터 다시 뜨지 않게 처음 보인 시각을 기억.
+const TEL_SEEN={k:'',at:0};
+// 만신전 보스 대사: 패턴마다 늘 같은 대사 → 대사만 듣고 다음 공격을 알아챌 수 있게. 몬스터에 mass.lines{패턴:대사}가 있으면 그걸 씀({t}=대상 이름).
+const BOSS_SAY={single:'가장 거슬리는 놈부터 꺾어 주마.',dot:'가장 거슬리는 놈에게 독을 먹여 주지.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
+function bossSay(b){const tel=b.tel;if(!tel)return '';const k=tel.type==='dot'?'dot':(tel.pat||'single');
+  const mm=typeof monster==='function'&&b.monsterId?monster(b.monsterId):null;const own=mm&&mm.mass&&mm.mass.lines;let line=(own&&own[k])||BOSS_SAY[k]||'';
+  if(line.includes('{t}')){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);line=line.replace(/\{t\}/g,t?t.name:'');}
+  return line;}
 function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=='dot';const t=esc(telLine(b));
-  return `<div class="gtel ${aoe?'aoe':''}" role="status"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
-function gfMap(b,me){return `${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
+  const k=b.id+'|'+b.turn+'|'+(tel?tel.name:'');if(TEL_SEEN.k!==k){TEL_SEEN.k=k;TEL_SEEN.at=now();}const el=now()-TEL_SEEN.at;
+  const say=tel?bossSay(b):'';
+  return `${say?`<div class="gsay ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><p>“${esc(say)}”</p></div>`:''}<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
+function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지도 확대·축소"><button type="button" data-gmz="in" aria-label="확대">+</button><span class="gmz-r num">${Math.round(GMZ.z*100)}%</span><button type="button" data-gmz="out" aria-label="축소">−</button><button type="button" data-gmz="fit" aria-label="맞춤">맞춤</button></div>${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
+// 전투원 상태(버프·디버프) 목록 [글자, 종류] — HUD·제출 현황 공통
+function pFxList(b,p){const st=[];if(p.poison)st.push([`${p.poison.name} ${p.poison.turns}턴`,'debuff']);if(p.bound>0)st.push([`${p.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${p.bound}`,'debuff']);if(p.charm>0)st.push(['매혹','debuff']);if(p.hot)st.push([`블레스 ${p.hot.turns}턴`,'heal']);if(p.protect)st.push(['보호','buff']);(p.buffs||[]).filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));return st;}
 function gfSub(b,me){const al=living(b);
-  return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span></h3>
+  return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span><button type="button" class="gsub-fold" data-act="sub-fold" aria-expanded="${!S.sel.subFold}" aria-label="제출 현황 ${S.sel.subFold?'펼치기':'접기'}">${S.sel.subFold?'▾':'▴'}</button></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>
-    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}">${esc(gActLabel(b,p))}</span></div>`).join('')
+    <div class="glist">${(S.sel.gsub||'alive')==='alive'?al.slice().sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.hp-y.hp).map(p=>`<div class="gl ${p.isMe?'me':''}"><span class="tok ${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="gbar" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%" class="${p.hp/p.maxHp<0.3?'low':''}"></i></span><span class="ga ${p.confirmed?'ok':''}" title="${esc(gActLabel(b,p))}">${esc(gActLabel(b,p))}</span><span class="gl-dmg num" title="누적 대미지">${(p.dealt||0).toLocaleString('ko-KR')}</span>${(fx=>`<span class="gl-fx" title="${esc(fx.map(x=>x[0]).join(' · '))}">${fx.map(([x,t])=>`<span class="hud-fx st-${t}">${esc(x.replace(/ \d+(턴)?$/,''))}</span>`).join('')}</span>`)(pFxList(b,p))}</div>`).join('')
       :(()=>{const dead=b.players.filter(p=>p.dead);const canRev=!me.dead&&!me.confirmed&&CLASSES[me.job].skills.includes('sinsayer');
         return dead.length?dead.map(p=>{const far=me.pos!=null&&p.pos!=null&&cheb(me.pos,p.pos)>HEAL_R;return `<div class="gl dead-row"><span class="tok ${p.role} dead">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}</b><span class="num faint">${p.pos!=null?cellName(p.pos):''}</span><span class="faint" style="font-size:11px">${className(p.job)} · LV${p.level}</span>
           ${canRev?`<button class="btn btn-sm gl-rev" data-act="g-revive" data-id="${esc(p.id)}" ${far?'disabled':''} title="${far?'회복 사거리(5×5) 밖':'스킬 탭에서 신세이어 대상으로 지정'}">${far?'사거리 밖':'부활 지정'}</button>`:''}</div>`;}).join('')+`<p class="faint" style="font-size:11.5px;margin-top:6px">${canRev?'부활 지정을 누르면 전투 › 스킬에 신세이어가 선택됩니다. 자신의 차례에 행동 확정을 눌러야 사용됩니다.':'신세이어를 가진 힐러만 부활시킬 수 있습니다.'}</p>`:'<p class="empty" style="padding:8px 2px">쓰러진 참가자가 없습니다.</p>';})()}</div>`;}
+// 커맨드 아이콘 열림/닫힘 모션: 바꾼 직후 한 번만(다시 그릴 때마다 되풀이되지 않게)
+const GM_ANIM={to:null,from:null,t:0};
+function gmAnimMark(from,to){GM_ANIM.from=from;GM_ANIM.to=to;clearTimeout(GM_ANIM.t);GM_ANIM.t=setTimeout(()=>{GM_ANIM.from=GM_ANIM.to=null;},400);}
 function gfAct(b,me){
-  const mode=S.sel.gmode||'fight';const gi=S.sel.gitem;const al=living(b);
-  const CMD_EN={fight:'ATTACK',move:'MOVE',item:'ITEM',wait:'STANDBY'};
-  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['item','아이템',''],['wait','대기','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
+  let mode=S.sel.gmode||'fight';if(mode==='wait'){mode='fight';S.sel.gmode='fight';}const gi=S.sel.gitem;const al=living(b);
+  const CMD_EN={fight:'ATTACK',move:'MOVE',defend:'DEFEND',item:'ITEM',wait:'STANDBY'};
+  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','방어',''],['item','아이템','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''} ${GM_ANIM.to===k&&mode===k?'grow':''} ${GM_ANIM.from===k&&mode!==k?'shrink':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
   let body='';
   if(me.dead)body=`<div class="gact-done"><p class="reason">전투 불능 상태입니다.</p><p class="muted" style="font-size:12.5px">신세이어를 가진 힐러가 부활시킬 수 있습니다. 직접 행동한 기록이 있으면 보상은 그대로 받습니다.</p></div>`;
   else if(me.confirmed)body=`<div class="gact-done"><div class="ph" style="margin:0 0 4px">제출 완료</div><p class="gact-sum">${esc(gActLabel(b,me))}</p><div class="row"><button class="btn" data-act="editact">행동 수정</button></div><p class="faint" style="font-size:12px">다른 참가자가 모두 제출하면 바로 판정합니다.</p></div>`;
@@ -551,7 +572,8 @@ function gfAct(b,me){
     body=`<div class="gact-h"><span class="hud-tag">MOVE</span>이동 <small>이동 범위 ${moveR(b,me)*2+1}×${moveR(b,me)*2+1}${(MOVE_BONUS[me.job]||0)+(me.mov||0)?` · 클래스·장비 보정 +${(MOVE_BONUS[me.job]||0)+(me.mov||0)}`:''}</small></div>
       <div class="gpos"><div><small>현재 위치</small><b class="num">${cellName(me.pos)}</b></div><span class="gpos-ar">→</span><div class="${ok?'on':''}"><small>이동 위치</small><b class="num">${ok?cellName(tgt):'—'}</b></div></div>
       <p class="muted" style="font-size:12.5px">전장에서 파랗게 표시된 칸을 눌러 이동할 곳을 고르세요.${b.tel&&b.tel.type==='area'&&b.tel.cells.includes(me.pos)?' <span class="reason">지금 자리는 예고 범위 안입니다.</span>':''}${ok&&b.tel&&b.tel.type==='area'&&b.tel.cells.includes(tgt)?' <span class="reason">선택한 칸도 예고 범위 안입니다.</span>':''}</p>
-      <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="move" ${ok?'':'disabled'}>${ok?`${cellName(tgt)}(으)로 이동 확정`:'칸을 선택하세요'}</button></div>`;}
+`;}
+  else if(mode==='defend')body=`<div class="gact-h"><span class="hud-tag">DEFEND</span>방어</div><div class="gwait"><p>이번 턴 받는 대미지 <b>50% 감소</b> · 가장 먼저 처리됩니다.</p><small class="faint">이동하거나 공격하지 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small></div>`;
   else if(mode==='wait')body=`<div class="gact-h"><span class="hud-tag">STANDBY</span>대기</div><div class="gwait"><p>이번 턴 <b>대기</b>하시겠습니까?</p><small class="faint">움직이지도 공격하지도 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small>
       <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="wait">예, 대기합니다</button><button class="btn" data-act="g-mode" data-mode="fight">아니요</button></div></div>`;
   else if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(k=>ITEMS[k]);
@@ -559,45 +581,137 @@ function gfAct(b,me){
       <div class="ginv">${items.map(k=>{const n=S.me.inv[k]||0;return `<button class="invcell use ${gi&&gi.item===k?'on':''}" data-act="g-item" data-item="${gi&&gi.item===k?'':k}" ${n?'':'disabled'} title="${esc(ITEMS[k].desc)}"><img src="${ITEM_IMG}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[k].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>
       ${gi?`<p class="gact-sum" style="font-size:13px">선택 · ${esc(ITEMS[gi.item].name)} → 나</p>`:'<p class="muted" style="font-size:12.5px">사용할 아이템을 누르세요. 다시 누르면 선택이 풀립니다. 아이템은 자신에게만 쓸 수 있습니다.</p>'}
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
-  else body=`<div class="gact-h"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
+  else body=`<div class="gact-h is-fight"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
   const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${JOBS[me.job].sigil}</span>`;
-  const st=[];if(me.poison)st.push(`${me.poison.name} ${me.poison.turns}턴`);if(me.hot)st.push(`블레스 ${me.hot.turns}턴`);if(me.protect)st.push('보호');me.buffs.filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push(BUFFN[x.k]||x.k));
+  const st=pFxList(b,me);
   const hpP=pct(me.hp,me.maxHp);
   return `<div class="hud ${me.dead?'is-dead':''}">
-    <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div></div>
+    <div class="hud-face"><div class="hud-portrait ${me.role}">${face}</div><div class="hud-nm"><b>${esc(me.name)}</b><span class="num">LV.${me.level}</span></div></div>
     <div class="hud-main">
-      <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${me.role}">${esc(CLASSES[me.job].name)}</span>${me.pos!=null?`<span class="hud-pos num">위치 ${cellName(me.pos)}</span>`:''}${st.map(x=>`<span class="hud-fx">${esc(x)}</span>`).join('')}</div>
+      <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${me.role}">${esc(CLASSES[me.job].name)}</span>${me.pos!=null?`<span class="hud-pos num">위치 ${cellName(me.pos)}</span>`:''}${gfTgt(b,me,mode)}${st.map(([x,k])=>`<span class="hud-fx st-${k}">${esc(x)}</span>`).join('')}</div>
         <div class="hud-bars"><div class="hb hp ${hpP<30?'low':''}" title="${me.hp}/${me.maxHp}"><i style="width:${hpP}%"></i><span>HP</span><b class="num">${me.hp}<small>/${me.maxHp}</small></b></div>
           <div class="hb mp"><i style="width:0%"></i><span>MP</span><b class="num">—</b></div></div></div>
       <div class="hud-body gact-body">${body}</div></div>
-    ${pad}</div>`;
+    ${pad.replace(/<\/div>$/,gfGo(b,me,mode)+'</div>')}</div>`;
 }
+/* 행동 확정 버튼 — 커맨드(대기) 아래 */
+function gfGoInfo(b,me,mode){if(me.dead||me.confirmed)return {on:false,attrs:''};
+  if(mode==='move'){const t=S.sel.gcell,ok=t!=null&&canMoveTo(b,me,t);return {on:ok,attrs:'data-act="g-confirm" data-kind="move"'};}
+  if(mode==='defend')return {on:true,attrs:`data-act="${me.bound>0?'confirmdefend':'confirmact'}"`};
+  if(mode==='item')return {on:false,attrs:''};
+  if(GS_GO.bound)return {on:true,attrs:'data-act="confirmdefend"'};
+  return {on:!!GS_GO.valid,attrs:'data-act="confirmact"'};}
+function gfGo(b,me,mode){if(me.dead)return '';
+  /* 행동 확정: 글자는 항상 '행동 확정', 확정할 수 없으면 회색(비활성) */
+  const g=gfGoInfo(b,me,mode);return `<button class="btn ${g.on?'btn-primary':''} hcmd-go" ${g.on?g.attrs:'disabled'}><span class="go-l">행동 확정</span></button>`;}
+/* 전투 적용 대상 — 위치 옆 */
+function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')return '<span class="hud-pos hud-tgt">대상 나</span>';if(mode!=='fight')return '';
+  const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};let n='';
+  if(a.kind==='defend')n='나';
+  else if(a.kind==='skill'&&SKILLS[a.skill]){const t=SKILLS[a.skill].target;
+    if(t==='enemy')n=b.mon.name;else if(t==='ally'||t==='dead'){const p=b.players.find(x=>x.id===a.target);n=p?(p.isMe?'나':p.name):'선택 필요';}else n=t==='all'||t==='party'?'파티 전체':'나';}
+  return n?`<span class="hud-pos hud-tgt">대상 ${esc(n)}</span>`:'';}
 const SHIELD_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.2-8 11-4.6-1.8-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 6v12" stroke="currentColor" stroke-width="1.2" opacity=".6"/></svg>';
+GICON.defend=SHIELD_SVG;
+let GS_GO={};
 function gridSkillPanel(b,me){
-  if(me.bound>0)return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다.</p><div class="row"><button class="btn btn-primary" data-act="confirmdefend">방어 확정</button></div>`;
+  if(me.bound>0){GS_GO={bound:true};return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다. 방어만 확정할 수 있습니다.</p>`;}
+  addonSane(me);
   const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);const a=S.sel.act||{kind:'skill',skill:basic};
   const list=[basic,...sk.filter(k=>k!==basic&&!['addon','passive'].includes(SKILLS[k].type))];
   const tip=(title,body,extra)=>`<span class="sk-tip" role="tooltip"><b>${title}</b>${extra||''}<span>${body}</span></span>`;
   const slot=k=>{const s=SKILLS[k];const err=checkAct(b,me,{kind:'skill',skill:k,target:s.target==='dead'?(b.players.find(x=>x.dead)||{}).id:me.id},hooks.hasItem);
     const soft=err&&((s.target==='ally'&&err==='대상이 유효하지 않음')||err.startsWith('대상이 회복 사거리'));const hard=err&&!soft;const on=a.kind==='skill'&&a.skill===k;const bd=skillBadges(k,me,b);
     return `<button class="sks ${on?'on':''} ${k===basic?'basic':''}" data-act="pickact" data-kind="skill" data-skill="${k}" ${hard?'disabled':''} aria-label="${esc(s.name)}"><img src="${skillImg(k)}" alt=""><span class="sks-n">${k===basic?'기본 공격':esc(s.name)}</span>${tip(`${esc(s.name)} <small>${s.en}</small>`,esc(s.desc),(bd?`<span class="row" style="gap:3px">${bd}</span>`:'')+(hard?`<em>${esc(err)}</em>`:''))}</button>`;};
-  const def=`<button class="sks ${a.kind==='defend'?'on':''}" data-act="pickact" data-kind="defend" aria-label="방어"><span class="sks-ic">${SHIELD_SVG}</span><span class="sks-n">방어</span>${tip('방어','이번 턴 받는 대미지 50% 감소 · 가장 먼저 처리')}</button>`;
-  const addons=sk.filter(k=>SKILLS[k].type==='addon');const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
-  const addonHTML=addons.length&&isDice?`<div class="sks-add"><span class="ph" style="margin:0">함께 사용</span>${addons.map(k=>{const ad=SKILLS[k];const ok=usesLeft(me,k)>0&&(!ad.with||ad.with.includes(a.skill));return `<button class="sks sm ${a.addon===k?'on':''}" data-act="pickaddon" data-skill="${k}" ${ok?'':'disabled'} aria-label="${esc(ad.name)}"><img src="${skillImg(k)}" alt=""><span class="sks-n">${esc(ad.name)}</span>${tip(esc(ad.name),esc(ad.desc))}</button>`;}).join('')}</div>`:'';
+  const addons=sk.filter(k=>SKILLS[k].type==='addon'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv));const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
+  /* 이중 선택(함께 쓰는) 스킬: 앞쪽에 붉은 띠, 뒤에 + 표시 후 나머지 스킬 */
+  const addonHTML=addons.map(k=>{const ad=SKILLS[k];const ok=usesLeft(me,k)>0&&(!isDice||!ad.with||ad.with.includes(a.skill));const armed=a.addon===k||S.sel.addonArm===k;
+    return `<button class="sks addon ${armed?'on':''}" data-act="pickaddon" data-skill="${k}" ${ok?'':'disabled'} aria-pressed="${armed}" aria-label="${esc(ad.name)}"><img src="${skillImg(k)}" alt=""><span class="sks-n">${esc(ad.name)}</span>${tip(esc(ad.name),esc(ad.desc)+' · 켜 두고 공격 스킬을 고르면 함께 사용')}</button>`;}).join('')+(addons.length?'<span class="sks-plus" aria-hidden="true">+</span>':'');
   const passive=sk.filter(k=>SKILLS[k].type==='passive').map(k=>`<p class="faint" style="font-size:12px">패시브 · ${SKILLS[k].name}: ${esc(SKILLS[k].desc)}</p>`).join('');
   const needT=x=>x&&((x.kind==='skill'&&SKILLS[x.skill]&&['ally','dead'].includes(SKILLS[x.skill].target)));
   const aerr=a.kind==='skill'&&SKILLS[a.skill]?checkAct(b,me,a,hooks.hasItem):null;const valid=a.kind!=='none'&&!(needT(a)&&!a.target)&&!(aerr&&!(needT(a)&&!a.target));
-  return `<div class="sks-grid">${list.map(slot).join('')}${def}</div>${addonHTML}${targetPick(b,a)}${passive}
-    <div class="row"><button class="btn btn-primary" data-act="confirmact" ${valid?'':'disabled'}>행동 확정</button><span class="muted" style="font-size:12.5px">선택: ${esc(a.kind==='defend'?'방어':actLabel(b,a))}${aerr&&!(needT(a)&&!a.target)?` · <span class="reason">${esc(aerr)}</span>`:''}</span></div>`;
+  GS_GO={valid};const tp=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].target==='enemy'?'':targetPick(b,a);  /* 적 대상은 HUD 위치 옆에 표시 */
+  return `<div class="sks-grid">${addonHTML}${list.map(slot).join('')}</div>${tp}${passive}
+    <div class="row"><span class="muted" style="font-size:12.5px">선택: ${esc(a.kind==='defend'?'방어':actLabel(b,a))}${aerr&&!(needT(a)&&!a.target)?` · <span class="reason">${esc(aerr)}</span>`:''}</span></div>`;
 }
 function gridParts(){const b=S.battle,me=b.players.find(p=>p.isMe);
   const set=(id,html)=>{const el=document.getElementById(id);if(el&&el._h!==html){el.innerHTML=html;el._h=html;}};
-  set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('dmgrank',dmgRank(b));
+  set('gf-top',gfTop(b));set('gf-tel',gfTel(b));set('gf-map',gfMap(b,me));set('gf-sub',gfSub(b,me));set('gf-act',gfAct(b,me));set('gf-qs',gfQs(b,me));set('gf-rank2',gfRank(b));set('dmgrank',dmgRank(b));
   const lg=$('#blog');if(lg){lg.innerHTML=logHTML();lg.scrollTop=lg.scrollHeight;}}
+/* 만신전 전체 화면(≥1101px): 지도 확대·축소·맞춤 — 휠(커서 기준)·끌어서 이동·더블클릭 맞춤. 값은 #gf-map 의 CSS 변수(다시 그려도 유지) */
+const GMZ={z:1,x:0,y:0};
+function gmzApply(){const m=document.getElementById('gf-map');if(!m)return;m.style.setProperty('--gz',GMZ.z);m.style.setProperty('--gx',GMZ.x+'px');m.style.setProperty('--gy',GMZ.y+'px');const r=m.querySelector('.gmz-r');if(r)r.textContent=Math.round(GMZ.z*100)+'%';}
+function gmzZoom(f,cx,cy){const m=document.getElementById('gf-map');if(!m)return;const R=m.getBoundingClientRect();const z0=GMZ.z,z1=Math.max(0.6,Math.min(3,z0*f));if(z1===z0)return;
+  const px=(cx==null?R.width/2:cx-R.left)-R.width/2,py=(cy==null?R.height/2:cy-R.top)-R.height/2;GMZ.x=px-(px-GMZ.x)*z1/z0;GMZ.y=py-(py-GMZ.y)*z1/z0;GMZ.z=z1;gmzApply();}
+function gmzFit(){GMZ.z=1;GMZ.x=0;GMZ.y=0;gmzApply();}
+function initGridZoom(){const m=document.getElementById('gf-map');if(!m||m._gmz)return;m._gmz=1;gmzApply();
+  m.addEventListener('wheel',e=>{if(!matchMedia('(min-width:1101px)').matches)return;e.preventDefault();gmzZoom(e.deltaY<0?1.15:1/1.15,e.clientX,e.clientY);},{passive:false});
+  let drag=null,moved=false;
+  m.addEventListener('pointerdown',e=>{if(!matchMedia('(min-width:1101px)').matches||e.button!==0||e.target.closest('.gmz-btns'))return;drag={x:e.clientX,y:e.clientY,ox:GMZ.x,oy:GMZ.y};moved=false;});
+  addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!moved&&Math.hypot(dx,dy)<5)return;moved=true;m.classList.add('dragging');GMZ.x=drag.ox+dx;GMZ.y=drag.oy+dy;gmzApply();});
+  addEventListener('pointerup',()=>{drag=null;m.classList.remove('dragging');});
+  m.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+  m.addEventListener('dblclick',e=>{if(e.target.closest('.gmz-btns'))return;gmzFit();});
+  m.addEventListener('click',e=>{const b=e.target.closest('[data-gmz]');if(!b)return;const k=b.dataset.gmz;if(k==='in')gmzZoom(1.25);else if(k==='out')gmzZoom(0.8);else gmzFit();});}
+// 만신전 채팅·로그 창 크기(PC): 오른쪽 위 모서리를 끌어 조절, 다시 그려도 유지
+const GCL={w:0,h:0};
+(function(){if(typeof document==='undefined')return;let st=null;
+  document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.gcl-rz');if(!h)return;const box=h.parentElement.getBoundingClientRect();
+    st={x:e.clientX,y:e.clientY,w:box.width,h:box.height};e.preventDefault();try{h.setPointerCapture(e.pointerId);}catch(_){}});
+  document.addEventListener('pointermove',e=>{if(!st)return;const maxW=innerWidth-40,maxH=innerHeight-140;
+    GCL.w=Math.round(Math.min(maxW,Math.max(260,st.w+e.clientX-st.x)));GCL.h=Math.round(Math.min(maxH,Math.max(140,st.h-(e.clientY-st.y))));
+    const el=document.querySelector('.gfx .gf-cl');if(el){el.style.setProperty('--gcl-w',GCL.w+'px');el.style.setProperty('--gcl-h',GCL.h+'px');}});
+  const end=()=>{if(st){st=null;const m=document.querySelector('.gfx .gf-cl .msgs');if(m)m.scrollTop=m.scrollHeight;}};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
+/* 만신전 퀵슬롯(PC ≥1101px): 4칸, 가로/세로, 끌어서 자유 배치, 칸마다 스킬·아이템을 직접 지정. 저장: S.me.qslot={s:[4],dir:'h'|'v',x,y} */
+const QS_ITEMS=['potion','holywater','swiftdraft'];
+function qsCfg(){const q=S.me.qslot||(S.me.qslot={s:[null,null,null,null],dir:'h',x:null,y:null});if(!Array.isArray(q.s)||q.s.length!==4)q.s=[0,1,2,3].map(i=>(q.s||[])[i]||null);return q;}
+function qsPosStyle(){const q=qsCfg();return q.x!=null&&q.y!=null?`left:${q.x}px;top:${q.y}px;right:auto;bottom:auto`:'';}
+function qsOptions(me){const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);
+  const skills=[basic,...sk.filter(k=>k!==basic&&SKILLS[k]&&SKILLS[k].type!=='passive'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv))];
+  return [...skills.map(k=>({v:'sk:'+k,name:k===basic?'기본 공격':SKILLS[k].name,img:skillImg(k)})),...QS_ITEMS.filter(k=>ITEMS[k]).map(k=>({v:'it:'+k,name:ITEMS[k].name,img:ITEM_IMG}))];}
+function gfQs(b,me){const q=qsCfg();const opts=qsOptions(me);const lock=me.confirmed||me.dead;const a=S.sel.act||{};const mode=S.sel.gmode||'fight';
+  const cell=(v,i)=>{const o=v&&opts.find(x=>x.v===v);
+    if(!o)return `<button class="gqs-s empty" data-act="qs-edit" data-i="${i}" title="눌러서 스킬·아이템 지정"><span>+</span></button>`;
+    const [t,k]=v.split(':');let on=false,dis=lock,cnt='';
+    if(t==='sk'){const s=SKILLS[k];on=mode==='fight'&&a.kind==='skill'&&a.skill===k||(s.type==='addon'&&(a.addon===k||S.sel.addonArm===k));if(s.uses!=null){const u=usesLeft(me,k);cnt=`<i class="num">${u}</i>`;if(u<=0)dis=true;}}
+    else{const n=S.me.inv[k]||0;on=!!(S.sel.gitem&&S.sel.gitem.item===k);cnt=`<i class="num">${n}</i>`;if(!n)dis=true;}
+    return `<button class="gqs-s ${on?'on':''}" data-act="qs-use" data-i="${i}" ${dis?'disabled':''} title="${esc(o.name)}" aria-label="${esc(o.name)}"><img src="${o.img}" alt="">${cnt}<b>${i+1}</b></button>`;};
+  return `<div class="gqs ${q.dir==='v'?'v':'h'}"><span class="gqs-grip" title="끌어서 옮기기" aria-hidden="true">⋮⋮</span>${q.s.map(cell).join('')}${me.dead?'':(g=>`<button class="gqs-go ${g.on?'on':''}" ${g.on?g.attrs:'disabled'} title="행동 확정">확정</button>`)(gfGoInfo(b,me,mode))}<span class="gqs-tools"><button type="button" data-act="qs-dir" title="${q.dir==='v'?'가로로':'세로로'} 바꾸기" aria-label="배열 바꾸기">${q.dir==='v'?'↔':'↕'}</button><button type="button" data-act="qs-edit" data-i="0" title="퀵슬롯 구성" aria-label="퀵슬롯 구성">⚙</button></span></div>`;}
+function qsEditModal(focus){const b=S.battle;if(!b)return;const me=b.players.find(p=>p.isMe);const q=qsCfg();const opts=qsOptions(me);
+  modal(`<div class="row" style="justify-content:space-between"><h3>퀵슬롯 구성</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
+    <p class="faint" style="font-size:12px;margin:0 0 10px">칸마다 스킬이나 아이템을 고르세요. 퀵슬롯은 손잡이(⋮⋮)를 끌어 화면 어디로든 옮길 수 있습니다.</p>
+    ${q.s.map((v,i)=>`<div class="qs-row ${i===focus?'focus':''}"><b class="num">${i+1}</b><div class="qs-opts">${[{v:'',name:'비우기',img:''},...opts].map(o=>`<button type="button" class="qs-opt ${(v||'')===o.v?'on':''}" data-act="qs-set" data-i="${i}" data-v="${o.v}" title="${esc(o.name)}">${o.img?`<img src="${o.img}" alt="">`:'<span>✕</span>'}<small>${esc(o.name)}</small></button>`).join('')}</div></div>`).join('')}`);const mm=$('.modal');if(mm)mm.classList.add('wide','qs-modal');}
+(function(){if(typeof document==='undefined')return;let st=null;
+  document.addEventListener('pointerdown',e=>{const g=e.target.closest&&e.target.closest('.gqs-grip');if(!g)return;const w=document.getElementById('gf-qs'),host=w&&w.offsetParent;if(!w||!host)return;
+    const r=w.getBoundingClientRect(),h=host.getBoundingClientRect();st={dx:e.clientX-r.left,dy:e.clientY-r.top,h};e.preventDefault();try{g.setPointerCapture(e.pointerId);}catch(_){}});
+  document.addEventListener('pointermove',e=>{if(!st)return;const w=document.getElementById('gf-qs');if(!w)return;const h=st.h;
+    const x=Math.round(Math.max(0,Math.min(h.width-w.offsetWidth,e.clientX-h.left-st.dx))),y=Math.round(Math.max(0,Math.min(h.height-w.offsetHeight,e.clientY-h.top-st.dy)));
+    w.style.left=x+'px';w.style.top=y+'px';w.style.right='auto';w.style.bottom='auto';const q=qsCfg();q.x=x;q.y=y;});
+  const end=()=>{if(st){st=null;save();}};document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
+/* 만신전 PC: 대미지 순위(오른쪽 아래, 4위까지 + 내 순위, 접기) · 커맨드 창 투명도 */
+function gfRank(b){const L=b.players.slice().sort((x,y)=>(y.dealt||0)-(x.dealt||0)||x.name.localeCompare(y.name,'ko'));const fold=!!S.sel.rankFold;const mi=L.findIndex(p=>p.isMe);
+  const row=(p,i)=>`<li class="${p.isMe?'me':''} ${p.dead?'dead':''}"><span class="dr-n num">${i+1}</span><span class="dr-nm w-${p.role}">${esc(p.name)}</span><b class="num">${(p.dealt||0).toLocaleString('ko-KR')}</b></li>`;
+  return `<button type="button" class="gr-h" data-act="rank-fold" aria-expanded="${!fold}"><b>대미지 순위</b>${fold&&mi>=0?`<span class="num faint">내 순위 ${mi+1}위</span>`:''}<span class="gr-ar" aria-hidden="true">${fold?'▴':'▾'}</span></button>
+    ${fold?'':`<ol class="gr-list">${L.slice(0,4).map(row).join('')}${mi>=4?`<li class="gr-sep" aria-hidden="true"></li>${row(L[mi],mi)}`:''}</ol>`}`;}
+function hudOp(){const v=S.me&&S.me.hudOp;return typeof v==='number'&&v>=0.15&&v<=1?v:1;}
+(function(){if(typeof document==='undefined')return;
+  document.addEventListener('input',e=>{const r=e.target.closest&&e.target.closest('.hud-op input');if(!r)return;const v=Math.max(15,Math.min(100,+r.value))/100;S.me.hudOp=v;const pn=r.closest('.gf-act');if(pn)pn.style.setProperty('--hud-a',v);});
+  document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.hud-op input'))save();});})();
+/* 만신전 PC: 스킬 아이콘 설명은 화면 위에 떠 있는 상자로(커맨드 창 안 스크롤에 잘리지 않게) */
+(function(){if(typeof document==='undefined')return;let tip=null;
+  const hide=()=>{if(tip)tip.style.display='none';};
+  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.gfx .hud .sks');
+    if(!el||!matchMedia('(min-width:1101px)').matches){hide();return;}const src=el.querySelector('.sk-tip');if(!src){hide();return;}
+    if(!tip){tip=document.createElement('div');tip.id='gtip';tip.className='sk-tip';tip.setAttribute('role','tooltip');document.body.appendChild(tip);}
+    tip.innerHTML=src.innerHTML;tip.style.display='flex';const r=el.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
+    tip.style.left=Math.round(Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2)))+'px';tip.style.top=Math.round(Math.max(8,r.top-h-10))+'px';});
+  document.addEventListener('pointerdown',e=>{if(!(e.target.closest&&e.target.closest('.gfx .hud .sks')))hide();});
+  window.addEventListener('scroll',hide,true);})();
 function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
-  return `<div class="wrap page gfight"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
-    <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl"><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
-      <div class="panel gf-act" id="gf-act">${gfAct(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
+  return `<div class="wrap page gfight gfx"><div class="panel gf-top" id="gf-top">${gfTop(b)}</div><div id="gf-tel">${gfTel(b)}</div>
+    <div class="gf-grid"><div class="panel gf-map" id="gf-map">${gfMap(b,me)}</div><div class="panel gsub gf-sub" id="gf-sub">${gfSub(b,me)}</div><div class="panel gf-chat gf-cl" style="${GCL.w?`--gcl-w:${GCL.w}px;--gcl-h:${GCL.h}px`:''}"><span class="gcl-rz" aria-hidden="true" title="끌어서 크기 조절"></span><div class="mtabs gcl-tabs" role="tablist">${[['chat','채팅'],['log','전투 로그']].map(([k,l])=>`<button role="tab" data-act="g-cl" data-tab="${k}" aria-selected="${(S.sel.gcl||'chat')===k}">${l}</button>`).join('')}</div><div class="gcl-chat" ${(S.sel.gcl||'chat')==='chat'?'':'hidden'}>${chatPanel({lock:'raid'})}</div><div class="log" id="blog" ${(S.sel.gcl||'chat')==='log'?'':'hidden'}>${logHTML()}</div></div>
+      <div class="panel gf-act" style="--hud-a:${hudOp()}"><label class="hud-op" title="커맨드 창 투명도"><input type="range" min="15" max="100" step="5" value="${Math.round(hudOp()*100)}" aria-label="커맨드 창 투명도"></label><div id="gf-act">${gfAct(b,me)}</div></div><div class="panel gf-rank2" id="gf-rank2">${gfRank(b)}</div><div class="gqs-wrap" id="gf-qs" style="${qsPosStyle()}">${gfQs(b,me)}</div><div class="panel gf-rank" id="dmgrank">${dmgRank(b)}</div></div>
     </div>`;}
 
 /* ───────── 운영 · 만신전 ───────── */
@@ -814,13 +928,15 @@ function lockReason(q){
   const c=condReason(q);if(c)r.push(c);
   return r.join(' · ');
 }
+function eraseHTML(h){return h.replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>`<span class="qerase" aria-label="지워진 이름">${[...n].map((c,i)=>`<span style="--d:${i}">${c}</span>`).join('')}</span>`);}
 function qTextHTML(t){const m=/\s*\((탐색 › [^)]+)\)\s*$/.exec(t||'');const body=m?t.slice(0,m.index):t;
-  return `<p class="qtext">${esc(body)}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
+  return `<p class="qtext">${eraseHTML(esc(body))}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
 const QSTAT={hidden:['오늘 목록 아님','dim'],locked:['잠김','dim'],available:['수락 가능','ok'],active:['진행 중','warn'],claim:['보상 대기','warn'],done:['완료','dim'],doneToday:['오늘 완료','dim']};
 function choiceReason(c){
   const r=c.req;if(!r)return null;
   if(r.flag&&!S.flags[r.flag])return `필요한 기록: ${FLAG_NAMES[r.flag]||r.flag}`;
   if(r.level&&S.me.level<r.level)return `LV${r.level} 이상 필요`;
+  if(r.gold&&S.me.gold<r.gold)return `${r.gold.toLocaleString('ko-KR')}골드 필요 (보유 ${S.me.gold.toLocaleString('ko-KR')})`;
   if(r.item&&!(S.me.inv[r.item]>0))return `필요한 아이템: ${ITEMS[r.item]?ITEMS[r.item].name:r.item}`;
   if(r.items)for(const k in r.items){const have=S.me.inv[k]||0;if(have<r.items[k])return `필요한 아이템: ${ITEMS[k]?ITEMS[k].name:k} ${have}/${r.items[k]}`;}
   return null;

@@ -24,7 +24,7 @@ with sync_playwright() as p:
     cnt=pg.evaluate('__DB.content.length');ok(cnt>200,f'기본값 서버 업로드 {cnt}개')
     ok(pg.locator('.chip.ok').count()>0,'서버 공개 표시')
     # 몬스터 편집·공개
-    pg.click('.li[data-id="forest"]');pg.wait_for_selector('#c-json')
+    pg.click('.li[data-id="forest"]');pg.wait_for_selector('#c-json',state='attached');pg.evaluate("document.querySelectorAll('.codebox').forEach(d=>d.open=true)")
     d=json.loads(pg.input_value('#c-json'));d['hp']=999;pg.fill('#c-json',json.dumps(d,ensure_ascii=False))
     pg.click('#c-pub');pg.wait_for_timeout(300)
     body=pg.inner_text('#modal');ok('hp' in body,'공개 전 변경점(hp) 표시')
@@ -38,7 +38,7 @@ with sync_playwright() as p:
     # 잘못된 JSON
     pg.fill('#c-json','{"name": "x",, }');pg.click('#c-check');ok('JSON 형식' in pg.inner_text('#c-msg'),'잘못된 JSON 안내')
     # 퀘스트 검사 (게임 검사 함수)
-    pg.click('.kind[data-kind=quest]');pg.click('.li[data-id="E1"]');pg.wait_for_selector('#c-json')
+    pg.click('.kind[data-kind=quest]');pg.click('.li[data-id="E1"]');pg.wait_for_selector('#c-json',state='attached');pg.evaluate("document.querySelectorAll('.codebox').forEach(d=>d.open=true)")
     d=json.loads(pg.input_value('#c-json'));d['start']='nope';pg.fill('#c-json',json.dumps(d,ensure_ascii=False));pg.click('#c-check')
     msg=pg.inner_text('#c-msg');ok('문제' in msg,'퀘스트 검사로 잘못된 시작 단계 찾음: '+msg.split('\n')[1][:60] if '\n' in msg else msg[:80])
     # 초안
@@ -128,7 +128,7 @@ with sync_playwright() as p:
     m.goto(URL);m.wait_for_selector('.kind');m.screenshot(path=OUT+'/6-mobile-kinds.png')
     ok(not m.locator('.list-p').is_visible(),'휴대폰: 처음엔 종류만')
     m.click('.kind[data-kind=quest]');ok(m.locator('.list-p').is_visible() and not m.locator('.kinds-p').is_visible(),'휴대폰: 종류 → 목록')
-    m.click('.li[data-id="E1"]');m.wait_for_selector('#c-json');ok(not m.locator('.list-p').is_visible(),'휴대폰: 목록 → 편집기');m.screenshot(path=OUT+'/7-mobile-editor.png')
+    m.click('.li[data-id="E1"]');m.wait_for_selector('#c-json',state='attached');ok(not m.locator('.list-p').is_visible(),'휴대폰: 목록 → 편집기');m.screenshot(path=OUT+'/7-mobile-editor.png')
     sw=m.evaluate('document.documentElement.scrollWidth');ok(sw<=390,f'휴대폰 가로 넘침 없음 ({sw}px)')
     m.click('.ed .back');ok(m.locator('.list-p').is_visible(),'휴대폰: 뒤로')
     m.click('.tab[data-tab=players]');m.wait_for_selector('[data-save]');m.screenshot(path=OUT+'/8-mobile-players.png')

@@ -117,7 +117,7 @@ function boot(data){
   if(S.migratedFrom){const map={knight:'성역 기사',hunter:'혼돈 추적자',priest:'축복 사제'};setTimeout(()=>toast(`스킬 문서 기준으로 클래스가 바뀌었습니다: ${map[S.migratedFrom]||S.migratedFrom} → ${CLASSES[S.me.job].name}. 몬스터 수치도 새 기준으로 맞췄습니다.`,'good'),600);delete S.migratedFrom;save();}
   S.recruits.forEach(r=>{if(!r.name)r.name=partyName();});
   if(S.me&&S.recruits.length<4)for(let k=0;k<2;k++)S.data.monsters.filter(isGroupMon).forEach(m=>{if(S.recruits.length<5){const r=genRecruit(m);if(r)S.recruits.push(r);}});
-  if(S.me&&!S.testElixir){S.testElixir=true;S.me.inv.elixir=(S.me.inv.elixir||0)+2;S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.until>now()&&x.src!=='elixir');const T0=now()+60*60000;S.me.itemBuffs.push({src:'elixir',stat:'atk',val:8,until:T0},{src:'elixir',stat:'luk',val:4,until:T0});save();setTimeout(()=>toast('테스트 아이템 「용기의 영약」을 적용했습니다 · 60분 동안 공격력 +8, 행운 +4 (인벤토리 소모품에 2개 추가)','good'),900);}
+  /* (테스트 아이템 「용기의 영약」 자동 지급 삭제 2026-11-05) */
   render();
   setInterval(tick,250);
 }

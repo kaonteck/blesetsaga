@@ -102,7 +102,7 @@ function editorHTML(k,id){
     <div class="ed-grid">
       <div class="stack">
         ${dr?`<div class="msg warn">공개하지 않은 초안이 있습니다 (${ago(dr.updated_at)} ${who(dr.updated_by)}). 아래 편집기에는 초안이 열려 있습니다.</div>`:''}
-        <textarea class="code" id="c-json" spellcheck="false" aria-label="내용 (JSON)">${esc(pretty(cur))}</textarea>
+        ${formHTML(k,id,cur)}
         <div id="c-msg"></div>
         <div class="row">
           <button class="btn btn-p" id="c-pub">공개하기</button>
@@ -114,6 +114,10 @@ function editorHTML(k,id){
           ${def&&(srv||dr)?'<button class="btn btn-g" id="c-todef">기본값 불러오기</button>':''}
         </div>
         <p class="faint small" style="margin:0">공개하기 = 검사 → 서버에 저장 → 모든 유저에게 적용. 초안은 운영자에게만 보입니다. 이미 시작한 전투는 시작할 때의 값을 유지합니다.</p>
+        <details class="codebox" ${k==='setting'||C.codeOpen?'open':''}><summary>코드 보기 <span class="faint">(검사용 · 양식을 고치면 자동으로 채워짐)</span></summary>
+          <textarea class="code" id="c-json" spellcheck="false" aria-label="내용 (JSON)">${esc(pretty(cur))}</textarea>
+          ${k==='setting'?'':'<div class="row" style="margin-top:6px"><button class="btn btn-sm" id="c-tofm">코드를 양식에 반영</button><span class="faint small">코드를 직접 고쳤다면 눌러서 양식을 맞추세요.</span></div>'}
+        </details>
       </div>
       <div class="stack">
         <div class="panel" style="background:var(--slab-2)"><h3>공개 설정</h3>${srv?`
@@ -149,13 +153,15 @@ function bindContent(){
   // 탭 키로 들여쓰기
   ta.onkeydown=e=>{if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();const p=ta.selectionStart;ta.setRangeText('  ',p,ta.selectionEnd,'end');}};
   $('#c-fmt').onclick=()=>{const d=parseEditor();if(d)ta.value=pretty(d);};
+  const cbx=$('.codebox');if(cbx)cbx.ontoggle=()=>{if(k!=='setting')C.codeOpen=cbx.open;};
+  bindForm();const tf=$('#c-tofm');if(tf)tf.onclick=codeToForm;
   $('#c-check').onclick=()=>{const d=parseEditor();if(d)showCheck(checkData(k,id,d,liveAll(k)));};
   $('#c-draft').onclick=async()=>{const d=parseEditor();if(!d)return;
     if(await q(A.sb.from('content_drafts').upsert({kind:k,id,data:d}),'초안을 저장했습니다.')){await loadServerContent();drawContent();}};
   $('#c-pub').onclick=()=>publish(k,id);
   const dd=$('#c-dropdraft');if(dd)dd.onclick=async()=>{if(!await ask('초안 버리기','공개하지 않은 초안을 지웁니다. 서버에 공개된 값은 그대로입니다.','버리기',true))return;
     if(await q(A.sb.from('content_drafts').delete().match({kind:k,id}),'초안을 버렸습니다.')){await loadServerContent();drawContent();}};
-  const td=$('#c-todef');if(td)td.onclick=()=>{ta.value=pretty(DEF[k][id]);showCheck(null,'편집기에 코드 기본값을 불러왔습니다. 공개해야 적용됩니다.');};
+  const td=$('#c-todef');if(td)td.onclick=()=>{ta.value=pretty(DEF[k][id]);if(FM&&k!=='setting'){FM.d=clone(DEF[k][id]);redrawForm();}showCheck(null,'양식에 코드 기본값을 불러왔습니다. 공개해야 적용됩니다.');};
   const ss=$('#s-save');if(ss)ss.onclick=()=>saveSettings(k,id);
   const del=$('#c-del');if(del)del.onclick=()=>deleteItem(k,id);
   loadHistory(k,id);

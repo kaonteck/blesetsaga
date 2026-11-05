@@ -144,6 +144,41 @@ pre.json{font:12px/1.5 var(--f-code);background:var(--night);border:1px solid va
   .two,.sets{grid-template-columns:1fr}
   textarea.code{min-height:50vh}
 }
+
+/* 콘텐츠 양식 편집기 (a6-forms.js) */
+.fm{display:flex;flex-direction:column;gap:10px}
+.fm-sec{background:var(--slab-2);border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px}
+.fm-sec h4{margin:0 0 10px;font-size:13px;color:var(--gold-hi);font-weight:600;display:flex;align-items:center;gap:6px}
+.fm-sec.scene.battle{border-left:3px solid var(--bad)}.fm-sec.scene.end{border-left:3px solid var(--ok)}
+.sc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}.sc-h h4{margin:0}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;align-items:start}
+.fgrid .wide,.fm .f.wide{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+.f .fl{font-size:12px;color:var(--muted)}
+.f small{font-size:11px}
+.f textarea{resize:vertical;font:13px/1.5 var(--f-sys)}
+textarea.code.sm{min-height:0;font-size:12px}
+.f input.bad,.f textarea.bad{border-color:var(--bad)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.sg{padding:5px 11px;border-radius:999px;border:1px solid var(--rule-2);background:var(--night);color:var(--muted);cursor:pointer;font-size:12.5px}
+.sg:hover{color:var(--text)}.sg[aria-checked=true]{background:var(--gold);border-color:var(--gold);color:#17140d;font-weight:600}
+.cb{position:relative}.cb-id{font-size:11px;margin-left:2px}
+.cb-list{position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:30;max-height:260px;overflow:auto;background:var(--slab);border:1px solid var(--rule-2);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.cb-o{display:flex;flex-direction:column;align-items:flex-start;width:100%;padding:6px 10px;background:none;border:0;border-bottom:1px solid var(--rule);text-align:left;cursor:pointer;color:var(--text)}
+.cb-o b{font-weight:500;font-size:13px}.cb-o small{font-size:11px}
+.cb-o:hover,.cb-o.hi{background:var(--slab-3)}
+.tg{border:1px dashed var(--rule-2);border-radius:var(--r);padding:7px 10px}.tg.on{border-style:solid;background:var(--slab)}
+.tg-h{font-weight:600;color:var(--text)}.tg-b{margin-top:8px}
+.chs{display:flex;flex-direction:column;gap:8px;margin:10px 0 8px}
+.ch{border:1px solid var(--rule);border-radius:var(--r);padding:10px;background:var(--slab)}
+.ch-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.ch-h b{font-size:12.5px;color:var(--silver)}.ch-h .btn{margin-left:auto}
+.ir{margin-bottom:4px}.nsm{width:80px!important;flex:none}
+.chip .x{background:none;border:0;color:inherit;cursor:pointer;padding:0 0 0 2px}
+.mon-info{margin:0;padding:6px 8px;background:var(--night);border-radius:var(--r)}
+.codebox{border:1px solid var(--rule);border-radius:var(--r);padding:8px 10px;background:var(--slab-2)}
+.codebox summary{cursor:pointer;font-size:12.5px;color:var(--gold-hi)}
+.codebox textarea.code{margin-top:8px;min-height:240px}
+@media (max-width:720px){.fgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -155,6 +190,7 @@ pre.json{font:12px/1.5 var(--f-code);background:var(--night);border:1px solid va
 <script src="js/admin/a1-core.js"></script>
 <script src="js/admin/a2-defaults.js"></script>
 <script src="js/admin/a3-content.js"></script>
+<script src="js/admin/a6-forms.js"></script>
 <script src="js/admin/a4-ops.js"></script>
 <script src="js/admin/a5-start.js"></script>
 </body>

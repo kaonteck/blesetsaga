@@ -92,10 +92,9 @@ const ACTS={
   'rn-start':()=>{if(busyReason()){toast(busyReason()+' · 끝난 뒤 이름을 바꿀 수 있습니다.','warn');return;}S.sel.nameEdit=true;render();const i=$('#rn-name');if(i){i.focus();i.select();}},
   'rn-cancel':()=>{S.sel.nameEdit=false;render();},
   'adv-open':()=>{const c=CLASSES[S.me.job];if(c.tier===1){const id='J_'+S.me.job;const q=quest(id);if(q){if(questStatus(q)==='available'){S.qp[id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();toast(`퀘스트 수락 · ${q.title}`);}go('quest',{quest:id,qtab:q.cat});return;}}S.sel.advPick=null;modal(`<div class="row" style="justify-content:space-between"><h3>전직</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>${advPanel()}`);const mm=$('.modal');if(mm)mm.classList.add('wide');},
-  'jc-pick':d=>jobTicketUse(d.job),
   'adv-go':()=>{modal('');ACTS['adv-open']();},
   'bless-pick':d=>{const b=S.battle;if(!b||!b.bless||b.bless.pick||!b.bless.me)return;S.sel.blessOpen=+d.i;applyBless(b,b.bless.cards[+d.i]);save();render();showBless(true);},
-  'inv-use':d=>{const it=ITEMS[d.id];if(it&&it.jobChange){if(!(S.me.inv[d.id]>0))return;modal(jobTicketDlg());const mm=$('.modal');if(mm)mm.classList.add('wide');return;}if(it&&it.readText){modal(`<div class="letter"><div class="lt-paper"><small>${esc(it.name)}</small><p style="white-space:pre-line">${esc(it.readText)}</p></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);return;}if(it&&it.letter){if(!(S.me.inv[d.id]>0))return;S.me.inv[d.id]--;if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();modal(`<div class="letter"><div class="lt-paper"><small>병 속의 편지</small><p>${esc(pick(BOTTLE_LINES))}</p></div><p class="faint" style="font-size:12px;text-align:center">편지를 읽자 종이가 바스러져 바람에 흩어졌다.</p><div class="row" style="justify-content:center"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);const mm=$('.modal');if(mm)mm.classList.add('narrow2');setTimeout(()=>{const p=$('.lt-paper');if(p)p.classList.add('fade');},4500);setTimeout(()=>{if($('.lt-paper'))modal('');},6000);return;}if(!it||!it.buff||!(S.me.inv[d.id]>0))return;{const bl=itemBlock(d.id);if(bl){toast(bl,'warn');return;}}S.me.inv[d.id]--;const b=it.buff;S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.until>now()&&x.src!==d.id);
+  'inv-use':d=>{const it=ITEMS[d.id];if(it&&it.viewer&&S.me.inv[d.id]>0&&typeof openViewer==='function'){openViewer(it.viewer);return;}if(it&&it.readText){modal(`<div class="letter"><div class="lt-paper"><small>${esc(it.name)}</small><p style="white-space:pre-line">${esc(it.readText)}</p></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);if(d.id==='j2052'&&S.flags&&S.flags.ch7_clear){const mm=$('.modal');if(mm)mm.insertAdjacentHTML('beforeend','<i class="q-amb" data-amb="hearth" hidden></i>');}return;}if(it&&it.letter){if(!(S.me.inv[d.id]>0))return;S.me.inv[d.id]--;if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();modal(`<div class="letter"><div class="lt-paper"><small>병 속의 편지</small><p>${esc(pick(BOTTLE_LINES))}</p></div><p class="faint" style="font-size:12px;text-align:center">편지를 읽자 종이가 바스러져 바람에 흩어졌다.</p><div class="row" style="justify-content:center"><button class="btn btn-sm" data-act="closemodal">닫기</button></div></div>`);const mm=$('.modal');if(mm)mm.classList.add('narrow2');setTimeout(()=>{const p=$('.lt-paper');if(p)p.classList.add('fade');},4500);setTimeout(()=>{if($('.lt-paper'))modal('');},6000);return;}if(!it||!it.buff||!(S.me.inv[d.id]>0))return;{const bl=itemBlock(d.id);if(bl){toast(bl,'warn');return;}}S.me.inv[d.id]--;const b=it.buff;S.me.itemBuffs=(S.me.itemBuffs||[]).filter(x=>x.until>now()&&x.src!==d.id);
     S.me.itemBuffs.push({src:d.id,stat:b.stat,val:b.val,until:now()+b.min*60000});if(it.buff2)S.me.itemBuffs.push({src:d.id,stat:it.buff2.stat,val:it.buff2.val,until:now()+it.buff2.min*60000});if(!(S.me.inv[d.id]>0))S.sel.invSel=null;save();render();toast(`${it.name} 사용 · ${b.min}분 동안 ${STATK[b.stat]} +${b.val}${it.buff2?` · ${STATK[it.buff2.stat]} +${it.buff2.val}`:''}`,'good');},
   'sk-sel':d=>{S.sel.skSel=S.sel.skSel===d.id?null:d.id;render();},
   'inv-cat':d=>{S.sel.invCat=d.cat;S.sel.invSel=null;render();},
@@ -133,7 +132,7 @@ const ACTS={
     save();openEnh(id,ok?'ok':'fail');},
   'mk-tab':d=>{S.sel.mkTab=d.tab;render();},
   'mk-buy':d=>{const x=market().find(y=>y.id===d.id);if(!x||!ITEMS[x.item]||ITEMS[x.item].off)return;if(x.stock===0){toast('품절되었습니다.','warn');return;}if(S.me.gold<x.price){toast('골드가 부족합니다.','warn');return;}
-    if(ITEMS[x.item].maxOwn&&(S.me.inv[x.item]||0)>=ITEMS[x.item].maxOwn){toast(`${ITEMS[x.item].name}은(는) 1인 최대 ${ITEMS[x.item].maxOwn}개까지 가질 수 있습니다.`,'warn');return;}S.me.gold-=x.price;if(x.stock!=null)x.stock--;addItem(x.item,1);bump('goldSpent',x.price);bump('purchases');noteItems({[x.item]:1});
+    if(itemRoom(x.item)<1){toast(capMsg(x.item),'warn');return;}S.me.gold-=x.price;if(x.stock!=null)x.stock--;addItem(x.item,1);bump('goldSpent',x.price);bump('purchases');noteItems({[x.item]:1});
     (S.trades=S.trades||[]).unshift({ts:now(),kind:'buy',item:x.item,gold:-x.price});rec('market',`${ITEMS[x.item].name} 구매`,`-${x.price}골드`);save();render();toast(`${ITEMS[x.item].name} 구매 · ${x.price}골드`,'good');},
   'mk-sell':d=>{const k=d.id;if(isQuestItem(k)){toast('퀘스트 아이템은 팔 수 없습니다.','warn');return;}if(availItem(k)<1){toast('팔 수 있는 수량이 없습니다.','warn');return;}const g=sellPrice(k);S.me.inv[k]--;if(!(S.me.inv[k]>0)&&S.me.enh)delete S.me.enh[k];
     S.me.gold+=g;bump('goldEarned',g);(S.trades=S.trades||[]).unshift({ts:now(),kind:'sell',item:k,gold:g});rec('market',`${ITEMS[k].name} 판매`,`+${g}골드`);save();render();toast(`${ITEMS[k].name} 판매 · +${g}골드`,'good');},
@@ -153,9 +152,9 @@ const ACTS={
   'mail-back':()=>{S.sel.mailView=null;renderPop();},
   'mail-compose':()=>{S.sel.mc={to:'',text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();},
   'mail-reply':d=>{S.sel.mc={to:d.to,text:'',items:{},gift:false};S.sel.mailView='compose';renderPop();const t=$('#mc-text');if(t)t.focus();},
-  'mail-claim':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m||m.claimed||!hasItems(m))return;m.claimed=true;for(const k in m.items)if(ITEMS[k]&&ITEMS[k].type==='deco')noteDeco(k,{t:'gift',v:m.from});for(const k in m.items){if(k==='_gold'){S.me.gold+=m.items[k];bump('goldEarned',m.items[k]);continue;}addItem(k,m.items[k]);}{const it={...m.items};delete it._gold;noteItems(it);}
+  'mail-claim':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m||m.claimed||!hasItems(m))return;{const w=mailOver(m);if(w){toast(w,'warn');return;}}m.claimed=true;for(const k in m.items)if(ITEMS[k]&&ITEMS[k].type==='deco')noteDeco(k,{t:'gift',v:m.from});for(const k in m.items){if(k==='_gold'){S.me.gold+=m.items[k];bump('goldEarned',m.items[k]);continue;}addItem(k,m.items[k]);}{const it={...m.items};delete it._gold;noteItems(it);}
     S.rewardLog.unshift({ts:now(),source:'mail',label:`${m.from}의 선물`,exp:0,gold:0,items:{...m.items}});rec('mail',`${m.from}의 선물 받음`,itemsText(m.items));save();renderPop();toast(`선물을 받았습니다 · ${itemsText(m.items)}`,'good');},
-  'mail-archive':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;if(!m.archived&&S.mail.filter(x=>x.archived).length>=10){toast('보관함은 최대 10개까지입니다. 보관한 메시지를 먼저 정리하세요.','warn');return;}
+  'mail-archive':d=>{const m=S.mail.find(x=>x.id===d.id);if(!m)return;if(m.noArchive){toast('보관할 수 없는 메시지입니다.','warn');return;}if(!m.archived&&S.mail.filter(x=>x.archived).length>=10){toast('보관함은 최대 10개까지입니다. 보관한 메시지를 먼저 정리하세요.','warn');return;}
     m.archived=!m.archived;m.archivedAt=m.archived?now():null;S.sel.mailView=null;S.sel.mailTab=m.archived?'archive':'all';save();renderPop();toast(m.archived?'보관함으로 옮겼습니다.':'보관을 해제했습니다.');},
   'm-pickon':()=>{S.sel.mpick=true;S.sel.msel=[];renderPop();},
   'm-pickoff':()=>{S.sel.mpick=false;S.sel.msel=[];renderPop();},
@@ -217,7 +216,7 @@ const ACTS={
     if(S.reports.some(r=>r.msgId===m.id)){toast('이미 신고한 메시지입니다.');return;}S.reports.unshift({id:uid('r'),msgId:m.id,from:m.from,text:m.text,ts:now(),done:false});save();toast('신고를 접수했습니다. 운영자가 확인합니다.');},
   openquest:d=>{const q=quest(d.id);go('quest',{quest:d.id,qtab:q?q.cat:(S.sel.qtab||'epic')});},
   qtab:d=>{S.sel.qtab=d.tab;S.sel.quest=null;save();render();},
-  qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});},
+  qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});if(S.battle&&typeof storyBattleFx==='function')storyBattleFx(S.battle);if(st.noCharmFlag&&S.flags[st.noCharmFlag]&&S.battle){S.battle.noCharm=true;S.battle.log.push({t:'sys',text:'밀랍 귀마개 · 노래가 먹먹하게 들린다 (매혹에 걸리지 않음)'});if(typeof renderFight==='function')renderFight();}},
   rtab:d=>{S.sel.rtab=d.tab;S.sel.monster=null;save();render();},
   dtarget:d=>{S.sel.dtarget=d.v;S.sel.dtargets={};render();},
   dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
@@ -257,7 +256,7 @@ const ACTS={
   'cf-tab':d=>{openCraft(d.kind,d.tab);},
   'pq-next':d=>{const k=d.kind;const p=prof(k);if(p.done)return;if(!prof(k).rank&&profCount()>=2){toast('장인 직업은 최대 2개까지만 가질 수 있습니다.','warn');return;}const st=PROF_Q[k][p.ch].steps[p.step];
     if(st[0]==='gather'){if(!hasMats(st[1]))return;for(const m in st[1])takeMat(m,st[1][m]);}else if(st[0]!=='text')return;pqAdvance(k);openCraft(k,'make');render();openCraft(k,'make');},
-  'cj-start':d=>{const k=d.kind;const r=recipe(k,d.id);const p=prof(k);if(!r||!p.rank||p.rank>r.grade||cjobs()[k]||!hasMats(r.mats))return;
+  'cj-start':d=>{const k=d.kind;const r=recipe(k,d.id);const p=prof(k);if(!r||!p.rank||p.rank>r.grade||cjobs()[k]||!hasMats(r.mats))return;if(itemRoom(r.out)<r.n){toast(`${capMsg(r.out)} 만들기 전에 정리해 주세요.`,'warn');return;}
     for(const m in r.mats)takeMat(m,r.mats[m]);cjobs()[k]={fail:guildRain(k)&&Math.random()<RAIN_FAIL,rid:r.id,out:r.out,n:r.n,label:ITEMS[r.out].name+(r.n>1?' ×'+r.n:''),start:now(),end:now()+r.min*60000};save();render();openCraft(k,'make');toast(`${ITEMS[r.out].name} ${PROF[k].n}을(를) 시작했습니다 · ${durLabel2(r.min)}`);},
   'cj-repair':d=>{const id=d.id;const miss=DURA_MAX-dura(id);const cost=repairCost(id,miss);if(!miss||S.me.gold<cost)return;S.me.gold-=cost;S.me.dura=S.me.dura||{};S.me.dura[id]=DURA_MAX;save();render();openCraft('craft','repair');toast(`${ITEMS[id].name} 수리 완료 · 내구도 ${DURA_MAX}/${DURA_MAX}`,'good');},
   'toast-x':(d,el)=>{const t=el&&el.closest&&el.closest('.toast');if(t)t.remove();},
@@ -265,7 +264,7 @@ const ACTS={
   'eq-now':(d,el)=>{if(el&&el.closest){const t=el.closest('.toast');if(t)t.remove();}ACTS.equip({id:d.id});},
   'ng-raid':d=>go('battle',{rtab:d.tab||'daily',monster:null}),
   'cj-haste':d=>{const j=cjobs()[d.slot];const it=ITEMS[d.id];if(!j||!it||!it.haste||!(S.me.inv[d.id]>0)||now()>=j.end)return;S.me.inv[d.id]--;j.end=Math.max(now(),j.end-it.haste*60000);save();render();openCraft(d.slot==='repair'?'craft':d.slot,d.slot==='repair'?'repair':'make');toast(`${it.name} 사용 · 남은 시간 -${durLabel2(it.haste)}`);},
-  'cj-claim':d=>{const J=cjobs();const j=J[d.slot];if(!j||now()<j.end)return;J[d.slot]=null;
+  'cj-claim':d=>{const J=cjobs();const j=J[d.slot];if(!j||now()<j.end)return;if(!j.repair&&!j.fail&&ITEMS[j.out]&&itemRoom(j.out)<j.n){toast(`${capMsg(j.out)} 공간을 비운 뒤 받아 주세요.`,'warn');return;}J[d.slot]=null;
     if(j.repair){S.me.dura=S.me.dura||{};S.me.dura[j.repair]=DURA_MAX;toast(`${ITEMS[j.repair].name} 수리 완료 · 내구도 ${DURA_MAX}/${DURA_MAX}`,'good');save();render();openCraft('craft','repair');return;}
     if(j.fail){save();render();openCraft(d.slot,'make');toast(`손이 미끄러져 ${ITEMS[j.out].name} ${PROF[d.slot].n}에 실패했습니다… (비 · 길드 본진 미끄러짐)`,'warn');return;}
     bump('crafts');
@@ -286,7 +285,7 @@ const ACTS={
   'net-open':d=>{modal(netDlg(+d.i));const mm=$('.modal');if(mm)mm.classList.add('narrow2');},
   'net-do':d=>{const N=net();const i=+d.i;const c=N[i];if(!c)return;const nm=fishName(c);
     if(d.v==='keep'){if(aqua().length>=AQUA_MAX){toast('수족관이 가득 찼습니다.','warn');return;}aqua().push(c);toast(`${nm}을(를) 수족관에 보관했습니다.`,'good');}
-    else if(d.v==='cut'){const n=fillets(c);addItem('fl_'+c.sp,n);toast(`${nm}을(를) 손질했습니다 · 손질한 ${nm} ×${n}`,'good');}
+    else if(d.v==='cut'){const n=fillets(c);if(itemRoom('fl_'+c.sp)<n){toast(capMsg('fl_'+c.sp),'warn');return;}addItem('fl_'+c.sp,n);toast(`${nm}을(를) 손질했습니다 · 손질한 ${nm} ×${n}`,'good');}
     else toast(`${nm}을(를) 물로 돌려보냈습니다.`);
     N.splice(i,1);save();render();if(N.length){modal(netListDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');}else modal('');},
   'aq-release':d=>{const A=aqua();const c=A[+d.i];if(!c)return;A.splice(+d.i,1);save();render();toast(`${fishName(c)}을(를) 방생했습니다.`);},
@@ -307,7 +306,7 @@ const ACTS={
   'lotto-pick':d=>{const n=+d.n;let a=S.sel.lotPick||[];a=a.includes(n)?a.filter(x=>x!==n):a.length>=4?a:[...a,n];S.sel.lotPick=a;openLotto();},
   'lotto-auto':()=>{const a=[0,1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-.5).slice(0,4);S.sel.lotPick=a;openLotto();},
   'lotto-buy':()=>{const I=lottoInfo();const a=(S.sel.lotPick||[]).slice().sort((x,y)=>x-y);if(a.length!==4||!I.open||I.mine.length>=LOTTO_MAX||S.me.gold<LOTTO_PRICE)return;
-    S.me.gold-=LOTTO_PRICE;bump('goldSpent',LOTTO_PRICE);bump('casinoSpent',LOTTO_PRICE);S.me.lotto.push({id:uid('lt'),nums:a,draw:I.nd.key,at:I.nd.at,claimed:false,ts:now()});S.sel.lotPick=[];save();render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');},
+    S.me.gold-=LOTTO_PRICE;bump('goldSpent',LOTTO_PRICE);bump('casinoSpent',LOTTO_PRICE);bump('lottoBuy');S.me.lotto.push({id:uid('lt'),nums:a,draw:I.nd.key,at:I.nd.at,claimed:false,ts:now()});S.sel.lotPick=[];save();render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');},
   'lotto-claim':d=>{const x=(S.me.lotto||[]).find(y=>y.id===d.id);if(!x||x.claimed||now()<x.at)return;const rk=lottoRank(x.nums,drawNums(x.draw));x.claimed=true;if(rk){const g=LOTTO_PRIZE[rk];S.me.gold+=g;bump('goldEarned',g);if(rk===1)bump('lotto1');toast(`주간 행운권 ${rk}등 당첨! ${g.toLocaleString('ko-KR')}골드`,'good');}else toast('아쉽게도 낙첨입니다.');save();render();openLotto();},
   'fish-rank':d=>{modal(fishRankDlg(d.land));const mm=$('.modal');if(mm)mm.classList.add('narrow2');},
   'comm-do':d=>{const B=commBoard();const x=B.list.find(y=>y.id===d.id);if(!x||x.done||(S.me.inv[x.item]||0)<x.n)return;S.me.inv[x.item]-=x.n;x.done=true;const g=Math.round(x.gold*(prof(x.kind).rank?1.2:1));S.me.gold+=g;bump('goldEarned',g);bump('commissions');save();render();toast(`${x.from} 의뢰 납품 · ${g.toLocaleString('ko-KR')}골드`,'good');},
@@ -315,7 +314,7 @@ const ACTS={
   'wm-claim':d=>{const W=weeklyM();const {def,cur}=wmProg(W,d.k);if(W.claimed[d.k]||cur<def[2])return;W.claimed[d.k]=true;grant({exp:def[3].exp,gold:def[3].gold,items:{}},'quest',{label:'주간 미션'});save();render();toast(`주간 미션 완료 · ${def[3].gold}골드 · EXP ${def[3].exp}`,'good');},
   'wm-bonus':()=>{const W=weeklyM();if(W.bonus||!W.keys.every(k=>wmProg(W,k).cur>=wmProg(W,k).def[2]))return;W.bonus=true;grant({exp:WM_BONUS.exp,gold:WM_BONUS.gold,items:{}},'quest',{label:'주간 미션 보너스'});save();render();toast('주간 미션을 모두 완료했습니다!','good');},
   'cshop-open':()=>{modal(casinoShopDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');},
-  'cshop-buy':d=>{const x=CASINO_SHOP.find(y=>y.id===d.id);const B=S.me.casinoBuy=S.me.casinoBuy||{};if(!x||(x.once&&B[x.id])||S.me.gold<x.price)return;S.me.gold-=x.price;bump('goldSpent',x.price);bump('casinoSpent',x.price);B[x.id]=(B[x.id]||0)+1;addItem(x.item,1);noteDeco(x.item,{t:'place',v:'골든 오아시스 상점'});save();render();modal(casinoShopDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');toast(`${ITEMS[x.item].name} 구매 완료`,'good');},
+  'cshop-buy':d=>{const x=CASINO_SHOP.find(y=>y.id===d.id);const B=S.me.casinoBuy=S.me.casinoBuy||{};if(!x||(x.once&&B[x.id])||S.me.gold<x.price)return;if(itemRoom(x.item)<1){toast(capMsg(x.item),'warn');return;}S.me.gold-=x.price;bump('goldSpent',x.price);bump('casinoSpent',x.price);B[x.id]=(B[x.id]||0)+1;addItem(x.item,1);noteDeco(x.item,{t:'place',v:'골든 오아시스 상점'});save();render();modal(casinoShopDlg());const mm=$('.modal');if(mm)mm.classList.add('craftm');toast(`${ITEMS[x.item].name} 구매 완료`,'good');},
   'fd-like':d=>{const o=fdFind(d.k,d.id);if(!o)return;const i=o.likes.indexOf(S.me.name);if(i>=0)o.likes.splice(i,1);else o.likes.push(S.me.name);save();render();},
   'fd-reply':d=>{S.sel.fdReply=S.sel.fdReply===d.id?null:d.id;S.sel.emoFor=null;render();const i=$('#fdi-'+d.id);if(i)i.focus();},
   'fd-more':d=>{S.sel.fdOpen=S.sel.fdOpen||{};S.sel.fdOpen[d.id]=true;render();},
@@ -334,14 +333,15 @@ const ACTS={
   qgrp:d=>{S.sel.qgrp=S.sel.qgrp||{};const O=S.sel.qgrp;O[d.k]=!(d.k in O?O[d.k]:d.def==='1');render();},
   qfold:d=>{S.sel.qfold=S.sel.qfold||{};S.sel.qfold[d.cat]=!S.sel.qfold[d.cat];render();},
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();toast(`퀘스트 수락 · ${q.title}`);},
-  chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;qp.pending=+d.i;save();render();},
-  nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))){qp.pending=null;render();return;}
-    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.advTo)doAdvance(c.advTo);
+  chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;if(c.glitch){qp.pending=null;logoutGlitch();return;}if(c.reply){replyDlg(q.id,+d.i);return;}qp.pending=+d.i;save();render();},
+  nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))||(c.takeGold&&S.me.gold<c.takeGold)){qp.pending=null;render();return;}
+    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.unflag){delete S.flags[c.unflag];qp.flagsSet=qp.flagsSet.filter(f=>f!==c.unflag);}if(c.advTo)doAdvance(c.advTo);
     if(c.take){for(const k in c.take){S.me.inv[k]-=c.take[k];if(S.me.inv[k]<=0)delete S.me.inv[k];}}
+    if(c.takeGold){S.me.gold-=c.takeGold;bump('goldSpent',c.takeGold);}
     qp.step=c.next;qp.pending=null;save();render();},
   claimq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];if(!step||!step.end)return;const key=claimKey(q,qp);
     if(S.claimedQ[key]){qp.status='done';save();render();toast('이미 받은 보상입니다.','warn');return;}
-    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');const RW=clone(qReward(q,step.reward));grant(RW,'quest',{questId:q.id,label:q.title,path:step.text});
+    S.claimedQ[key]=true;qp.status='done';bump('quests');if(q.id==='E19'){S.sel.nameGlx=now()+1100;setTimeout(()=>{if(S.route!=='battle')render();},1200);}if(typeof storyClaimFx==='function')storyClaimFx(q.id);if(q.id==='D_THEFT'){S.me.justice=(S.me.justice||0)+1;if(S.me.inv.q_wallet)delete S.me.inv.q_wallet;setTimeout(checkTitles,0);}if(q.repeat)bump('dailies');const RW=clone(qReward(q,step.reward));grant(RW,'quest',{questId:q.id,label:q.title,path:step.text});
     save();render();toast(`보상 수령 · EXP ${RW.exp||0} · ${RW.gold||0}골드${itemsText(RW.items)?' · '+itemsText(RW.items):''}`,'good');},
   abandonq:d=>{const qp=S.qp[d.id];if(!qp)return;(qp.flagsSet||[]).forEach(f=>{const still=Object.entries(S.qp).some(([id,x])=>id!==d.id&&x.status==='done'&&(x.flagsSet||[]).includes(f));if(!still)delete S.flags[f];});delete S.qp[d.id];save();render();toast('퀘스트를 포기했습니다. 다시 수락할 수 있습니다.');},
   backmon:()=>{const m=monster(S.sel.monster);S.sel.monster=null;go('battle',{rtab:m&&mkind(m)==='weekly'?'weekly':m&&mkind(m)==='event'?'event':m&&mkind(m)==='dungeon'?'dungeon':'daily'});},
@@ -379,11 +379,12 @@ const ACTS={
     if(a.item==='potion')a.target=(b.players.find(p=>p.isMe)||{}).id;
     if(s&&['ally','dead'].includes(s.target)){const ok=prev.target&&b.players.find(p=>p.id===prev.target&&(s&&s.target==='dead'?p.dead:!p.dead));a.target=ok?prev.target:null;if(s&&s.target==='dead'&&!a.target){const dd=b.players.find(p=>p.dead);if(dd)a.target=dd.id;}}
     if(!d.second&&prev.addon&&s&&s.type==='dice'){const ad=SKILLS[prev.addon];if(!ad.with||ad.with.includes(a.skill))a.addon=prev.addon;}
-    if(!d.second&&!b.grid&&S.sel.addonArm&&s&&s.type==='dice'){const ad=SKILLS[S.sel.addonArm];if(ad&&(!ad.with||ad.with.includes(a.skill)))a.addon=S.sel.addonArm;}
-    S.sel[key]=a;if(!b.grid&&autoConfirm())return;renderFight();},
-  pickaddon:d=>{const b=S.battle;const a=S.sel.act;if(b&&!b.grid){S.sel.addonArm=S.sel.addonArm===d.skill?null:d.skill;if(a&&a.kind==='skill')a.addon=null;renderFight();return;}if(!a||a.kind!=='skill')return;a.addon=a.addon===d.skill?null:d.skill;renderFight();},
+    if(!d.second&&S.sel.addonArm&&s&&s.type==='dice'){const ad=SKILLS[S.sel.addonArm];if(ad&&(!ad.with||ad.with.includes(a.skill)))a.addon=S.sel.addonArm;}
+    S.sel[key]=a;addonSane(b.players.find(p=>p.isMe));if(!b.grid&&autoConfirm())return;renderFight();},
+  pickaddon:d=>{const b=S.battle;const a=S.sel.act;if(b&&!b.grid){S.sel.addonArm=S.sel.addonArm===d.skill?null:d.skill;if(a&&a.kind==='skill')a.addon=null;renderFight();return;}const ad=SKILLS[d.skill];const fits=a&&a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice'&&(!ad.with||ad.with.includes(a.skill));
+    const on=!(a&&a.addon===d.skill)&&S.sel.addonArm!==d.skill;S.sel.addonArm=on?d.skill:null;if(a&&a.kind==='skill')a.addon=on&&fits?d.skill:null;renderFight();},
   picktarget:d=>{const key=d.second?'act2':'act';if(S.sel[key])S.sel[key].target=d.id;const b=S.battle;if(b&&!b.grid&&autoConfirm())return;renderFight();},
-  confirmact:()=>{const b=S.battle;if(!b||b.over)return;const me=b.players.find(p=>p.isMe);const a={...S.sel.act};if(!a.addon)delete a.addon;
+  confirmact:()=>{const b=S.battle;if(!b||b.over)return;const me=b.players.find(p=>p.isMe);addonSane(me);const a={...S.sel.act};if(!a.addon)delete a.addon;
     const err=checkAct(b,me,a,hooks.hasItem);if(err){toast(err,'warn');return;}
     let a2=null;if(canDouble(me,b)&&S.sel.act2){a2={...S.sel.act2};const e2=checkAct(b,me,a2,hooks.hasItem,a);if(e2){toast('연사 추가 행동: '+e2,'warn');return;}}
     me.action=a;me.action2=a2;if(b.grid)me.itemAct=gItemAct(b,me);me.confirmed=true;save();renderFight();},
@@ -391,7 +392,7 @@ const ACTS={
   editact:()=>{const b=S.battle;const me=b.players.find(p=>p.isMe);if(b.over)return;me.confirmed=false;b.allAt=null;const a=me.action;
     if(b.grid){S.sel.gmode=a&&a.kind==='move'?'move':a&&a.kind==='wait'?'wait':'fight';S.sel.gcell=a&&a.kind==='move'?a.to:null;S.sel.gitem=me.itemAct||null;me.itemAct=null;S.sel.act=a&&['skill','defend'].includes(a.kind)?a:{kind:'skill',skill:basicSkill(me.job)};}
     else S.sel.act=a||{kind:'skill',skill:basicSkill(me.job)};S.sel.act2=me.action2;me.action2=null;renderFight();},
-  'g-mode':d=>{S.sel.gmode=d.mode;renderFight();},
+  'g-mode':d=>{const pm=S.sel.gmode||'fight';if(pm!==d.mode)gmAnimMark(pm,d.mode);S.sel.gmode=d.mode;if(d.mode==='defend')S.sel.act={kind:'defend'};else if(d.mode==='fight'&&S.sel.act&&S.sel.act.kind==='defend')S.sel.act=null;renderFight();},
   'g-cl':d=>{S.sel.gcl=d.tab;$$('.gcl-tabs [data-act="g-cl"]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===d.tab)));const c=$('.gcl-chat'),l=$('#blog');if(c)c.hidden=d.tab!=='chat';if(l){l.hidden=d.tab!=='log';l.scrollTop=l.scrollHeight;}},
   'g-log':(d,el)=>{S.sel.glog=!S.sel.glog;const lg=$('#blog');if(lg){lg.hidden=!S.sel.glog;lg.scrollTop=lg.scrollHeight;}if(el)el.setAttribute('aria-expanded',String(!!S.sel.glog));},
   'g-tok':d=>{S.sel.gtok=S.sel.gtok===d.id||!d.id?null:d.id;renderFight();},
@@ -411,6 +412,27 @@ const ACTS={
     if(!(C.gatherMinutes>=1&&C.battleMinutes>=1&&C.turnSeconds>=10))e.push('시간 값');if(e.length){toast('규칙 오류: '+e.join(' · '),'bad');return;}
     logChange('만신전 규칙',diff(massCfg(),C).map(x=>({...x,before:short(x.before),after:short(x.after)})));S.data.mass=C;save();render();toast('공통 규칙을 저장했습니다.','good');},
   'g-cell':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;S.sel.gtok=null;const me=b.players.find(p=>p.isMe);if(me.confirmed||me.dead)return;const i=+d.i;if((S.sel.gmode||'fight')!=='move'){S.sel.gmode='move';}if(canMoveTo(b,me,i))S.sel.gcell=i;else toast(cellCount(b,i,me)>=CELL_CAP?'이 칸은 정원(2명)이 찼습니다.':'이동 범위 밖입니다.','warn');renderFight();},
+  'walk-step':d=>{const q=quest(d.id),qp=q&&S.qp[q.id];if(!qp||qp.status!=='active')return;const st=q.steps[qp.step];const n=st&&(st.walk||st.walkErase);if(!n)return;qp.walk=Math.min(n,(qp.walk||0)+1);
+    if(st.walkErase){S.sel.wkT=S.sel.wkT&&S.sel.wkT.q===q.id?S.sel.wkT:{q:q.id,t:[]};S.sel.wkT.t[qp.walk-1]=now();}save();render();},
+  'mt-next':d=>{const q=quest(d.id),qp=q&&S.qp[q.id];if(!qp)return;const st=q.steps[qp.step];if(!st||!st.mirrorTalk)return;qp.mt=Math.min(st.mirrorTalk.lines.length,(qp.mt||0)+1);save();render();setTimeout(()=>{try{playClick();}catch(e){}},500);},
+  'mcard':d=>{S.sel.cardMemo=null;openMirrorCard(d.k);},
+  'mcard-me':()=>{S.sel.cardMemo='여기 계속 있어도 괜찮을 것 같아.';S.sel.memoDraft=S.sel.cardMemo;openMirrorCard('me');S.sel.cardMemo=null;if(navigator.vibrate){try{navigator.vibrate(500);}catch(e){}}},
+  'mcard-real':()=>{S.sel.cardMemo=null;openMirrorCard('me');},
+  'ledger':()=>{modal(ledgerHTML());const mm=$('.modal');if(mm)mm.classList.add('narrow');},
+  'cover-toggle':()=>{S.sel.coverOff=!S.sel.coverOff;render();},
+  'view-plan':()=>{openViewer('plan');},
+  'pv-att':()=>{S.sel.pvAtt=!S.sel.pvAtt;const mm=$('.modal');if(mm){const pv=mm.querySelector('.pv');if(pv)pv.outerHTML=planViewerHTML();}},
+  'pv-next':(d,el)=>{const p=el&&el.closest('.pv');if(!p)return;p.classList.remove('nope');void p.offsetWidth;p.classList.add('nope');},
+  'ghost-mira':()=>{toast('프로필을 불러올 수 없습니다.','warn');},
+  'sub-fold':()=>{S.sel.subFold=!S.sel.subFold;if(S.battle&&S.battle.grid)renderFight();},
+  'rank-fold':()=>{S.sel.rankFold=!S.sel.rankFold;const el=document.getElementById('gf-rank2');if(el&&S.battle){el.innerHTML=gfRank(S.battle);el._h=el.innerHTML;}},
+  'qs-edit':d=>{qsEditModal(+d.i||0);},
+  'qs-set':d=>{const q=qsCfg();q.s[+d.i]=d.v||null;save();qsEditModal(+d.i);if(S.battle&&S.battle.grid)renderFight();},
+  'qs-dir':()=>{const q=qsCfg();q.dir=q.dir==='v'?'h':'v';save();renderFight();requestAnimationFrame(()=>{const w=document.getElementById('gf-qs'),h=w&&w.offsetParent;if(!w||!h||q.x==null)return;q.x=Math.min(q.x,h.clientWidth-w.offsetWidth);q.y=Math.min(q.y,h.clientHeight-w.offsetHeight);w.style.left=q.x+'px';w.style.top=q.y+'px';save();});},
+  'qs-use':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;const me=b.players.find(p=>p.isMe);if(!me||me.confirmed||me.dead)return;const v=qsCfg().s[+d.i];if(!v)return;const [t,k]=v.split(':');
+    if(t==='it'){ACTS['g-item']({item:S.sel.gitem&&S.sel.gitem.item===k?'':k});return;}
+    const s=SKILLS[k];if(!s)return;if(s.type==='addon'){if((S.sel.gmode||'fight')!=='fight'){gmAnimMark(S.sel.gmode,'fight');S.sel.gmode='fight';}ACTS.pickaddon({skill:k});return;}
+    if((S.sel.gmode||'fight')!=='fight'){gmAnimMark(S.sel.gmode,'fight');S.sel.gmode='fight';}ACTS.pickact({kind:'skill',skill:k});},
   'g-item':d=>{S.sel.gitem=d.item?{item:d.item,target:null}:null;renderFight();},
   'g-itemt':d=>{if(S.sel.gitem)S.sel.gitem.target=d.id;renderFight();},
   'g-confirm':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;const me=b.players.find(p=>p.isMe);if(me.dead)return;
@@ -438,7 +460,7 @@ const ACTS={
   leavebattle:()=>leaveBattle(),
   equip:d=>{const it=ITEMS[d.id];if(!it||it.type!=='equip'||!(S.me.inv[d.id]>0))return;{const bl=itemBlock(d.id);if(bl){toast(bl,'warn');return;}}S.me.equip[it.slot]=d.id;save();render();toast(`${it.name} 착용`);},
   unequip:d=>{delete S.me.equip[d.slot];save();render();},
-  buy:d=>{const it=ITEMS[d.id];if(!it.price||S.me.gold<it.price)return;S.me.gold-=it.price;S.me.inv[d.id]=(S.me.inv[d.id]||0)+1;bump('goldSpent',it.price);bump('purchases');noteItems({[d.id]:1});save();render();toast(`${it.name} 구매 · ${it.price}골드`);},
+  buy:d=>{const it=ITEMS[d.id];if(!it.price||S.me.gold<it.price)return;if(itemRoom(d.id)<1){toast(capMsg(d.id),'warn');return;}S.me.gold-=it.price;S.me.inv[d.id]=(S.me.inv[d.id]||0)+1;bump('goldSpent',it.price);bump('purchases');noteItems({[d.id]:1});save();render();toast(`${it.name} 구매 · ${it.price}골드`);},
   whisper:d=>{S.sel.whisperTo=d.name;updateChats();const inp=$('#chat-in-whisper');if(inp)inp.focus();},
   'fr-accept':d=>{S.rel[d.name]='friend';save();render();toast(`${d.name}님과 친구가 되었습니다.`,'good');},
   'fr-decline':d=>{delete S.rel[d.name];save();render();},
@@ -479,3 +501,35 @@ const ACTS={
   'op-reset-yes':()=>{timers.forEach(clearTimeout);timers.clear();try{localStorage.removeItem(SAVE);}catch(e){}S=freshState();modal('');save();render();toast('모든 데이터를 초기화했습니다.');}
 };
 
+
+ACTS['theme-toggle']=()=>{
+  const L=!isLight(),de=document.documentElement;
+  if(L)de.dataset.theme='light';else delete de.dataset.theme;
+  try{localStorage.setItem('bs-theme',L?'light':'dark');}catch(e){}
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=L?'#ebeef4':'#161616';
+  renderTop();
+};
+
+ACTS['flog-fold']=()=>{S.sel.flogOpen=!S.sel.flogOpen;const f=document.querySelector('.flog');if(f){f.classList.toggle('open',!!S.sel.flogOpen);const h=f.querySelector('.flog-h');if(h)h.setAttribute('aria-expanded',String(!!S.sel.flogOpen));}flogScroll();};
+
+ACTS['dr-mode']=d=>{S.sel.drMode=d.mode||'stat';render();};
+ACTS['dr-potion']=()=>{const R=S.drun;if(!R||R.done)return;if(!(S.me.inv.potion>0)){toast('회복약이 없습니다.','warn');return;}if(R.hp>=1){toast('체력이 가득 차 있습니다.');return;}
+  const mx=myStats().maxHp;const before=R.hp;R.hp=Math.min(1,R.hp+50/mx);S.me.inv.potion--;if(!S.me.inv.potion)delete S.me.inv.potion;
+  const healed=Math.round((R.hp-before)*mx);R.last=`회복약을 마셨다. HP ${healed} 회복`;if(typeof rec==='function')rec('dungeon',`회복약 사용 · HP ${healed} 회복`);save();render();toast(`HP ${healed} 회복`,'good');};
+
+ACTS['reply-send']=d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const t=(($('#reply-text')||{}).value||'').trim();if(!t){toast('답장을 적어 주세요.','warn');return;}
+  modal('');qp.pending=+d.i;ACTS.nextq({id:d.id});
+  setTimeout(()=>{deliverMail('','수취인이 존재하지 않습니다.',{},{noArchive:true});save();renderTop();toast('병이 금방 되돌아왔다. 우편함을 확인하세요.');},1500);};
+
+/* 최적 장비 착용: 칸마다 착용 가능한(레벨·클래스) 장비 중 점수가 가장 높은 것. 점수 = 주 능력치(공격력/마력)×3 + 방어력×2 + 행운×1.5 + 체력×0.3 + 이동×5, 강화 반영, 내구도 0은 제외 */
+function eqScore(id){const st=itemStats(id,enhOf(id));const pk=isMagic(S.me.job)?'mag':'atk';
+  return (st[pk]||0)*3+(st.def||0)*2+(st.luk||0)*1.5+(st.maxHp||0)*0.3+(st.mov||0)*5;}
+ACTS['eq-best']=()=>{const me=S.me;const best={};
+  for(const id in me.inv){const it=ITEMS[id];if(!it||it.type!=='equip'||!(me.inv[id]>0)||itemBlock(id)||dura(id)<=0)continue;
+    const sc=eqScore(id);if(!best[it.slot]||sc>best[it.slot].sc)best[it.slot]={id,sc};}
+  const changed=[];
+  for(const slot in best){const cur=me.equip[slot];const curOk=cur&&ITEMS[cur]&&!itemBlock(cur)&&dura(cur)>0&&(me.inv[cur]>0);
+    if(cur===best[slot].id)continue;if(curOk&&eqScore(cur)>=best[slot].sc)continue;
+    me.equip[slot]=best[slot].id;changed.push(ITEMS[best[slot].id].name);}
+  if(!changed.length){toast('이미 가장 좋은 장비를 착용하고 있습니다.');return;}
+  save();render();toast(`최적 장비 착용 · ${changed.join(', ')}`,'good');};

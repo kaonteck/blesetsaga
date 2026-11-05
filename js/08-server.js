@@ -323,7 +323,7 @@ if(ONLINE){
   ACTS['mail-claim']=async(d,el,e)=>{
     const m=(S.mail||[]).find(x=>x.id===d.id);const sid=m&&mlSrvId(m.id);
     if(!sid||!SB_UID)return A0.claim(d,el,e);
-    if(m.claimed||m._claiming)return;m._claiming=true;
+    if(m.claimed||m._claiming)return;{const w=typeof mailOver==='function'&&mailOver(m);if(w){toast(w,'warn');return;}}m._claiming=true;   // 99개 넘침은 서버에서 받기 전에 막음(메인)
     const {error}=await SB.rpc('claim_mail',{p_id:sid});delete m._claiming;
     if(error){if(/ALREADY_CLAIMED/.test(error.message||'')){m.claimed=true;save();renderPop();}toast(mlErr(error),'bad');return;}
     // 기다리는 동안 우편 목록이 새로 받아져 객체가 바뀌었을 수 있으니 지금 목록의 것으로 넣는다(빠뜨림 방지)
@@ -390,7 +390,7 @@ if(ONLINE){
       if(!await cloudFlush())throw new Error('세이브를 서버에 올리지 못했습니다');
       const {data,error}=await SB.rpc('buy_lotto',{p_nums:a});if(error)throw error;
       const price=data.price||LOTTO_PRICE;
-      S.me.gold-=price;bump('goldSpent',price);bump('casinoSpent',price);
+      S.me.gold-=price;bump('goldSpent',price);bump('casinoSpent',price);bump('lottoBuy');   // 4장 E13 카지노 한 판(메인)
       S.me.lotto.push({id:'srv:'+data.id,nums:data.nums,draw:data.draw,at:Date.parse(data.at),claimed:false,rank:null,ts:now()});
       S.sel.lotPick=[];save();cloudSave(true);render();openLotto();toast(`행운권 구매 · ${a.join(' ')}`,'good');
     }catch(err){console.warn(err);toast(ltErr(err),'bad');ltSync().then(()=>{if(ltOpen())openLotto();});}
