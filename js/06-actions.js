@@ -425,6 +425,7 @@ const ACTS={
   'pv-att':()=>{S.sel.pvAtt=!S.sel.pvAtt;const mm=$('.modal');if(mm){const pv=mm.querySelector('.pv');if(pv)pv.outerHTML=planViewerHTML();}},
   'pv-next':(d,el)=>{const p=el&&el.closest('.pv');if(!p)return;p.classList.remove('nope');void p.offsetWidth;p.classList.add('nope');},
   'ghost-mira':()=>{toast('프로필을 불러올 수 없습니다.','warn');},
+  'r4-go':d=>r4Gather(d.id),'r4-leave':()=>{r4End();save();render();},
   'wish-save':()=>{const i=$('#wish-in');if(!i)return;S.me.myWish=i.value.replace(/\s+/g,' ').trim().slice(0,30);save();toast(S.me.myWish?'벽에 소원을 새겼다.':'아무것도 새기지 않았다.');render();},
   'seq-e28':()=>{seqE28();},
   'sub-fold':()=>{S.sel.subFold=!S.sel.subFold;if(S.battle&&S.battle.grid)renderFight();},

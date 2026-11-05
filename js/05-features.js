@@ -1788,7 +1788,7 @@ function templePart(){if(typeof S==='undefined'||!S||!S.qp||!S.me)return 0;const
   const view=(S.route==='quest'&&T8.includes(S.sel.quest))||(S.route==='battle'&&S.battle&&S.battle.ctx&&T8.includes(S.battle.ctx.qid));return view?i+1:0;}
 function templeClockHTML(){const part=templePart();if(!part)return '';if(!S.me.templeT){S.me.templeT=now();save();}
   const p2=n=>String(n).padStart(2,'0');const plus=(S.qp.E31&&(S.qp.E31.step==='s4'||S.qp.E31.status!=='active'))?60000:0;const d=new Date(S.me.templeT+plus);
-  const b=S.battle;const face=S.route==='battle'&&b&&!b.over&&b.monsterId==='st_janus'&&b.face?(b.face==='dawn'?'여명':'황혼'):null;
+  const b=S.battle;const face=S.route==='battle'&&b&&!b.over&&b.mon.janus&&b.face?(b.face==='dawn'?'여명':'황혼'):null;
   return `<div class="tclock" aria-label="신전 시각"><b>${T8_NAME[part-1]}</b><span class="num">${face?`<em class="tc-face ${b.face}">${face}</em>`:`백야 · ${p2(d.getHours())}:${p2(d.getMinutes())}`}</span></div>`;}
 /* 심박(bpm): 체력이 줄수록 빨라진다 */
 const bpmOf=p=>p.dead?0:Math.round(60+(1-p.hp/Math.max(1,p.maxHp))*100);
@@ -1866,10 +1866,10 @@ function questAcceptFx(id){if(id==='E28')seqE28();}
   if(id==='S8b'){try{noteDeco('d_clock',{t:'etc',v:'AURORA'});}catch(e){}}};})();
 /* 8장 소리·심박 루프 */
 const T8FX={turn:-1,ph:-1,buzz:0,flick:0};
-(function(){const f=bgmMul;bgmMul=function(){if(SEQ.on)return 0;const b=S&&S.battle;if(b&&!b.over&&b.monsterId==='st_summus'&&(b.mon.sph||0)>=2)return 0;return f();};})();
+(function(){const f=bgmMul;bgmMul=function(){if(SEQ.on)return 0;const b=S&&S.battle;if(b&&!b.over&&(b.monsterId==='st_summus'&&(b.mon.sph||0)>=2||b.monsterId==='guardian'&&b.grid&&b.phase>=2))return 0;return f();};})();
 setInterval(()=>{if(typeof document==='undefined'||!S||!S.me)return;const b=S.battle;
-  if(b&&!b.over&&['st_janus','st_summus','st_aurora'].includes(b.monsterId)){
-    if(b.turn!==T8FX.turn){T8FX.turn=b.turn;if(b.monsterId==='st_janus'&&b.face)(b.face==='dawn'?birds:bell)();if(b.tel&&b.tel.wipe)trumpet(false);else if(b.wipeAt&&b.wipeAt-b.turn<=2)trumpet(true);if(b.monsterId==='st_summus'&&(b.mon.sph||0)>=2&&b.tel&&b.tel.type==='aoe')trumpet(false);}
+  if(b&&!b.over&&['st_janus','st_summus','st_aurora','t_janus','guardian'].includes(b.monsterId)){
+    if(b.turn!==T8FX.turn){T8FX.turn=b.turn;if(b.mon.janus&&b.face)(b.face==='dawn'?birds:bell)();if(b.tel&&b.tel.wipe)trumpet(false);else if(b.wipeAt&&b.wipeAt-b.turn<=2)trumpet(true);if(['st_summus','guardian'].includes(b.monsterId)&&((b.mon.sph||0)>=2||b.grid&&b.phase>=2)&&b.tel&&b.tel.type==='aoe')trumpet(false);}
     const ph=b.mon.sph||0;if(b.monsterId==='st_aurora'&&ph>=1&&T8FX.ph<1&&!b.flicked){b.flicked=1;const n0=b.mon.name;b.mon.name='<여?일??? 아우로라>';try{renderFight();}catch(e){}setTimeout(()=>{if(S.battle===b){b.mon.name=n0;try{renderFight();}catch(e){}}},1000);}T8FX.ph=ph;}
   else T8FX.turn=-1;
   const part=templePart();if(typeof document!=='undefined'&&document.body){[1,2,3,4].forEach(i=>document.body.classList.toggle('tp-'+i,part>=i));}
@@ -1887,10 +1887,10 @@ STORY_QUESTS.push(
   s1:{text:'블라스파미아. 해가 지지 않는다. 언덕 꼭대기, 백야의 신전 정문은 닫혀 있다. 손바닥 위의 눈송이가 처음으로 녹아 물이 된다. 정문 옆으로 난 계단이 지하로 이어진다.',choices:[
     {label:'지하로 내려간다',result:'계단을 내려갈수록 물소리가 커진다. 문득 메뉴를 열어 본다. …로그아웃 버튼이 어디 있더라?',next:'s2'}]},
   s2:{text:'지하 제단 앞. 무릎까지 물이 차 있다. 물속에서 익사한 신도들이 일어선다.',battle:'st_drowned',next:'s3',winText:'신도들이 물 위에 쓰러진다. 시체는 사라지지 않는다. 물 위에 떠서, 그대로 있다.'},
-  s3:{text:'제단 한가운데에서 무언가가 기도문을 왼다. 두 팔과 여덟 개의 다리. 지하 신전의 사제, 케팔로포다. (권장 LV82 · 회복약 3개, 정화의 성수 2개 이상)',choices:[
+  s3:{text:'제단 한가운데에서 무언가가 기도문을 왼다. 두 팔과 여덟 개의 다리. 지하 신전의 사제, 케팔로포다. (권장 LV82 · 4인 토벌전 · 회복약 3개, 정화의 성수 2개 이상)',choices:[
     {label:'물을 헤치고 다가간다',result:'기도문이 멈춘다. 여덟 개의 다리가 물 위로 올라온다.',next:'s4'},
     {label:'물러나 준비한다',result:'물에 뜬 시체들이 당신이 돌아올 때까지 그대로 떠 있다.',next:'s3'}]},
-  s4:{text:'"나팔이 울리기 전에, 제물은 제단으로." 체력이 줄면 다리로 휘감고 먹물을 뿜으며(60%), 끝에는 혼돈의 기도를 왼다(25%).',battle:'st_cephalo',next:'s5',winText:'케팔로포다가 물 위로 쓰러진다. 시체는 제단 물 위에 떠 있다.'},
+  s4:{text:'"나팔이 울리기 전에, 제물은 제단으로." 혼자서는 상대할 수 없다. 4인 토벌대를 꾸려 제단으로 간다. 체력이 줄면 다리로 휘감고 먹물을 뿜으며(60%), 끝에는 혼돈의 기도를 왼다(25%).',raid:'t_cephalo',next:'s5',winText:'케팔로포다가 물 위로 쓰러진다. 시체는 제단 물 위에 떠 있다.'},
   s5:{text:'제단 뒤로 위층으로 이어지는 문이 열린다. 물에 뜬 시체들 사이로 길이 나 있다.',choices:[
     {label:'위층으로 올라간다',result:'뒤를 돌아본다. 시체들은 그대로 있다. 사라지지 않는다.',next:'end',flag:'e28_under'}]},
   end:{end:true,text:'물에 잠긴 지하 제단',reward:{exp:20000,gold:3200,items:{potion:2,holywater:1}}}}},
@@ -1899,10 +1899,10 @@ STORY_QUESTS.push(
   s1:{text:'끝없이 긴 회랑. 벽 가득 문장이 새겨져 있다. 회랑의 그림자 속에서 신관들이 걸어 나온다.',battle:'st_shadowpriest',next:'s2',winText:'그림자 신관들이 벽 속으로 스며든다. 벽의 문장들이 드러난다.'},
   s2:{text:'소원의 벽. 새겨진 문장들이 낯익다. 소원과, 그 소원이 이루어진 모양. 맨 아래 줄은 비어 있고, 그 칸에 커서가 깜빡인다.',wishWall:true,choices:[
     {label:'회랑 끝으로 걷는다',result:'회랑은 끝이 없을 것처럼 길다. 창밖은 여명이었다가, 황혼이었다가, 다시 여명이다. 내일은 오지 않는다.',next:'s3',flag:'e29_wall'}]},
-  s3:{text:'회랑 끝, 대주교의 문. 두 얼굴을 가진 주교가 기다린다. 한쪽은 여명, 한쪽은 황혼이다. (권장 LV88 · 회복약 3개 이상)',choices:[
+  s3:{text:'회랑 끝, 대주교의 문. 두 얼굴을 가진 주교가 기다린다. 한쪽은 여명, 한쪽은 황혼이다. (권장 LV88 · 4인 토벌전 · 회복약 3개 이상)',choices:[
     {label:'문 앞으로 간다',result:'"오늘이 끝나면 내일이 온다고, 다들 그렇게 믿고 들어왔지."',next:'s4'},
     {label:'물러나 준비한다',result:'창밖이 여명에서 황혼으로 바뀐다. 다시 여명으로.',next:'s3'}]},
-  s4:{text:'야누스가 얼굴을 바꾼다. 여명의 얼굴일 때는 스스로 회복하며 약하게 치고, 황혼의 얼굴일 때는 강하게 친다. 위쪽 시각 칸을 보면 이번 턴의 얼굴을 알 수 있다. 끝에는 12턴이 지나면 하루가 처음으로 돌아간다(25%).',battle:'st_janus',next:'s5',winText:'야누스가 무릎을 꿇는다. "…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다."'},
+  s4:{text:'야누스가 얼굴을 바꾼다. 여명의 얼굴일 때는 스스로 회복하며 약하게 치고, 황혼의 얼굴일 때는 강하게 친다. 위쪽 예고 이름을 보면 이번 턴의 얼굴을 알 수 있다. 끝에는 12턴이 지나면 하루가 처음으로 돌아간다(25%). 4인 토벌대로 상대한다.',raid:'t_janus',next:'s5',winText:'야누스가 무릎을 꿇는다. "…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다."'},
   s5:{text:'대주교의 문 너머, 신전 가장 안쪽으로 이어지는 계단.',choices:[
     {label:'계단을 오른다',result:'계단 끝에서 따뜻한 빛이 새어 나온다.',next:'end',flag:'e29_janus'}]},
   end:{end:true,text:'여명과 황혼 사이',reward:{exp:24000,gold:3800,items:{potion:3},gearTier:8}}}},
@@ -1916,10 +1916,10 @@ STORY_QUESTS.push(
   end:{end:true,text:'□□',reward:{exp:15000,gold:0,items:{}}}}},
  {id:'E31',cat:'epic',title:'종장 · 숨무스 폰티펙스',published:true,level:95,prereq:'E30',repeat:null,cond:{},
   desc:'같은 제단, 같은 자리. 권장 LV97 · 회복약 5개, 정화의 성수 3개 이상 준비. [8장 「백야의 신전」 마지막 이야기]',start:'s1',steps:{
-  s1:{text:'같은 제단, 같은 자리. 그러나 제단 앞에 서 있는 것은 더 이상 그녀가 아니다. 이름표가 깨끗하다. <숨무스 폰티펙스>. 다정함도, 존댓말도 없다. (권장 LV97 · 회복약 5개, 정화의 성수 3개 이상)',choices:[
+  s1:{text:'같은 제단, 같은 자리. 그러나 제단 앞에 서 있는 것은 더 이상 그녀가 아니다. 이름표가 깨끗하다. <숨무스 폰티펙스>. 다정함도, 존댓말도 없다. (권장 LV97 · 4인 토벌전 · 회복약 5개, 정화의 성수 3개 이상)',choices:[
     {label:'제단 앞으로 나선다',result:'"기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니."',next:'s2'},
     {label:'물러나 준비한다',result:'기도문은 멈추지 않는다.',next:'s1'}]},
-  s2:{text:'숨무스 폰티펙스가 왕좌 앞으로 끌어당긴다. 체력이 줄면 회복을 막고 스킬을 봉인하며(60%), 끝에는 기적의 나팔을 분다(25%). 일지는 펼쳐도 소용이 없다.',battle:'st_summus',next:'s3',winText:'숨무스 폰티펙스가 무너진다. 나팔이 마지막으로 한 번, 아주 작게 울린다.'},
+  s2:{text:'숨무스 폰티펙스가 왕좌 앞으로 끌어당긴다. 체력이 줄면 회복을 막고 스킬을 봉인하며(60%), 끝에는 기적의 나팔을 분다(25%). 일지는 펼쳐도 소용이 없다. 4인 토벌대로 상대한다.',raid:'guardian',next:'s3',winText:'숨무스 폰티펙스가 무너진다. 나팔이 마지막으로 한 번, 아주 작게 울린다.'},
   s3:{text:'이름표가 1초 동안 다시 깨진다. <여?일??? 아□로□>. 대사 창에 이름 없이 한 줄이 떠오른다. "…출근, 늦겠다."',choices:[
     {label:'…',result:'탐사 기록에 한 이름이 깨지지 않고 남는다. 「AURORA」.',next:'s4'}]},
   s4:{text:'아무 메시지도 없다. 신전 시각 칸의 숫자가 처음으로 1분 넘어간다.',clockPlus:true,choices:[
@@ -1936,3 +1936,106 @@ STORY_QUESTS.push(
     {label:'침대 밑을 본다',result:'접힌 종이 한 장. 이 세계의 글자가 아닌 글씨로 한 줄이 적혀 있다. 읽을 수 없다. 그런데 어딘가 익숙한 모양이다.',next:'end',flag:'s8b_nine'}]},
   end:{end:true,text:'아홉 시',reward:{exp:8000,gold:800,items:{d_clock:1}}}}});
 QCHAPTERS.push(['ch8','8장 「백야의 신전」',['E28','E29','E30','E31']]);
+
+/* ───────── 8장 토벌전(4인 그리드 · 유저 결정 2026-11-05): 케팔로포다 · 야누스 · 숨무스 폰티펙스 ─────────
+   스토리 보스는 퀘스트에서 토벌전 페이지로 안내 → 4인 토벌대(나 + 동료 3)로 10×10 그리드 전투 → 이기면 이야기가 이어진다.
+   잡몹·아우로라(□□)는 개인 전투 그대로. 이야기를 마친 뒤에는 주간 토벌(보상 주 1회)로 남는다. */
+const R4_MUL={t_cephalo:['st_cephalo',2.4,3.4],t_janus:['st_janus',3.52,1.7],guardian:['st_summus',1.76,4.2]};  /* 봇 4인 시뮬: 케팔로포다 95–100% · 야누스 87–100% · 숨무스 72–100%(평균 약 87%, 아이템 미사용) */
+const R4_DEF={
+ t_cephalo:{name:'지하 신전의 사제, 케팔로포다',art:'beast',region:'백야의 신전 지하 제단',level:80,story:'E28',exp:18000,gold:2600,drops:[['chaos',0.6],['potion',0.5]],
+  desc:'두 팔과 여덟 개의 다리를 가진 고대 혼돈의 사제. 신과 함께 타락한 기운을 흡수하여 그 모습이 흉측하게 변했다. 물에 잠긴 제단에서 4인 토벌대를 기다린다.',
+  dotName:'먹물',dotChance:0.15,fx:{},
+  mass:{title:'백야의 신전 · 서장',lines:{single:'두 팔이 내려온다. 제물은 제단으로.',dot:'먹물에 젖어라.',burst:'물보라에 잠겨라.',burst2:'여덟 다리가 둘을 고른다.',cross:'먹물이 물길을 따라 흐른다.',quake:'제단 곁의 것들은 물속으로.',all:'나팔이 울리기 전에, 모두 제물로.'},phases:[
+   {at:100,name:'1페이즈',atkMul:1,patterns:['single','single','burst'],pats:{single:{name:'두 팔 내려치기',mult:1.1},burst:{name:'물보라',mult:0.8}}},
+   {at:60,name:'2페이즈 · 여덟 다리',say:'휘감기면 다음 턴 스킬 불가, 먹물에 맞으면 대미지 감소(정화의 성수·디스펠로 해제)',atkMul:1.3,wrapChance:0.3,blindChance:0.5,patterns:['single','cross','burst2'],pats:{single:{name:'여덟 다리 휘감기',mult:1.0},cross:{name:'먹물 물결',mult:0.75},burst2:{name:'먹물 물결',mult:0.8}}},
+   {at:25,name:'3페이즈 · 혼돈의 기도',say:'기도문이 멈추고 물방울 소리만 남는다',atkMul:1.6,wrapChance:0.15,blindChance:0,patterns:['all','quake','burst2'],pats:{all:{name:'혼돈의 기도',mult:0.45},quake:{name:'제단의 소용돌이',mult:1.0},burst2:{name:'먹물 물결',mult:0.8}}}]}},
+ t_janus:{name:'타락한 신의 힘을 흡수한 주교, 야누스',art:'golem',region:'대주교의 문 앞',level:86,story:'E29',exp:22000,gold:3000,drops:[['chaos',0.6],['potion',0.5]],
+  desc:'제사를 관장하던 고대 혼돈의 신전의 대주교. 여명과 황혼 사이에 갇혀 내일을 맞이하지 못하고 있다. 여명의 얼굴은 스스로 회복하며 약하게, 황혼의 얼굴은 강하게 친다.',
+  dotName:'저녁 그림자',dotChance:0.15,fx:{janus:true},
+  mass:{title:'백야의 신전 · 중장',lines:{single:'황혼의 낫은 하나만 거둔다.',dot:'저녁 그림자가 스민다.',ring:'해가 진다. 멀리 있는 것부터.',burst:'새벽이 한 자리를 태운다.',burst2:'새벽은 둘을 깨운다.',cross:'여명의 기도가 길을 가른다.',all:'내일은 오지 않는다.'},phases:[
+   {at:100,name:'1페이즈',atkMul:1,patterns:['single','ring','burst'],pats:{single:{name:'황혼의 낫',mult:1.1},ring:{name:'지는 해',mult:0.7},burst:{name:'새벽 낙인',mult:0.9}}},
+   {at:60,name:'2페이즈 · 여명과 황혼',say:'얼굴이 바뀌는 소리: 아침 새소리 ↔ 저녁 종소리',atkMul:1.3,patterns:['single','cross','ring','burst2'],pats:{cross:{name:'여명의 기도',mult:0.8},burst2:{name:'새벽 낙인',mult:0.9}}},
+   {at:25,name:'3페이즈 · 내일 없음',say:'12턴이 지나면 하루가 처음으로 돌아간다',atkMul:1.6,loop12:true,patterns:['all','cross','burst2'],pats:{all:{name:'영원한 황혼',mult:0.45}}}]}},
+ guardian:{name:'숨무스 폰티펙스',art:'guardian',region:'교황의 제단',level:95,story:'E31',exp:40000,gold:6000,drops:[['chaos',0.8],['cloak',0.25],['amulet',0.2],['crest',0.1]],
+  desc:'고대 혼돈의 신전의 교황이었던 자. 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 고통 받고 있다. 매주 월요일 05:00, 다시 깨어난다.',
+  dotName:'심판',dotChance:0,fx:{journal:'ignore'},
+  mass:{title:'백야의 신전 · 종장',lines:{single:'심판의 빛이 내린다.',all:'모두가 왕좌 앞으로 모으리라.',cross:'죽음과 자연은 경악할 지어다.',ring:'나팔소리가 대지의 무덤 곳곳 울려퍼지니.',burst2:'심판에 응하기 위하여.'},phases:[
+   {at:100,name:'1페이즈',atkMul:1,pullHeal:true,patterns:['single','single','all'],pats:{single:{name:'심판의 빛',mult:1.1},all:{name:'왕좌 앞으로',mult:0.35}}},
+   {at:60,name:'2페이즈 · 경악',say:'경악에 맞으면 회복할 수 없고, 봉인의 사슬은 스킬 하나를 2턴 봉인한다(정화의 성수·디스펠로 해제)',atkMul:1.3,pullHeal:false,noHealAoe:true,sealChance:0.4,patterns:['single','all','cross'],pats:{single:{name:'봉인의 사슬',mult:1.0},all:{name:'경악',mult:0.45},cross:{name:'심판의 십자',mult:0.8}}},
+   {at:25,name:'3페이즈 · 기적의 나팔',say:'나팔 소리만 남는다',atkMul:1.6,noHealAoe:false,sealChance:0.2,patterns:['all','ring','burst2'],pats:{all:{name:'기적의 나팔',mult:0.55},ring:{name:'나팔의 메아리',mult:0.7},burst2:{name:'심판의 빛',mult:0.9}}}]}}};
+function r4Mon(id){const d=R4_DEF[id],[sid,hm,am]=R4_MUL[id];const s=STORY_MONS.find(x=>x.id===sid);
+  return {id,kind:'weekly',raid4:true,published:true,rev:2,maxLevel:null,min:4,max:4,target:4,roles:{tank:1,dps:2,heal:1},hp:Math.round(s.hp*hm),hpScale:0,atk:Math.round(s.atk*am),def:0,
+    singleName:d.mass.phases[0].pats.single.name,singleMult:1.0,aoeName:'',aoeMult:0.5,aoeEvery:99,dotDmg:Math.round(s.atk*am*0.15),...d};}
+const R4_MONS=Object.keys(R4_DEF).map(r4Mon);
+R4_MONS.filter(m=>m.id!=='guardian').forEach(m=>PARTY_BOSSES.push(m));
+{const i=DEFAULT_MONSTERS.findIndex(x=>x.id==='guardian');if(i>=0)DEFAULT_MONSTERS[i]=clone(R4_MONS.find(m=>m.id==='guardian'));}
+Object.assign(HERO_LINES,{t_cephalo:HERO_LINES.st_cephalo,t_janus:HERO_LINES.st_janus,guardian:HERO_LINES.st_summus});
+/* 열림: 이야기에서 그 보스 단계에 닿았거나 지나간 플레이어(운영자는 항상). 숨무스는 E31 2단계부터 */
+function r4Step(m){const q=quest(m.story);if(!q)return null;const k=Object.keys(q.steps).find(k=>q.steps[k].raid===m.id);return k||null;}
+function r4Open(m){if(typeof isAdmin==='function'&&isAdmin())return true;if(!m||!m.story)return false;const qp=S.qp&&S.qp[m.story];if(!qp)return false;if(['done','claim'].includes(qp.status))return true;
+  const k=r4Step(m);return qp.status==='active'&&!!k&&(qp.step===k||(qp.history||[]).some(h=>h.step===k));}
+function r4Pending(m){const qp=S.qp&&S.qp[m.story];const k=r4Step(m);return !!(qp&&qp.status==='active'&&k&&qp.step===k);}
+weeklyClosed=function(m){if(!WEEKLY_CLOSED)return false;if(m)return m.raid4?!r4Open(m):!(typeof isAdmin==='function'&&isAdmin()||S.qp&&S.qp.E31&&S.qp.E31.status==='done');
+  return !(S&&S.data&&S.data.monsters||[]).some(x=>x.published&&mkind(x)==='weekly'&&!weeklyClosed(x));};
+isGroupMon=function(m){return !!(m&&m.published&&!m.raid4&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!weeklyClosed(m))));};
+(function(){const f=raidBlock;raidBlock=function(m){if(m&&m.raid4&&mkind(m)==='weekly'&&weeklyClosed(m))return '백야의 신전 이야기에서 이 보스를 만나면 열립니다';return f(m);};})();
+/* 토벌대 모집(만신전처럼 동료가 하나씩 모인다) */
+const R4_ROLES={tank:1,heal:1,dps:2};
+function r4Need(R){const c={tank:0,heal:0,dps:0};R.roster.forEach(x=>c[roleOf(x.job)]++);return {tank:Math.max(0,R4_ROLES.tank-c.tank),heal:Math.max(0,R4_ROLES.heal-c.heal),dps:Math.max(0,R4_ROLES.dps-c.dps)};}
+function r4AddBot(R,m){const need=r4Need(R);const role=need.tank?'tank':need.heal?'heal':'dps';const used=new Set(R.roster.map(x=>x.name));
+  const real=S.bots.find(b=>b.online&&b.status==='lobby'&&!used.has(b.name)&&roleOf(b.job)===role&&b.level>=m.level);
+  if(real){real.status='recruit';R.roster.push({name:real.name,job:real.job,level:real.level});return;}
+  const name=MASS_NAMES.find(n=>!used.has(n)&&!bot(n));if(!name)return;const lv=Math.max(m.level,S.me.level-2)+Math.floor(Math.random()*4);let job=pick(ROLE_JOBS[role]);if(CLASSES[job].tier!==2&&CLASSES[job].adv)job=pick(CLASSES[job].adv);
+  R.roster.push({name,job,level:lv,temp:true});}
+function r4Gather(id){const m=monster(id);if(!m||S.r4)return;const why=busyReason()||levelReason(m,S.me.level)||raidBlock(m);if(why){toast(why,'warn');return;}
+  S.r4={mid:id,roster:[{name:S.me.name,job:S.me.job,level:S.me.level,isMe:true}],nextJoin:now()+1200,phase:'gather',chat:[]};save();render();}
+function r4End(){const R=S.r4;if(!R)return;R.roster.forEach(x=>{const b=bot(x.name);if(b&&b.status!=='lobby')b.status='lobby';});S.r4=null;}
+function r4Start(){const R=S.r4;if(!R||R.phase!=='gather')return;const m=monster(R.mid);if(!m){r4End();return;}
+  const members=R.roster.map(x=>x.isMe?{id:'me',name:S.me.name,job:S.me.job,level:S.me.level,equip:effEquip(),isMe:true,enh:S.me.enh}:{id:x.name,name:x.name,job:x.job,level:x.level,equip:{}});
+  const b=createBattle(m,members,Math.random,{...cfg(),turnSeconds:massCfg().turnSeconds});
+  {const mf=b.players.find(x=>x.isMe);if(mf){['maxHp','atk','def','luk'].forEach(k=>{const v=itemBonus(k);if(v){mf[k]+=v;if(k==='maxHp')mf.hp+=v;}});hpStart(mf);}}
+  r4Grid(b,m);b.ctx={type:'weekly',raid4:true};if(r4Pending(m)){b.ctx.qid=m.story;b.ctx.step=r4Step(m);}
+  b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);R.roster.forEach(x=>{const bb=bot(x.name);if(bb)bb.status='battle';});
+  R.phase='battle';S.battle=b;resetAct();S.sel.gmode='fight';S.sel.gcell=null;S.sel.gitem=null;S.sel.monster=null;S.route='battle';save();render();toast(`${m.name} 토벌 시작 · 4인`,'good');
+  if(typeof storyBattleFx==='function')try{storyBattleFx(b);}catch(e){}}
+function r4Grid(b,m){const MD=massDef(m);b.grid=true;b.pats=MD.patterns;b.massTitle=MD.title;b.phases=clone(MD.phases).sort((a,c)=>c.at-a.at);b.phase=0;b.baseAtk=m.atk;b.mon.atk=m.atk;
+  gridPlace(b,Math.random);b.turn=0;b.log=b.log.slice(0,1);b.log.push({t:'sys',text:`토벌전 · 4인 · 10×10 전장 · 제한 20분 · 붉은 칸 예고를 보고 이동해서 피하세요`});startTurn(b,Math.random);b.endsAt=now()+20*60000;}
+setInterval(()=>{if(typeof document==='undefined'||!S||!S.me)return;const R=S.r4;if(!R||R.phase!=='gather')return;const m=monster(R.mid);if(!m){r4End();return;}
+  if(now()>=R.nextJoin&&R.roster.length<4){R.nextJoin=now()+rnd(900,2200);r4AddBot(R,m);save();if(S.route==='battle'&&!S.battle&&!document.activeElement.matches('input,textarea,select'))render();
+    if(R.roster.length>=4)setTimeout(()=>{if(S.r4===R&&R.phase==='gather')r4Start();},1400);}},300);
+(function(){const f=busyReason;busyReason=function(){if(S.r4&&S.r4.phase==='gather')return '토벌대에 집결 중입니다';return f();};})();
+(function(){const f=leaveBattle;leaveBattle=function(){const b=S.battle;const adv=b&&b.over&&b.ctx&&b.ctx.raid4&&b.r4Adv;if(b&&b.over&&b.ctx&&b.ctx.raid4)r4End();f();if(adv)go('quest',{quest:adv,qtab:'epic'});};})();
+/* 승리 → 이야기 다음 단계(퀘스트 전투 승리와 같은 기록) */
+(function(){const f=finishBattle;finishBattle=function(b){const done=S.claimedB[b.id];f(b);if(done)return;const ctx=b.ctx||{};
+  if(ctx.raid4&&ctx.qid&&b.over==='win'){const q=quest(ctx.qid),qp=S.qp[ctx.qid];const st=q&&q.steps[ctx.step];
+    if(qp&&st&&qp.step===ctx.step){qp.history.push({step:ctx.step,text:st.text,label:`토벌전 · ${b.mon.name} 처치`,result:st.winText||'적을 쓰러뜨렸다.'});qp.step=st.next;qp.lost=false;b.r4Adv=ctx.qid;save();}}
+  else if(ctx.raid4&&ctx.qid&&b.over!=='win'){const qp=S.qp[ctx.qid];if(qp)qp.lost=true;}};})();
+(function(){const f=outcomeHTML;outcomeHTML=function(b){let h=f(b);const c=b.ctx||{};if(c.raid4&&b.r4Adv)h=h.replace(/(<\/h2>)/,`$1<p class="ok-t" style="font-size:13px">이야기가 이어집니다 · 결과 확인 후 퀘스트로 돌아갑니다</p>`);
+  else if(c.raid4&&c.qid&&b.over&&b.over!=='win')h=h.replace(/(<\/h2>)/,`$1<p class="reason" style="font-size:13px">토벌에 성공해야 이야기가 이어집니다 · 다시 도전할 수 있습니다</p>`);return h;};})();
+/* 토벌 보스 페이지(4인 그리드) */
+function vRaid4(m){const lr=levelReason(m,S.me.level)||raidBlock(m);const busy=S.r4?'':busyReason();const R=S.r4&&S.r4.mid===m.id?S.r4:null;const w=weekly();const pend=r4Pending(m);
+  const need=R?r4Need(R):R4_ROLES;const slots=[];for(let i=0;i<4;i++){const x=R&&R.roster[i];slots.push(x?`<span class="mr ${roleOf(x.job)} ${x.isMe?'me':''}">${esc(x.name)}<small>${CLASSES[x.job].name} · LV${x.level}</small></span>`:'<span class="mr r4-empty">빈 자리</span>');}
+  const MD=massDef(m);const phs=clone(MD.phases).sort((a,c)=>c.at-a.at);
+  return `<div class="wrap page"><div><button class="link" data-act="backmon">← 토벌전 목록</button></div>
+  <div class="panel mass-card r4-card"><div class="boss"><pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:8px">
+    <div class="row" style="gap:6px"><span class="chip warn">토벌전</span><span class="chip">${esc(m.region||'')}</span><span class="chip num">4인</span>${pend?'<span class="chip ok">이야기 진행 중</span>':''}</div>
+    ${MD.title?`<p class="md-lbl" style="margin:0">${esc(MD.title)}</p>`:''}<h2 class="mname" style="font-size:24px">${esc(m.name)}</h2><p class="muted" style="font-size:13px">${esc(m.desc||'')}</p>
+    <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span>${['tank','heal','dps'].map(r=>`<span class="chip ${r} ${R&&!need[r]?'dim':''}">${ROLE[r]} ${R4_ROLES[r]}</span>`).join('')}<span class="chip ${w.done[m.id]?'dim':'ok'}">${w.done[m.id]?'이번 주 보상 수령 완료':'이번 주 보상 받을 수 있음'}</span></div>
+    ${pend?'<p class="ok-t" style="font-size:12.5px">이 토벌에 성공하면 이야기가 이어집니다.</p>':''}
+    <div class="row">${R?`<span class="muted" style="font-size:13px">토벌대 집결 중 · ${R.roster.length} / 4</span><button class="btn" data-act="r4-leave">집결 취소</button>`
+      :`<button class="btn btn-primary" data-act="r4-go" data-id="${m.id}" ${lr||busy?'disabled':''}>토벌대 모집</button>${lr?`<span class="reason">${esc(lr)}</span>`:busy?`<span class="reason">${esc(busy)}</span>`:''}`}</div></div></div>
+    <div class="mass-roster">${slots.join('')}</div></div>
+  <div class="panel"><h3>토벌 규칙</h3><ul class="mass-rules">
+    <li>4인 토벌대 · 탱커 1 · 힐러 1 · 딜러 2. 모집을 누르면 동료가 하나씩 모이고, 4명이 모이면 바로 출발합니다.</li>
+    <li>${GRID}×${GRID} 전장 · 보스는 가운데 2×2 칸. 행동은 <b>이동</b> · <b>전투</b> · <b>대기</b> 중 하나, 아이템은 함께 쓸 수 있습니다.</li>
+    <li>붉은 칸 예고를 보고 이동해서 피하세요. 회복은 시전자 기준 5×5 칸 안의 아군에게만 닿습니다. 전투 제한 20분.</li>
+    <li>${phs.map(p=>`${p.at}% ${esc(p.name)}${p.say?` — ${esc(p.say)}`:''}`).join('<br>')}</li>
+    <li>보상 · EXP ${m.exp.toLocaleString('ko-KR')} · ${m.gold.toLocaleString('ko-KR')}골드 (주 1회, 월요일 05:00 초기화). 패배해도 다시 도전할 수 있습니다.</li></ul></div></div>`;}
+(function(){const f=vMonster;vMonster=function(m){return m&&m.raid4?vRaid4(m):f(m);};})();
+/* 기존 세이브: 토벌 보스(숨무스)를 4인 그리드 형식으로 */
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{const i=S.data.monsters.findIndex(x=>x.id==='guardian');const G=R4_MONS.find(m=>m.id==='guardian');
+  if(i>=0&&!S.data.monsters[i].raid4){S.data.monsters[i]=clone(G);save();}
+  if(S.r4&&S.r4.phase==='battle'&&!(S.battle&&S.battle.ctx&&S.battle.ctx.raid4))S.r4=null;}catch(e){}};})();
+(function(){const f=vGridFight;vGridFight=function(){let h=f();const b=S.battle;if(!b||!b.ctx||!b.ctx.raid4)return h;h=h.replace('chip warn">만신전</span>','chip warn">토벌전</span>');
+  const part=templePart();const me=b.players.find(p=>p.isMe);if(part>=2)h=h.replace(/<span class="hud-lvl num">LV\.\d+<\/span>/,'');
+  if(part>=3&&me)h=h.replace(`<b class="num">${me.hp}<small>/${me.maxHp}</small></b>`,`<b class="num bpm">♥ ${bpmOf(me)} bpm</b>`).replace(`title="${me.hp}/${me.maxHp}"`,'');return h;};})();

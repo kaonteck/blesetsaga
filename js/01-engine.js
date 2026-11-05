@@ -275,7 +275,7 @@ function startTurn(b,rng){
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
   b.players.forEach(p=>{p.action=null;p.action2=null;p.confirmed=false;p.defending=false;p.protect=false;p.reduce=0;p.turnDealt=0;});
   const m=b.mon,alive=living(b);
-  if(!b.grid&&m.loop12&&b.turn>12){b.turn=1;const v=Math.round(m.maxHp*0.05);m.hp=Math.min(m.maxHp,m.hp+v);b.log.push({t:'warn',text:`내일은 오지 않는다 · 턴이 1로 돌아간다 · ${m.name} +${v}`});}
+  if(m.loop12&&b.turn>12){b.turn=1;const v=Math.round(m.maxHp*0.05);m.hp=Math.min(m.maxHp,m.hp+v);b.log.push({t:'warn',text:`내일은 오지 않는다 · 턴이 1로 돌아간다 · ${m.name} +${v}`});}
   if(b.grid){gridPhase(b);b.tel=gridTel(b,rng);}
   else if((soloPhase(b),b.turn%m.aoeEvery===0))b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
   else{
@@ -284,8 +284,8 @@ function startTurn(b,rng){
     b.tel={type:dot?'dot':'single',name:dot?m.dotName:m.singleName,mult:m.singleMult,target:target.id};
     if(m.mirror&&!b.grid){b.tel={type:'single',name:'되비침',mult:m.singleMult,target:target.id,mirror:true};}
   }
+  if(m.janus){b.face=b.turn%2===1?'dawn':'dusk';b.tel.mult=(b.tel.mult||1)*(b.face==='dawn'?0.6:1.4);b.tel.name=`${b.face==='dawn'?'여명':'황혼'}의 얼굴 · ${b.tel.name}`;}
   if(!b.grid){
-    if(m.janus){b.face=b.turn%2===1?'dawn':'dusk';b.tel.mult=(b.tel.mult||1)*(b.face==='dawn'?0.6:1.4);b.tel.name=`${b.face==='dawn'?'여명':'황혼'}의 얼굴 · ${b.tel.name}`;}
     if(m.pacify&&b.tel.type!=='aoe'){b.tel={type:'single',name:'빛 화살',mult:0.5,target:(alive[0]||b.players[0]).id,pacify:true};}
     if(b.wipeAt){if(b.turn>=b.wipeAt)b.tel={type:'aoe',name:'기적의 나팔',mult:1,wipe:true};else if(b.wipeAt-b.turn<=2)b.log.push({t:'warn',text:'나팔 소리가 가까워집니다'});}
   }
@@ -466,7 +466,7 @@ function resolveTurn(b,rng,hooks){
   else
   if(tel.type==='area'){
     const hit=living(b).filter(p=>tel.cells.includes(p.pos));
-    const parts=hit.map(p=>{const r=hitP(p,tel.mult);return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}`;});
+    const parts=hit.map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.length?parts.join(', '):'모두 피했다'}`);
   }else if(tel.type==='aoe'){
     const parts=living(b).map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
@@ -591,7 +591,7 @@ function cellName(i){const [r,c]=gxy(i);return `${'ABCDEFGHIJ'[r]}${c+1}`;}
 function gridArea(c,r){const out=[];const [cr,cc]=gxy(c);for(let y=cr-r;y<=cr+r;y++)for(let x=cc-r;x<=cc+r;x++)if(y>=0&&y<GRID&&x>=0&&x<GRID&&!BOSS_CELLS.includes(y*GRID+x))out.push(y*GRID+x);return out;}
 const GRID_PAT={single:'단일 강타',burst:'파쇄 낙인',burst2:'이중 낙인',cross:'십자 균열',quake:'대지 진동',ring:'외곽 낙뢰',all:'전장 붕괴'};
 function gridPhase(b){const pct=b.mon.hp/b.mon.maxHp*100;let k=0;b.phases.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
-  if(k!==b.phase){b.phase=k;const ph=b.phases[k];b.mon.atk=Math.round(b.baseAtk*(ph.atkMul||1));if(b.turn>1)b.log.push({t:'warn',text:`◆ ${ph.name} · 보스 공격력 ${b.mon.atk}`});}}
+  if(k!==b.phase||b.turn<=1&&!b.phInit){b.phInit=1;b.phase=k;const ph=b.phases[k];b.mon.atk=Math.round(b.baseAtk*(ph.atkMul||1));['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal'].forEach(f=>{if(ph[f]!=null)b.mon[f]=ph[f];});if(ph.pats)b.pats={...b.pats,...JSON.parse(JSON.stringify(ph.pats))};if(b.turn>1)b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 보스 공격력 ${b.mon.atk}`});}}
 function gridTel(b,rng){
   const m=b.mon,ph=b.phases[b.phase]||b.phases[0],al=living(b);
   const pats=(ph.patterns&&ph.patterns.length?ph.patterns:['single']);const pat=pats[Math.floor(rng()*pats.length)];

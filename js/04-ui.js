@@ -502,7 +502,7 @@ function curMsgs(tab){
   if(tab==='world')return S.chat.world||[];
   if(tab==='lobby'){const L=S.chat.lobby.filter(m=>S.rel[m.from]!=='blocked');if(!S.party)return L;return [...L,...S.party.chat.filter(m=>!m.sys).map(m=>({...m,ch:'party'}))].sort((a,b)=>a.ts-b.ts);}
   if(tab==='party')return S.party?S.party.chat:[];
-  if(tab==='raid')return S.mass?(S.mass.chat=S.mass.chat||[]).map(m=>({...m,ch:'raid'})):[];
+  if(tab==='raid'){const RM=S.mass||S.r4;return RM?(RM.chat=RM.chat||[]).map(m=>({...m,ch:'raid'})):[];}
   if(tab==='dm')return S.sel.dmWith?((dmState().threads[S.sel.dmWith]||{}).msgs||[]):[];
   return [];
 }
@@ -552,7 +552,7 @@ function updateChats(){
     else{
       const list=curMsgs(tab);let empty='';
       if(tab==='party'&&!S.party)empty='<p class="empty">파티에 참가하면 파티원과 대화할 수 있습니다.</p>';
-      else if(tab==='raid'&&!S.mass)empty='<p class="empty">레이드가 끝나 채팅이 닫혔습니다.</p>';
+      else if(tab==='raid'&&!(S.mass||S.r4))empty='<p class="empty">레이드가 끝나 채팅이 닫혔습니다.</p>';
       else if(tab==='raid'&&!list.length)empty='<p class="empty">원정대와 대화해 보세요. 전투 로그와는 따로 표시됩니다.</p>';
       else if(!list.length)empty=tab==='dm'?`<p class="empty">${esc(S.sel.dmWith)}님에게 첫 메시지를 보내 보세요.</p>`:'<p class="empty">아직 메시지가 없습니다.</p>';
       box.innerHTML=empty||list.slice(-80).map((m,i,a)=>msgHTML(m,i,a)).join('');
@@ -560,7 +560,7 @@ function updateChats(){
     }
     const ws=p.querySelector('.wsel');if(ws){ws.hidden=!(tab==='world'&&isAdmin());ws.value=S.sel.wcat||'notice';}
     const cs=p.querySelector('.csel');if(cs){cs.hidden=!(tab==='lobby'||(tab==='party'&&S.party));cs.value=tab==='party'?(S.sel.partyCh||'party'):(S.sel.lobbyCh||'lobby');}
-    const inp=p.querySelector('input');const dis=(tab==='raid'&&!S.mass)||(tab==='party'&&!S.party)||(tab==='dm'&&!S.sel.dmWith)||(tab==='world'&&!isAdmin());inp.disabled=dis;p.querySelector('button[type=submit]').disabled=dis;
+    const inp=p.querySelector('input');const dis=(tab==='raid'&&!(S.mass||S.r4))||(tab==='party'&&!S.party)||(tab==='dm'&&!S.sel.dmWith)||(tab==='world'&&!isAdmin());inp.disabled=dis;p.querySelector('button[type=submit]').disabled=dis;
     inp.placeholder=tab==='raid'?'원정대에게 메시지 입력':tab==='world'?(isAdmin()?'메시지 입력':'월드는 운영자만 작성할 수 있습니다'):tab==='lobby'?((S.sel.lobbyCh==='party')?'파티원에게 메시지 입력':'전체 채팅에 메시지 입력'):tab==='party'?((S.sel.partyCh||'party')==='lobby'?'전체 채팅에 메시지 입력':'파티원에게 메시지 입력'):S.sel.dmWith?`${S.sel.dmWith}에게 1:1 메시지`:'대화할 상대를 먼저 고르세요';
   });
   renderTopBadges();
@@ -578,8 +578,8 @@ function sendChat(tab,text){
     logChange('월드 채팅',[{field:WCAT[cat],before:undefined,after:text}]);save();updateChats();toast(`월드에 ${WCAT[cat]}을(를) 올렸습니다.`,'good');return true;}
   if(tab==='lobby'&&S.sel.lobbyCh==='party'){if(!S.party){toast('파티에 참가하지 않아 파티 채팅을 보낼 수 없습니다.','warn');return false;}tab='party';}
   else if(tab==='party'&&S.sel.partyCh==='lobby')tab='lobby';
-  if(tab==='raid'){if(!S.mass){toast('진행 중인 레이드가 없습니다.','warn');return false;}(S.mass.chat=S.mass.chat||[]).push(msg);S.mass.chat=S.mass.chat.slice(-150);bump('chats');
-    if(Math.random()<0.4){const ps=S.battle&&S.battle.grid?S.battle.players.filter(p=>!p.isMe&&!p.dead).map(p=>p.name):S.mass.roster.filter(x=>!x.isMe).map(x=>x.name);if(ps.length)later(rnd(1500,3500),()=>botSay('raid',pick(ps),pick(MASS_LINES)));}
+  if(tab==='raid'){const RM=S.mass||S.r4;if(!RM){toast('진행 중인 레이드가 없습니다.','warn');return false;}(RM.chat=RM.chat||[]).push(msg);RM.chat=RM.chat.slice(-150);bump('chats');
+    if(Math.random()<0.4){const ps=S.battle&&S.battle.grid?S.battle.players.filter(p=>!p.isMe&&!p.dead).map(p=>p.name):(S.mass||S.r4).roster.filter(x=>!x.isMe).map(x=>x.name);if(ps.length)later(rnd(1500,3500),()=>botSay('raid',pick(ps),pick(MASS_LINES)));}
     save();updateChats();return true;}
   if(tab==='dm'){const to=S.sel.dmWith;if(!to)return false;if(S.rel[to]==='blocked'){toast('차단한 사람에게는 보낼 수 없습니다.','warn');return false;}
     dmPush(to,msg,false);bump('chats');const b=bot(to);if(b){const reply=()=>{if(S.rel[to]==='blocked')return;botDm(to,pick(WHISPER_LINES));};if(b.online)later(rnd(2000,4500),reply);else (S.pendingDm=S.pendingDm||[]).push(to);}
@@ -600,7 +600,7 @@ function botSay(ch,name,text){
   const msg={id:uid('m'),from:name,text,ts:now()};
   if(ch==='lobby'){S.chat.lobby.push(msg);S.chat.lobby=S.chat.lobby.slice(-150);if(!visibleTab('lobby'))S.unread.lobby++;}
   else if(ch==='party'){if(!S.party)return;S.party.chat.push(msg);if(!visibleTab('party'))S.unread.party++;}
-  else if(ch==='raid'){if(!S.mass)return;(S.mass.chat=S.mass.chat||[]).push(msg);}
+  else if(ch==='raid'){const RM=S.mass||S.r4;if(!RM)return;(RM.chat=RM.chat||[]).push(msg);}
   else if(ch==='whisper'){(S.chat.whisper[name]=S.chat.whisper[name]||[]).push(msg);if(!(visibleTab('whisper')&&S.sel.whisperTo===name)){S.unread.whisper[name]=(S.unread.whisper[name]||0)+1;toast(`${name}의 귓속말: ${text}`);playAlarm();}}
   updateChats();renderTop();save();
 }
@@ -682,6 +682,11 @@ function questDetail(q){
       const c=step.choices[qp.pending];
       h+=`${qTextHTML(step.text)}<div class="result"><div class="ph" style="margin-bottom:6px">선택 · ${esc(c.label)}</div>${esc(c.result||'')}</div>
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="nextq" data-id="${q.id}">다음 단계</button></div>`;
+    }else if(step.raid){
+      const m=monster(step.raid);const open=m&&!weeklyClosed(m);
+      h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">토벌전 · 4인</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')} · 레이드 › 토벌전</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>
+        ${qp.lost?'<p class="reason">지난 토벌에 실패했습니다. 토벌에 성공해야 이야기가 이어집니다.</p>':''}
+        <div class="row"><button class="btn btn-primary" data-act="link" data-link="monster:${step.raid}" ${!m||!open?'disabled':''}>토벌전으로 가기</button><span class="faint" style="font-size:12px">토벌에 성공하면 이 이야기가 이어집니다.</span></div>`;
     }else if(step.battle){
       const m=monster(step.battle);const busy=busyReason();
       h+=`${qTextHTML(step.text)}<div class="qfight">${m?`<pre class="ascii">${esc(ART[m.art]||ART.generic)}</pre><div class="stack" style="gap:4px"><span class="ph" style="margin:0">개인 레이드</span><b class="mname">${esc(m.name)}</b><span class="muted" style="font-size:12.5px">${esc(m.region||'')}</span></div>`:'<p class="reason">몬스터 정보가 없습니다</p>'}</div>

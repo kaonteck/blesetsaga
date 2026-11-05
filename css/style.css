@@ -3269,3 +3269,5 @@ table.wish input:focus{outline:none;border-bottom-color:var(--accent)}
 @keyframes sqIn{from{opacity:0}to{opacity:1}}
 @keyframes sqOut{from{opacity:1}to{opacity:0}}
 body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
+/* 8장 토벌전(4인) */
+.mass-roster .mr.r4-empty{border-style:dashed;opacity:.55}

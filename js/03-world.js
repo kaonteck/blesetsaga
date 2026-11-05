@@ -197,7 +197,7 @@ function vBattle(){
   if(S.drun&&monster(S.drun.mid))return vDrun();
   if(S.match||S.queue)return vQueue();
   if(S.party)return vParty();
-  if(S.sel.monster&&monster(S.sel.monster)&&mkind(monster(S.sel.monster))==='weekly'&&weeklyClosed()){S.sel.monster=null;S.sel.rtab='dungeon';}
+  if(S.sel.monster&&monster(S.sel.monster)&&mkind(monster(S.sel.monster))==='weekly'&&weeklyClosed(monster(S.sel.monster))){S.sel.monster=null;S.sel.rtab='dungeon';}
   if(S.sel.rtab==='weekly'&&weeklyClosed())S.sel.rtab='dungeon';
   if(S.sel.monster&&monster(S.sel.monster)){if(mkind(monster(S.sel.monster))==='event'){S.sel.monster=null;S.sel.rtab='event';}else return vMonster(monster(S.sel.monster));}
   const tab=S.sel.rtab||'dungeon';const d=daily(),w=weekly();
@@ -211,10 +211,10 @@ function vBattle(){
   }else if(tab==='dungeon'){
     body=dungeonTab();
   }else if(tab==='weekly'){
-    const wm=ms.filter(m=>mkind(m)==='weekly');
+    const wm=ms.filter(m=>mkind(m)==='weekly'&&!weeklyClosed(m));
     body=`${cntRow([['이번 주 토벌',`${wm.filter(m=>w.done[m.id]).length} / ${wm.length}`,'보상 주 1회'],['초기화','월 05:00','매주']])}
       <div class="mgrid">${wm.map(m=>monCard(m,`<span class="chip ${w.done[m.id]?'dim':'ok'}">${w.done[m.id]?'이번 주 보상 수령 완료':'이번 주 보상 받을 수 있음'}</span>`)).join('')||'<p class="empty">등록된 토벌전이 없습니다.</p>'}</div>
-      <div class="panel"><h3>모집 중인 토벌대</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='weekly'),true)}</div></div>`;
+      ${wm.every(m=>m.raid4)?'':`<div class="panel"><h3>모집 중인 토벌대</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='weekly'),true)}</div></div>`}`;
   }else{
     body=massPanel();
   }
@@ -958,6 +958,7 @@ function validateQuest(q,all){
     if(st.end){if(!st.reward)errs.push(`완료 단계 ${sid}에 보상이 없습니다`);else for(const k in (st.reward.items||{}))if(!ITEMS[k])errs.push(`${sid}: 알 수 없는 아이템 ${k}`);continue;}
     if(!st.text)errs.push(`${sid}: 상황문이 비어 있습니다`);
     if(st.battle){if(!monster(st.battle))errs.push(`${sid}: 전투 몬스터 ${st.battle}가 없습니다`);if(!steps[st.next])errs.push(`${sid}: 전투 승리 후 다음 단계 ${st.next}가 없습니다`);continue;}
+    if(st.raid){if(!monster(st.raid))errs.push(`${sid}: 토벌 몬스터 ${st.raid}가 없습니다`);if(!steps[st.next])errs.push(`${sid}: 토벌 승리 후 다음 단계 ${st.next}가 없습니다`);continue;}
     if(!Array.isArray(st.choices)||!st.choices.length){errs.push(`${sid}: 선택지가 없어 진행이 끊깁니다`);continue;}
     st.choices.forEach((c,i)=>{if(!c.label)errs.push(`${sid} 선택지 ${i+1}: 문구가 비어 있습니다`);if(!steps[c.next])errs.push(`${sid} 선택지 ${i+1}: 다음 단계 ${c.next}가 없습니다`);
       if(c.req&&c.req.item&&!ITEMS[c.req.item])errs.push(`${sid} 선택지 ${i+1}: 알 수 없는 아이템 조건`);});
@@ -965,7 +966,7 @@ function validateQuest(q,all){
   }
   if(steps[q.start]){
     const seen=new Set([q.start]),qu=[q.start];
-    while(qu.length){const st=steps[qu.shift()];if(st&&!st.end)[...(st.choices||[]),...(st.battle?[{next:st.next}]:[])].forEach(c=>{if(steps[c.next]&&!seen.has(c.next)){seen.add(c.next);qu.push(c.next);}});}
+    while(qu.length){const st=steps[qu.shift()];if(st&&!st.end)[...(st.choices||[]),...(st.battle||st.raid?[{next:st.next}]:[])].forEach(c=>{if(steps[c.next]&&!seen.has(c.next)){seen.add(c.next);qu.push(c.next);}});}
     Object.keys(steps).forEach(k=>{if(!seen.has(k))errs.push(`${k}: 시작 단계에서 도달할 수 없습니다`);});
     if(![...seen].some(k=>steps[k].end))errs.push('도달할 수 있는 완료 단계가 없습니다');
   }
