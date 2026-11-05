@@ -49,7 +49,7 @@ VIEWS.content=async(el)=>{
 };
 
 function drawContent(){
-  const el=$('#view');if(A.tab!=='content')return;
+  const el=$('#vb')||$('#view');if(A.tab!=='content')return;
   const k=C.kind;const ids=idsOf(k);
   const term=C.search.trim().toLowerCase();
   const shown=ids.filter(id=>{
@@ -96,18 +96,15 @@ function editorHTML(k,id){
   const s=rowState(k,id);
   const diff=def&&srv?topDiff(def,srv.data):[];
   return `<div class="panel">
-    <div class="ed-head"><div><button class="btn btn-g btn-sm back" data-pane="list" style="margin-bottom:6px">‹ 목록</button>
-      <h2>${esc(titleOf(k,id))}</h2><div class="id">${KINDS[k].label} · id <b>${esc(id)}</b>${srv?` · ${srv.rev}번째 버전 · ${ago(srv.updated_at)} ${who(srv.updated_by)}`:''}</div></div>
-      <div class="row">${s.chips.map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join('')}</div></div>
+    <div class="ed-head stick"><div><button class="btn btn-g btn-sm back" data-pane="list" style="margin-bottom:6px">‹ 목록</button>
+      <h2>${esc(titleOf(k,id))} ${s.chips.map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join(' ')}</h2><div class="id">${KINDS[k].label} · id <b>${esc(id)}</b>${srv?` · ${srv.rev}번째 버전 · ${ago(srv.updated_at)} ${who(srv.updated_by)}`:''}</div></div>
+      <div class="ed-act"><button class="btn" id="c-check">검사</button><button class="btn" id="c-draft">초안 저장</button><button class="btn btn-p" id="c-pub">공개하기</button></div></div>
     <div class="ed-grid">
       <div class="stack">
         ${dr?`<div class="msg warn">공개하지 않은 초안이 있습니다 (${ago(dr.updated_at)} ${who(dr.updated_by)}). 아래 편집기에는 초안이 열려 있습니다.</div>`:''}
         ${formHTML(k,id,cur)}
         <div id="c-msg"></div>
         <div class="row">
-          <button class="btn btn-p" id="c-pub">공개하기</button>
-          <button class="btn" id="c-draft">초안 저장</button>
-          <button class="btn" id="c-check">검사</button>
           <button class="btn btn-g" id="c-fmt">정리</button>
           <span class="grow"></span>
           ${dr?'<button class="btn btn-g" id="c-dropdraft">초안 버리기</button>':''}

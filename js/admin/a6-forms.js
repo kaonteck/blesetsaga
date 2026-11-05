@@ -28,13 +28,15 @@ const sync=()=>{const ta=$('#c-json');if(ta&&FM)ta.value=pretty(FM.d);};
 
 /* ── 입력 칸 만들기 ── */
 const fid=()=>'fm'+(++cbN);
+const KSEP='\u241F';
+const labH=l=>{l=String(l??'');const i=l.indexOf(KSEP);return i<0?esc(l):`${esc(l.slice(0,i))}<code class="key">${esc(l.slice(i+1))}</code>`;};
 function fText(p,label,val,o={}){const id=fid();const v=val??pget(FM.d,p)??'';
-  return `<label class="f ${o.wide?'wide':''}" for="${id}">${esc(label)}${o.hint?`<small class="faint">${esc(o.hint)}</small>`:''}${o.area?`<textarea id="${id}" data-p="${p}" data-t="${o.t||'str'}" rows="${o.rows||3}" placeholder="${esc(o.ph||'')}">${esc(v)}</textarea>`:`<input id="${id}" type="${o.num?'number':'text'}" data-p="${p}" data-t="${o.num?'num':(o.t||'str')}" value="${esc(v)}" placeholder="${esc(o.ph||'')}" ${o.min!=null?`min="${o.min}"`:''}>`}</label>`;}
+  return `<label class="f ${o.wide?'wide':''}" for="${id}"><span class="fl">${labH(label)}</span>${o.hint?`<small class="faint">${esc(o.hint)}</small>`:''}${o.area?`<textarea id="${id}" data-p="${p}" data-t="${o.t||'str'}" rows="${o.rows||3}" placeholder="${esc(o.ph||'')}">${esc(v)}</textarea>`:`<input id="${id}" type="${o.num?'number':'text'}" data-p="${p}" data-t="${o.num?'num':(o.t||'str')}" value="${esc(v)}" placeholder="${esc(o.ph||'')}" ${o.min!=null?`min="${o.min}"`:''}>`}</label>`;}
 function fNum(p,label,o={}){return fText(p,label,null,{...o,num:true});}
-function fCheck(p,label,val){const v=val??!!pget(FM.d,p);return `<label class="chk"><input type="checkbox" data-p="${p}" data-t="bool" ${v?'checked':''}> ${esc(label)}</label>`;}
+function fCheck(p,label,val){const v=val??!!pget(FM.d,p);return `<label class="chk"><input type="checkbox" data-p="${p}" data-t="bool" ${v?'checked':''}> <span class="fl">${labH(label)}</span></label>`;}
 /* 고르기: 4개 이하 버튼 · 5~9 드롭다운 · 10개 이상 검색 */
 function fPick(p,label,opts,o={}){const cur=o.val!==undefined?o.val:pget(FM.d,p);const curS=cur==null?'':String(cur);const t=o.t||'str';const act=o.act?`data-fa="${o.act}"`:'';
-  const head=label?`<span class="fl">${esc(label)}${o.hint?` <small class="faint">${esc(o.hint)}</small>`:''}</span>`:'';
+  const head=label?`<span class="fl">${labH(label)}${o.hint?` <small class="faint">${esc(o.hint)}</small>`:''}</span>`:'';
   if(opts.length<=4)return `<div class="f ${o.wide?'wide':''}">${head}<div class="seg" role="radiogroup">${opts.map(([v,l])=>`<button type="button" role="radio" class="sg" aria-checked="${String(v)===curS}" data-p="${p}" data-t="${t}" data-v="${esc(v)}" ${act}>${esc(l)}</button>`).join('')}</div></div>`;
   if(opts.length<10){const id=fid();return `<label class="f ${o.wide?'wide':''}" for="${id}">${head}<select id="${id}" data-p="${p}" data-t="${t}" ${act}>${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(v)===curS?'selected':''}>${esc(l)}</option>`).join('')}</select></label>`;}
   const key='cb'+(++cbN);CB[key]=opts;const hit=opts.find(x=>String(x[0])===curS);
@@ -75,11 +77,21 @@ function questForm(q){
       ${fCheck('cond.adv','전직을 마쳐야 함')}</div>`)}</div>
     <div class="wide row">${fCheck('published','유저에게 보이기')}</div>
   </div></section>
-  ${scenes.map((k,i)=>sceneForm(q,k,i)).join('')}
+  ${flowHTML(q,ord)}
+  ${scenes.map((k,i)=>scnWrap(q,k,sceneForm(q,k,i))).join('')}
   <div class="row"><button type="button" class="btn btn-sm" data-fa="add-scene">+ 대화 장면</button><button type="button" class="btn btn-sm" data-fa="add-battle">+ 전투 장면</button>${ends.length?'':'<button type="button" class="btn btn-sm" data-fa="add-end">+ 완료</button>'}</div>
-  ${ends.map(k=>endForm(q,k)).join('')}
+  ${ends.map(k=>scnWrap(q,k,endForm(q,k))).join('')}
   </div>`;
 }
+/* 장면 접기: 열린 장면은 퀘스트마다 기억(양식을 다시 그려도 유지) */
+const SCN_OPEN={};
+function scnSet(){const key=FM.k+':'+FM.id;if(!SCN_OPEN[key])SCN_OPEN[key]=new Set([FM.d.start||stepOrder(FM.d)[0]]);return SCN_OPEN[key];}
+function flowHTML(q,ord){if(!ord.length)return '';
+  return `<div class="flow"><span>흐름</span>${ord.map(k=>{const st=q.steps[k];return `<button type="button" class="n ${st.battle?'b':st.end?'e':''}" data-scn="${esc(k)}">${esc(sceneName(q,k))}${st.end&&!/·/.test(sceneName(q,k))?' · '+esc(k):''}</button>`;}).join('<span>→</span>')}</div>`;}
+function scnWrap(q,k,html){const st=q.steps[k];const isB=!!st.battle,isE=!!st.end;
+  const first=isB?((liveData('monster',st.battle)||{}).name||st.battle||'몬스터를 고르세요'):String(st.text||'').replace(ROUTE_RE,'').split('\n')[0];
+  const to=isE?(st.reward?'보상':'보상 없음'):isB?'전투':`선택지 ${(st.choices||[]).length}개`;
+  return `<details class="scn ${isB?'battle':isE?'end':''}" data-scn-k="${esc(k)}" ${scnSet().has(k)?'open':''}><summary><b>${esc(sceneName(q,k))}</b><span class="s">${esc(first.slice(0,80))}</span><span class="to">${to}</span></summary>${html}</details>`;}
 function listPicker(p,label,opts){const cur=pget(FM.d,p)||[];const name=id=>(opts.find(x=>x[0]===id)||[id,id])[1];
   return `<div class="f wide"><span class="fl">${esc(label)}</span><div class="row">${cur.map((id,i)=>`<span class="chip info">${esc(name(id))} <button type="button" class="x" data-fa="list-del" data-lp="${p}" data-i="${i}" aria-label="빼기">×</button></span>`).join('')}</div>
     ${fPick('',null,opts.filter(x=>!cur.includes(x[0])),{val:'',act:'list-add',ph:'검색해서 더하기'}).replace(/data-p=""/g,`data-p="" data-lp="${p}"`)}</div>`;}
@@ -150,17 +162,27 @@ const FPICK={
   item:{type:[['use','소모품'],['equip','장비'],['mat','재료'],['deco','장식품']],slot:[['weapon','무기'],['armor','방어구'],['acc','장신구']]},
   event:{kind:[['event','이벤트'],['boss','보스 출현'],['maint','점검']]},
 };
+// 칸 묶음 [제목, 작은 설명, 칸들] — 묶음에 없는 칸은 '그 밖의 값'
+const FGROUP={
+  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','단일 · 광역 · 지속 피해',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg']],['보상','',['exp','gold','drops']]],
+  item:[['기본 정보','',['id','type','name','tag','desc','art','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
+};
 function genericForm(k,d){
   const keys=Object.keys(d);const P=FPICK[k]||{};
-  const rows=keys.map(key=>{const v=d[key];const lab=FLABEL[key]?`${FLABEL[key]} · ${key}`:key;
+  const row=key=>{const v=d[key];const lab=FLABEL[key]?FLABEL[key]+KSEP+key:key;
     if(k==='market'&&key==='item')return fPick(key,lab,itemsL(),{wide:true});
     if(P[key])return fPick(key,lab,P[key]);
     if(typeof v==='boolean')return `<div class="f">${fCheck(key,lab)}</div>`;
     if(typeof v==='number'||v===null&&['stock','maxLevel'].includes(key))return fText(key,lab,v??'',{num:true,t:'numnull'});
     if(typeof v==='string')return fText(key,lab,null,{wide:v.length>40||['desc','text','title','name'].includes(key),area:v.length>60||['desc','text'].includes(key)});
-    const id=fid();return `<label class="f wide" for="${id}">${esc(lab)} <small class="faint">묶음 값 (코드)</small><textarea id="${id}" class="code sm" data-p="${key}" data-t="json" rows="${Math.min(8,pretty(v).split('\n').length)}">${esc(pretty(v))}</textarea></label>`;});
-  return `<div class="fm"><section class="fm-sec"><h4>${esc(KINDS[k].label)}</h4><div class="fgrid">${rows.join('')}</div>
-    <div class="row" style="margin-top:8px"><input type="text" id="fm-newkey" placeholder="새 칸 이름 (영문)" style="max-width:200px"><button type="button" class="btn btn-sm" data-fa="add-key">+ 칸 더하기</button></div></section></div>`;}
+    const id=fid();return `<label class="f wide" for="${id}"><span class="fl">${labH(lab)}</span> <small class="faint">묶음 값 (코드)</small><textarea id="${id}" class="code sm" data-p="${key}" data-t="json" rows="${Math.min(8,pretty(v).split('\n').length)}">${esc(pretty(v))}</textarea></label>`;};
+  const used=new Set();
+  const secs=(FGROUP[k]||[]).map(([t,sub,ks])=>{const have=ks.filter(x=>keys.includes(x));have.forEach(x=>used.add(x));
+    return have.length?{t,sub,body:have.map(row).join('')}:null;}).filter(Boolean);
+  const rest=keys.filter(x=>!used.has(x));
+  if(rest.length||!secs.length)secs.push({t:secs.length?'그 밖의 값':KINDS[k].label,sub:secs.length?'기타':'',body:rest.map(row).join('')});
+  const addRow=`<div class="row" style="margin-top:8px"><input type="text" id="fm-newkey" placeholder="새 칸 이름 (영문)" style="max-width:200px"><button type="button" class="btn btn-sm" data-fa="add-key">+ 칸 더하기</button></div>`;
+  return `<div class="fm">${secs.map((x,i)=>`<section class="fm-sec"><h4>${esc(x.t)}${x.sub?` <i>${esc(x.sub)}</i>`:''}</h4><div class="fgrid">${x.body}</div>${i===secs.length-1?addRow:''}</section>`).join('')}</div>`;}
 
 /* ───────── 그리기 · 연결 ───────── */
 function formHTML(k,id,cur){FM={k,id,d:clone(cur)};Object.keys(CB).forEach(x=>delete CB[x]);
@@ -189,6 +211,9 @@ function bindForm(){const box=$('#fm-box');if(!box)return;
     else if(el.tagName==='TEXTAREA'||el.type==='number')el.oninput=()=>fAct(el.dataset.fa,el,el.value);
     else el.onclick=()=>fAct(el.dataset.fa,el);});
   $$('.cb',box).forEach(bindCB);
+  if(FM.k==='quest'){
+    $$('details.scn',box).forEach(d=>d.addEventListener('toggle',()=>{const S=scnSet();if(d.open)S.add(d.dataset.scnK);else S.delete(d.dataset.scnK);}));
+    $$('.flow [data-scn]',box).forEach(b=>b.onclick=()=>{const d=box.querySelector(`details.scn[data-scn-k="${CSS.escape(b.dataset.scn)}"]`);if(!d)return;d.open=true;scnSet().add(b.dataset.scn);d.scrollIntoView({behavior:'smooth',block:'start'});});}
 }
 function bindCB(cb){const inp=$('.cb-in',cb),list=$('.cb-list',cb);const opts=CB[cb.dataset.cb]||[];let shown=[];let hi=-1;
   const draw=()=>{const t=inp.value.trim().toLowerCase();shown=opts.filter(o=>!t||String(o[0]).toLowerCase().includes(t)||String(o[1]).toLowerCase().includes(t)||String(o[2]||'').toLowerCase().includes(t)).slice(0,60);hi=-1;
@@ -217,12 +242,12 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
       else if(t==='req'){const c=q.steps[a1].choices[+a2];if(v)c.req={item:''};else{delete c.req;delete c.take;delete c.takeGold;}}
       else if(t==='flag'){const c=q.steps[a1].choices[+a2];if(v)c.flag='';else delete c.flag;}
       else if(t==='second'){const c=q.steps[a1].choices[+a2];
-        if(v){const sid=newSid(q);q.steps[sid]={text:'',_second:true,choices:[{label:'',result:'',next:c.next||ensureEnd()}]};c.next=sid;}
+        if(v){const sid=newSid(q);scnSet().add(sid);q.steps[sid]={text:'',_second:true,choices:[{label:'',result:'',next:c.next||ensureEnd()}]};c.next=sid;}
         else{const s2=q.steps[c.next];const back=s2&&s2.choices&&s2.choices[0]?s2.choices[0].next:ensureEnd();const old=c.next;c.next=back;if(s2&&refsTo(q,old)===0)delete q.steps[old];}}
       break;}
-    case 'add-scene':{const sid=newSid(q);q.steps[sid]={text:'',choices:[{label:'',result:'',next:ensureEnd()}]};if(!q.start||!q.steps[q.start])q.start=sid;break;}
-    case 'add-battle':{const sid=newSid(q);q.steps[sid]={text:'',battle:'',winText:'',next:ensureEnd()};if(!q.start||!q.steps[q.start])q.start=sid;break;}
-    case 'add-end':ensureEnd();break;
+    case 'add-scene':{const sid=newSid(q);scnSet().add(sid);q.steps[sid]={text:'',choices:[{label:'',result:'',next:ensureEnd()}]};if(!q.start||!q.steps[q.start])q.start=sid;break;}
+    case 'add-battle':{const sid=newSid(q);scnSet().add(sid);q.steps[sid]={text:'',battle:'',winText:'',next:ensureEnd()};if(!q.start||!q.steps[q.start])q.start=sid;break;}
+    case 'add-end':scnSet().add(ensureEnd());break;
     case 'make-start':q.start=k;break;
     case 'del-scene':{if(!confirm(`「${sceneName(q,k)}」을(를) 지울까요? 이 장면으로 이어지던 선택지는 완료로 바뀝니다.`))return;delete q.steps[k];
       const e=firstEnd()||ensureEnd();Object.values(q.steps).forEach(st=>{if(st.next===k)st.next=e;(st.choices||[]).forEach(c=>{if(c.next===k)c.next=e;});});
