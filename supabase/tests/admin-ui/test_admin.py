@@ -52,6 +52,16 @@ with sync_playwright() as p:
     ok(pg.locator('.flow [data-scn]').count()==nd and nd>=2 and no==1,f'퀘스트 흐름 줄·장면 접기(장면 {nd}개 중 {no}개 열림)')
     pg.locator('.flow [data-scn]').last.click();pg.wait_for_timeout(300);ok(pg.locator('details.scn[open]').count()==2,'흐름 줄 누르면 그 장면 열림')
     pg.locator('details.scn[open] .sg').first.click();pg.wait_for_timeout(200);ok(pg.locator('details.scn[open]').count()==2,'다시 그려도 열린 장면 유지')
+    # 켜고 끄는 묶음: 켠 직후(값이 아직 비어 있어도) 켜진 채로 남음
+    pg.evaluate("document.querySelectorAll('details.scn').forEach(d=>d.open=true)")
+    for lab,key in [('열리는 조건 더하기','cond'),('조건 (이 선택지를 고르려면)','req:'),('기록 남기기','flag:')]:
+        sel=f'.tg-h:has(input[data-k^="{key}"]:not(:checked))'
+        n0=pg.locator(sel).count();pg.locator(sel).first.click();pg.wait_for_timeout(250)
+        ok(pg.locator(sel).count()==n0-1,f'켜기 → 켜진 채로: {lab}')
+    jj=json.loads(pg.input_value('#c-json'));chs=[c for st in jj['steps'].values() for c in st.get('choices',[])]
+    ok(any(c.get('req')=={'item':''} for c in chs) and any(c.get('flag')=='' for c in chs),'켠 조건·기록이 코드에 들어감(빈 값)')
+    pg.locator('.tg-h:has(input[data-k^="flag:"]:checked)').first.click();pg.wait_for_timeout(250)
+    ok(pg.locator('.tg-h:has(input[data-k="cond"]:checked)').count()==1,'다른 묶음을 고쳐도 켠 것 유지')
     d=json.loads(pg.input_value('#c-json'));d['start']='nope';pg.fill('#c-json',json.dumps(d,ensure_ascii=False));pg.click('#c-check')
     msg=pg.inner_text('#c-msg');ok('문제' in msg,'퀘스트 검사로 잘못된 시작 단계 찾음: '+msg.split('\n')[1][:60] if '\n' in msg else msg[:80])
     # 초안
