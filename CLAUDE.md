@@ -630,6 +630,8 @@
 
 - [메인 2026-11-07] (유저 요청 3단계) **나만의 연대기**: 캐릭터 › '연대기' 탭(탐사 기록 옆, 04 탭 목록·`ctab` 한 줄씩). 05 끝 `chronicleHTML`·`chronRows`·`CH_SUM`: 끝낸 메인(QCHAPTERS 장별, 장을 다 끝내면 한 줄 요약)·서브('곁가지 이야기') 퀘스트의 `S.qp[id].history`(고른 선택 ▸ 결과)를 이어 붙임, 마지막 장만 펼침. 나만 봄(서버 공개 없음). style.css 끝 `.chr*`.
 
+- [메인 2026-11-07] (유저 요청 4단계) **탐색 선택 이벤트**: 새 파일 **`js/07-exev.js`**(index.html 07-boot 다음 — `ACTS`를 감싸서 06 뒤에 와야 함). 탐색 1번마다 20%(`EXEV_P`)로 평소 결과 대신 작은 사건 + 선택지 2개(`EXEV` 38개: 땅마다 4 + 공통 6, 기묘한 것 `odd` 7개). 보상은 평소 탐색 한 번 크기(`exploreReward` 재사용), `+hurt`면 체력 −10%. 같은 사건은 하루 한 번(`S.me.exevToday`), 고른 선택은 기록 `ev_<id>_a|b`(탐사 기록·`{{mem:}}`에 씀). **`EXEV_LIVE=false` — 유저 확인 전까지 운영자에게만**. 원고 `docs/drafts/explore-events-draft.md`(프로젝트 `claude/explore-events-draft.md`). 프론트 참고: style.css 끝 `.exev*`, light.css 재생성.
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.

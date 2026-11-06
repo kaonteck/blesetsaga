@@ -1691,6 +1691,9 @@ html[data-theme="light"] .chr .chr-q{border-left:2px solid var(--rule-2)}
 html[data-theme="light"] .chr .chr-ev li{color:var(--text)}
 html[data-theme="light"] .chr .chr-ev li b{color:var(--steel-hi)}
 html[data-theme="light"] .chr .chr-ev li span{color:var(--muted)}
+html[data-theme="light"] .exev-x{color:var(--ink-2,#2e3645)}
+html[data-theme="light"] .exev-r{border-left:2px solid var(--rule-2,#d5dae4)}
+html[data-theme="light"] .exev.odd .exev-x{color:#3c465a}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

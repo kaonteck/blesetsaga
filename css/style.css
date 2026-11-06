@@ -3736,3 +3736,15 @@ html{overflow-y:scroll}
 .chr .chr-ev li b{font-weight:600;color:var(--steel-hi)}
 .chr .chr-ev li span{color:var(--muted)}
 .chr .chr-none{margin:0;font-size:12.5px}
+/* 탐색 선택 이벤트 (07-exev) */
+.modal.exev-m{max-width:440px}
+.exev h3{margin:4px 0 8px;font-size:18px}
+.exev-x{line-height:1.7;color:var(--ink-2,#c9cbd6);margin:0 0 14px;word-break:keep-all}
+.exev-c{display:flex;flex-direction:column;gap:8px}
+.exev-c .btn{justify-content:flex-start;text-align:left;padding:10px 14px}
+.exev-r{border-left:2px solid var(--rule-2,#3a3a4a);padding:4px 0 4px 12px;margin:0 0 14px}
+.exev-r p{margin:6px 0 0;line-height:1.7;word-break:keep-all}
+.exev-got{color:var(--ok,#72c096);font-size:13px}
+.exev.odd h3{letter-spacing:.06em}
+.exev.odd .exev-x{color:#b8b4c8;font-style:italic}
+.exev.odd .exev-r{border-left-color:#5e3a86}
