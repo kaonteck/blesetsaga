@@ -1655,6 +1655,10 @@ html[data-theme="light"] body[data-route="battle"] #view .page-head::before{back
 html[data-theme="light"] .cls-ic{background:#14181f}
 html[data-theme="light"] .hud-portrait .uc-sig .cls-ic{filter:drop-shadow(0 0 10px rgba(30,40,60,0.245))}
 html[data-theme="light"] .cflag.on .cfl-ic{background:#fff}
+html[data-theme="light"] .mgrp.open::before,html[data-theme="light"] .mgrp.open::after{--g3:#95afe3}
+html[data-theme="light"] .mgrp.open::before{background:conic-gradient(from var(--mga),transparent 0deg 200deg,var(--g3) 250deg,var(--g1) 295deg,color-mix(in srgb,var(--g1),white 65%) 318deg,var(--g2) 335deg,transparent 360deg),
+    linear-gradient(color-mix(in srgb,#95afe3 30%,transparent) 0 0);-webkit-mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(#ebeef4 0 0);mask:linear-gradient(#ebeef4 0 0) content-box exclude,linear-gradient(#ebeef4 0 0);box-shadow:none;border:0}
+html[data-theme="light"] .mgrp.open::after{border:0;box-shadow:none;background:conic-gradient(from var(--mga),transparent 0deg 215deg,var(--g3) 260deg,var(--g1) 300deg,var(--g2) 332deg,transparent 360deg);-webkit-mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(90deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent);mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(90deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
@@ -1685,3 +1689,6 @@ html[data-theme="light"] .sks-n{color:#fff;background:linear-gradient(0deg,rgba(
 html[data-theme="light"] .gboss{background:#9b2c2c;border-color:#7a1f1f}
 html[data-theme="light"] .gboss b{color:#fff}
 html[data-theme="light"] .gboss small{color:#ffd6d6}
+/* 레이드 펼친 묶음 흐르는 빛(프론트): 생성기가 마스크 색을 바꾸며 합성 규칙을 빼먹어 다시 지정 */
+html[data-theme="light"] .mgrp.open::before{-webkit-mask-composite:xor;mask-composite:exclude}
+html[data-theme="light"] .mgrp.open::after{-webkit-mask-composite:xor,source-in;mask-composite:exclude,intersect;opacity:.45}
