@@ -43,7 +43,7 @@ const ITEMS={
   elixir:{name:'용기의 영약',type:'use',target:'self',desc:'불씨 조각과 진주로 연성한 영약. 마시면 60분 동안 공격력 +8, 행운 +4.',price:150,buff:{stat:'atk',val:8,min:60},buff2:{stat:'luk',val:4,min:60}},
   sword:{name:'낡은 순례자 검',type:'equip',slot:'weapon',wtype:'gsword',stats:{atk:3},desc:'순례자들이 호신용으로 지니던 검',price:90},
   shield:{name:'성역의 대방패',type:'equip',slot:'weapon',wtype:'sws',stats:{def:3,maxHp:25},desc:'성역 기사단의 문장이 새겨진 방패'},
-  bow:{name:'추적자의 장궁',type:'equip',slot:'weapon',wtype:'gun',stats:{mag:6,luk:2},desc:'블라스파미아의 나무로 깎은 활'},
+  bow:{name:'추적자의 장궁',type:'equip',slot:'weapon',wtype:'gun',stats:{atk:6,luk:2},desc:'블라스파미아의 나무로 깎은 활'},
   staff:{name:'축복의 지팡이',type:'equip',slot:'weapon',wtype:'staff',stats:{mag:3,luk:3},desc:'끝에 맑은 수정이 박힌 지팡이'},
   leather:{name:'탐사대 가죽갑옷',type:'equip',slot:'armor',stats:{def:2,maxHp:15},desc:'탐사대 보급품',price:120},
   cloak:{name:'백야의 망토',type:'equip',slot:'armor',stats:{def:4,luk:1,maxHp:30},desc:'해가 지지 않는 땅의 빛을 머금은 망토'},
@@ -70,7 +70,7 @@ GEAR_TIER.forEach(([pre,land,L,arm,acc,desc],t)=>{const T=t+1;const ids={w:{},ar
   const A=Math.round(4+L*1.0),price=Math.round(40+L*14);
   const W={gsword:{atk:A,maxHp:Math.round(L*1.2)},axe:{atk:Math.round(A*1.15)},sws:{atk:Math.round(A*0.6),def:Math.round(2+L*0.3),maxHp:Math.round(15+L*3)},
     knuckle:{atk:Math.round(A*0.95),luk:Math.round(1+L*0.08)},dagger:{atk:Math.round(A*0.9),luk:Math.round(2+L*0.15)},staff:{mag:Math.round(A*1.05),luk:Math.round(1+L*0.08)},
-    gun:{mag:A,luk:Math.round(1+L*0.1)},dgun:{mag:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{mag:Math.round(A*0.9),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{mag:A,luk:Math.round(3+L*0.25)}};
+    gun:{atk:A,luk:Math.round(1+L*0.1)},dgun:{atk:Math.round(A*1.1),luk:Math.round(1+L*0.05)},scepter:{mag:Math.round(A*0.9),luk:Math.round(2+L*0.2),maxHp:Math.round(10+L*2)},orb:{mag:A,luk:Math.round(3+L*0.25)}};
   (L<20?[...BASE_WT,...(T===2?['orb']:[])]:Object.keys(WTYPE)).forEach(w=>{const id=`g${T}_${w}`;ids.w[w]=id;GEAR_IDS.push(id);
     ITEMS[id]={name:`${pre} ${WTYPE[w]}`,type:'equip',slot:'weapon',wtype:w,tier:T,levelReq:L,stats:W[w],desc:desc,price};});
   ITEMS[ids.armor]={name:`${pre} ${arm}`,type:'equip',slot:'armor',tier:T,levelReq:L,stats:{def:Math.round(2+L*0.35),maxHp:Math.round(15+L*4)},desc,price};
@@ -185,8 +185,8 @@ const SKILLS={
   hellfire:{name:'헬파이어',en:'Hellfire',type:'nodice',target:'enemy',desc:'대상의 신체에 불꽃을 피운다. 이번 턴 포함 3턴 동안 마력의 18% 고정 대미지.'},
   eternalflame:{name:'이터널 플레임',en:'Eternal Flame',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 3턴 동안 판정 90~109%면 ×2, 110% 이상이면 ×3. 단 90% 미만이면 이번 턴과 다음 턴 공격 대미지가 무효.'},
   shooting:{name:'집중 사격',en:'Shooting',type:'dice',target:'enemy',desc:'대상을 무기로 공격한다.'},
-  poisonshot:{name:'포이즌슈팅',en:'Poison Shooting',type:'dice',target:'enemy',poison:{pct:12,turns:3},desc:'독을 바른 총알을 발사한다. 이번 턴 포함 3턴 동안 마력의 12% 중독. 속임수 중독과 중첩되지 않는다.'},
-  smoke:{name:'연막탄',en:'Smoke Projectile',type:'dice',target:'enemy',uses:1,bonus:25,desc:'추가 대미지 +25%. 다음 턴 본인을 제외한 파티원 대미지 +15%(시전자 마력 기준).'},
+  poisonshot:{name:'포이즌슈팅',en:'Poison Shooting',type:'dice',target:'enemy',poison:{pct:12,turns:3},desc:'독을 바른 총알을 발사한다. 이번 턴 포함 3턴 동안 공격력의 12% 중독. 속임수 중독과 중첩되지 않는다.'},
+  smoke:{name:'연막탄',en:'Smoke Projectile',type:'dice',target:'enemy',uses:1,bonus:25,desc:'추가 대미지 +25%. 다음 턴 본인을 제외한 파티원 대미지 +15%(시전자 공격력 기준).'},
   legendary:{name:'레전더리 샷',en:'Legendary Shot',type:'dice',target:'enemy',combo:{from:'shooting',bonus:25},crit:true,desc:'특수 탄환을 장전하여 공격한다. 판정이 110% 이상이면 다음 턴 오버 버닝 사용 가능.'},
   overburning:{name:'오버 버닝',en:'Over burning',type:'dice',target:'enemy',desc:'직전 턴 레전더리 샷의 판정이 110% 이상일 때 사용 가능. 결과값 ×2.'},
   fusillade:{name:'연사',en:'Fusillade',type:'passive',special:true,desc:'크리티컬 판정에 성공하면 다음 턴에 스킬을 두 번 사용할 수 있다.'},
@@ -232,7 +232,7 @@ function rollD(n,rng){return 1+Math.floor(rng()*Math.max(1,Math.round(n)));}
 const ENH_MAX=10;
 function enhStep(v){return Math.max(1,Math.round(Math.abs(v)*0.15))*Math.sign(v||1);}
 function itemStats(id,lv){const it=ITEMS[id];if(!it||!it.stats)return {};const o={};for(const k in it.stats)o[k]=it.stats[k]+(lv||0)*(it.stats[k]>0?enhStep(it.stats[k]):0);return o;}
-const MAGIC_BASE=['mage','shooter','priest'];
+const MAGIC_BASE=['mage','priest']; /* 슈터·듀얼리스트는 원거리 물리 딜러 → 공격력(2026-11-07 유저 결정), MP는 그대로 씀 */
 function isMagic(job){const c=CLASSES[job];return !!c&&MAGIC_BASE.includes(c.base||job);}
 function powOf(st){return st.pk==='mag'?st.mag:st.atk;}
 /* 클래스 HP/MP 설정(운영 페이지 '클래스' 탭 → 서버 content kind 'cls').
@@ -256,7 +256,7 @@ function statsFor(cls,level,equip,enh){
     if(CC&&CC.own){m0=num(CC.cfg.mp,mb);pc=num(CC.cfg.mpPct,pc);}
     else if(CC){m0=num(CC.cfg.mp,MP_BASE[bid]??mb)+(mb-(MP_BASE[bid]??mb));pc=num(CC.cfg.mpPct,pc);}
     const sc=1+pc/100*L;s.mpScale=sc;s.maxMp=Math.max(0,Math.round(m0*sc));}
-  /* 마력 계열(메이지·슈터·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
+  /* 마력 계열(메이지·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
   if(isMagic(cls)){s.mag=s.atk;s.atk=0;}
   for(const slot in (equip||{})){const id=equip[slot];const st=itemStats(id,(enh||{})[id]);for(const k in st)s[k]=(s[k]||0)+st[k];}
   s.pk=isMagic(cls)?'mag':'atk';
