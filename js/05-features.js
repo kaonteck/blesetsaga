@@ -2020,7 +2020,8 @@ function r4Grid(b,m){const MD=massDef(m);b.grid=true;b.pats=MD.patterns;b.massTi
 /* 기존 세이브: 토벌 숨무스 → 이벤트 만신전, 1차 4인 토벌(raid4) 정리 */
 (function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{let ch=false;const i=S.data.monsters.findIndex(x=>x.id==='guardian');
   if(i>=0&&mkind(S.data.monsters[i])!=='event'){S.data.monsters[i]=clone(SUMMUS_EVENT);ch=true;}
-  R4_MONS.forEach(M=>{const j=S.data.monsters.findIndex(x=>x.id===M.id);if(j>=0&&(S.data.monsters[j].rev||0)<M.rev){S.data.monsters[j]=clone(M);ch=true;}});
+  R4_MONS.forEach(M=>{const j=S.data.monsters.findIndex(x=>x.id===M.id);const srv=S.data._srv&&S.data._srv.monster&&S.data._srv.monster[M.id];  /* 운영 페이지에서 공개한 값(서버 rev)은 덮지 않음 */
+    if(j>=0&&!srv&&(S.data.monsters[j].rev||0)<M.rev){S.data.monsters[j]=clone(M);ch=true;}});
   if(S.r4){S.r4=null;ch=true;}if(ch)save();}catch(e){}};})();
 
 /* ───────── 6장 기묘한 보상: 반쯤 지워진 종잇조각 (유저 결정 2026-11-06) ─────────
