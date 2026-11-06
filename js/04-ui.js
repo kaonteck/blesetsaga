@@ -56,8 +56,9 @@ function renderTop(){
 }
 function fmtDur(ms){const s=Math.max(0,Math.floor(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
 /* 클래스 아이콘(유저 이미지 img/class/ic/<클래스>.png, 흰색) — 그림이 없는 클래스(슈터)는 예전 한자 문장 */
-const CLS_IC=new Set(['defender','warrior','knight','infighter','mystic','destroyer','mage','salamander','dualist','priest','demigod','summoner']);
-function clsIc(job){const c=CLASSES[job];if(!c)return '?';return CLS_IC.has(job)?`<i class="cls-ic" style="-webkit-mask-image:url(img/class/ic/${job}.png);mask-image:url(img/class/ic/${job}.png)" role="img" aria-label="${esc(c.name)}"></i>`:c.sigil;}
+const CLS_IC=new Set(['defender','warrior','knight','infighter','mystic','destroyer','mage','salamander','dualist','priest','demigod','summoner','shooter']);
+const CLS_IC_EXT={shooter:'svg'};
+function clsIc(job){const c=CLASSES[job];if(!c)return '?';return CLS_IC.has(job)?`<i class="cls-ic" style="-webkit-mask-image:url(img/class/ic/${job}.${CLS_IC_EXT[job]||'png'});mask-image:url(img/class/ic/${job}.${CLS_IC_EXT[job]||'png'})" role="img" aria-label="${esc(c.name)}"></i>`:c.sigil;}
 function sigil(job,cls=''){return `<div class="sigil ${cls} ${jobCls(job)}" aria-hidden="true">${clsIc(job)}</div>`;}
 function className(job){const c=CLASSES[job];return c.tier===2?`★ ${c.name}`:c.name;}
 const COIN=`<svg class="coin" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.2" fill="var(--xp)"/><circle cx="8" cy="8" r="5.2" fill="none" stroke="var(--coin-dk)" stroke-width="1.1"/><path d="M8 5.1v5.8M6.3 6.4c0-.8.8-1.2 1.7-1.2s1.7.4 1.7 1.1-.7 1-1.7 1.2-1.8.5-1.8 1.3.8 1.2 1.8 1.2 1.8-.4 1.8-1.2" fill="none" stroke="var(--coin-dk)" stroke-width="1.1" stroke-linecap="round"/></svg>`;
