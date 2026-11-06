@@ -900,7 +900,7 @@ function drunHud(R,k){const me=S.me,st=myStats(),maxHp=st.maxHp,hp=Math.max(0,Ma
     <div class="hud-main">
       <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${role}">${esc(CLASSES[me.job].name)}</span>${fx.map(x=>`<span class="hud-fx">${esc(x)}</span>`).join('')}</div>
         <div class="hud-bars"><div class="hb hp ${hpP<30?'low':''}" title="${hp}/${maxHp}"><i style="width:${hpP}%"></i><span>HP</span><b class="num">${hp}<small>/${maxHp}</small></b></div>
-          <div class="hb mp"><i style="width:0%"></i><span>MP</span><b class="num">—</b></div></div></div>
+          ${(()=>{const mm=myStats().maxMp||0;return `<div class="hb mp"><i style="width:${mm?100:0}%"></i><span>MP</span><b class="num">${mm?`${mm}<small>/${mm}</small>`:'—'}</b></div>`;})()}</div></div>
       <div class="hud-body gact-body">${body}</div></div>
     ${pad}</div></div>`;}
 

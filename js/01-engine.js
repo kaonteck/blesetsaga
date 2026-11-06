@@ -219,10 +219,24 @@ function itemStats(id,lv){const it=ITEMS[id];if(!it||!it.stats)return {};const o
 const MAGIC_BASE=['mage','shooter','priest'];
 function isMagic(job){const c=CLASSES[job];return !!c&&MAGIC_BASE.includes(c.base||job);}
 function powOf(st){return st.pk==='mag'?st.mag:st.atk;}
+/* 클래스 HP/MP 설정(운영 페이지 '클래스' 탭 → 서버 content kind 'cls').
+   설정이 있으면: 최대 HP = 최초 HP × (1 + 상승% / 100 × 레벨 계수). 레벨 계수 L 은 아래 statsFor 와 같다.
+   설정이 없으면 예전 공식(기본 클래스 stat·grow + 상위 클래스 bonus) 그대로. MP는 아직 쓰는 곳이 없어 표시만. */
+let CLASS_CFG={};
+const MP_DEF={base:100,pct:4};
+function classDefaults(){const o={};for(const id in CLASSES){const c=CLASSES[id],b=CLASSES[c.base||id];const hp=b.stat.hp+((c.bonus||{}).hp||0);
+  o[id]={name:c.name,base:c.base||null,hp,hpPct:Math.round(b.grow.hp/hp*10000)/100,mp:MP_DEF.base,mpPct:MP_DEF.pct};}return o;}
+function clsCfg(cls){const c=CLASSES[cls];if(!c)return null;const own=CLASS_CFG[cls];if(own)return {cfg:own,own:true};const bc=c.base&&CLASS_CFG[c.base];return bc?{cfg:bc,own:false}:null;}
+function applyClassCfg(rows){const n={};(rows||[]).forEach(r=>{if(r&&r.kind==='cls'&&CLASSES[r.id]&&r.data&&typeof r.data==='object'){const d=r.data,o={};['hp','hpPct','mp','mpPct'].forEach(k=>{if(typeof d[k]==='number'&&isFinite(d[k]))o[k]=d[k];});n[r.id]=o;}});
+  const ch=JSON.stringify(n)!==JSON.stringify(CLASS_CFG);CLASS_CFG=n;return ch;}
+function lvK(level){return (level-1)*(1+(level-1)/196);}
 function statsFor(cls,level,equip,enh){
-  const c=CLASSES[cls],b=CLASSES[c.base||cls],L=(level-1)*(1+(level-1)/196);
+  const c=CLASSES[cls],b=CLASSES[c.base||cls],L=lvK(level);
   const s={maxHp:Math.round(b.stat.hp+b.grow.hp*L),atk:Math.round(b.stat.atk+b.grow.atk*L),def:Math.round(b.stat.def+b.grow.def*L),luk:Math.round(b.stat.luk+b.grow.luk*L),mov:0,mag:0};
   for(const k in (c.bonus||{}))s[k==='hp'?'maxHp':k]+=c.bonus[k];
+  const CC=clsCfg(cls),num=(v,d)=>typeof v==='number'&&isFinite(v)?v:d;
+  if(CC){const f=CC.cfg;const hp0=Math.max(1,num(f.hp,b.stat.hp));s.maxHp=Math.round(hp0*(1+num(f.hpPct,0)/100*L))+(CC.own?0:((c.bonus||{}).hp||0));}
+  {const f=CC?CC.cfg:{};s.maxMp=Math.max(0,Math.round(num(f.mp,MP_DEF.base)*(1+num(f.mpPct,MP_DEF.pct)/100*L)));}
   /* 마력 계열(메이지·슈터·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
   if(isMagic(cls)){s.mag=s.atk;s.atk=0;}
   for(const slot in (equip||{})){const id=equip[slot];const st=itemStats(id,(enh||{})[id]);for(const k in st)s[k]=(s[k]||0)+st[k];}

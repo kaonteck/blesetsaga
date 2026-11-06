@@ -171,7 +171,7 @@ function logItems(ops,ch){
   const ACT={send_mail:'우편 발송',ban:'정지',unban:'정지 해제',invite_create:'초대코드 생성',invite_delete:'초대코드 삭제',set_level:'레벨 조정'};
   const OP={insert:'올림',update:'수정',delete:'삭제',restore:'되돌림'};
   return [...ops.map(r=>({t:r.created_at,who:r.admin,what:ACT[r.action]||r.action,detail:r.action==='send_mail'?`${r.detail.count??'?'}명 · ${r.detail.text||''}`:r.action==='ban'?`${who(r.target)} ~${fmtTime(r.detail.until)} ${esc(r.detail.reason||'')}`:r.action==='unban'?who(r.target):r.action==='set_level'?`${who(r.target)} LV${+r.detail.before||'?'} → LV${+r.detail.after||'?'} ${esc(r.detail.reason||'')}`:esc(r.target||''),raw:!['ban','unban','set_level'].includes(r.action)})),
-    ...ch.map(r=>({t:r.changed_at,who:r.changed_by,what:`콘텐츠 ${OP[r.op]||r.op}`,detail:`${(KINDS[r.kind]||{}).label||r.kind} · ${r.id}${r.rev?' v'+r.rev:''}`,link:{kind:r.kind,id:r.id}}))]
+    ...ch.map(r=>({t:r.changed_at,who:r.changed_by,what:`콘텐츠 ${OP[r.op]||r.op}`,detail:`${(KINDS[r.kind]||{}).label||(r.kind==='cls'?'클래스':r.kind)} · ${r.id}${r.rev?' v'+r.rev:''}`,link:{kind:r.kind,id:r.id}}))]
     .sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,150);}
 VIEWS.log=async(el)=>{
   const [ops,ch]=await Promise.all([
@@ -184,7 +184,7 @@ VIEWS.log=async(el)=>{
     ${items.map((x,i)=>`<tr><td class="small faint" style="white-space:nowrap">${fmtTime(x.t)}</td><td class="small">${who(x.who)}</td><td style="white-space:nowrap">${esc(x.what)}</td>
       <td class="small">${x.link?`<a href="#content" data-go="${i}">${esc(x.detail)}</a>`:x.raw?esc(x.detail):x.detail}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">기록이 없습니다.</td></tr>'}
     </tbody></table></div></div>`;
-  $$('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();const x=items[+a.dataset.go];go('content',{kind:x.link.kind,id:x.link.id});});
+  $$('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();const x=items[+a.dataset.go];if(x.link.kind==='cls')return go('classes');go('content',{kind:x.link.kind,id:x.link.id});});
 };
 
 /* ── 행운권 (회차별 판매·당첨·지급) ── */

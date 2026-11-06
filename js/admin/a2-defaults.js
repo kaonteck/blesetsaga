@@ -53,7 +53,7 @@ function loadDefaults(){
           const d=S.data, by=(arr,key)=>Object.fromEntries((arr||[]).map(x=>[x[key||'id'],x]));
           return JSON.stringify({
             monster:by(d.monsters), quest:by(d.quests), item:ITEMS, market:by(d.market), notice:by(d.notices),
-            setting:{config:d.config, mass:d.mass, banner:d.banner}, event:{}
+            setting:{config:d.config, mass:d.mass, banner:d.banner}, event:{}, cls:(typeof classDefaults==='function'?classDefaults():{})
           });
         })()`);
         // 프레임 안 게임 타이머(1초 tick 등)를 모두 멈춘다. 검사 함수는 그대로 쓸 수 있다.

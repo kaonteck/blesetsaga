@@ -523,6 +523,8 @@
 
 - [메인 2026-11-07] 레이드 › 파티 레이드 목록 줄(`monCardH`, 03)·던전 탭 카드(`dungeonTab`, 05)에 운영 페이지에서 올린 몬스터 그림(`monImg`가 있을 때만, 없으면 예전 그대로). 프론트 참고: style.css 끝 `.mh-pic`·`.dun-pic`·`.dun-card.has-pic`.
 
+- [메인 2026-11-07] 운영 페이지 콘텐츠 › **클래스** 탭(새 파일 `js/admin/a7-classes.js`, admin.html 스크립트·스타일, a1 메뉴·설명·아이콘, a2 기본값 `cls`, a4 기록 링크): 클래스마다 최초 HP·HP 상승 %·최초 MP·MP 상승 %를 서버 content `kind:'cls'`(id=클래스)로 공개. 게임: 01 `CLASS_CFG`·`applyClassCfg`·`classDefaults`·`statsFor`(설정 있으면 최대 HP = 최초 HP × (1 + % ÷ 100 × 레벨 계수), 없으면 예전 공식 그대로, 상위 클래스는 값이 없으면 기본 클래스 값 + HP 보너스), 08 `ctApply` 첫머리에서 `applyClassCfg(rows)` 한 줄. MP는 `maxMp`로 계산해 만신전·던전 HUD MP 막대에만 표시(전투에서 아직 안 씀). **백엔드 참고:** a1·a2·a4·08을 메인이 조금 고침, DB 변경 없음(content kind 정규식 그대로 통과).
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.
