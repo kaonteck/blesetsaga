@@ -6,6 +6,8 @@ function toast(text,kind=''){
   const el=document.createElement('div');el.className='toast '+kind;el.textContent=text;$('#toasts').appendChild(el);
   setTimeout(()=>el.remove(),3000);
 }
+/* 받침에 맞는 조사: eul('들개 무리')→'를', eul('마녀')→'를', eul('수호자')→'를', eul('군주')→'를' … 한글이 아니면 '을(를)' */
+function eul(w){const c=String(w||'').trim().slice(-1).charCodeAt(0);if(!(c>=0xAC00&&c<=0xD7A3))return '을(를)';return (c-0xAC00)%28?'을':'를';}
 let NAV_OPEN=false;
 /* ☰ 메뉴 팝업: 바깥을 누르거나 Esc면 닫힘 */
 document.addEventListener('click',e=>{if(!NAV_OPEN||e.target.closest('#mainnav,.navtog'))return;NAV_OPEN=false;renderTop();});
@@ -134,8 +136,11 @@ function render(){
   const wide=r==='admin'||(r==='battle'&&S.battle&&S.battle.grid);
   v.innerHTML=wide?fn():`<div class="wrap tri" data-route="${r}"><main class="tri-c">${fn()}</main><aside class="tri-l" aria-label="내 캐릭터">${sideCard()}</aside><aside class="tri-r" aria-label="바로가기와 진행 상황">${rightCol()}</aside></div>`;
   afterRender();
+  {const bk=r==='battle'?(S.battle?'b'+S.battle.id:S.drun?'d'+S.drun.start:''):'';if(bk&&bk!==LAST_BKEY)window.scrollTo(0,0);LAST_BKEY=bk;}
   renderPop();
 }
+/* 전투 시작(필드·퀘스트·던전·레이드) 때 화면 맨 위로 — 탐색 화면 아래에서 시작해도 몬스터·행동 패널이 보이게 */
+let LAST_BKEY='';
 /* 메인 화면(데스크톱): 오른쪽 채팅 아래 끝을 가운데 '모집 중인 파티' 아래 끝에 맞춤 */
 function fitSideChat(){const ch=$('.tri-r .chat-main');if(!ch)return;ch.style.height='';ch.style.flex='';const last=$('.tri-c .main-c > :last-child');if(last)last.style.minHeight='';
   if(S.route!=='main'||innerWidth<=980||!last)return;
@@ -607,7 +612,7 @@ function sendChat(tab,text){
   const msg={id:uid('m'),from:S.me.name,text,ts:now()};
   if(tab==='world'){if(!isAdmin()){toast('월드 채팅은 운영자만 작성할 수 있습니다.','warn');return false;}
     const cat=S.sel.wcat||'notice';S.chat.world.push({id:uid('w'),cat,from:S.me.name,text,ts:now()});S.chat.world=S.chat.world.slice(-100);
-    logChange('월드 채팅',[{field:WCAT[cat],before:undefined,after:text}]);save();updateChats();toast(`월드에 ${WCAT[cat]}을(를) 올렸습니다.`,'good');return true;}
+    logChange('월드 채팅',[{field:WCAT[cat],before:undefined,after:text}]);save();updateChats();toast(`월드에 ${WCAT[cat]}${eul(WCAT[cat])} 올렸습니다.`,'good');return true;}
   if(tab==='lobby'&&S.sel.lobbyCh==='party'){if(!S.party){toast('파티에 참가하지 않아 파티 채팅을 보낼 수 없습니다.','warn');return false;}tab='party';}
   else if(tab==='party'&&S.sel.partyCh==='lobby')tab='lobby';
   if(tab==='raid'){const RM=S.mass;if(!RM){toast('진행 중인 레이드가 없습니다.','warn');return false;}(RM.chat=RM.chat||[]).push(msg);RM.chat=RM.chat.slice(-150);bump('chats');
@@ -961,14 +966,14 @@ function outcomeHTML(b){
   const r=b.result||{};const win=b.over==='win';const ctx=b.ctx||{};
   const back={quest:'퀘스트로 돌아가기',field:'탐색으로 돌아가기'}[ctx.type]||'레이드로 돌아가기';
   if(ctx.type==='mass')return `<div class="panel outcome">${monArtHTML(b,win)}<h2>${win?'만신전 성공':'만신전 실패'}</h2>
-    <p class="muted">${win?`${b.players.length}인 원정대가 ${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:`${esc(b.mon.name)}을(를) 쓰러뜨리지 못했습니다. 이번 이벤트는 종료되었습니다.`}</p>${monSayHTML(b)}
+    <p class="muted">${win?`${b.players.length}인 원정대가 ${esc(b.mon.name)}${eul(b.mon.name)} ${b.turn}턴 만에 쓰러뜨렸습니다.`:`${esc(b.mon.name)}${eul(b.mon.name)} 쓰러뜨리지 못했습니다. 이번 이벤트는 종료되었습니다.`}</p>${monSayHTML(b)}
     ${r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">${win?'참여 + 처치 보상':'참여 보상'}</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}${wearNowHTML(r.items)}</div>`:'<p class="reason">직접 행동을 제출하지 않아 보상 대상에서 제외되었습니다.</p>'}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
   if(ctx.type==='quest')return `<div class="panel outcome">${monArtHTML(b,win)}<h2>${win?'승리':'패배'}</h2>
-    <p class="muted">${win?`${esc(b.mon.name)}을(를) 쓰러뜨렸습니다. 퀘스트로 돌아가 이야기를 이어 가세요.`:'쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.'}</p>${monSayHTML(b)}<button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
+    <p class="muted">${win?`${esc(b.mon.name)}${eul(b.mon.name)} 쓰러뜨렸습니다. 퀘스트로 돌아가 이야기를 이어 가세요.`:'쓰러졌습니다. 같은 단계에서 다시 도전할 수 있습니다.'}</p>${monSayHTML(b)}<button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
   return `<div class="panel outcome">${monArtHTML(b,win)}
     <h2>${win?'승리':b.over==='abandon'?'전투 종료':'패배'}</h2>
-    <p class="muted">${win?`${esc(b.mon.name)}을(를) ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${monSayHTML(b)}${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
+    <p class="muted">${win?`${esc(b.mon.name)}${eul(b.mon.name)} ${b.turn}턴 만에 쓰러뜨렸습니다.`:b.over==='abandon'?'모든 참가자의 연결이 5분 넘게 끊겨 전투가 종료되었습니다. 보상은 지급되지 않습니다.':(b.solo?'쓰러졌습니다.':'파티가 전멸했습니다.')+' 경험치와 아이템은 잃지 않습니다.'}</p>${monSayHTML(b)}${r.blocked?`<p class="reason">${esc(r.blocked)}</p>`:''}
     ${win?(r.eligible?`<div class="result" style="min-width:min(380px,100%)"><div class="ph" style="justify-content:center;margin-bottom:8px">내 보상</div>${rewardHTML({exp:r.exp,gold:r.gold,items:r.items})}${r.ups?`<p class="ok-t" style="margin-top:6px">레벨 업 · LV${S.me.level}</p>`:''}${wearNowHTML(r.items)}</div>`:(r.blocked?'':`<p class="reason">이번 전투에서 직접 행동을 확정하지 않아 보상 대상에서 제외되었습니다.</p>`)):''}
     <button class="btn btn-primary" data-act="leavebattle">${back}</button></div>`;
 }
@@ -1004,6 +1009,7 @@ function renderFight(){
   const fm=$('#fightmain');if(!fm||!S.battle)return;
   fm.innerHTML=fightMain();{const dr=$('#dmgrank');if(dr&&S.battle.grid)dr.innerHTML=dmgRank(S.battle);}
   const lg=$('#blog');if(lg){lg.innerHTML=logHTML();lg.scrollTop=lg.scrollHeight;}
+  if(S.battle.over){const tl=$('.tri-l');if(tl)tl.innerHTML=sideCard();}
   renderTop();
 }
 function flogScroll(){const lg=document.querySelector('.flog #blog');if(lg)lg.scrollTop=lg.scrollHeight;}

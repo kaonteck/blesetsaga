@@ -3430,3 +3430,10 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .mass-rooms .btn[disabled]{opacity:.5}
 /* 만신전 보스 이름 위 현재 타겟 칩 */
 .chip.gtgt{border-color:rgba(230,90,90,.55);color:#ffb3b3;background:rgba(230,90,90,.12);font-weight:700}
+/* 폰: 알림이 여러 개 쌓여 상단 내용을 가리지 않게 — 일반 알림은 가장 최근 것만(버튼 달린 알림은 그대로) */
+@media (max-width:760px){.toasts > .toast:not(.tact):not(:last-child){display:none}}
+/* 랜덤 매칭 대기 상태 한 줄(08-server가 넣음): 기다리는 중 = 흐린 글자 + 깜빡이는 점, 실제 블레서 방에 들어감 = 초록 */
+.pt-qline{display:flex;align-items:center;gap:8px;color:var(--muted)!important}
+.pt-qline::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--faint);animation:ptq 1.4s ease-in-out infinite}
+.pt-qline.ok{color:var(--ok)!important}.pt-qline.ok::before{background:var(--ok);animation:none}
+@keyframes ptq{0%,100%{opacity:.3}50%{opacity:1}}
