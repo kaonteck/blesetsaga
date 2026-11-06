@@ -233,7 +233,7 @@ function roleOf(cls){return CLASSES[cls].role;}
 function makeFighter(p){
   const s=statsFor(p.job,p.level,p.equip,p.enh);
   return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,atk:powOf(s),hp:s.maxHp,
-    dead:false,uses:{},buffs:[],poison:null,hot:null,bound:0,charm:0,supUses:0,last:null,lastTurn:-9,obTurn:-9,doubleTurn:-9,
+    dead:false,uses:{},buffs:[],poison:null,burnP:null,hot:null,bound:0,charm:0,held:0,frost:0,conf:0,supUses:0,last:null,lastTurn:-9,obTurn:-9,doubleTurn:-9,
     dealt:0,turnDealt:0,protect:false,reduce:0,defending:false,action:null,action2:null,confirmed:false,direct:0,planAt:0};
 }
 function weightedPick(arr,w,rng){let tot=0;for(const x of arr)tot+=w(x);let r=rng()*tot;for(const x of arr){r-=w(x);if(r<=0)return x;}return arr[arr.length-1];}
@@ -347,10 +347,17 @@ function resolveTurn(b,rng,hooks){
   for(const id of b.order){const p=P(id);if(p.dead||p.charm>0)continue;for(const a of acts(p)){if(a.kind!=='skill'||a.skill!=='dispel')continue;a.done=true;p.direct++;
     const err=checkAct(b,p,a,hooks.hasItem);if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
     spend(p,'dispel');const t=a.target?P(a.target):p;if(!t||t.dead){log('sys',`${p.name} · 디스펠 대상이 없음`);continue;}
-    const had=[t.poison&&t.poison.name,t.charm>0&&'매혹',t.boundBy==='root'&&t.bound>0&&'뿌리 속박',t.boundBy==='tentacle'&&t.bound>0&&'휘감김',t.sealed&&'봉인',t.noHeal>0&&'회복 불가',t.blind>0&&'실명'].filter(Boolean);t.poison=null;t.charm=0;if(t.boundBy==='root'||t.boundBy==='tentacle'){t.bound=0;t.boundBy=null;}t.sealed=null;t.noHeal=0;t.blind=0;t.healDown=0;log('heal',`${p.name} · 디스펠 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
+    const had=[t.poison&&t.poison.name,t.charm>0&&'매혹',t.boundBy==='root'&&t.bound>0&&'뿌리 속박',t.boundBy==='tentacle'&&t.bound>0&&'휘감김',t.sealed&&'봉인',t.noHeal>0&&'회복 불가',t.blind>0&&'실명'].filter(Boolean);t.poison=null;t.burnP=null;t.held=0;t.frost=0;t.conf=0;t.charm=0;if(t.boundBy==='root'||t.boundBy==='tentacle'){t.bound=0;t.boundBy=null;}t.sealed=null;t.noHeal=0;t.blind=0;t.healDown=0;log('heal',`${p.name} · 디스펠 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
   // ③-2 매혹된 블레서는 아이템 말고는 아무것도 하지 못한다
   for(const id of b.order){const p=P(id);if(p.dead||!(p.charm>0))continue;let skipped=false;for(const a of acts(p)){if(a.kind==='item'||a.done)continue;a.done=true;skipped=true;}
     if(skipped)log('mon',`${p.name} · 매혹되어 아무것도 하지 못했다`);}
+  /* 만신전 패턴 추가 효과(운영 설정 mass.patterns[패턴].fx · 메인 2026-11-07): 속박 = 행동 불가, 혼란 = 내 행동 대신 주변 블레서에게 기본 공격 */
+  for(const id of b.order){const p=P(id);if(p.dead||!(p.held>0))continue;let sk=false;for(const a of acts(p)){if(a.kind==='item'||a.done)continue;a.done=true;sk=true;}if(sk)log('mon',`${p.name} · 속박되어 아무것도 하지 못했다`);}
+  for(const id of b.order){const p=P(id);if(p.dead||!(p.conf>0))continue;let sk=false;for(const a of acts(p)){if(a.kind==='item'||a.done)continue;a.done=true;sk=true;}if(!sk)continue;
+    const R=b.grid?rangeR(p):99;const near=living(b).filter(x=>x!==p&&(!b.grid||x.pos!=null&&p.pos!=null&&cheb(p.pos,x.pos)<=R));
+    if(!near.length){log('mon',`${p.name} · 혼란 · 허공을 휘둘렀다`);continue;}
+    const t=near[Math.floor(rng()*near.length)];let d=Math.round(p.atk*judgeRoll(rng)*0.8*(1-t.def/(t.def+DEF_K)));if(t.protect||b.sanct)d=0;
+    t.hp=Math.max(0,t.hp-d);if(t.hp===0)t.dead=true;log('mon',`${p.name} · 혼란 · ${t.name}에게 기본 공격 ${d}${t.dead?' (쓰러짐)':''}`);}
   // ④ 방어와 보호, 지원 효과
   for(const id of b.order){
     const p=P(id);if(p.dead)continue;
@@ -459,16 +466,38 @@ function resolveTurn(b,rng,hooks){
     d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?0.88:1);d=Math.max(0,Math.round(d));
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
   };
+  const PF=b.grid&&b.pats&&tel&&tel.pat&&b.pats[tel.pat]&&b.pats[tel.pat].fx||null;let fxT=[];
+  const fxApply=(fx,list)=>{if(!fx)return;const ex=[];
+    list.forEach(p=>{if(p.dead||p.protect||b.sanct)return;const n=(v,d)=>Math.max(1,Math.round(+v||d));
+      if(fx.bind){p.held=Math.max(p.held||0,n(fx.bind.t,1)+1);ex.push(`${p.name} 속박`);}
+      if(fx.frost){p.frost=Math.max(p.frost||0,2);ex.push(`${p.name} 동상`);}
+      if(fx.poison){p.poison={turns:n(fx.poison.t,3),dmg:n(fx.poison.d,20),name:'중독'};ex.push(`${p.name} 중독`);}
+      if(fx.burn){p.burnP={turns:n(fx.burn.t,3),dmg:n(fx.burn.d,20)};ex.push(`${p.name} 화상`);}
+      if(fx.confuse){p.conf=Math.max(p.conf||0,n(fx.confuse.t,1)+1);ex.push(`${p.name} 혼란`);}
+      if(fx.knock&&b.grid&&p.pos!=null){const c=n(fx.knock.c,2);let pos=p.pos;for(let k=0;k<c;k++){const [r0,c0]=gxy(pos);let best=null,bd=bossDist(pos);
+          for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const y=r0+dy,x=c0+dx;if(y<0||y>=GRID||x<0||x>=GRID)continue;const i=y*GRID+x;if(i===pos||BOSS_CELLS.includes(i)||cellCount(b,i,p)>=CELL_CAP)continue;const dd=bossDist(i);if(dd>bd){bd=dd;best=i;}}
+          if(best==null)break;pos=best;}
+        if(pos!==p.pos){p.pos=pos;ex.push(`${p.name} 밀려남 → ${cellName(pos)}`);}}});
+    if(ex.length)log('mon',`${m.name} · 추가 효과 · ${ex.join(', ')}`);};
+  /* 지난 턴 시간차 공격이 이번 턴에 터진다 */
+  if(b.pend&&b.pend.at===T){const pd=b.pend;b.pend=null;const L=living(b).filter(p=>pd.type==='aoe'||(pd.type==='area'?pd.cells.includes(p.pos):p.id===pd.target));
+    const parts=L.map(p=>{const r=hitP(p,pd.mult);return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}`;});
+    log('mon',`${m.name} · ${pd.name} (시간차) → ${parts.length?parts.join(', '):'모두 피했다'}`);fxApply(pd.fx,L);}
+  if(PF&&PF.delay&&tel&&!tel.wipe&&['area','aoe','single','dot'].includes(tel.type)){
+    b.pend={type:tel.type==='dot'?'single':tel.type,cells:tel.cells||[],target:tel.target,mult:tel.mult,name:tel.name,fx:{...PF,delay:null},at:T+1};
+    log('warn',`${m.name} · ${tel.name} · 시간차 공격 — 다음 턴에 터진다`);}
+  const delayedNow=!!(b.pend&&b.pend.at===T+1);
   if(m.janus&&b.face==='dawn'){const v=Math.round(m.maxHp*0.04);m.hp=Math.min(m.maxHp,m.hp+v);log('mon',`${m.name} · 여명의 얼굴 · 스스로 회복 (+${v})`);}
-  if(b.stun>0){b.stun--;log('mon',`${m.name}이(가) 일지를 따라 읽는다 · 이번 턴 공격하지 않는다`);}
+  if(delayedNow){}
+  else if(b.stun>0){b.stun--;log('mon',`${m.name}이(가) 일지를 따라 읽는다 · 이번 턴 공격하지 않는다`);}
   else if(tel.wipe){living(b).forEach(p=>{p.hp=0;p.dead=true;});log('mon',`${m.name} · ${tel.name} → 회복·방어·무적을 무시한다 · 모두 쓰러짐`);}
   else if(tel.pacify&&rng()<0.6){const t=living(b)[0];if(t){const v=Math.round(t.maxHp*0.08);const h=Math.min(v,t.maxHp-t.hp);t.hp+=h;log('mon',`${m.name} · 당신의 상처를 감싼다 (+${h})${rng()<0.4?' · "도망치세요."':''}`);}}
   else
   if(tel.type==='area'){
-    const hit=living(b).filter(p=>tel.cells.includes(p.pos));
+    const hit=living(b).filter(p=>tel.cells.includes(p.pos));fxT=hit;
     const parts=hit.map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.length?parts.join(', '):'모두 피했다'}`);
-  }else if(tel.type==='aoe'){
+  }else if(tel.type==='aoe'){fxT=living(b);
     const parts=living(b).map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.join(', ')}`);
   }else{
@@ -490,11 +519,17 @@ function resolveTurn(b,rng,hooks){
       if(m.sealChance&&!t.dead&&r.note!=='보호'&&rng()<m.sealChance){const pool=CLASSES[t.job].skills.filter(k=>SKILLS[k]&&!['addon','passive'].includes(SKILLS[k].type)&&k!==basicSkill(t.job));const k=pool[Math.floor(rng()*pool.length)];if(k){t.sealed={skill:k,turns:2};extra+=` · 봉인 (${SKILLS[k].name} 2턴 사용 불가)`;}}
       if(m.rootChance&&!t.dead&&r.note!=='보호'&&rng()<m.rootChance){t.bound=Math.max(t.bound||0,2);t.boundBy='root';extra+=' · 뿌리 속박 (다음 턴 스킬 불가)';}
       if(m.charmChance&&!t.dead&&r.note!=='보호'&&rng()<m.charmChance){if(b.noCharm)extra+=' · 귀마개로 매혹을 막았다';else{t.charm=2;extra+=' · 매혹 (다음 턴 행동 불가)';}}
-      log('mon',`${m.name} · ${tel.name} → ${t.name}${note} ${r.d} 대미지${r.note==='보호'?' (보호됨)':''}${t.dead?' · 쓰러짐':''}${extra}`);
+      fxT=[t];log('mon',`${m.name} · ${tel.name} → ${t.name}${note} ${r.d} 대미지${r.note==='보호'?' (보호됨)':''}${t.dead?' · 쓰러짐':''}${extra}`);
     }
   }
+  if(PF&&!delayedNow){fxApply(PF,fxT);
+    if(PF.reflect){const rr=Math.max(0,+(PF.reflect.r==null?100:PF.reflect.r))/100;const ref=[];
+      b.players.forEach(p=>{if(p.dead||!(p.turnDealt>0))return;const d=Math.round(p.turnDealt*rr);p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;ref.push(`${p.name} ${d}${p.dead?'(쓰러짐)':''}`);});
+      log('mon',`${m.name} · 반사 → ${ref.length?ref.join(', '):'반사할 대미지 없음'}`);}}
   // ⑦ 지속 효과와 만료
   for(const p of b.players){
+    if(!p.dead&&p.burnP){if(p.protect||b.sanct)log('sys',`${p.name} · 보호로 화상 무효`);else{p.hp=Math.max(0,p.hp-p.burnP.dmg);log('mon',`${p.name} · 화상 ${p.burnP.dmg}${p.hp===0?' (쓰러짐)':''}`);if(p.hp===0)p.dead=true;}p.burnP.turns--;if(p.burnP.turns<=0)p.burnP=null;}
+    if(p.held>0)p.held--;if(p.frost>0)p.frost--;if(p.conf>0)p.conf--;
     if(!p.dead&&p.poison){if(p.protect||b.sanct)log('sys',`${p.name} · 보호로 ${p.poison.name} 무효`);else{p.hp=Math.max(0,p.hp-p.poison.dmg);log('mon',`${p.name} · ${p.poison.name} ${p.poison.dmg}${p.hp===0?' (쓰러짐)':''}`);if(p.hp===0)p.dead=true;}p.poison.turns--;if(p.poison.turns<=0)p.poison=null;}
     if(!p.dead&&p.hot){heal({name:'블레스'},p,p.hot.amt,'지속 회복');p.hot.turns--;if(p.hot.turns<=0)p.hot=null;}
     if(p.bound>0){p.bound--;if(!p.bound)p.boundBy=null;}
@@ -585,7 +620,7 @@ function rangeR(p){return (parseInt(CLASSES[p.job].range||'3')-1)/2;}
 function inRange(b,p){return p.pos!=null&&bossDist(p.pos)<=rangeR(p);}
 function moveR(b,p){if(b.snow)return 1;return 1+(MOVE_BONUS[p.job]||0)+(p.mov||0)+(p.swift===b.turn?1:0);}
 function cellCount(b,i,except){return b.players.filter(p=>!p.dead&&p.pos===i&&p!==except).length;}
-function canMoveTo(b,p,i){return i>=0&&i<GRID*GRID&&!BOSS_CELLS.includes(i)&&i!==p.pos&&cheb(p.pos,i)<=moveR(b,p)&&cellCount(b,i,p)<CELL_CAP;}
+function canMoveTo(b,p,i){if(p.held>0||p.frost>0)return false;return i>=0&&i<GRID*GRID&&!BOSS_CELLS.includes(i)&&i!==p.pos&&cheb(p.pos,i)<=moveR(b,p)&&cellCount(b,i,p)<CELL_CAP;}
 function reachable(b,p){const out=[];for(let i=0;i<GRID*GRID;i++)if(canMoveTo(b,p,i))out.push(i);return out;}
 function cellName(i){const [r,c]=gxy(i);return `${'ABCDEFGHIJ'[r]}${c+1}`;}
 function gridArea(c,r){const out=[];const [cr,cc]=gxy(c);for(let y=cr-r;y<=cr+r;y++)for(let x=cc-r;x<=cc+r;x++)if(y>=0&&y<GRID&&x>=0&&x<GRID&&!BOSS_CELLS.includes(y*GRID+x))out.push(y*GRID+x);return out;}
@@ -623,7 +658,7 @@ function gridPre(b,rng,hooks){
     if(!hooks.hasItem||!hooks.hasItem(p.id,it.item)){log('sys',`${p.name} · 아이템이 없어 사용하지 못함`);continue;}
     hooks.useItem&&hooks.useItem(p.id,it.item);p.direct++;
     if(it.item==='potion'){const t=p;if(!t.dead){const h=Math.min(50,t.maxHp-t.hp);t.hp+=h;log('heal',`${p.name} · 회복약 → ${t.name} ${h} 회복`);}}
-    else if(it.item==='holywater'){p.poison=null;p.charm=0;if(p.boundBy==='root'){p.bound=0;p.boundBy=null;}log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
+    else if(it.item==='holywater'){p.poison=null;p.burnP=null;p.charm=0;p.held=0;p.frost=0;p.conf=0;if(p.boundBy==='root'){p.bound=0;p.boundBy=null;}log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
     else if(it.item==='swiftdraft'){p.swift=b.turn;log('act',`${p.name} · 신속의 물약 (이번 턴 이동 범위 +1)`);}}
   for(const id of b.order){const p=P(id);if(p.dead||!p.confirmed||!p.action)continue;const a=p.action;
     if(a.kind==='move'){a.done=true;p.direct++;const from=p.pos;
@@ -633,7 +668,7 @@ function gridPre(b,rng,hooks){
     else if(a.kind==='wait'){a.done=true;p.direct++;log('act',`${p.name} · 대기`);}}
 }
 function decideGridBot(b,p,rng){
-  const tel=b.tel,danger=c=>tel&&tel.type==='area'&&tel.cells.includes(c);
+  const tel=b.tel,danger=c=>tel&&tel.type==='area'&&tel.cells.includes(c)||b.pend&&b.pend.type==='area'&&b.pend.cells.includes(c);
   const R=reachable(b,p);
   if(danger(p.pos)){const safe=R.filter(i=>!danger(i)).sort((x,y)=>((bossDist(x)<=rangeR(p)?0:10)+cheb(p.pos,x))-((bossDist(y)<=rangeR(p)?0:10)+cheb(p.pos,y)));if(safe.length)return {kind:'move',to:safe[0]};}
   const a=decideBot(b,p,rng);

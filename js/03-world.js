@@ -501,14 +501,14 @@ function massTarget(b){
   else h+=`<div class="mtg"><span class="mtg-l">도발 수치</span><span class="faint">제압한 탱커 없음 · 탱커 → 누적 대미지·회복량 순으로 표적</span></div>`;
   return h;}
 function gridBoard(b,me){
-  const tel=b.tel;const area=new Set(tel&&tel.type==='area'?tel.cells:[]);const mode=S.sel.gmode||'fight';
+  const tel=b.tel;const area=new Set([...(tel&&tel.type==='area'?tel.cells:[]),...(b.pend&&b.pend.type==='area'?b.pend.cells:[])]);const mode=S.sel.gmode||'fight';
   const reach=new Set(me&&!me.dead&&!me.confirmed&&mode==='move'?reachable(b,me):[]);
   const rng=me&&!me.dead?rangeR(me):0;
   let h='';
   for(let i=0;i<GRID*GRID;i++){
     if(BOSS_CELLS.includes(i)){if(i===BOSS_CELLS[0])h+=`<div class="gboss" style="grid-row:5/7;grid-column:5/7"><b>${esc(b.mon.name)}</b><small class="num">${Math.round(b.mon.hp/b.mon.maxHp*100)}%</small></div>`;continue;}
     const ps=b.players.filter(p=>p.pos===i);const [r,c]=gxy(i);
-    const cls=[area.has(i)?'danger':'',reach.has(i)?'reach':'',S.sel.gcell===i&&mode==='move'?'pick':'',me&&me.pos===i?'mine':'',tel&&tel.type==='aoe'?'danger':'',me&&!me.dead&&bossDist(i)<=rng&&mode!=='move'&&me.pos===i?'':''].join(' ');
+    const cls=[area.has(i)?'danger':'',reach.has(i)?'reach':'',S.sel.gcell===i&&mode==='move'?'pick':'',me&&me.pos===i?'mine':'',tel&&tel.type==='aoe'||b.pend&&b.pend.type==='aoe'?'danger':'',me&&!me.dead&&bossDist(i)<=rng&&mode!=='move'&&me.pos===i?'':''].join(' ');
     h+=`<div class="gcell ${cls}" style="grid-row:${r+1};grid-column:${c+1}" data-act="g-cell" data-i="${i}" role="button" tabindex="-1" title="${cellName(i)}${ps.length?' · '+ps.map(p=>p.name).join(', '):''}"><span class="gc-lab" aria-hidden="true">${cellName(i)}</span>${ps.map(p=>`<button class="tok ${p.role} ${p.isMe?'me':''} ${p.dead?'dead':''} ${tel&&tel.target===p.id?'tgt':''} ${S.sel.gtok===p.id?'sel':''}" data-act="g-tok" data-id="${esc(p.id)}" aria-label="${esc(p.name)} 정보">${esc(p.name.slice(0,1))}</button>`).join('')}</div>`;
   }
   const tp=S.sel.gtok&&b.players.find(p=>p.id===S.sel.gtok);
@@ -527,7 +527,7 @@ const GICON={
 function gfTop(b){
   const m=b.mon,ph=b.phases[b.phase]||{},al=living(b);const left=Math.max(0,Math.ceil((b.deadline-now())/1000));const bleft=Math.max(0,(b.endsAt||0)-now());
   return `<div class="gf-topin"><div class="stack" style="gap:6px;min-width:0">
-      <div class="row" style="gap:6px"><span class="chip warn">만신전</span>${b.massTitle?`<span class="chip">${esc(b.massTitle)}</span>`:''}<span class="chip dps">${esc(ph.name||'')}</span><span class="chip num">${b.turn}턴</span><span class="chip num">공격 ${m.atk}</span><span class="chip num" data-mass-left>제한 ${fmtDur(bleft)}</span></div>
+      <div class="row" style="gap:6px"><span class="chip warn">만신전</span>${b.massTitle?`<span class="chip">${esc(b.massTitle)}</span>`:''}<span class="chip dps">${esc(ph.name||'')}</span><span class="chip num">${b.turn}턴</span><span class="chip num">공격 ${m.atk}</span><span class="chip num" data-mass-left>제한 ${fmtDur(bleft)}</span>${(()=>{const tel=b.tel,ord=threatOrder(b);const single=tel&&(tel.type==='single'||tel.type==='dot');const t=single?(b.players.find(p=>p.id===tel.target)||ord[0]):ord[0];return t?`<span class="chip gtgt ${t.role}-t">타겟 · ${esc(t.name)}${t.isMe?' (나)':''}</span>`:'';})()}</div>
       <div class="row" style="justify-content:space-between"><span class="mname">${esc(m.name)}</span><span class="num muted">${m.hp} / ${m.maxHp}</span></div>
       <div class="bar hp big"><i style="width:${pct(m.hp,m.maxHp)}%"></i></div></div>
     <div class="stack" style="gap:4px;min-width:0">${massTarget(b)}</div>
@@ -550,7 +550,7 @@ function gfTel(b){const tel=b.tel;const aoe=tel&&tel.type!=='single'&&tel.type!=
   return `${say?`<div class="gsay ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><p>“${esc(say)}”</p></div>`:''}<div class="gtel ${aoe?'aoe':''} ${el>5000?'tel-gone':''}" role="status" style="--tel-d:-${el}ms"><span class="gtel-k"><span class="gtel-dot"></span>다음 공격</span><div class="tk-view"><div class="tk-run" style="animation-duration:14s">${t}</div></div></div>`;}
 function gfMap(b,me){return `<div class="gmz-btns" role="group" aria-label="지도 확대·축소"><button type="button" data-gmz="in" aria-label="확대">+</button><span class="gmz-r num">${Math.round(GMZ.z*100)}%</span><button type="button" data-gmz="out" aria-label="축소">−</button><button type="button" data-gmz="fit" aria-label="맞춤">맞춤</button></div>${gridBoard(b,me)}<div class="glegend one"><span><i class="lg danger"></i>예고 범위</span><span><i class="lg reach"></i>이동 가능</span><span><i class="lg pick"></i>이동 선택</span><span><i class="lg tank"></i>탱커</span><span><i class="lg heal"></i>힐러</span><span><i class="lg dps"></i>딜러</span><span class="faint">한 칸 최대 ${CELL_CAP}명</span></div>`;}
 // 전투원 상태(버프·디버프) 목록 [글자, 종류] — HUD·제출 현황 공통
-function pFxList(b,p){const st=[];if(p.poison)st.push([`${p.poison.name} ${p.poison.turns}턴`,'debuff']);if(p.bound>0)st.push([`${p.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${p.bound}`,'debuff']);if(p.charm>0)st.push(['매혹','debuff']);if(p.hot)st.push([`블레스 ${p.hot.turns}턴`,'heal']);if(p.protect)st.push(['보호','buff']);(p.buffs||[]).filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));return st;}
+function pFxList(b,p){const st=[];if(p.poison)st.push([`${p.poison.name} ${p.poison.turns}턴`,'debuff']);if(p.burnP)st.push([`화상 ${p.burnP.turns}턴`,'debuff']);if(p.held>0)st.push([`속박 ${p.held}`,'debuff']);if(p.frost>0)st.push(['동상 · 이동 불가','debuff']);if(p.conf>0)st.push([`혼란 ${p.conf}`,'debuff']);if(p.bound>0)st.push([`${p.boundBy==='root'?'뿌리 속박':'빛의 속박'} ${p.bound}`,'debuff']);if(p.charm>0)st.push(['매혹','debuff']);if(p.hot)st.push([`블레스 ${p.hot.turns}턴`,'heal']);if(p.protect)st.push(['보호','buff']);(p.buffs||[]).filter(x=>x.from<=b.turn&&x.to>=b.turn).forEach(x=>st.push([BUFFN[x.k]||x.k,'buff']));return st;}
 function gfSub(b,me){const al=living(b);
   return `<h3>제출 현황 <span class="num faint" style="letter-spacing:0">${al.filter(p=>p.confirmed).length}/${al.length}</span><button type="button" class="gsub-fold" data-act="sub-fold" aria-expanded="${!S.sel.subFold}" aria-label="제출 현황 ${S.sel.subFold?'펼치기':'접기'}">${S.sel.subFold?'▾':'▴'}</button></h3>
     <div class="mtabs gsubtabs" role="tablist">${[['alive',`생존 ${al.length}`],['dead',`사망 ${b.players.length-al.length}`]].map(([k,l])=>`<button role="tab" data-act="g-subtab" data-tab="${k}" aria-selected="${(S.sel.gsub||'alive')===k}">${l}</button>`).join('')}</div>

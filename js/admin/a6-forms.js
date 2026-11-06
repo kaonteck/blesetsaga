@@ -218,7 +218,7 @@ function phasesForm(){const P=Array.isArray(FM.d.sphases)?FM.d.sphases:[];
 const MPATS=()=>fget('DEFAULT_PATS',{});const MPDESC=()=>fget('PAT_DESC',{});
 function massForm(){const M=FM.d.mass;const D=MPATS();const on=!!(M&&(M.patterns||M.phases));
   const body=on?`<table class="pt"><thead><tr><th>패턴</th><th>이름</th><th>배율</th><th>보스 대사</th></tr></thead><tbody>${Object.keys(D).map(pk=>{const cur=(M.patterns||{})[pk]||{};
-      return `<tr><td><b>${esc(D[pk].name)}</b><small class="faint">${esc(MPDESC()[pk]||pk)}</small></td><td><input type="text" data-p="mass.patterns.${pk}.name" data-t="stropt" value="${esc(cur.name??D[pk].name)}" aria-label="${esc(D[pk].name)} 이름"></td><td><input type="number" step="0.05" min="0" data-p="mass.patterns.${pk}.mult" data-t="num" value="${cur.mult??D[pk].mult}" aria-label="${esc(D[pk].name)} 배율"></td><td><input type="text" data-p="mass.lines.${pk}" data-t="stropt" value="${esc((M.lines||{})[pk]||'')}" placeholder="비우면 기본 대사" aria-label="${esc(D[pk].name)} 대사"></td></tr>`;}).join('')}</tbody></table>
+      return `<tr><td><b>${esc(D[pk].name)}</b><small class="faint">${esc(MPDESC()[pk]||pk)}</small></td><td><input type="text" data-p="mass.patterns.${pk}.name" data-t="stropt" value="${esc(cur.name??D[pk].name)}" aria-label="${esc(D[pk].name)} 이름"></td><td><input type="number" step="0.05" min="0" data-p="mass.patterns.${pk}.mult" data-t="num" value="${cur.mult??D[pk].mult}" aria-label="${esc(D[pk].name)} 배율"></td><td><input type="text" data-p="mass.lines.${pk}" data-t="stropt" value="${esc((M.lines||{})[pk]||'')}" placeholder="비우면 기본 대사" aria-label="${esc(D[pk].name)} 대사"></td></tr><tr class="pt-fx"><td colspan="4">${pfxRow(pk,cur)}</td></tr>`;}).join('')}</tbody></table>
     <div class="stack" style="gap:6px;margin-top:8px">${(M.phases||[]).map((ph,i)=>`<div class="ch"><div class="ch-h"><b>페이즈 ${i+1}</b><button type="button" class="btn btn-g btn-sm" data-fa="mph-del" data-i="${i}">삭제</button></div><div class="fgrid">
       ${fText(`mass.phases.${i}.at`,'체력 % 이하'+KSEP+'at',null,{num:true})}${fText(`mass.phases.${i}.name`,'페이즈 이름'+KSEP+'name')}${fText(`mass.phases.${i}.atkMul`,'공격력 배율'+KSEP+'atkMul',null,{num:true})}
       <div class="f wide"><span class="fl">이 페이즈에 쓰는 패턴</span><div class="row" style="gap:4px 12px">${[...Object.keys(D),...cpKeys(M)].map(pk=>`<label class="chk"><input type="checkbox" data-fa="mph-pat" data-i="${i}" data-k="${pk}" ${(ph.patterns||[]).includes(pk)?'checked':''}> ${esc(((M.patterns||{})[pk]||{}).name||(D[pk]||{}).name||pk)}${D[pk]?'':' <small class="faint">직접</small>'}</label>`).join('')}</div></div></div></div>`).join('')}
@@ -357,7 +357,7 @@ async function monImgUpload(file,p,pre,sid){p=p&&p!=='1'?p:'img';pre=pre||'';con
     const path=`${pre}${id}/${Date.now().toString(36)}.${ext}`;
     const {error}=await A.sb.storage.from(MONART_BUCKET).upload(path,blob,{contentType:blob.type,upsert:false,cacheControl:'31536000'});if(error)throw error;
     const {data}=A.sb.storage.from(MONART_BUCKET).getPublicUrl(path);pset(FM.d,p,data.publicUrl);sync();redrawForm();toast('이미지를 올렸습니다. 저장(게시)하면 게임에 나타납니다.','good');}
-  catch(e){if(st)st.textContent='';toast('이미지 올리기 실패 · '+((e&&e.message)||e),'bad');}}
+  catch(e){if(st)st.textContent='';if(e&&e.message==='cancel')return;toast('이미지 올리기 실패 · '+((e&&e.message)||e),'bad');}}
 (function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
   $$('input[data-fimg]',box).forEach(el=>el.onchange=()=>{const fl=el.files&&el.files[0];if(fl)monImgUpload(fl,el.dataset.fimg,el.dataset.fpre,el.dataset.fst);el.value='';});};})();
 (function(){const f=fAct;fAct=function(a,el,v){if(a==='img-clear'){pset(FM.d,el.dataset.ip||'img',undefined);sync();redrawForm();return;}return f(a,el,v);};})();
@@ -382,8 +382,45 @@ function cpForm(M){const ks=cpKeys(M);
         <div class="row" style="gap:6px;margin:8px 0"><span class="seg"><button type="button" class="${P.aim?'':'on'}" data-fa="cp-mode" data-k="${key}" data-v="fix" aria-pressed="${!P.aim}">고정 위치</button><button type="button" class="${P.aim?'on':''}" data-fa="cp-mode" data-k="${key}" data-v="aim" aria-pressed="${!!P.aim}">대상 기준</button></span>
           ${P.aim?'':`<select data-fa="cp-fill" data-k="${key}" aria-label="빠른 채우기"><option value="">빠른 채우기…</option>${[['rows-even','짝수 줄'],['cols-even','짝수 열'],['check','체크무늬'],['edge','가장자리'],['left','왼쪽 절반'],['right','오른쪽 절반'],['top','위쪽 절반'],['bottom','아래쪽 절반']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select>`}
           <button type="button" class="btn btn-g btn-sm" data-fa="cp-clear" data-k="${key}">칸 모두 지우기</button><button type="button" class="btn btn-g btn-sm" data-fa="cp-del" data-k="${key}" style="margin-left:auto">패턴 삭제</button></div>
-        ${cpBoard(key,P)}<p class="faint small" style="margin-top:6px">${P.aim?'★ = 무작위로 고른 블레서 한 명이 선 칸. 전장 밖으로 나가는 칸·보스 칸은 빠집니다.':'가운데 2×2는 보스 칸이라 고를 수 없습니다. 고른 칸에 선 블레서가 맞습니다.'}</p></details>`;}).join('')}
+        <div style="margin:6px 0">${pfxRow(key,P)}</div>${cpBoard(key,P)}<p class="faint small" style="margin-top:6px">${P.aim?'★ = 무작위로 고른 블레서 한 명이 선 칸. 전장 밖으로 나가는 칸·보스 칸은 빠집니다.':'가운데 2×2는 보스 칸이라 고를 수 없습니다. 고른 칸에 선 블레서가 맞습니다.'}</p></details>`;}).join('')}
     <div class="row"><button type="button" class="btn btn-sm" data-fa="cp-add">+ 광역 패턴 만들기</button></div></div>`;}
 (function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
   $$('details.cp',box).forEach(d=>d.addEventListener('toggle',()=>{if(d.open)CP_OPEN.add(d.dataset.cp);else CP_OPEN.delete(d.dataset.cp);}));
   $$('select[data-fa="cp-fill"]',box).forEach(el=>el.onchange=()=>{if(el.value){el.dataset.v=el.value;fAct('cp-fill',el,el.value);}});};})();
+
+/* ── 만신전 패턴 추가 효과(대미지와 함께, 여러 개 고를 수 있음) · 메인 2026-11-07 ──
+   저장: mass.patterns.<패턴>.fx = {knock:{c},delay:{},bind:{t},frost:{},poison:{d,t},burn:{d,t},reflect:{r},confuse:{t}} — 게임 엔진 resolveTurn ⑥이 읽음 */
+const PFX=[['knock','넉백','맞은 블레서를 보스 반대쪽으로 밀어냄',[['c','칸',2]]],['delay','시간차 공격','이번 턴엔 예고만, 다음 턴에 터짐',[]],['bind','속박','n턴 행동 불가(이동·스킬 모두)',[['t','턴',1]]],['frost','동상','다음 1턴 이동 불가',[]],
+  ['poison','중독','턴마다 HP − n, n턴',[['d','대미지',20],['t','턴',3]]],['burn','화상','턴마다 HP − n, n턴',[['d','대미지',20],['t','턴',3]]],['reflect','반사','이번 턴 보스가 받은 대미지를 때린 블레서에게 되돌림',[['r','%',100]]],['confuse','혼란','n턴 동안 내 행동 대신 주변 블레서에게 기본 공격',[['t','턴',1]]]];
+function pfxRow(pk,cur){const fx=(cur&&cur.fx)||{};
+  return `<div class="pfx"><span class="faint small">추가 효과</span>${PFX.map(([k,l,d,ps])=>{const on=!!fx[k];
+    return `<span class="pfx-i ${on?'on':''}"><label class="chk" title="${esc(d)}"><input type="checkbox" data-fa="pfx" data-k="${esc(pk)}" data-f="${k}" ${on?'checked':''}> ${esc(l)}</label>${on?ps.map(([pp,pl,dv])=>`<input type="number" min="1" step="1" class="nsm" data-p="mass.patterns.${pk}.fx.${k}.${pp}" data-t="num" value="${fx[k][pp]??dv}" aria-label="${esc(l)} ${pl}"><span class="faint small">${pl}</span>`).join(''):''}</span>`;}).join('')}</div>`;}
+(function(){const f=fAct;fAct=function(a,el,v){if(a==='pfx'){const k=el.dataset.k,ff=el.dataset.f;const M=FM.d.mass=FM.d.mass||{};const P=(M.patterns=M.patterns||{});const D=MPATS();P[k]=P[k]||{name:(D[k]||{}).name,mult:(D[k]||{}).mult};
+    const fx=P[k].fx=P[k].fx||{};if(v){const def=(PFX.find(x=>x[0]===ff)||[])[3]||[];fx[ff]=Object.fromEntries(def.map(([pp,,dv])=>[pp,dv]));}else delete fx[ff];if(!Object.keys(fx).length)delete P[k].fx;sync();redrawForm();return;}return f(a,el,v);};})();
+
+/* ── 이미지 올리기: 캐릭터 이미지처럼 위치·크기 맞추기(끌어서 이동 · 휠/막대로 확대) · 메인 2026-11-07 ──
+   몬스터·아이템 1:1(512×512), 퀘스트 장면 16:9(960×540). GIF는 움직임 유지를 위해 그대로. '자르지 않고 올리기'는 예전처럼 긴 변 512px */
+function imgCrop(file,pre){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const im=new Image();
+  im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('이미지를 읽지 못했습니다'));};
+  im.onload=()=>{const wide=pre==='quest/';const OW=wide?960:512,OH=wide?540:512;const FW=wide?480:320,FH=wide?270:320;
+    const base=Math.max(FW/im.width,FH/im.height);const st={z:1,cx:im.width/2,cy:im.height/2};let done=false;
+    modal(`<h3>이미지 위치 · 크기</h3><p class="faint small" style="margin:0 0 8px">끌어서 위치를 옮기고, 휠이나 막대로 크기를 조절하세요. 칸 밖은 잘립니다.</p>
+      <div class="crop-f" style="width:${FW}px;height:${FH}px"><canvas width="${FW}" height="${FH}"></canvas></div>
+      <div class="row" style="gap:8px;margin-top:10px;align-items:center"><span class="faint small">크기</span><input type="range" id="crop-z" min="30" max="400" value="100" style="flex:1"><span class="num small" id="crop-zv">100%</span></div>
+      <div class="row" style="gap:6px;margin-top:12px;justify-content:flex-end"><button type="button" class="btn btn-g btn-sm" id="crop-full">자르지 않고 올리기</button><button type="button" class="btn btn-sm" data-close-btn>취소</button><button type="button" class="btn btn-p btn-sm" id="crop-ok">적용</button></div>`);
+    const cv=$('.crop-f canvas'),ctx=cv.getContext('2d');
+    const draw=(c,W,H,k)=>{c.clearRect(0,0,W,H);const sc=base*st.z*k;c.drawImage(im,W/2-st.cx*sc,H/2-st.cy*sc,im.width*sc,im.height*sc);};
+    const redraw=()=>{draw(ctx,FW,FH,1);$('#crop-zv').textContent=Math.round(st.z*100)+'%';$('#crop-z').value=Math.round(st.z*100);};redraw();
+    let drag=null;cv.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);};
+    cv.onpointermove=e=>{if(!drag)return;const sc=base*st.z;st.cx-=(e.clientX-drag.x)/sc;st.cy-=(e.clientY-drag.y)/sc;drag={x:e.clientX,y:e.clientY};redraw();};
+    cv.onpointerup=cv.onpointercancel=()=>{drag=null;};
+    cv.onwheel=e=>{e.preventDefault();st.z=Math.max(0.3,Math.min(4,st.z*(e.deltaY<0?1.08:1/1.08)));redraw();};
+    $('#crop-z').oninput=e=>{st.z=Math.max(0.3,Math.min(4,(+e.target.value||100)/100));redraw();};
+    const fin=v=>{if(done)return;done=true;URL.revokeObjectURL(url);modal(null);res(v);};
+    $('#crop-ok').onclick=()=>{const o=document.createElement('canvas');o.width=OW;o.height=OH;draw(o.getContext('2d'),OW,OH,OW/FW);o.toBlob(b=>b?fin(b):rej(new Error('이미지를 변환하지 못했습니다')),'image/webp',0.9);};
+    $('#crop-full').onclick=()=>fin('full');
+    const mo=$('#modal');const obs=new MutationObserver(()=>{if(!mo.innerHTML&&!done){done=true;URL.revokeObjectURL(url);obs.disconnect();rej(new Error('cancel'));}});obs.observe(mo,{childList:true});};
+  im.src=url;});}
+(function(){const f=monImgResize;monImgResize=async function(file){if(file.type==='image/gif')return f(file);const pre=monImgResize._pre||'';
+  const r=await imgCrop(file,pre);return r==='full'?f(file):r;};})();
+(function(){const f=monImgUpload;monImgUpload=function(file,p,pre,sid){monImgResize._pre=pre||'';return f(file,p,pre,sid);};})();

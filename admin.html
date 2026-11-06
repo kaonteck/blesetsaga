@@ -284,6 +284,13 @@ textarea.code.sm{min-height:0;font-size:12px}
 .scn>.fm-sec.scene.battle,.scn>.fm-sec.scene.end{border-left:0}
 /* 몬스터 · 만신전 패턴 표 */
 .fm .pt{width:100%;border-collapse:collapse;font-size:12.5px}
+.fm .pt tr.pt-fx td{padding-top:0;border-bottom:1px solid var(--rule)}
+.pfx{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:12px}
+.pfx-i{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px}
+.pfx-i.on{background:rgba(201,164,106,.14)}
+.pfx-i .nsm{width:56px}
+.crop-f{max-width:100%;border:1px solid var(--rule);border-radius:6px;background:repeating-conic-gradient(#1b1e26 0 25%,#13151b 0 50%) 0 0/16px 16px;overflow:hidden;touch-action:none;cursor:grab;margin:0 auto}
+.crop-f canvas{display:block;width:100%;height:100%}
 .cpg{display:grid;grid-template-columns:repeat(var(--n),26px);gap:2px;width:max-content;max-width:100%;overflow:auto;padding:6px;background:#0b0d12;border:1px solid var(--rule);border-radius:6px}
 .cpc{width:26px;height:26px;border:1px solid rgba(255,255,255,.12);border-radius:3px;background:#1a1d24;cursor:pointer;padding:0;font-size:12px;color:#ffd27a;line-height:1}
 .cpc:hover{border-color:rgba(255,255,255,.35)}
