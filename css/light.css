@@ -1644,6 +1644,8 @@ html[data-theme="light"] .mcard-h.open .mh-go{color:var(--gold-hi)}
 html[data-theme="light"] .mh-n{color:var(--gold-hi);border-color:color-mix(in srgb,var(--gold-hi) 45%,transparent)}
 html[data-theme="light"] .mexp{border:1px solid var(--steel);border-top:0;background:var(--slab-2)}
 html[data-theme="light"] .mk-checks{border:1px solid var(--rule-2);background:var(--slab-2)}
+html[data-theme="light"] .mon-img.mon-ph{background:var(--night);border:1px solid var(--rule)}
+html[data-theme="light"] .rc-art .mon-img.mon-ph{border:0;background:none}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

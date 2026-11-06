@@ -3548,3 +3548,9 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .mk-checks{padding:10px 12px;border:1px solid var(--rule-2);border-radius:10px;background:var(--slab-2);margin-bottom:14px}
 .mk-form{gap:12px}
 .mh-n[hidden]{display:none!important}
+
+/* 몬스터 임시 이미지(그림을 올리지 않은 몬스터 — 예전 글자 그림 대신, 32px 픽셀 그림을 또렷하게 키움) */
+.mon-img.mon-ph{image-rendering:pixelated;background:var(--night);border:1px solid var(--rule);border-radius:8px;padding:12%;box-sizing:border-box}
+.rc-art .mon-img.mon-ph{border:0;background:none}
+.mdex .mon-img.mon-ph{padding:18%}
+.mdex.unk .ascii{width:100%;max-width:120px;aspect-ratio:1/1;min-height:0;margin:0 auto}
