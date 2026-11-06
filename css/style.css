@@ -3500,3 +3500,51 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .sc .sc-mp{margin-top:8px}
 .sc .sc-mp .bar.mp>i{background:#5b8def}
 .si-maxMp{color:#6f9cf5}
+/* ── 메인 · 모집 중인 파티 (탭 + 구분 + 가로형 줄) ── */
+.rp-bar{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px;border-bottom:1px solid rgba(209,224,238,.22)}
+.rp-bar .rp-tabs{border-bottom:0;flex:1;min-width:0}
+.rp-tabs button{padding:8px 14px 9px}
+.rp-sel{display:flex;align-items:center;gap:6px;flex:none;padding-bottom:6px;font-size:12.5px}
+.rp-sel select{width:auto;max-width:220px;padding:5px 8px;font-size:12.5px}
+.rp-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;scrollbar-width:thin;padding-right:2px}
+.rp-list>.empty{margin:6px 0}
+.rrow{display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid var(--rule-2);border-radius:12px;background:var(--slab-2);min-width:0}
+.rrow.rc-real{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+.rr-pic{flex:none;padding:0;border:0;background:none;cursor:pointer;line-height:0}
+.rr-pic .mon-img.rr-img{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--rule);background:var(--slab);padding:0;margin:0}
+.rr-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.rr-top{display:flex;align-items:center;gap:6px;min-width:0}
+.rr-top .rc-name{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-real{font-size:10.5px}
+.rr-sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px}
+.rr-mon{font-size:12.5px;color:var(--steel-hi)}
+.rrow .rr-roles{flex:none;margin:0}
+.rr-act{flex:none;display:flex;align-items:center;gap:8px}
+.rr-act .rc-count{font-size:13px;min-width:34px;text-align:right}
+@media (max-width:640px){
+  .rp-bar{flex-direction:column;align-items:stretch;gap:6px}
+  .rp-sel{padding-bottom:8px}.rp-sel select{flex:1;max-width:none}
+  .rp-tabs button{padding:8px 10px 9px;font-size:14px!important}
+  .rrow{flex-wrap:wrap;gap:8px 10px;padding:10px 12px}
+  .rr-main{flex:1 1 60%}
+  .rr-top .rc-name{white-space:normal}
+  .rr-pic .mon-img.rr-img{width:44px;height:44px}
+  .rrow .rr-roles{order:3}
+  .rr-act{order:4;margin-left:auto}
+}
+/* ── 레이드 · 몬스터 줄을 펼치면 모집 중인 파티 ── */
+.mgrp{display:flex;flex-direction:column}
+.mcard-h .mh-go{transition:transform .15s,color .12s}
+.mcard-h.open{border-color:var(--steel);border-bottom-left-radius:0;border-bottom-right-radius:0}
+.mcard-h.open .mh-go{transform:rotate(90deg);color:var(--gold-hi)}
+.mcard-h.open:hover .mh-go{transform:rotate(90deg)}
+.mh-n{font-size:11px;color:var(--gold-hi);border-color:color-mix(in srgb,var(--gold-hi) 45%,transparent)}
+.mexp{border:1px solid var(--steel);border-top:0;border-radius:0 0 12px 12px;background:var(--slab-2);padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.mexp-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mexp-bar>b{font-size:13.5px}
+.mexp-why{margin:0;font-size:12.5px}
+.mexp .list{margin:0}
+/* 파티 만들기 (모집 참가·랜덤 매칭 패널을 레이드 목록으로 옮긴 뒤) */
+.mk-checks{padding:10px 12px;border:1px solid var(--rule-2);border-radius:10px;background:var(--slab-2);margin-bottom:14px}
+.mk-form{gap:12px}
+.mh-n[hidden]{display:none!important}

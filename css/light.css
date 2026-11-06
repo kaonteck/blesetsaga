@@ -1632,6 +1632,18 @@ html[data-theme="light"] .fighter .bar.mp>i{background:#95afe3}
 html[data-theme="light"] .vals .mpv{color:#4a6cb0}
 html[data-theme="light"] .sc .sc-mp .bar.mp>i{background:#95afe3}
 html[data-theme="light"] .si-maxMp{color:#4a6cb0}
+html[data-theme="light"] .rp-bar{border-bottom:1px solid rgba(149,175,227,0.22)}
+html[data-theme="light"] .rp-bar .rp-tabs{border-bottom:0}
+html[data-theme="light"] .rrow{border:1px solid var(--rule-2);background:var(--slab-2)}
+html[data-theme="light"] .rrow.rc-real{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+html[data-theme="light"] .rr-pic{border:0;background:none}
+html[data-theme="light"] .rr-pic .mon-img.rr-img{border:1px solid var(--rule);background:var(--slab)}
+html[data-theme="light"] .rr-mon{color:var(--steel-hi)}
+html[data-theme="light"] .mcard-h.open{border-color:var(--steel)}
+html[data-theme="light"] .mcard-h.open .mh-go{color:var(--gold-hi)}
+html[data-theme="light"] .mh-n{color:var(--gold-hi);border-color:color-mix(in srgb,var(--gold-hi) 45%,transparent)}
+html[data-theme="light"] .mexp{border:1px solid var(--steel);border-top:0;background:var(--slab-2)}
+html[data-theme="light"] .mk-checks{border:1px solid var(--rule-2);background:var(--slab-2)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

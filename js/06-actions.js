@@ -19,6 +19,7 @@ document.addEventListener('change',e=>{if(!S)return;
   if(el.classList&&el.classList.contains('mk-ed')&&isAdmin()){const x=market().find(y=>y.id===el.dataset.id);if(x){const f=el.dataset.f;const v=el.value.trim();x[f]=f==='stock'?(v===''?null:Math.max(0,Math.round(+v))):Math.max(f==='price'?1:0,Math.round(+v||0));save();toast('저장했습니다.');}}
   if(el.id==='m-sort'){S.sel.mailSort=el.value;renderPop();}
   if(el.dataset.actChange==='arccat'){S.sel.arcCat=el.value;S.sel.quest=null;render();return;}
+  if(el.dataset.actChange==='rpmon'){S.sel.rpMon=el.value;closeRmem();const l=$('[data-rplist]');if(l){l.innerHTML=rpListHTML();l.scrollTop=0;}save();return;}
   if(el.dataset.actChange==='rodsel'){S.me.rodSel=el.value;save();render();}
   if(el.dataset.actChange==='whisperto'){S.sel.whisperTo=el.value;updateChats();save();}
   if(el.dataset.actChange==='cropfile'&&el.files&&el.files[0])cropFile(el.files[0]);
@@ -216,6 +217,9 @@ const ACTS={
   openquest:d=>{const q=quest(d.id);go('quest',{quest:d.id,qtab:q?q.cat:(S.sel.qtab||'epic')});},
   qtab:d=>{S.sel.qtab=d.tab;S.sel.quest=null;save();render();},
   qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});if(S.battle&&typeof storyBattleFx==='function')storyBattleFx(S.battle);if(st.noCharmFlag&&S.flags[st.noCharmFlag]&&S.battle){S.battle.noCharm=true;S.battle.log.push({t:'sys',text:'밀랍 귀마개 · 노래가 먹먹하게 들린다 (매혹에 걸리지 않음)'});if(typeof renderFight==='function')renderFight();}},
+  'rp-tab':d=>{if(S.sel.rpTab===d.tab&&!S.sel.rpMon)return;S.sel.rpTab=d.tab;S.sel.rpMon='';closeRmem();save();render();},
+  'rp-all':()=>{const t=rpTab();go('battle',{rtab:RP_RTAB[t],monster:null,raidOpen:S.sel.rpMon||S.sel.raidOpen||null});},
+  raidopen:d=>{S.sel.raidOpen=S.sel.raidOpen===d.id?null:d.id;save();render();},
   rtab:d=>{S.sel.rtab=d.tab;S.sel.monster=null;save();render();},
   dtarget:d=>{S.sel.dtarget=d.v;S.sel.dtargets={};render();},
   dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},

@@ -186,11 +186,22 @@ function monCard(m,extra){const lr=levelReason(m,S.me.level)||raidBlock(m);
       <div class="row" style="gap:6px"><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div>
       ${extra?`<div class="row" style="gap:6px">${extra}</div>`:''}${lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t" style="font-size:12.5px">입장 가능</p>'}</div>`;}
 /* 가로형 레이드 보스 카드: 그림 · 이름/지역/조건 · 입장 상태 */
-function monCardH(m){const lvLock=S.me.level<m.level;const lr=lvLock?'':(levelReason(m,S.me.level)||raidBlock(m));
-  return `<div class="panel mcard mcard-h ${lvLock?'locked':''}" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
+function monCardH(m,extra,open){const lvLock=S.me.level<m.level;const lr=lvLock?'':(levelReason(m,S.me.level)||raidBlock(m));const nr=S.recruits.filter(r=>r.monsterId===m.id).length;
+  return `<div class="panel mcard mcard-h ${lvLock?'locked':''}${open?' open':''}" data-act="raidopen" data-id="${m.id}" role="button" tabindex="0" aria-expanded="${!!open}" aria-controls="mexp-${m.id}">
     ${monImg(m)?monPic(m,'mh-pic','aria-hidden="true"'):''}<div class="mh-main"><div class="mname">${esc(m.name)}</div>
-      <div class="row" style="gap:6px"><span class="muted" style="font-size:12.5px;margin-right:4px">${esc(m.region||'')}</span><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div></div>
-    <div class="mh-st">${lvLock?`<span class="mh-lock" aria-label="LV ${m.level} 제한"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.3 7V5.1a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><small class="num">(LV ${m.level} 제한)</small></span>`:lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}${lvLock?'':'<span class="mh-go" aria-hidden="true">›</span>'}</div></div>`;}
+      <div class="row" style="gap:6px"><span class="muted" style="font-size:12.5px;margin-right:4px">${esc(m.region||'')}</span><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}${extra||''}</div></div>
+    <div class="mh-st"><span class="chip mh-n" data-mh-n="${m.id}" ${nr?'':'hidden'}>모집 ${nr}</span>${lvLock?`<span class="mh-lock" aria-label="LV ${m.level} 제한"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.3 7V5.1a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><small class="num">(LV ${m.level} 제한)</small></span>`:lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}<span class="mh-go" aria-hidden="true">›</span></div></div>`;}
+/* 레이드 목록 · 몬스터를 누르면 그 아래 모집 중인 파티 + [파티 생성] [랜덤 매칭] */
+function raidExp(m){const lr=levelReason(m,S.me.level)||raidBlock(m);const busy=busyReason();const rs=S.recruits.filter(r=>r.monsterId===m.id);
+  const mk=S.sel.mk||{};const tgt=Math.min(m.max,Math.max(m.min,mk.target||m.target||m.min));const qd=lr||busy||(m.questOnly?'퀘스트 전용 토벌은 랜덤 매칭이 없습니다':'');
+  return `<div class="mexp" id="mexp-${m.id}" role="region" aria-label="${esc(m.name)} 모집 중인 파티">
+    <div class="mexp-bar"><b>모집 중인 파티 <span class="num faint" data-mexp-n>${rs.length}</span></b>
+      <div class="row" style="gap:6px"><button class="btn btn-sm btn-primary" data-act="link" data-link="monster:${m.id}">파티 생성</button><button class="btn btn-sm" data-act="queue" data-id="${m.id}" ${qd?`disabled title="${esc(qd)}"`:`title="목표 ${tgt}인으로 매칭"`}>랜덤 매칭</button></div></div>
+    ${lr||busy?`<p class="reason mexp-why">${esc(lr||busy)}</p>`:''}
+    <div class="list" data-recruits-mon="${m.id}">${recruitRows(rs,true)}</div></div>`;}
+function raidList(list,extraFn,empty){
+  if(!list.length)return `<p class="empty">${empty}</p>`;
+  return `<div class="mlist">${list.map(m=>{const open=S.sel.raidOpen===m.id;return `<div class="mgrp${open?' open':''}">${monCardH(m,extraFn&&extraFn(m),open)}${open?raidExp(m):''}</div>`;}).join('')}</div>`;}
 function cntRow(items){return `<div class="cntrow">${items.map(([l,v,n])=>`<span class="cnt"><small>${l}</small><b class="num">${v}</b>${n?`<em>${n}</em>`:''}</span>`).join('')}</div>`;}
 function vBattle(){
   if(S.battle)return vFight();
@@ -206,15 +217,13 @@ function vBattle(){
   if(tab==='daily'){
     const party=ms.filter(m=>mkind(m)==='party');const dun=ms.filter(m=>mkind(m)==='dungeon').sort((a,b)=>a.level-b.level);const tg=S.sel.dtarget||'exp';const busy=busyReason();
     body=`<div class="raid-bar"><span class="rb-r"><span class="rb-c">파티 레이드 <b class="num">${d.raid} / ${RAID_MAX}</b><em>하루 ${RAID_MAX}회</em></span><i aria-hidden="true">·</i><span class="rb-c">초기화 <b class="num">05:00</b><em>매일</em></span></span></div>
-        <div class="mlist">${party.map(m=>monCardH(m)).join('')||'<p class="empty">등록된 파티 레이드가 없습니다.</p>'}</div>
-      <div class="panel"><h3>모집 중인 파티</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='party'),true)}</div></div>`;
+        ${raidList(party,null,'등록된 파티 레이드가 없습니다.')}`;
   }else if(tab==='dungeon'){
     body=dungeonTab();
   }else if(tab==='weekly'){
     const wm=ms.filter(m=>mkind(m)==='weekly'&&!weeklyClosed(m));
     body=`${cntRow([['이번 주 토벌',`${wm.filter(m=>w.done[m.id]).length} / ${wm.length}`,'보상 주 1회'],['초기화','월 05:00','매주']])}
-      <div class="mgrid">${wm.map(m=>monCard(m,`<span class="chip ${w.done[m.id]?'dim':'ok'}">${w.done[m.id]?'이번 주 보상 수령 완료':'이번 주 보상 받을 수 있음'}</span>`)).join('')||'<p class="empty">등록된 토벌전이 없습니다.</p>'}</div>
-      ${`<div class="panel"><h3>모집 중인 토벌대</h3><div class="list" data-recruits-join>${recruitRows(S.recruits.filter(r=>mkind(monster(r.monsterId))==='weekly'),true)}</div></div>`}`;
+      ${raidList(wm,m=>`<span class="chip ${w.done[m.id]?'dim':'ok'}">${w.done[m.id]?'이번 주 보상 수령 완료':'이번 주 보상 받을 수 있음'}</span>`,'등록된 토벌전이 없습니다.')}`;
   }else{
     body=massPanel();
   }

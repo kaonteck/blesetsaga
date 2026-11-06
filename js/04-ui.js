@@ -482,12 +482,37 @@ function openUinfo(name,btn){
 }
 function closeRmem(){if(S&&S.sel.rmem){S.sel.rmem=null;const b=$('#rmenu');if(b)b.innerHTML='';$$('.rc-mem').forEach(x=>x.setAttribute('aria-expanded','false'));}}
 window.addEventListener('scroll',closeRmem,{passive:true});window.addEventListener('resize',()=>{if(S)closeRmem();});
-document.addEventListener('scroll',e=>{if(e.target&&e.target.matches&&e.target.matches('[data-msgs],.pop-body,[data-rslide]'))closeRmem();},{capture:true,passive:true});
+document.addEventListener('scroll',e=>{if(e.target&&e.target.matches&&e.target.matches('[data-msgs],.pop-body,[data-rslide],[data-rplist]'))closeRmem();},{capture:true,passive:true});
+/* 메인 · 모집 중인 파티: 던전 / 파티 레이드 / 토벌전 탭 + [구분] 몬스터 드롭다운 · 가로형 줄 */
+const RP_TABS=[['dungeon','던전'],['party','파티 레이드'],['weekly','토벌전']];
+const RP_RTAB={dungeon:'dungeon',party:'daily',weekly:'weekly'};
+function rpTab(){const t=S.sel.rpTab;return RP_TABS.some(([k])=>k===t)?t:'party';}
+function rpOf(k){return S.recruits.filter(r=>{const m=monster(r.monsterId);return m&&mkind(m)===k;});}
+function rpMons(k){return S.data.monsters.filter(m=>m.published&&mkind(m)===k&&!(k==='weekly'&&weeklyClosed(m))).sort((a,b)=>a.level-b.level);}
+function rpList(){const t=rpTab(),mon=S.sel.rpMon;return rpOf(t).filter(r=>!mon||r.monsterId===mon);}
+function recruitRowH(r){
+  const m=monster(r.monsterId);if(!m)return '';
+  const c=roleCounts(r);const reason=joinReason(r);const busy=busyReason();const n=(r.people||r.members).length;
+  return `<article class="rrow${r.real?' rc-real':''}">
+    ${monImg(m)?`<button class="rr-pic" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기">${monPic(m,'rr-img','aria-hidden="true"')}</button>`:''}
+    <div class="rr-main"><div class="rr-top"><b class="rc-name">${esc(r.name||m.name)}</b>${r.real?'<span class="chip ok rr-real">블레서</span>':''}</div>
+      <div class="rr-sub"><button class="link rr-mon" data-act="link" data-link="monster:${m.id}">${esc(m.name)}</button><span class="chip num">LV${m.level}+</span><small class="muted">파티장 ${esc(r.leader)}</small></div></div>
+    <ul class="rc-roles rr-roles">${['tank','dps','heal'].map(k=>`<li class="si r-${k}" data-tip="${ROLE[k]}" tabindex="0" aria-label="${ROLE[k]} ${c[k]}명">${ROLE_ICON[k]}<b class="num">${c[k]}</b></li>`).join('')}</ul>
+    <div class="rr-act"><span class="num rc-count" aria-label="현재 ${n}명, 마감 ${r.target}명">${n}/${r.target}</span>
+      <button class="ibtn sm rc-mem" data-act="rmem" data-id="${r.id}" data-tip="참가 인원" aria-label="참가 인원 ${n}명 보기" aria-expanded="${S.sel.rmem===r.id}" aria-haspopup="true">${TICON.people}</button>
+      <button class="btn btn-sm" data-act="joinrecruit" data-id="${r.id}" ${reason||busy?'disabled':''} title="${esc(reason||busy||'이 파티에 참가')}">${reason?esc(reason.length>14?'참가 불가':reason):'참가'}</button></div>
+  </article>`;
+}
+function rpListHTML(){const rs=rpList();const t=rpTab();
+  if(rs.length)return rs.map(recruitRowH).join('');
+  const lab=(RP_TABS.find(([k])=>k===t)||[])[1];const mon=S.sel.rpMon&&monster(S.sel.rpMon);
+  return `<p class="empty">${mon?`「${esc(mon.name)}」`:esc(lab)} 모집 중인 파티가 없습니다. ${t==='dungeon'?'던전은 혼자서도 바로 출발할 수 있습니다.':'레이드에서 직접 파티를 만들어 보세요.'}</p>`;}
 function recruitPanel(){
-  const rs=S.recruits.slice(0,6);
-  return `<div class="panel rpanel"><h3>${hTitle('party','모집 중인 파티')} <span class="row" style="gap:8px;letter-spacing:0;text-transform:none"><span class="faint num" style="font-weight:400">${rs.length}/6</span><button class="link" data-act="nav" data-route="battle">전체 보기</button></span></h3>
-    <div class="rslide-wrap">
-    <div class="rslide" data-rslide tabindex="0" aria-label="모집 중인 파티 목록 · 마우스로 끌어 좌우로 넘기기">${rs.length?rs.map(recruitCard).join(''):'<p class="empty">모집 중인 파티가 없습니다. 직접 파티를 만들어 보세요.</p>'}</div></div></div>`;
+  const t=rpTab();const mons=rpMons(t);if(S.sel.rpMon&&!mons.some(m=>m.id===S.sel.rpMon))S.sel.rpMon='';
+  return `<div class="panel rpanel"><h3>${hTitle('party','모집 중인 파티')} <span class="row" style="gap:8px;letter-spacing:0;text-transform:none"><span class="faint num" style="font-weight:400" data-rp-total>${S.recruits.length}</span><button class="link" data-act="rp-all">전체 보기</button></span></h3>
+    <div class="rp-bar"><div class="qtabs rp-tabs" role="tablist" aria-label="모집 파티 종류">${RP_TABS.map(([k,l])=>`<button role="tab" data-act="rp-tab" data-tab="${k}" aria-selected="${t===k}">${l}<span class="num" data-rp-n="${k}">${rpOf(k).length}</span></button>`).join('')}</div>
+      <label class="rp-sel"><span class="faint">구분</span><select data-act-change="rpmon" aria-label="몬스터별로 보기"><option value="">전체</option>${mons.map(m=>`<option value="${m.id}" ${S.sel.rpMon===m.id?'selected':''}>${esc(m.name)} · LV${m.level}</option>`).join('')}</select></label></div>
+    <div class="rp-list" data-rplist role="tabpanel">${rpListHTML()}</div></div>`;
 }
 function recruitRows(rs,withJoin){
   if(!rs.length)return '<p class="empty">모집 중인 파티가 없습니다. 직접 파티를 만들어 보세요.</p>';
@@ -771,7 +796,6 @@ function patternLines(m){
 }
 function vMonster(m){
   const lr=levelReason(m,S.me.level)||raidBlock(m);const busy=busyReason();
-  const rs=S.recruits.filter(r=>r.monsterId===m.id);
   const myRole=roleOf(S.me.job);
   const mk=S.sel.mk||{};
   const tgt=Math.min(m.max,Math.max(m.min,mk.target||m.target||m.min));
@@ -789,22 +813,19 @@ function vMonster(m){
           <p class="faint" style="font-size:12px;margin-top:6px">직접 행동을 1회 이상 확정한 참가자만 보상 대상입니다. 패배해도 경험치와 아이템을 잃지 않습니다.${{party:` 데일리 파티 레이드는 출발할 때 하루 ${RAID_MAX}회 중 1회를 씁니다.`,weekly:' 주간 토벌 보상은 매주 월요일 05:00 초기화 · 주 1회입니다.',event:' 이벤트 보스는 출현 중에만 입장할 수 있고, 보상은 출현마다 1회 · 1.5배입니다.'}[mkind(m)]||''}</p></div>
       </div>
       <div class="stack" style="gap:16px">
-        <div class="panel"><h3>참가 조건</h3>
-          <div class="checks">
+        <div class="panel mk-panel"><h3>파티 만들기</h3>
+          <div class="checks mk-checks">
             <div><span class="mk ${lr?'reason':'ok-t'}">${lr?'✕':'✓'}</span><span>${lr?esc(lr):`레벨 · LV${S.me.level} 충족`}</span></div>
             <div><span class="mk ok-t">✓</span><span>내 역할 · ${ROLE[myRole]} (${JOBS[S.me.job].name})</span></div>
             ${busy?`<div><span class="mk reason">!</span><span class="reason">${esc(busy)}</span></div>`:''}
-          </div></div>
-        <div class="panel"><h3>파티 만들기</h3>
-          <div class="stack">
+          </div>
+          <div class="stack mk-form">
             <label class="row"><span class="muted" style="font-size:12.5px;width:64px">파티명</span><input type="text" id="mk-name" maxlength="16" placeholder="${esc(S.me.name)}의 파티" value="${esc(mk.name||'')}" style="flex:1"></label>
             <div class="row"><span class="muted" style="font-size:12.5px;width:64px">공개 범위</span><div class="seg">${[['public','공개 모집'],['invite','초대 전용']].map(([k,l])=>`<button data-act="mkset" data-k="vis" data-v="${k}" aria-pressed="${vis===k}">${l}</button>`).join('')}</div></div>
             <div class="row"><span class="muted" style="font-size:12.5px;width:64px">목표 인원</span><div class="seg">${range(m.min,m.max).map(n=>`<button data-act="mkset" data-k="target" data-v="${n}" aria-pressed="${tgt===n}">${n}</button>`).join('')}</div></div>
+            ${m.questOnly?'':`<p class="faint" style="font-size:12px;margin:0">공개 모집은 ${MKIND[mkind(m)]||'레이드'} 목록과 메인의 「모집 중인 파티」에 올라갑니다. 초대 전용은 목록에 올라가지 않고, 직접 초대한 블레서만 들어옵니다.</p>`}
             <button class="btn btn-primary" data-act="createparty" data-id="${m.id}" ${lr||busy?'disabled':''}>파티 만들기</button>
           </div></div>
-        <div class="panel"><h3>모집 파티 참가</h3><div class="list" data-recruits-mon="${m.id}">${recruitRows(rs,true)}</div></div>
-        <div class="panel"><h3>랜덤 매칭</h3><p class="muted" style="font-size:13px">같은 몬스터 · 같은 목표 인원을 고른 대기자 중 탱커 · 딜러 · 힐러 조건을 만족하는 조합을 찾습니다. 기다리는 동안 퀘스트를 진행할 수 있습니다.</p>
-          <div class="row" style="margin-top:10px"><button class="btn" data-act="queue" data-id="${m.id}" ${lr||busy?'disabled':''}>목표 ${tgt}인으로 매칭 시작</button></div></div>
       </div></div></div>`;
 }
 function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
@@ -1553,10 +1574,10 @@ function ambient(){
   if(Math.random()<0.025){const fr=S.bots.filter(b=>b.online&&S.rel[b.name]!=='blocked');const b=pick(fr);if(b){const gift=Math.random()<0.35;deliverMail(b.name,gift?pick(['남는 회복약 나눠요!','전투 전에 챙기세요.','작은 선물이에요.']):pick(['오늘 같이 파티 가실래요?','봉인 수호자 공략 모집 중이에요.','어제 전투 고생 많으셨어요!']),gift?{potion:1+Math.floor(Math.random()*2)}:null);}}
   if(S.party&&!S.battle&&Math.random()<0.12){const bm=S.party.members.filter(x=>!x.isMe);if(bm.length)botSay('party',pick(bm).name,pick(PARTY_LINES));}
   renderTopBadges();
-  const rj=$('[data-recruits-join]');if(rj)rj.innerHTML=recruitRows(S.recruits,true);
-  const rm=$('[data-recruits-mon]');if(rm)rm.innerHTML=recruitRows(S.recruits.filter(r=>r.monsterId===rm.dataset.recruitsMon),true);
-  if(S.sel.rmem&&!String(S.sel.rmem).startsWith('u:')){const r=S.recruits.find(x=>x.id===S.sel.rmem);const box=$('#rmenu');if(!r||!$('[data-rslide]'))closeRmem();else if(box.firstElementChild){const st=box.firstElementChild.style.cssText;box.innerHTML=rmemHTML(r);box.firstElementChild.style.cssText=st;}}
-  const rp=$('[data-rslide]');if(rp&&!rdrag){const sl=rp.scrollLeft;rp.innerHTML=S.recruits.slice(0,6).map(recruitCard).join('')||'<p class="empty">모집 중인 파티가 없습니다. 직접 파티를 만들어 보세요.</p>';rp.scrollLeft=sl;}
+  $$('[data-recruits-mon]').forEach(rm=>{rm.innerHTML=recruitRows(S.recruits.filter(r=>r.monsterId===rm.dataset.recruitsMon),true);const c=rm.closest('.mgrp');const n=c&&c.querySelector('[data-mexp-n]');if(n)n.textContent=S.recruits.filter(r=>r.monsterId===rm.dataset.recruitsMon).length;});
+  $$('[data-mh-n]').forEach(el=>{const k=S.recruits.filter(r=>r.monsterId===el.dataset.mhN).length;el.textContent=k?`모집 ${k}`:'';el.hidden=!k;});
+  if(S.sel.rmem&&!String(S.sel.rmem).startsWith('u:')){const r=S.recruits.find(x=>x.id===S.sel.rmem);const box=$('#rmenu');if(!r||!$('[data-rplist]'))closeRmem();else if(box.firstElementChild){const st=box.firstElementChild.style.cssText;box.innerHTML=rmemHTML(r);box.firstElementChild.style.cssText=st;}}
+  const rp=$('[data-rplist]');if(rp){const st=rp.scrollTop;rp.innerHTML=rpListHTML();rp.scrollTop=st;RP_TABS.forEach(([k])=>{const n=$(`[data-rp-n="${k}"]`);if(n)n.textContent=rpOf(k).length;});const tt=$('[data-rp-total]');if(tt)tt.textContent=S.recruits.length;}
   save();
 }
 function inMyGroup(n){return (S.party&&S.party.members.some(x=>x.name===n))||(S.battle&&S.battle.players.some(p=>p.id===n))||(S.match&&S.match.members.some(x=>x.name===n));}
