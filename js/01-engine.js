@@ -157,7 +157,7 @@ const DEFAULT_MONSTERS=[
 /* type: dice(결과값 공격) · nodice(결과값 미사용) · heal · support · addon(다른 공격과 함께) · passive
    phase: pre(④ 방어·보호 단계) · main(⑤ 행동 단계) */
 const SKILLS={
-  attack:{name:'공격',en:'Attack',type:'dice',target:'enemy',desc:'대상을 무기로 공격한다.'},
+  attack:{name:'무기 공격',en:'Attack',type:'dice',target:'enemy',desc:'손에 든 무기로 공격한다.(물리)'},
   save:{name:'세이브',en:'Save',type:'support',phase:'pre',target:'self',uses:2,reduce:10,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지 10% 감소.'},
   save2:{name:'세이브 Ⅱ',en:'Save Ⅱ',type:'support',phase:'pre',target:'self',uses:2,reduce:30,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지 30% 감소.'},
   crimehazard:{name:'크라임 해저드',en:'Crime Hazard',type:'dice',target:'enemy',uses:2,bonus:25,desc:'무기를 강하게 내리찍는다. 추가 대미지 +25%.'},
@@ -178,7 +178,7 @@ const SKILLS={
   overkill:{name:'오버킬',en:'Overkill',type:'dice',target:'enemy',combo:{from:'jolt',bonus:15},desc:'졸트로 노린 대상의 약점을 파고든다.'},
   might:{name:'권능',en:'Might',type:'dice',target:'enemy',combo:{from:'overkill',bonus:40},crit:true,desc:'오버킬과 연계하여 연속으로 강한 공격을 가한다.'},
   carnage:{name:'대학살',en:'Carnage',type:'addon',special:true,uses:1,with:['overkill'],desc:'오버킬과 함께 사용. 대미지가 공격력의 2배 이상이면 이번 턴 포함 3턴 동안 모든 스킬 대미지 ×2.'},
-  bash:{name:'무기 공격',en:'Strike',type:'dice',target:'enemy',phys:true,desc:'지팡이·홀·오브로 직접 내려친다. 마력 대신 공격력(물리)으로 계산해 약하지만 MP를 쓰지 않는다.'},
+  bash:{name:'무기 공격',en:'Attack',type:'dice',target:'enemy',phys:true,desc:'손에 든 무기로 공격한다.(물리)'},
   flame:{name:'플레임',en:'Flame',type:'dice',target:'enemy',desc:'대상을 마력으로 공격한다.'},
   cinder:{name:'신더',en:'Cinder',type:'nodice',phase:'pre',target:'enemy',desc:'대상에게 의욕감소(몬스터 공격 대미지 −12%)를 2턴 동안 건다.'},
   blaze:{name:'블레이즈',en:'Blaze',type:'dice',target:'enemy',combo:{from:'flame',bonus:15},desc:'여러 개의 불덩이를 발사한다.'},
