@@ -3630,8 +3630,6 @@ body[data-route="battle"] #view .page-head::before{-webkit-mask-image:url("../im
   background:conic-gradient(from var(--mga),transparent 0deg 250deg,rgba(217,229,255,.25) 290deg,#D9E5FF 330deg,rgba(217,229,255,.25) 348deg,transparent 360deg);
   filter:drop-shadow(0 0 1.5px rgba(217,229,255,.55))}
 @media (min-resolution:2dppx){.mgrp.open::before{padding:.5px}}
-/* 라이트 테마 · 빨간 알림 뱃지 글자는 흰색 */
-html[data-theme="light"] .badge{color:#fff}
 /* 메인 모집 줄: 역할 수·인원·버튼 칸 폭을 고정해 줄마다 세로로 맞춤 */
 .rrow{display:grid;grid-template-columns:auto minmax(0,1fr) 150px auto;column-gap:14px}
 .rrow:not(:has(.rr-pic)){grid-template-columns:minmax(0,1fr) 150px auto}
