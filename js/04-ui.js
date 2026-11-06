@@ -1642,7 +1642,11 @@ function renderPop(){
   if(!k){el.innerHTML='';return;}
   if(k==='online'){const b0=el.querySelector('.pop-body');const sc0=b0?b0.scrollTop:0;showOnline();const b1=el.querySelector('.pop-body');if(b1)b1.scrollTop=sc0;return;}
   const keepScroll=el.querySelector('.pop-body');const sc=keepScroll?keepScroll.scrollTop:0;
-  el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':k==='notice'?'공지사항':'환경설정'}">${k==='mail'?mailPop():k==='notice'?noticePop():settingsPop()}</div>`;
+  const inner=k==='mail'?mailPop():k==='notice'?noticePop():settingsPop();
+  /* 같은 팝업이 이미 열려 있으면 창은 그대로 두고 안쪽만 바꿈(탭 바꿀 때 열림 애니메이션이 다시 돌지 않게) */
+  const cur=el.querySelector(':scope>.pop');
+  if(cur&&cur.classList.contains('pop-'+k)){cur.innerHTML=inner;}
+  else el.innerHTML=`<div class="pop pop-${k}" role="dialog" aria-label="${k==='mail'?'메시지':k==='notice'?'공지사항':'환경설정'}">${inner}</div>`;
   const b=el.querySelector('.pop-body');if(b)b.scrollTop=sc;
 }
 
