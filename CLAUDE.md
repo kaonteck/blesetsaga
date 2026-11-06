@@ -504,6 +504,8 @@
 
 - [메인 2026-11-07] 만신전 패턴 추가 효과 · 운영 이미지 자르기 · 보스 위 타겟 칩. 01-engine: 패턴 `fx`(knock/delay/bind/frost/poison/burn/reflect/confuse), 새 상태 held·frost·burnP·conf, 시간차 `b.pend`. 03: 타겟 칩 `.chip.gtgt`, 상태 칩 추가. 백엔드 파일 a6-forms.js(PFX·pfxRow·imgCrop)·admin.html(스타일) 수정함.
 
+- [메인 2026-11-07] 혹한의 땅 탐색 머리말에 눈 내리는 픽셀 효과(`SNOW_FX`/`initSnow`, 03-world · 04 render 후 호출). Sprite Fusion VFX 'snow'(MIT) 이식, 날씨 따라 밀도·바람 다름, reduced-motion이면 끔.
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.

@@ -3437,3 +3437,8 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .pt-qline::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--faint);animation:ptq 1.4s ease-in-out infinite}
 .pt-qline.ok{color:var(--ok)!important}.pt-qline.ok::before{background:var(--ok);animation:none}
 @keyframes ptq{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* 혹한의 땅 눈 효과 */
+.exr-head{position:relative}.exr-head>*:not(.exr-fx){position:relative;z-index:1}.exr-head>.exr-bar{z-index:3}
+.exr-fx{position:absolute;left:0;top:0;width:100%;pointer-events:none;image-rendering:pixelated;z-index:0;opacity:.9;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+html[data-theme="light"] .exr-fx{filter:brightness(.62) saturate(1.8);opacity:.75}
