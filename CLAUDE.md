@@ -565,6 +565,8 @@
 
 - [메인 2026-11-07] 소금의 땅 탐색 머리말 환경 이펙트(유저 요청, pixelfx blizzard 코드): 새 파일 **`js/vendor/pixelfx-blizzard.js`**(patch-gg/pixelfx MIT, core/fx + fx/weather/blizzard 를 esbuild IIFE로 묶음 → `window.PIXELFX`, index.html 03-vfx 앞) · 변경점: 먼 층의 화면 전체 연무 제거(투명 위 눈보라 띠만). 03-vfx `PFX_OF.saltstorm`(소금빛 8색 팔레트, seed 9)·`startPfx`: 효과 폭이 320 아트 px라 캔버스를 정수배로 키움(데스크톱 4배·모바일 2배), 바닥 둔덕은 캔버스 아래로 숨김. 03-world `REGION_FX_OF.salt`. 라이트 테마는 어둡게 필터. 다시 묶을 때: 저장소 클론 → blizzard 복사본에 위 변경 → `/opt/npm-tools/node_modules/esbuild/bin/esbuild entry.js --bundle --format=iife --minify`(npm 레지스트리가 막혀 있어 이 경로 사용).
 
+- [메인 2026-11-07] (프론트 대신, 유저 요청) 라이트 테마 빨간 알림 뱃지(`.badge`) 글자 흰색. 메인 모집 줄 `.rrow`를 grid로 바꿔 역할 수 칸(150px, 3등분)·인원(38px)·참가 인원(30px)·참가 버튼(78px, '참가'/'참가 불가' 같은 폭) 위치를 줄마다 세로로 맞춤. 모바일은 역할 줄·버튼 줄로 나눔. style.css 끝, light.css 재생성.
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.

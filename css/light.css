@@ -1661,6 +1661,7 @@ html[data-theme="light"] .mgrp.open::before{background:conic-gradient(from var(-
 html[data-theme="light"] .mgrp.open::after{border:0;box-shadow:none;background:conic-gradient(from var(--mga),transparent 0deg 215deg,var(--g3) 260deg,var(--g1) 300deg,var(--g2) 332deg,transparent 360deg);-webkit-mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(90deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent);mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(90deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent)}
 html[data-theme="light"] .page-head.ph-quest::before,html[data-theme="light"] body[data-route="explore"] #view .page-head::before,html[data-theme="light"] body[data-route="battle"] #view .page-head::before{background:#14181f;border:0;box-shadow:none}
 html[data-theme="light"] .mgrp.open::before{background:conic-gradient(from var(--mga),transparent 0deg 250deg,rgba(149,175,227,0.25) 290deg,#95afe3 330deg,rgba(149,175,227,0.25) 348deg,transparent 360deg);filter:drop-shadow(0 0 1.5px rgba(149,175,227,0.55))}
+html[data-theme="light"][data-theme="light"] .badge{color:#14181f}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

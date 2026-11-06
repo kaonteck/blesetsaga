@@ -3630,3 +3630,22 @@ body[data-route="battle"] #view .page-head::before{-webkit-mask-image:url("../im
   background:conic-gradient(from var(--mga),transparent 0deg 250deg,rgba(217,229,255,.25) 290deg,#D9E5FF 330deg,rgba(217,229,255,.25) 348deg,transparent 360deg);
   filter:drop-shadow(0 0 1.5px rgba(217,229,255,.55))}
 @media (min-resolution:2dppx){.mgrp.open::before{padding:.5px}}
+/* 라이트 테마 · 빨간 알림 뱃지 글자는 흰색 */
+html[data-theme="light"] .badge{color:#fff}
+/* 메인 모집 줄: 역할 수·인원·버튼 칸 폭을 고정해 줄마다 세로로 맞춤 */
+.rrow{display:grid;grid-template-columns:auto minmax(0,1fr) 150px auto;column-gap:14px}
+.rrow:not(:has(.rr-pic)){grid-template-columns:minmax(0,1fr) 150px auto}
+.rrow .rr-roles{display:grid;grid-template-columns:repeat(3,1fr);gap:0;width:150px}
+.rrow .rr-roles .si{display:flex;align-items:center;justify-content:center;gap:5px}
+.rr-act{display:grid;grid-template-columns:38px 30px 78px;gap:8px;align-items:center}
+.rr-act .rc-count{min-width:0;text-align:center}
+.rr-act .btn{width:100%;justify-content:center;padding-left:6px;padding-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){
+  .rrow{grid-template-columns:auto minmax(0,1fr);row-gap:8px}
+  .rrow:not(:has(.rr-pic)){grid-template-columns:minmax(0,1fr)}
+  .rrow .rr-roles{grid-column:1/-1;width:auto;justify-content:start;grid-template-columns:repeat(3,44px)}
+  .rrow .rr-roles .si{justify-content:flex-start}
+  .rr-act{grid-column:1/-1;justify-self:end}
+  .rrow:has(.rr-pic) .rr-roles{grid-column:2;grid-row:2;align-self:center}
+  .rrow:has(.rr-pic) .rr-act{grid-column:1/-1}
+}
