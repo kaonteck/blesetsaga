@@ -1682,3 +1682,25 @@ html[data-theme="light"] .sks-n{color:#fff;background:linear-gradient(0deg,rgba(
 html[data-theme="light"] .gboss{background:#9b2c2c;border-color:#7a1f1f}
 html[data-theme="light"] .gboss b{color:#fff}
 html[data-theme="light"] .gboss small{color:#ffd6d6}
+/* 라이트 모드 글자 대비 정리(프론트, 2026-11-07): 흐린 글자·경고·완료 색을 한 톤 진하게(작은 글씨 4.5:1 안팎) */
+html[data-theme="light"]{--faint:#66708a;--warn:#8a5a10;--ok:#287045;--bad:#b93838;--luck:#6a4fc0}
+html[data-theme="light"] .btn-primary,html[data-theme="light"] .btn-primary .num{color:#1a2240}
+html[data-theme="light"] .chip.tank .faint,html[data-theme="light"] .chip.dps .faint,html[data-theme="light"] .chip.heal .faint{color:inherit;opacity:.78}
+html[data-theme="light"] .qcats .li[aria-current="true"] small{color:#2f62b8}
+html[data-theme="light"] .qcats .list[data-cat="epic"] .li[aria-current="true"] small{color:#7a5c14}
+html[data-theme="light"] .qcats .li[aria-current="true"] b{color:var(--text)}
+/* 카지노 골든 오아시스: 연한 금색 글자 → 짙은 금색, 달팽이 트랙 어두운 바탕 → 밝은 모래색 */
+html[data-theme="light"] .md-sec>h3.cas-title,html[data-theme="light"] .cas-title{color:#7a5c14!important;text-shadow:none}
+html[data-theme="light"] .cas-g b,html[data-theme="light"] .cshop-t b,html[data-theme="light"] .sn-mult b{color:#7a5c14}
+html[data-theme="light"] .cas-c{color:#8a5a10}
+html[data-theme="light"] .sn-track{background:linear-gradient(180deg,#f6efe0,#efe5d2);border-color:rgba(138,106,28,.35)}
+html[data-theme="light"] .sn-road{border-bottom-color:rgba(122,92,20,.3)}
+/* 공방 종류 표시(제작·요리·연금) */
+html[data-theme="light"] .cm-k.k-craft{color:#9a5a14}
+html[data-theme="light"] .cm-k.k-cook{color:#287045}
+html[data-theme="light"] .cm-k.k-alch{color:#6a4fc0}
+html[data-theme="light"] .cf-warn{color:#8a5a10!important}
+html[data-theme="light"] .ol-badge{color:#b93838}
+html[data-theme="light"] .casino{background:linear-gradient(160deg,#f7efd9,#fff 60%)!important;border-color:rgba(138,106,28,.4)!important}
+html[data-theme="light"] .vil-say.theft{background:#fbecea}
+html[data-theme="light"] .vil-say.theft p{color:#a3332b}
