@@ -1,7 +1,9 @@
 # 파티 레이드·던전 파티·랜덤 매칭·만신전 공유(019·022·026) 두 플레이어 브라우저 테스트
 # python3 -m http.server 8765 (저장소 맨 위) → python3 supabase/tests/game-party/test_party.py
 from playwright.sync_api import sync_playwright
+import json
 import os; SP=os.path.dirname(os.path.abspath(__file__)); OUT=os.environ.get('SHOTS','/tmp')
+import os as _os,sys as _sys;_sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'..'));from _helpers import create_char
 MOCK=open(SP+'/mock-supabase.js').read();res=[]
 A='aaaaaaaa-0000-0000-0000-00000000000a';B='bbbbbbbb-0000-0000-0000-00000000000b'
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
@@ -17,8 +19,12 @@ with sync_playwright() as p:
         pg.add_init_script(f"window.__UID='{uid}';window.__USERNAME='{user}';")
         pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
         pg.goto('http://localhost:8765/');pg.wait_for_selector('input[maxlength="10"]',timeout=20000)
-        pg.fill('input[maxlength="10"]',name);pg.locator('.create button.btn-primary').first.click();pg.wait_for_function('S&&S.me',timeout=10000)
+        create_char(pg,name)
         pg.evaluate(f"S.me.job='{job}';S.me.level=12;S.me.exp=0;hpFull&&hpFull();save();pfSync();cloudFlush()");pg.wait_for_timeout(500);return pg
+    def setlv(pg,lv,extra=''):
+        pg.evaluate(f"S.me.level={lv};S.me.exp=0;S.me.hpPct=1;hpFull&&hpFull();{extra};save();pfSync();cloudFlush&&cloudFlush()")
+        uid=pg.evaluate("SB_UID")
+        return wait(pg,f"(()=>{{const d=JSON.parse(localStorage.getItem('__mockdb'));const p=d.profiles.find(x=>x.user_id==='{uid}'),s=d.saves.find(x=>x.user_id==='{uid}');return p&&p.level==={lv}&&s&&s.data.me&&s.data.me.level==={lv};}})()",8000)
     a=player(A,'arin','아린','defender');bp=player(B,'bella','하늘별','priest')
     db=lambda:a.evaluate("JSON.parse(localStorage.getItem('__mockdb'))")
     mid=a.evaluate("(S.data.monsters.find(m=>mkind(m)==='party'&&m.published&&levelOk(m,12))||{}).id")
@@ -173,8 +179,12 @@ with sync_playwright() as p:
     bp.screenshot(path=OUT+'/party-drun.png')
     # 10) 랜덤 매칭 — 실제 블레서끼리 먼저
     a.evaluate("PT.matchWait=60000");bp.evaluate("PT.matchWait=60000")
-    a.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");a.wait_for_timeout(1200)
-    qa=a.evaluate("S.queue&&S.queue.roomId");qt=a.evaluate("S.queue&&S.queue.target")
+    # 가짜 서버는 두 탭이 같은 저장소(localStorage)를 통째로 고쳐 써서 가끔 방 하나가 사라짐 → 방이 남을 때까지 다시 시작(실제 서버와 무관)
+    for _try in range(3):
+        a.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");a.wait_for_timeout(1200)
+        qa=a.evaluate("S.queue&&S.queue.roomId");qt=a.evaluate("S.queue&&S.queue.target")
+        if qa and wait(a,f"JSON.parse(localStorage.getItem('__mockdb')).party_rooms.some(r=>r.id==={json.dumps(qa)}&&r.status==='gather')",3000):break
+        a.evaluate("ACTS.cancelqueue()");a.wait_for_timeout(500)
     ok(bool(qa) and a.evaluate("S.queue.host===true") and [r for r in db()['party_rooms'] if r['id']==qa][0]['name']=='랜덤 매칭','매칭을 시작하면 실제 블레서용 매칭 방을 엶')
     ok(not a.evaluate("!!S.match"),'기다리는 동안은 봇과 바로 매칭하지 않음')
     bp.evaluate(f"go('battle',{{monster:'{mid}'}});ACTS.queue({{id:'{mid}'}})");bp.wait_for_timeout(1500)
@@ -199,7 +209,7 @@ with sync_playwright() as p:
     ok(solo and a.evaluate("!S.queue||!S.queue.roomId"),'혼자면 기다림이 끝난 뒤 연습용 동료 매칭으로(방은 닫힘)')
     a.evaluate("S.match?matchFail(true):ACTS.cancelqueue()");a.wait_for_timeout(200)
     # 11) 만신전 — 운영자가 띄우면 모두에게 · 원정대 · 공대장 화면이 전투(봇이 빈자리)
-    for pg in (a,bp): pg.evaluate("S.me.level=25;S.me.hpPct=1;hpFull&&hpFull();save();pfSync()")
+    for pg in (a,bp): setlv(pg,25)
     em=a.evaluate("(S.data.monsters.find(m=>mkind(m)==='event'&&levelOk(m,25))||{}).id")
     ok(bool(em),f'만신전 몬스터 {em}')
     a.evaluate(f"S.me.admin=true;ACTS['ev-spawn']({{id:'{em}'}})");a.wait_for_timeout(900)
@@ -249,7 +259,7 @@ with sync_playwright() as p:
     a.evaluate("leaveBattle()");bp.evaluate("leaveBattle()")
     # 12) 8장 그리드 토벌(케팔로포다) — 실제 블레서끼리 · 이기면 각자 퀘스트 다음 단계(메인 4e1b0bc)
     tm='t_cephalo';tl=a.evaluate(f"monster('{tm}').level")
-    for pg in (a,bp): pg.evaluate(f"S.me.level={tl};S.me.hpPct=1;hpFull&&hpFull();(()=>{{const m=monster('{tm}');S.qp[m.story]={{status:'active',step:r4Step(m),history:[]}};}})();save();pfSync()")
+    for pg in (a,bp): ok(setlv(pg,tl,f"(()=>{{const m=monster('{tm}');S.qp[m.story]={{status:'active',step:r4Step(m),history:[]}};}})()"),f'레벨 {tl}이 가짜 서버 세이브·프로필까지 반영')
     a.evaluate(f"go('battle',{{monster:'{tm}'}});ACTS.createparty({{id:'{tm}'}})");a.wait_for_timeout(800)
     trm=[r for r in db()['party_rooms'] if r['monster_id']==tm]
     ok(len(trm)==1 and trm[0]['status']=='gather','그리드 토벌 파티 → 서버 방')
@@ -271,9 +281,14 @@ with sync_playwright() as p:
     ok(bp.evaluate(f"S.qp[monster('{tm}').story].step")!=st0,'파티원 퀘스트가 보스 다음 단계로')
     a.evaluate("leaveBattle()");bp.evaluate("leaveBattle()")
     # 12b) 숨무스 만신전: 8장을 마치지 않은 블레서는 원정대 참가 막힘
-    a.evaluate("S.me.admin=true;ACTS['ev-spawn']({id:'guardian'})");a.wait_for_timeout(900);a.evaluate("S.me.admin=false;save()")
-    bp.evaluate("mtFetch()");bp.wait_for_timeout(600);bp.evaluate("delete S.qp.E31;modal('');ACTS['mass-join']({})");bp.wait_for_timeout(700)
-    gm=[r for r in db()['party_rooms'] if r.get('kind')=='mass' and r['monster_id']=='guardian']
+    gq="JSON.parse(localStorage.getItem('__mockdb')).party_rooms.some(r=>r.kind==='mass'&&r.monster_id==='guardian'&&r.status==='gather')"
+    for _try in range(3):   # 가짜 서버 저장소 경합으로 방이 사라지면 다시 띄움
+        a.evaluate("S.me.admin=true;ACTS['ev-spawn']({id:'guardian'})");a.wait_for_timeout(900);a.evaluate("S.me.admin=false;save()")
+        if wait(bp,gq,3000):break
+    bp.evaluate("mtFetch()");wait(bp,"!!(S.mass&&S.mass.shared&&S.mass.monsterId==='guardian')",5000)
+    bp.evaluate("delete S.qp.E31;modal('');ACTS['mass-join']({})");bp.wait_for_timeout(700)
+    gm=[r for r in db()['party_rooms'] if r.get('kind')=='mass' and r['monster_id']=='guardian' and r['status']=='gather']
+    if not(len(gm)==1 and len(gm[0]['members'])==0):print('DBG',len(gm),[len(r['members']) for r in gm],bp.evaluate("JSON.stringify(S.mass&&{m:S.mass.monsterId,sh:!!S.mass.shared})"))
     ok(len(gm)==1 and len(gm[0]['members'])==0,'숨무스 만신전: 8장 미완료 블레서는 참가 막힘')
     for pg in (a,bp): pg.evaluate("S.me.level=12;save();pfSync()")
     bot_r=bp.evaluate("(()=>{const m=S.data.monsters.find(x=>mkind(x)==='party'&&x.published&&levelOk(x,12));let r=null;for(let i=0;i<40;i++){const x=genRecruit(m);if(x&&!joinReason(x)){r=x;break;}}if(!r)return null;S.recruits.push(r);return r.id;})()")

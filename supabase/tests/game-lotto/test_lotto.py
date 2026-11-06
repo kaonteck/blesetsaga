@@ -1,6 +1,7 @@
 import json,datetime
 from playwright.sync_api import sync_playwright
 import os; SP=os.path.dirname(os.path.abspath(__file__)); OUT=os.environ.get('SHOTS','/tmp')
+import os as _os,sys as _sys;_sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'..'));from _helpers import create_char
 MOCK=open(SP+'/mock-supabase.js').read();res=[]
 U='aaaaaaaa-0000-0000-0000-00000000000a'
 KST=datetime.timezone(datetime.timedelta(hours=9))
@@ -13,7 +14,7 @@ with sync_playwright() as p:
     pg.add_init_script(f"window.__UID='{U}';window.__USERNAME='arin';window.__FORCE_NUMS=[1,2,3,9];")
     pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
     pg.goto('http://localhost:8765/');pg.wait_for_selector('input[maxlength="10"]',timeout=20000)
-    pg.fill('input[maxlength="10"]','아린');pg.locator('.create button.btn-primary').first.click();pg.wait_for_function('S&&S.me',timeout=10000)
+    create_char(pg,'아린')
     g=lambda js:pg.evaluate(js)
     srvgold=lambda:g("JSON.parse(localStorage.getItem('__mockdb')).saves.find(s=>s.user_id==='"+U+"').data.me.gold")
     g("S.me.level=5;S.me.gold=1000;save()");g("cloudFlush()");pg.wait_for_timeout(400)

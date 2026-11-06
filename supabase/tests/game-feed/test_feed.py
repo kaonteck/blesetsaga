@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
 import os; SP=os.path.dirname(os.path.abspath(__file__)); OUT=os.environ.get('SHOTS','/tmp')
+import os as _os,sys as _sys;_sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'..'));from _helpers import create_char
 MOCK=open(SP+'/mock-supabase.js').read();res=[]
 A='aaaaaaaa-0000-0000-0000-00000000000a';B='bbbbbbbb-0000-0000-0000-00000000000b'
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
@@ -12,7 +13,7 @@ with sync_playwright() as p:
         pg.add_init_script(f"window.__UID='{uid}';window.__USERNAME='{user}';")
         pg.route('**/supabase-js@*/**',lambda r:r.fulfill(body=MOCK,content_type='application/javascript'))
         pg.goto('http://localhost:8765/');pg.wait_for_selector('input[maxlength="10"]',timeout=20000)
-        pg.fill('input[maxlength="10"]',name);pg.locator('.create button.btn-primary').first.click();pg.wait_for_function('S&&S.me',timeout=10000)
+        create_char(pg,name)
         pg.evaluate("cloudFlush()");pg.wait_for_timeout(500);return pg
     a=player(A,'arin','아린');bp=player(B,'bella','하늘별')
     for pg in (a,bp): pg.evaluate("mlLoadPlayers().then(()=>{S.route='community';render();})")

@@ -2,6 +2,7 @@
 # python3 -m http.server 8765 (저장소 맨 위) → python3 supabase/tests/admin-level/test_level.py
 from playwright.sync_api import sync_playwright
 import os; SP=os.path.dirname(os.path.abspath(__file__))
+import os as _os,sys as _sys;_sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'..'));from _helpers import create_char
 MOCK=open(SP+'/mock-supabase.js').read();res=[]
 A='aaaaaaaa-0000-0000-0000-00000000000a'
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
@@ -14,7 +15,7 @@ with sync_playwright() as p:
         pg=ctx.new_page();pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:m.type=='error' and 'ERR_FAILED' not in m.text and errs.append(m.text))
         pg.goto('http://localhost:8765/');return pg
     pg=page();pg.wait_for_selector('input[maxlength="10"]',timeout=20000)
-    pg.fill('input[maxlength="10"]','아린');pg.locator('.create button.btn-primary').first.click();pg.wait_for_function('S&&S.me',timeout=10000)
+    create_char(pg,'아린')
     srv=lambda:pg.evaluate("(()=>{const d=JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data;return {lv:d.me.level,exp:d.me.exp,gold:d.me.gold,rev:d.adminRev||0}})()")
     pg.evaluate("S.me.level=5;S.me.exp=40;S.me.gold=100;save()");pg.evaluate("cloudFlush()");pg.wait_for_timeout(400)
     ok(srv()['lv']==5,'처음 저장 LV5')
@@ -69,7 +70,7 @@ with sync_playwright() as p:
     pg.evaluate("ACTS['acc-del-yes']()");pg.wait_for_timeout(800)
     ok('reset_my_save' in pg.evaluate("window.__RPC") and pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data.me")==None,'계정 삭제 → 서버 세이브 비움(reset_my_save)')
     pg.wait_for_selector('input[maxlength="10"]',timeout=10000)
-    pg.fill('input[maxlength="10"]','새싹');pg.locator('.create button.btn-primary').first.click();pg.wait_for_function('S&&S.me',timeout=10000)
+    create_char(pg,'새싹')
     pg.evaluate("cloudFlush()");pg.wait_for_timeout(500)
     sv=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).saves.find(x=>x.user_id==='"+A+"').data.me")
     ok(sv and sv['level']==1 and sv['name']=='새싹' and pg.evaluate("S.me.level")==1,f'삭제 뒤 새 캐릭터 LV1(예전 레벨 안 붙음): 서버 LV{sv and sv["level"]} · 게임 LV{pg.evaluate("S.me.level")}')

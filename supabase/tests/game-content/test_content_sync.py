@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
 import os; SP=os.path.dirname(os.path.abspath(__file__)); OUT=os.environ.get('SHOTS','/tmp')
+import os as _os,sys as _sys;_sys.path.insert(0,_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),'..'));from _helpers import create_char
 MOCK=open(SP+'/mock-supabase.js').read();res=[]
 def ok(c,l):res.append(('OK  ' if c else 'FAIL')+' '+l)
 with sync_playwright() as p:
@@ -29,8 +30,9 @@ with sync_playwright() as p:
     g("window.__CT=window.__CT.filter(r=>r.kind!=='event');window.__CT_CB({})");pg.wait_for_timeout(1300)
     ok(not g("activeEvents().some(e=>e.id==='srv:ev1')"),'서버 이벤트 내리면 전광판에서 사라짐')
     # 세이브에 표시가 남는지 → 새로고침 후 서버에서 potion 삭제 → 원래 이름 복귀
-    pg.wait_for_timeout(500);saved=g("JSON.parse(localStorage.getItem(SAVE)).data._srv.item.potion.base.name")
-    ok(saved=='회복약','세이브에 원래 값 저장 (회복약)')
+    # 세이브에는 게임 데이터를 넣지 않음(메인 44b50a0 slimOut) → 다시 접속하면 코드 기본값 위에 서버 값을 새로 덮음
+    pg.wait_for_timeout(500);sd=g("JSON.parse(localStorage.getItem(SAVE)).data")
+    ok(sd.get('_slim')==1 and '_srv' not in sd and 'monsters' not in sd,'세이브에 게임 데이터·서버 값 안 남음(줄인 세이브)')
     pg.add_init_script("window.__AFTER_RELOAD=1")
     pg.reload();pg.wait_for_function('typeof S!=="undefined"&&S&&S.data&&S.data._srv',timeout=20000);pg.wait_for_timeout(800)
     ok(g("ITEMS.potion.name")=='서버 회복약','새로고침 후 서버 값 다시 적용')
@@ -42,7 +44,7 @@ with sync_playwright() as p:
     # 새 캐릭터 만들기: 첫 화면의 1회 보정이 서버 값을 바꾸지 않아야 함
     g("window.__CT.push({kind:'monster',id:'tracker',data:{kind:'party',name:'추적자',hp:5555,atk:70,level:15,min:3,max:4,target:3,roles:{tank:1,dps:1,heal:1}},published:true,starts_at:null,ends_at:null,rev:2,sort:0});window.__CT_CB({})")
     pg.wait_for_timeout(1300)
-    pg.fill('input[maxlength="10"]','테스터');pg.locator('form button[type=submit], .create button.btn-primary').first.click();pg.wait_for_timeout(800)
+    create_char(pg,'테스터')
     ok(g("!!S.me"),'캐릭터 생성됨')
     ok(g("monster('tracker').hp")==5555,'캐릭터 생성 후에도 서버 값 유지 (hp 5555)')
     pg.evaluate("ctRefresh()");pg.wait_for_timeout(600)
