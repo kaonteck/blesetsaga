@@ -500,7 +500,7 @@ function recruitRowH(r){
   return `<article class="rrow${r.real?' rc-real':''}">
     ${monImg(m)?`<button class="rr-pic" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기">${monPic(m,'rr-img','aria-hidden="true"')}</button>`:''}
     <div class="rr-main"><div class="rr-top"><b class="rc-name">${esc(r.name||m.name)}</b>${r.real?'<span class="chip ok rr-real">블레서</span>':''}</div>
-      <div class="rr-sub"><button class="link rr-mon" data-act="link" data-link="monster:${m.id}">${esc(m.name)}</button><span class="chip num">LV${m.level}+</span><small class="muted">파티장 ${esc(r.leader)}</small></div></div>
+      <div class="rr-sub"><span class="rr-ml"><button class="link rr-mon" data-act="link" data-link="monster:${m.id}" title="${esc(m.name)}">${esc(m.name)}</button><span class="chip num">LV${m.level}+</span></span><small class="muted rr-lead">파티장 ${esc(r.leader)}</small></div></div>
     <ul class="rc-roles rr-roles">${['tank','dps','heal'].map(k=>`<li class="si r-${k}" data-tip="${ROLE[k]}" tabindex="0" aria-label="${ROLE[k]} ${c[k]}명">${ROLE_ICON[k]}<b class="num">${c[k]}</b></li>`).join('')}</ul>
     <div class="rr-act"><span class="num rc-count" aria-label="현재 ${n}명, 마감 ${r.target}명">${n}/${r.target}</span>
       <button class="ibtn sm rc-mem" data-act="rmem" data-id="${r.id}" data-tip="참가 인원" aria-label="참가 인원 ${n}명 보기" aria-expanded="${S.sel.rmem===r.id}" aria-haspopup="true">${TICON.people}</button>
