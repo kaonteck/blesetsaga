@@ -172,7 +172,7 @@ function start(cv){if(cur&&cur.cv===cv)return;stop();
     :kind==='fireflies'?fireflies({area:{x:0,y:0,w:WW,h:HH},density:Math.max(.4,WW/680*.8),close:Math.max(3,Math.round(WW/260)),seed:5})
     :kind==='embers'?embers({area:{x:0,y:0,w:WW,h:HH},density:Math.min(1.4,Math.max(.4,WW/680*.7)),seed:3})
     :kind==='bubbles'?bubbles({area:{x:0,y:0,w:WW,h:HH},vents:Math.max(2,Math.round(WW/360)),density:.8,specks:WW/680*.8,seed:4})
-    :kind==='miasma'?fog({area:{x:-80,y:0,w:WW+160,h:HH},density:wx==='fog'?1.2:.9,wind:16,layers:3,colors:['#3a2c46','#5b4a5c','#8a8f62'],seed:9})
+    :kind==='miasma'?fog({area:{x:-80,y:0,w:WW+160,h:HH},density:wx==='fog'?1.2:.9,wind:16,layers:3,colors:['#3a2456','#5e3a86','#9a72c8'],seed:9})
     :fog({area:{x:-80,y:0,w:WW+160,h:HH},density:wx==='fog'?1.25:.9,seed:2});
   const c={cv,raf:0,last:performance.now(),acc:0};cur=c;
   const frame=()=>{col.fill(0);lit.fill(0);fx.draw(buf,light);
