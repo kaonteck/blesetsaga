@@ -3722,3 +3722,17 @@ html{overflow-y:scroll}
 #gcount b.gc-pop{animation:gcPop .45s ease-out}
 @keyframes gcPop{0%{transform:scale(1.35);opacity:.4}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){#gcount b.gc-pop{animation:none}}
+/* 나만의 연대기 (캐릭터 › 연대기) */
+.chr .chr-ch{border-top:1px solid var(--rule);padding:4px 0}
+.chr .chr-ch>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 2px;cursor:pointer;list-style:none}
+.chr .chr-ch>summary::-webkit-details-marker{display:none}
+.chr .chr-t{font-family:var(--f-display);font-size:16px;font-weight:700}
+.chr .chr-sum{margin:0 0 10px;color:var(--muted);font-size:13px;font-style:italic}
+.chr .chr-q{padding:8px 0 10px 12px;border-left:2px solid var(--rule-2);margin:0 0 8px}
+.chr .chr-qh{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.chr .chr-qh b{font-size:14px}
+.chr .chr-ev{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.chr .chr-ev li{font-size:13px;line-height:1.55;color:var(--text)}
+.chr .chr-ev li b{font-weight:600;color:var(--steel-hi)}
+.chr .chr-ev li span{color:var(--muted)}
+.chr .chr-none{margin:0;font-size:12.5px}

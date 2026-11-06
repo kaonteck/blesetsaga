@@ -2074,3 +2074,18 @@ function storyExpTune(){if(!S||!S.data||!S.data.quests)return;const srv=(S.data.
   for(const q of S.data.quests){const f=STORY_EXP_MUL[q.id];if(!f||srv[q.id])continue;const seen=new Set();
     const walk=o=>{if(!o||typeof o!=='object'||seen.has(o))return;seen.add(o);if(o.reward&&typeof o.reward.exp==='number'){if(o.reward._exp0==null)o.reward._exp0=o.reward.exp;o.reward.exp=Math.round(o.reward._exp0*f/500)*500;}for(const k in o)walk(o[k]);};walk(q.steps);}}
 (function(){const f=ensureVilQuest;ensureVilQuest=function(){f.apply(this,arguments);try{storyExpTune();}catch(e){}};})();
+/* ── 나만의 연대기(2026-11-07) · 캐릭터 › 연대기 탭 ──
+   끝낸 메인(장별)·서브 퀘스트의 '지나온 이야기'(고른 선택과 결과)를 이어 붙여 한 편으로. 장마다 제목 + 한 줄 요약. 나만 봄. */
+const CH_SUM={ch0:'블레스 링크에 접속해 라니아케아에 첫발을 디뎠다.',ch1:'풀숲에서 사라진 탐사대의 흔적과 끝나지 않는 노래를 따라갔다.',ch2:'순례자의 길과 바위 동굴, 끝나지 않는 수련의 끝을 보았다.',
+  ch3:'늪의 독안개를 걷어 내고 AURORA의 낡은 일지를 건졌다.',ch4:'황금 도시 히페리온에서, 아무도 떠나지 않는 이유를 알게 됐다.',ch5:'"돌아오지 마"라고 부르는 바다의 노래를 멈췄다.',
+  ch6:'셀로나 문명의 기억 속에서, 이 세계가 먼저 있었다는 것을 보았다.',ch7:'눈에 갇힌 마을의 거울 속에서, 블레서였던 얼굴들을 만났다.',ch8:'해가 지지 않는 신전의 가장 안쪽까지 올라갔다.'};
+function chronRows(q){const qp=S.qp&&S.qp[q.id];const H=(qp&&qp.history)||[];const strip=t=>String(t||'').replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>'■'.repeat([...n].length));
+  return `<div class="chr-q"><div class="chr-qh"><b>${esc(q.title)}</b>${q.level?`<span class="faint num">LV${q.level}</span>`:''}</div>${H.length?`<ol class="chr-ev">${H.map(x=>`<li><b>▸ ${esc(strip(x.label))}</b>${x.result?` — <span>${esc(strip(x.result))}</span>`:''}</li>`).join('')}</ol>`:'<p class="faint chr-none">이 이야기에는 고른 선택이 없습니다.</p>'}</div>`;}
+function chronicleHTML(){const isDone=q=>q&&QDONE.includes(questStatus(q));const out=[];const used=new Set();
+  const chs=QCHAPTERS.map(([key,title,ids])=>[key,title,ids.map(id=>quest(id)).filter(isDone)]).filter(c=>c[2].length);
+  chs.forEach(([key,title,L],i)=>{L.forEach(q=>used.add(q.id));const all=QCHAPTERS.find(c=>c[0]===key)[2].length;
+    out.push(`<details class="chr-ch" ${i===chs.length-1?'open':''}><summary><span class="chr-t">${esc(title)}</span><span class="faint num">${L.length}/${all}</span></summary>${CH_SUM[key]&&L.length===all?`<p class="chr-sum">${esc(CH_SUM[key])}</p>`:''}${L.map(chronRows).join('')}</details>`);});
+  const sub=S.data.quests.filter(q=>q.cat==='sub'&&isDone(q)).sort((a,b)=>(a.level||0)-(b.level||0));
+  if(sub.length)out.push(`<details class="chr-ch"><summary><span class="chr-t">곁가지 이야기</span><span class="faint num">${sub.length}</span></summary>${sub.map(chronRows).join('')}</details>`);
+  return `<div class="panel chr"><h3>${hTitle('scroll','나만의 연대기')} <span class="faint" style="font-size:12px;letter-spacing:0;font-weight:400">${esc(S.me.name)}의 이야기 · 나만 볼 수 있습니다</span></h3>
+    ${out.length?out.join(''):'<p class="empty" style="padding:0">아직 끝낸 이야기가 없습니다. 퀘스트를 마치면 고른 선택이 여기에 이어져 한 편의 이야기가 됩니다.</p>'}</div>`;}
