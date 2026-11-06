@@ -3548,3 +3548,13 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .mk-checks{padding:10px 12px;border:1px solid var(--rule-2);border-radius:10px;background:var(--slab-2);margin-bottom:14px}
 .mk-form{gap:12px}
 .mh-n[hidden]{display:none!important}
+
+/* 클래스 아이콘(유저 이미지, 흰색 통일) — 예전 한자 문장 자리에 같은 글자 크기(1.15em)로. 색은 역할 색 대신 흰색 */
+.cls-ic{display:inline-block;width:1.15em;height:1.15em;vertical-align:middle;background:#fff;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;flex:none}
+.sigil .cls-ic{width:66%;height:66%}
+.portrait .ph-glyph .cls-ic{width:1.05em;height:1.05em}
+.fd-av .cls-ic,.cmsg-sg .cls-ic{width:72%;height:72%}
+.cmsg-sg:has(.cls-ic){display:grid;place-items:center;width:100%;height:100%}
+.hud-portrait .uc-sig .cls-ic{filter:drop-shadow(0 0 10px rgba(255,255,255,.35))}
+/* 캐릭터 생성 깃발: 고른 깃발 아이콘도 흰색(클래스 아이콘 흰색 통일) */
+.cflag.on .cfl-ic{background:#fff}

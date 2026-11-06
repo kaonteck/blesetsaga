@@ -489,7 +489,7 @@ function massPanel(){
 function raidUnit(name){const b=S.battle;if(b&&b.grid){const p=b.players.find(x=>x.name===name);if(p)return {p,b};}
   const M=S.mass;const r=M&&M.roster.find(x=>x.name===name);if(!r)return null;const st=r.isMe?myStats():statsFor(r.job,r.level,{});return {p:{name:r.name,job:r.job,level:r.level,role:roleOf(r.job),isMe:!!r.isMe,hp:st.maxHp,maxHp:st.maxHp,atk:st.atk,def:st.def,luk:st.luk,buffs:[],dead:false},b:null};}
 function unitCard(p,b,close){
-  const face=p.isMe&&S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${p.role}">${JOBS[p.job].sigil}</span>`;
+  const face=p.isMe&&S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${p.role}">${clsIc(p.job)}</span>`;
   const st=[];if(b){const T=b.turn;if(p.dead)st.push('쓰러짐');if(p.poison)st.push(`${p.poison.name} ${p.poison.turns}턴`);if(p.hot)st.push(`블레스 ${p.hot.turns}턴`);if(p.protect)st.push('보호');if(supActive(b)&&b.sup.by===p.id)st.push('제압(도발) 중');p.buffs.filter(x=>x.from<=T&&x.to>=T).forEach(x=>st.push(BUFFN[x.k]||x.k));}
   return `<div class="ucard"><div class="uc-face">${face}</div><div class="uc-main"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(p.name)}</b>${close?`<button class="ibtn sm" data-act="${close}" data-id="" aria-label="닫기">✕</button>`:''}</div>
     <div class="row" style="gap:4px">${roleChip(p.job)}<span class="chip num dim">LV${p.level}</span>${b&&p.pos!=null?`<span class="chip num dim">${cellName(p.pos)}</span>`:''}</div></div></div>
@@ -592,7 +592,7 @@ function gfAct(b,me){
       ${gi?`<p class="gact-sum" style="font-size:13px">선택 · ${esc(ITEMS[gi.item].name)} → 나</p>`:'<p class="muted" style="font-size:12.5px">사용할 아이템을 누르세요. 다시 누르면 선택이 풀립니다. 아이템은 자신에게만 쓸 수 있습니다.</p>'}
       ${gi?`<p class="faint" style="font-size:12px">이제 이동 · 전투 · 대기 중 하나를 골라 확정하면 함께 사용됩니다.</p>`:''}`;}
   else body=`<div class="gact-h is-fight"><span class="hud-tag">ATTACK</span>전투${gi?` <small>+ ${esc(ITEMS[gi.item].name)} 함께 사용</small>`:''}</div>${inRange(b,me)?'':`<p class="reason" style="font-size:12.5px">보스가 사거리(${rangeR(me)*2+1}×${rangeR(me)*2+1}) 밖입니다. 공격하려면 먼저 이동하세요. 지원·회복 스킬은 쓸 수 있습니다.</p>`}${gridSkillPanel(b,me)}`;
-  const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${JOBS[me.job].sigil}</span>`;
+  const face=S.me.portrait?`<img src="${S.me.portrait}" alt="">`:`<span class="uc-sig ${me.role}">${clsIc(me.job)}</span>`;
   const st=pFxList(b,me);
   const hpP=pct(me.hp,me.maxHp);
   return `<div class="hud ${me.dead?'is-dead':''}">
