@@ -3442,7 +3442,8 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .exr-head{position:relative}.exr-head>*:not(.exr-fx){position:relative;z-index:1}.exr-head>.exr-bar{z-index:3}
 .exr-fx{position:absolute;left:0;top:0;width:100%;pointer-events:none;image-rendering:pixelated;z-index:0;opacity:.9;border-radius:inherit}
 .exr-fx.fx-snow{-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
-.exr-fx.fx-bubbles,.exr-fx.fx-fog{opacity:.85}.exr-fx.fx-embers{opacity:.75}
+.exr-fx.fx-bubbles,.exr-fx.fx-fog,.exr-fx.fx-miasma{opacity:.85}
+html[data-theme="light"] .exr-fx.fx-miasma{opacity:.7}.exr-fx.fx-embers{opacity:.75}
 html[data-theme="light"] .exr-fx.fx-snow{filter:brightness(.62) saturate(1.8);opacity:.75}
 html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] .exr-fx.fx-fireflies{opacity:.6}
 

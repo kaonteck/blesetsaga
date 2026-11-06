@@ -1,6 +1,6 @@
 /* ── 지역 머리말 픽셀 효과 ──
    Sprite Fusion pixel-art VFX (MIT License, Copyright (c) 2026 Hugo Duprez) 를 이식.
-   snow=혹한의 땅 · fireflies=초원의 땅 · embers=작열의 땅 · bubbles=바다의 땅 · fog=늪의 땅
+   snow=혹한의 땅 · fireflies=초원의 땅 · embers=작열의 땅 · bubbles=바다의 땅 · fog=늪의 땅 · miasma(같은 fog, 녹물·독기 빛깔)=블라스파미아
    탐색 › 지역 화면의 .exr-head 뒤에 캔버스 하나(#exr-fx). render() 뒤 initRegionFx() 호출(04-ui).
    좌표: 월드 단위 2 = 아트 px 1 = CSS px 2. 동작 줄이기 설정이면 끔. */
 const REGION_FX=(()=>{
@@ -156,7 +156,7 @@ function fog(o){const A=o.area,D=o.density??1,WIND=o.wind??22,N=Math.max(1,Math.
         buf.blend(x,y,TONES[c],alpha*(.6+.2*c));}}}
   return {update(dt){t+=dt;},draw(buf){for(let i=0;i<N;i++)bank(buf,N===1?.5:i/(N-1),i);}};}
 
-const MAKE={snow,fireflies,embers,bubbles,fog};
+const MAKE={snow,fireflies,embers,bubbles,fog,miasma:fog};
 let cur=null;
 function start(cv){if(cur&&cur.cv===cv)return;stop();
   try{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;}catch(e){}
@@ -172,6 +172,7 @@ function start(cv){if(cur&&cur.cv===cv)return;stop();
     :kind==='fireflies'?fireflies({area:{x:0,y:0,w:WW,h:HH},density:Math.max(.4,WW/680*.8),close:Math.max(3,Math.round(WW/260)),seed:5})
     :kind==='embers'?embers({area:{x:0,y:0,w:WW,h:HH},density:Math.min(1.4,Math.max(.4,WW/680*.7)),seed:3})
     :kind==='bubbles'?bubbles({area:{x:0,y:0,w:WW,h:HH},vents:Math.max(2,Math.round(WW/360)),density:.8,specks:WW/680*.8,seed:4})
+    :kind==='miasma'?fog({area:{x:-80,y:0,w:WW+160,h:HH},density:wx==='fog'?1.2:.9,wind:16,layers:3,colors:['#3a2c46','#5b4a5c','#8a8f62'],seed:9})
     :fog({area:{x:-80,y:0,w:WW+160,h:HH},density:wx==='fog'?1.25:.9,seed:2});
   const c={cv,raf:0,last:performance.now(),acc:0};cur=c;
   const frame=()=>{col.fill(0);lit.fill(0);fx.draw(buf,light);
