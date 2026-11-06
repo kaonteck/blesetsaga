@@ -865,7 +865,7 @@ function vParty(){
     <div class="page-head"><div><h2>${esc(p.name||m.name+' 파티')}<small class="en">Party</small></h2><p>${esc(m.name)} · ${p.visibility==='public'?'공개 모집':'초대 전용'} · 목표 ${p.target}명 · 파티장 ${esc(p.leader)}</p></div>
       <div class="row"><button class="btn btn-ghost" data-act="leaveparty">파티 나가기</button></div></div>
     ${p.changed?`<div class="errs">운영자가 이 몬스터의 참가 조건을 변경했습니다. 바뀐 조건: LV${m.level}+, ${m.min}~${m.max}명, ${missText(m.roles)}. ${meLeader?'확인 후 다시 준비해 주세요.':'파티장이 확인하는 중입니다.'} ${meLeader?'<button class="btn btn-sm" data-act="ackchange">조건 확인</button>':''}</div>`:''}
-    <div class="split-r">
+    <div class="pty-body">
       <div class="stack" style="gap:16px">
         <div class="panel"><h3>파티원 <span class="num" style="letter-spacing:0">${p.members.length}/${p.target}</span></h3><div class="slots">${slots.join('')}</div></div>
         <div class="panel"><h3>출발 조건</h3><div class="checks">
@@ -882,7 +882,6 @@ function vParty(){
           ${(p.invites||[]).length?`<p class="muted" style="font-size:13px;margin-bottom:8px">응답 대기: ${p.invites.map(x=>esc(x.name)).join(', ')}</p>`:''}
           <div class="list">${inviteList.slice(0,10).map(b=>{const r=levelReason(m,b.level)||slotReason(m,p.members,roleOf(b.job),p.target);return `<div class="li"><div class="t"><b>${esc(b.name)}</b><small>${JOBS[b.job].name} · LV${b.level}${r?' · '+esc(r):''}</small></div><button class="btn btn-sm" data-act="invite" data-name="${esc(b.name)}" ${r?'disabled':''}>초대</button></div>`;}).join('')||'<p class="empty">초대할 수 있는 접속자가 없습니다.</p>'}</div></div>`:''}
       </div>
-      <div>${chatPanel({lock:'party'})}</div>
     </div></div>`;
 }
 function chk(ok,t){return `<div><span class="mk ${ok?'ok-t':'reason'}">${ok?'✓':'✕'}</span><span>${esc(t)}</span></div>`;}
