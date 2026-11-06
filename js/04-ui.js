@@ -251,6 +251,22 @@ function foldOpenAnim(){const P=FOLD_PEND;FOLD_PEND=null;if(!P||Date.now()-P.t>1
   const h=document.querySelector(`[data-act="${P.act}"][data-k="${CSS.escape(P.k||'')}"]`);if(!h)return;const body=h.nextElementSibling;if(!body||!h.parentElement.classList.contains('open'))return;
   body.style.overflow='hidden';const a=body.animate(foldFrames(body,true),{duration:FOLD_MS,easing:FOLD_EASE});a.onfinish=a.oncancel=()=>{body.style.overflow='';};
   const sv=h.querySelector('svg');if(sv)sv.animate([{transform:'rotate(0deg)'},{transform:'rotate(180deg)'}],{duration:FOLD_MS,easing:FOLD_EASE});}
+/* ── 기록(.recp)·주간 미션/진행 중인 퀘스트(.me-quests) 접기도 부드럽게 · 메인 2026-11-07 ──
+   제목 버튼(.cq-tog) 아래 형제들(검색칸·목록·보상 줄)을 0 ↔ 제 높이로. 닫을 땐 줄인 뒤 원래 ACTS, 열 땐 원래 ACTS 뒤 새 내용을 키움. */
+const CQ_PANEL='.recp,.me-quests';
+function cqParts(h){const box=h.closest(CQ_PANEL);if(!box)return null;const head=h.closest('.recp-h,.ph')||h;const kids=[...box.children].filter(c=>c!==head&&!c.contains(head)&&getComputedStyle(c).display!=='none');return {box,head,kids};}
+document.addEventListener('click',e=>{const h=e.target.closest('.cq-tog');if(!h||foldCalm()||!S)return;const act=h.dataset.act;if(!act||typeof ACTS==='undefined'||!ACTS[act])return;
+  const P=cqParts(h);if(!P)return;const open=h.getAttribute('aria-expanded')!=='false';
+  const sv=h.querySelector('.cq-ar');
+  if(open){if(!P.kids.length)return;e.stopPropagation();e.preventDefault();if(h._folding)return;h._folding=true;
+    try{if(typeof playClick==='function')playClick();}catch(x){}
+    if(sv)sv.animate([{transform:'rotate(0deg)'},{transform:'rotate(-90deg)'}],{duration:FOLD_MS,easing:FOLD_EASE,fill:'forwards'});
+    const hm=getComputedStyle(P.head).marginBottom;const ha=P.head.animate([{marginBottom:hm},{marginBottom:'0px'}],{duration:FOLD_MS,easing:FOLD_EASE,fill:'forwards'});
+    const an=P.kids.map(k=>{k.style.overflow='hidden';return k.animate(foldFrames(k,false),{duration:FOLD_MS,easing:FOLD_EASE,fill:'forwards'});});
+    an[0].onfinish=()=>{const d={...h.dataset};h._folding=false;ACTS[act](d,h,e);an.forEach(a=>a.cancel());ha.cancel();if(sv)sv.getAnimations().forEach(a=>a.cancel());P.kids.forEach(k=>k.style.overflow='');};return;}
+  setTimeout(()=>{const nh=document.querySelector(`.cq-tog[data-act="${act}"][aria-expanded="true"]`);if(!nh)return;const Q=cqParts(nh);if(!Q||!Q.kids.length)return;
+    const ns=nh.querySelector('.cq-ar');if(ns)ns.animate([{transform:'rotate(-90deg)'},{transform:'rotate(0deg)'}],{duration:FOLD_MS,easing:FOLD_EASE});
+    Q.kids.forEach(k=>{k.style.overflow='hidden';const a=k.animate(foldFrames(k,true),{duration:FOLD_MS,easing:FOLD_EASE});a.onfinish=a.oncancel=()=>{k.style.overflow='';};});},0);},true);
 function afterRender(){
   syncChatFab();initMapZoom();updateChats();try{foldOpenAnim();}catch(e){}
   const c=$('#fog');if(c)startFog(c);else stopFog();
