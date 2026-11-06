@@ -225,8 +225,29 @@ function initMapZoom(){
   });
 }
 document.addEventListener('click',e=>{document.querySelectorAll('.wv-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.st-dd[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});document.querySelectorAll('.wm-dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.wm-dd-i'))d.open=false;});});
+/* ── 접는 목록(퀘스트 묶음 .qgrp · 거래소 단락 .mk-sec) 부드럽게 열고 닫기 · 프론트 2026-11-07 ──
+   닫을 때: 먼저 높이를 0으로 줄인 뒤 원래 동작(ACTS) 실행. 열 때: 원래대로 다시 그린 뒤 새로 생긴 내용을 0 → 제 높이로. 동작 줄이기 설정이면 그대로. */
+const FOLD_SEL='.qgrp-h,.mk-sec-h',FOLD_MS=260,FOLD_EASE='cubic-bezier(.2,.7,.2,1)';let FOLD_PEND=null;
+const foldCalm=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}};
+function foldFrames(el,open){const cs=getComputedStyle(el),h=el.offsetHeight;
+  const z={height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',opacity:0},f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,opacity:1};
+  return open?[z,f]:[f,z];}
+document.addEventListener('click',e=>{const h=e.target.closest(FOLD_SEL);if(!h||foldCalm()||!S)return;
+  const box=h.parentElement,body=h.nextElementSibling,act=h.dataset.act;if(!box||!act)return;
+  if(box.classList.contains('open')){if(!body||typeof ACTS==='undefined'||!ACTS[act])return;
+    e.stopPropagation();e.preventDefault();if(h._folding)return;h._folding=true;
+    try{if(typeof playClick==='function')playClick();}catch(x){}
+    const d={...h.dataset};body.style.overflow='hidden';h.setAttribute('aria-expanded','false');
+    const sv=h.querySelector('svg');if(sv)sv.animate([{transform:'rotate(180deg)'},{transform:'rotate(0deg)'}],{duration:FOLD_MS,easing:FOLD_EASE,fill:'forwards'});
+    const a=body.animate(foldFrames(body,false),{duration:FOLD_MS,easing:FOLD_EASE,fill:'forwards'});
+    a.onfinish=()=>{ACTS[act](d,h,e);};}
+  else FOLD_PEND={act,k:h.dataset.k,t:Date.now()};},true);
+function foldOpenAnim(){const P=FOLD_PEND;FOLD_PEND=null;if(!P||Date.now()-P.t>1500)return;
+  const h=document.querySelector(`[data-act="${P.act}"][data-k="${CSS.escape(P.k||'')}"]`);if(!h)return;const body=h.nextElementSibling;if(!body||!h.parentElement.classList.contains('open'))return;
+  body.style.overflow='hidden';const a=body.animate(foldFrames(body,true),{duration:FOLD_MS,easing:FOLD_EASE});a.onfinish=a.oncancel=()=>{body.style.overflow='';};
+  const sv=h.querySelector('svg');if(sv)sv.animate([{transform:'rotate(0deg)'},{transform:'rotate(180deg)'}],{duration:FOLD_MS,easing:FOLD_EASE});}
 function afterRender(){
-  syncChatFab();initMapZoom();updateChats();
+  syncChatFab();initMapZoom();updateChats();try{foldOpenAnim();}catch(e){}
   const c=$('#fog');if(c)startFog(c);else stopFog();
   fitExlog();fitSideChat();flogScroll();try{initGridZoom();}catch(e){}initMini();try{if(typeof initRegionFx==="function")initRegionFx();}catch(e){}dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);

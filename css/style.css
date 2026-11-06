@@ -3487,3 +3487,11 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .chip.mp-c.short{background:rgba(220,80,80,.16);border-color:rgba(230,100,100,.5);color:#ff9d9d}
 .fighter .bar.mp{height:4px;margin-top:3px}.fighter .bar.mp>i{background:#5b8def}
 .vals .mpv{margin-left:10px;color:#9fc0ff}
+/* ── 프론트 2026-11-07: 접는 목록 부드럽게 — 서고(.qarch)·스킬 목록(.skilllist)·지역 던전(.dun-dd)의 <details>
+   지원 브라우저(크롬·엣지 131+)에서 높이가 부드럽게, 그 밖에서는 예전처럼 바로. 퀘스트 묶음·거래소 단락은 04-ui 스크립트 */
+@supports (interpolate-size:allow-keywords){
+  details:is(.qarch,.skilllist,.dun-dd){interpolate-size:allow-keywords}
+  details:is(.qarch,.skilllist,.dun-dd)::details-content{block-size:0;overflow-y:clip;opacity:0;transition:block-size .26s cubic-bezier(.2,.7,.2,1),opacity .2s ease,content-visibility .26s allow-discrete}
+  details:is(.qarch,.skilllist,.dun-dd)[open]::details-content{block-size:auto;opacity:1}
+}
+@media (prefers-reduced-motion:reduce){details:is(.qarch,.skilllist,.dun-dd)::details-content{transition:none}}
