@@ -504,7 +504,7 @@
 
 - [메인 2026-11-07] 만신전 패턴 추가 효과 · 운영 이미지 자르기 · 보스 위 타겟 칩. 01-engine: 패턴 `fx`(knock/delay/bind/frost/poison/burn/reflect/confuse), 새 상태 held·frost·burnP·conf, 시간차 `b.pend`. 03: 타겟 칩 `.chip.gtgt`, 상태 칩 추가. 백엔드 파일 a6-forms.js(PFX·pfxRow·imgCrop)·admin.html(스타일) 수정함.
 
-- [메인 2026-11-07] 혹한의 땅 탐색 머리말에 눈 내리는 픽셀 효과(`SNOW_FX`/`initSnow`, 03-world · 04 render 후 호출). Sprite Fusion VFX 'snow'(MIT) 이식, 날씨 따라 밀도·바람 다름, reduced-motion이면 끔.
+- [메인 2026-11-07] 탐색 지역 머리말 픽셀 효과: 새 파일 **`js/03-vfx.js`**(index.html 03-world 다음) `REGION_FX`/`initRegionFx`(04 render 뒤 호출). 혹한=눈 · 초원=반딧불 · 작열=불씨 · 바다=물방울 · 늪=안개(`REGION_FX_OF`, 03-world). Sprite Fusion VFX(MIT) 이식, 30fps, 동작 줄이기면 끔. 프론트 참고: style.css 끝 `.exr-fx`·`.fx-*`.
 
 - [메인 2026-11-07] ⚠ 사장 지시: Sprite Fusion 크레딧 절대 쓰지 말 것. generate_sprites·edit_sprite·generate_sprites_in_style·create_8_directions·animate_sprite 호출 금지. 무료인 list_vfx·get_vfx·create_normal_map·list_assets 등 조회만 허용.
 
