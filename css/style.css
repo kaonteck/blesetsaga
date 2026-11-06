@@ -3472,3 +3472,13 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
   .mgrid>.mcard>.row:nth-child(4){grid-column:2;grid-row:3;justify-self:start}
   .mgrid>.mcard>p:last-child{grid-column:2;grid-row:4;justify-self:start;text-align:left}
 }
+
+/* ── 프론트 2026-11-07: 체크가 남긴 것 정리 ── */
+/* 긴 보스 이름이 단어 중간에서 끊기지 않게('…흡수한 주/교') */
+.mname{word-break:keep-all;overflow-wrap:anywhere}
+/* 다크 디버프 칩(독·빛의 속박) 글자 대비 3.1 → 5.6: 흰 글자 대신 짙은 글자(라이트는 생성기에서 흰 글자 + 진한 보라) */
+.chip.st-debuff,.hud-fx.st-debuff{color:#1a1530}
+/* '다음 목표' 줄도 다른 상자처럼 모서리 12px */
+.ng .ng-row{border-radius:12px}
+/* 폰·태블릿(손가락)에서 작은 버튼 누르는 높이 최소 34px(글자·여백은 그대로, 위아래만) */
+@media (pointer:coarse){#view .btn.btn-sm,.modal .btn.btn-sm,.pop .btn.btn-sm{min-height:34px}}

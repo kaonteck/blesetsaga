@@ -790,7 +790,9 @@ function vParty(){
   const slots=[...p.members.map(x=>`<div class="slot">${sigil(x.job,'sm')}<div class="t"><b>${esc(x.name)}</b>${x.name===p.leader?' <span class="chip dim">파티장</span>':''}${x.merc?' <span class="chip merc">용병</span>':''}<div class="row" style="gap:4px;margin-top:3px">${roleChip(x.job)}<span class="chip num ${levelOk(m,x.level)?'dim':'bad'}">LV${x.level}</span>${x.ready?'<span class="chip ok">준비</span>':'<span class="chip dim">대기</span>'}</div></div>${meLeader&&!x.isMe?`<button class="btn btn-sm btn-ghost" data-act="kick" data-name="${esc(x.name)}" aria-label="${esc(x.name)} 내보내기">내보내기</button>`:''}</div>`)];
   const left=p.target-p.members.length;
   for(let i=0;i<left;i++)slots.push(`<div class="slot empty-slot"><div class="t">빈 자리${i<sumR(c.need)?` · ${missText(c.need)} 필요`:' · 자유'}</div></div>`);
-  const inviteList=meLeader&&left>0?idleBots().filter(b=>!(p.invites||[]).some(x=>x.name===b.name)).sort((a,b)=>(isFriend(b.name)-isFriend(a.name))||b.level-a.level):[];
+  /* 실제 블레서 파티(서버 방)면 봇 대신 접속 중인 실제 블레서를 초대 목록에(08 ACTS.invite가 서버 초대) · 프론트 2026-11-07 */
+  const realInv=p.shared&&typeof mlPlayers!=='undefined'?mlPlayers.filter(x=>x&&x.name&&x.name!==S.me.name&&JOBS[x.job]&&!p.members.some(y=>y.name===x.name)&&S.rel[x.name]!=='blocked'&&(typeof chOnline!=='function'||chOnline(x))).map(x=>({name:x.name,job:x.job,level:x.level||1})):null;
+  const inviteList=meLeader&&left>0?(realInv||idleBots()).filter(b=>!(p.invites||[]).some(x=>x.name===b.name)).sort((a,b)=>(isFriend(b.name)-isFriend(a.name))||b.level-a.level):[];
   return `<div class="wrap page">
     <div class="page-head"><div><h2>${esc(p.name||m.name+' 파티')}<small class="en">Party</small></h2><p>${esc(m.name)} · ${p.visibility==='public'?'공개 모집':'초대 전용'} · 목표 ${p.target}명 · 파티장 ${esc(p.leader)}</p></div>
       <div class="row"><button class="btn btn-ghost" data-act="leaveparty">파티 나가기</button></div></div>
