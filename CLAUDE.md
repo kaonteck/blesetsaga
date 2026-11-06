@@ -506,6 +506,8 @@
 
 - [메인 2026-11-07] 혹한의 땅 탐색 머리말에 눈 내리는 픽셀 효과(`SNOW_FX`/`initSnow`, 03-world · 04 render 후 호출). Sprite Fusion VFX 'snow'(MIT) 이식, 날씨 따라 밀도·바람 다름, reduced-motion이면 끔.
 
+- [메인 2026-11-07] ⚠ 사장 지시: Sprite Fusion 크레딧 절대 쓰지 말 것. generate_sprites·edit_sprite·generate_sprites_in_style·create_8_directions·animate_sprite 호출 금지. 무료인 list_vfx·get_vfx·create_normal_map·list_assets 등 조회만 허용.
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.
