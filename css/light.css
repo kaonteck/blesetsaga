@@ -1639,10 +1639,13 @@ html[data-theme="light"] .rrow.rc-real{border-color:color-mix(in srgb,var(--ok) 
 html[data-theme="light"] .rr-pic{border:0;background:none}
 html[data-theme="light"] .rr-pic .mon-img.rr-img{border:1px solid var(--rule);background:var(--slab)}
 html[data-theme="light"] .rr-mon{color:var(--steel-hi)}
-html[data-theme="light"] .mcard-h.open{border-color:var(--steel)}
-html[data-theme="light"] .mcard-h.open .mh-go{color:var(--gold-hi)}
+html[data-theme="light"] .mgrp::after{border:1px solid transparent}
+html[data-theme="light"] .mgrp.open::after{border-color:color-mix(in srgb,var(--steel) 42%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--steel) 20%,transparent),0 0 2px color-mix(in srgb,var(--steel) 30%,transparent),inset 0 0 10px color-mix(in srgb,var(--steel) 7%,transparent)}
+html[data-theme="light"] .mcard-h.open{border-color:transparent}
+html[data-theme="light"] .mcard-h.open:hover{border-color:transparent}
+html[data-theme="light"] .mcard-h[aria-expanded="true"] .mh-go{color:var(--gold-hi)}
 html[data-theme="light"] .mh-n{color:var(--gold-hi);border-color:color-mix(in srgb,var(--gold-hi) 45%,transparent)}
-html[data-theme="light"] .mexp{border:1px solid var(--steel);border-top:0;background:var(--slab-2)}
+html[data-theme="light"] .mexp{border:1px solid transparent;border-top:1px solid var(--rule-2);background:var(--slab-2)}
 html[data-theme="light"] .mk-checks{border:1px solid var(--rule-2);background:var(--slab-2)}
 html[data-theme="light"] .mon-img.mon-ph{background:var(--night);border:1px solid var(--rule)}
 html[data-theme="light"] .rc-art .mon-img.mon-ph{border:0;background:none}

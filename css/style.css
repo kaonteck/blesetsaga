@@ -3535,11 +3535,18 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 /* ── 레이드 · 몬스터 줄을 펼치면 모집 중인 파티 ── */
 .mgrp{display:flex;flex-direction:column}
 .mcard-h .mh-go{transition:transform .15s,color .12s}
-.mcard-h.open{border-color:var(--steel);border-bottom-left-radius:0;border-bottom-right-radius:0}
-.mcard-h.open .mh-go{transform:rotate(90deg);color:var(--gold-hi)}
-.mcard-h.open:hover .mh-go{transform:rotate(90deg)}
+.mgrp{position:relative;border-radius:12px}
+.mgrp::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;border:1px solid transparent;transition:border-color .35s ease,box-shadow .35s ease}
+.mgrp.open::after{border-color:color-mix(in srgb,var(--steel) 42%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--steel) 20%,transparent),0 0 2px color-mix(in srgb,var(--steel) 30%,transparent),inset 0 0 10px color-mix(in srgb,var(--steel) 7%,transparent);animation:mgrpGlow 3.6s ease-in-out infinite}
+@keyframes mgrpGlow{0%,100%{box-shadow:0 0 12px color-mix(in srgb,var(--steel) 16%,transparent),0 0 2px color-mix(in srgb,var(--steel) 26%,transparent),inset 0 0 8px color-mix(in srgb,var(--steel) 5%,transparent)}50%{box-shadow:0 0 22px color-mix(in srgb,var(--steel) 28%,transparent),0 0 3px color-mix(in srgb,var(--steel) 36%,transparent),inset 0 0 12px color-mix(in srgb,var(--steel) 9%,transparent)}}
+@media (prefers-reduced-motion:reduce){.mgrp.open::after{animation:none}}
+.mcard-h.open{border-color:transparent;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.mcard-h.open:hover{border-color:transparent}
+.mcard-h .mh-go{transition:transform .32s cubic-bezier(.22,.8,.26,1),color .2s}
+.mcard-h[aria-expanded="true"] .mh-go{transform:rotate(90deg);color:var(--gold-hi)}
+.mcard-h[aria-expanded="true"]:hover .mh-go{transform:rotate(90deg)}
 .mh-n{font-size:11px;color:var(--gold-hi);border-color:color-mix(in srgb,var(--gold-hi) 45%,transparent)}
-.mexp{border:1px solid var(--steel);border-top:0;border-radius:0 0 12px 12px;background:var(--slab-2);padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.mexp{border:1px solid transparent;border-top:1px solid var(--rule-2);overflow:hidden;border-radius:0 0 12px 12px;background:var(--slab-2);padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
 .mexp-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .mexp-bar>b{font-size:13.5px}
 .mexp-why{margin:0;font-size:12.5px}

@@ -75,6 +75,16 @@ document.addEventListener('submit',e=>{if(!S)return;
     if(errs.length){toast('저장하지 못했습니다: '+errs.join(', '),'bad');return;}
     logChange('성장 · 전투 규칙',diff(cfg(),c));S.data.config=c;if(S.me.level>c.levelCap)S.me.level=c.levelCap;save();toast('규칙을 저장했습니다. 새 전투부터 적용됩니다.','good');render();return;}
 });
+/* 레이드 몬스터 줄 펼치기/접기 · 높이를 부드럽게 */
+function raidFold(card,open,html){const g=card.closest('.mgrp');if(!g)return;const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  card.setAttribute('aria-expanded',String(open));if(open)card.classList.add('open');
+  const cur=g.querySelector('.mexp');
+  if(open){if(cur)cur.remove();g.classList.add('open');g.insertAdjacentHTML('beforeend',html);const el=g.querySelector('.mexp');if(reduce||!el.animate)return;
+    const cs=getComputedStyle(el);const h=el.offsetHeight;
+    el.animate([{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0},{height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,opacity:1}],{duration:320,easing:'cubic-bezier(.22,.8,.26,1)'});return;}
+  g.classList.remove('open');const done=()=>{if(card.getAttribute('aria-expanded')!=='true')card.classList.remove('open');};if(!cur){done();return;}if(reduce||!cur.animate){cur.remove();done();return;}
+  const cs=getComputedStyle(cur);const a=cur.animate([{height:cur.offsetHeight+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,opacity:1},{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0}],{duration:240,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
+  a.onfinish=()=>{cur.remove();done();};}
 const ACTS={
   rmem:(d,el)=>openRmem(d.id,el),
   uinfo:(d,el)=>openUinfo(d.name,el),
@@ -219,7 +229,10 @@ const ACTS={
   qfight:d=>{const q=quest(d.id),qp=S.qp[d.id];if(!q||!qp)return;const st=q.steps[qp.step];if(!st||!st.battle)return;const m=monster(st.battle);if(!m)return;const why=busyReason();if(why){toast(why,'warn');return;}startSolo(m,{type:'quest',qid:q.id,step:qp.step});if(S.battle&&typeof storyBattleFx==='function')storyBattleFx(S.battle);if(st.noCharmFlag&&S.flags[st.noCharmFlag]&&S.battle){S.battle.noCharm=true;S.battle.log.push({t:'sys',text:'밀랍 귀마개 · 노래가 먹먹하게 들린다 (매혹에 걸리지 않음)'});if(typeof renderFight==='function')renderFight();}},
   'rp-tab':d=>{if(S.sel.rpTab===d.tab&&!S.sel.rpMon)return;S.sel.rpTab=d.tab;S.sel.rpMon='';closeRmem();save();render();},
   'rp-all':()=>{const t=rpTab();go('battle',{rtab:RP_RTAB[t],monster:null,raidOpen:S.sel.rpMon||S.sel.raidOpen||null});},
-  raidopen:d=>{S.sel.raidOpen=S.sel.raidOpen===d.id?null:d.id;save();render();},
+  raidopen:d=>{const prev=S.sel.raidOpen;const id=prev===d.id?null:d.id;S.sel.raidOpen=id;save();
+    const card=$(`.mcard-h[data-act="raidopen"][data-id="${d.id}"]`);if(!card){render();return;}
+    if(prev){const pc=$(`.mcard-h[data-act="raidopen"][data-id="${prev}"]`);if(pc)raidFold(pc,false);}
+    if(id){const m=monster(id);if(m)raidFold(card,true,raidExp(m));}},
   rtab:d=>{S.sel.rtab=d.tab;S.sel.monster=null;save();render();},
   dtarget:d=>{S.sel.dtarget=d.v;S.sel.dtargets={};render();},
   dfight:d=>{const m=monster(d.id);if(!m||mkind(m)!=='dungeon')return;const why=busyReason()||levelReason(m,S.me.level)||(daily().dungeon[m.id]?'오늘은 이미 클리어했습니다':'');if(why){toast(why,'warn');return;}modal('');S.drun={mid:m.id,phases:drunPhases(),idx:0,hp:Math.max(0.05,hpNow()),mobs:{},log:[],start:now()};S.route='battle';save();render();toast(`${m.region} 입장 · 5페이즈 탐사를 시작합니다`,'good');},
