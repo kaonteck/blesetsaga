@@ -252,6 +252,8 @@ def main():
 {SCOPE} .chip.st-debuff,{SCOPE} .hud-fx.st-debuff{{color:#fff}}
 /* 빨간 알림 뱃지(채팅 탭 숫자 등) 글자는 흰색(메인) */
 {SCOPE} .badge{{color:#fff}}
+/* 퀵슬롯 확정 버튼: 라이트에서 글자가 안 보이던 것(메인) */
+@media (min-width:1101px){{{SCOPE} .gfx .gqs-go{{background:#e3e8f2;border-color:#c9d2e3;color:#7b869d}}{SCOPE} .gfx .gqs-go.on{{background:#5577bf;border-color:#5577bf;color:#fff}}}}
 /* 만신전·토벌전 지도: 라이트에서 칸이 안 보이던 것 → 로고 색(#5577bf) 칸·옅은 칸 이름, 보스 대사는 흰 바탕 + 포인트 색 글자(메인) */
 {SCOPE} .gcell{{border-color:rgba(85,119,191,.38);background:rgba(85,119,191,.07)}}
 {SCOPE} .gc-lab{{color:rgba(85,119,191,.42)}}
