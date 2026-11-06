@@ -3575,3 +3575,24 @@ body[data-route="explore"] #view .page-head{padding-left:66px}
 body[data-route="battle"] #view .page-head::before{background:url("../img/icon/raid.png") center/contain no-repeat;width:40px;height:40px;top:50%;transform:translateY(-50%)}
 body[data-route="battle"] #view .page-head{padding-left:66px}
 @media (max-width:720px){body[data-route="battle"] #view .page-head{padding-left:58px}body[data-route="battle"] #view .page-head::before{width:36px;height:36px}}
+
+/* 레이드 펼친 몬스터 묶음(.mgrp.open): 바깥선을 따라 빛이 흐름 — React Bits 'BorderGlow'의 원뿔 마스크·메시 색 테두리·바깥 빛을
+   마우스 반응 없이 각도만 계속 돌려서(--mga). ::before = 얇은 색 테두리, ::after = 바깥으로 번지는 빛(카드 안은 비움) */
+@property --mga{syntax:'<angle>';inherits:false;initial-value:0deg}
+.mgrp.open::before,.mgrp.open::after{content:"";position:absolute;pointer-events:none;z-index:2;
+  --g1:#c084fc;--g2:#f472b6;--g3:#38bdf8;
+  animation:mgaSpin 5.2s linear infinite}
+.mgrp.open::before{inset:0;border-radius:12px;padding:1px;
+  background:conic-gradient(from var(--mga),transparent 0deg 200deg,var(--g3) 250deg,var(--g1) 295deg,color-mix(in srgb,var(--g1),white 65%) 318deg,var(--g2) 335deg,transparent 360deg),
+    linear-gradient(color-mix(in srgb,var(--steel) 30%,transparent) 0 0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  box-shadow:none;border:0}
+.mgrp.open::after{inset:-18px;border-radius:30px;padding:18px;border:0;box-shadow:none;opacity:.55;
+  background:conic-gradient(from var(--mga),transparent 0deg 215deg,var(--g3) 260deg,var(--g1) 300deg,var(--g2) 332deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(90deg,transparent,#000 18px,#000 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#000 18px,#000 calc(100% - 18px),transparent);
+  -webkit-mask-composite:xor,source-in;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(90deg,transparent,#000 18px,#000 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#000 18px,#000 calc(100% - 18px),transparent);
+  mask-composite:exclude,intersect}
+@keyframes mgaSpin{to{--mga:360deg}}
+@media (prefers-reduced-motion:reduce){.mgrp.open::before,.mgrp.open::after{animation:none;--mga:300deg}}

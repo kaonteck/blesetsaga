@@ -260,6 +260,9 @@ def main():
 {SCOPE} .gboss{{background:#9b2c2c;border-color:#7a1f1f}}
 {SCOPE} .gboss b{{color:#fff}}
 {SCOPE} .gboss small{{color:#ffd6d6}}
+/* 레이드 펼친 묶음 흐르는 빛(프론트): 생성기가 마스크 색을 바꾸며 합성 규칙을 빼먹어 다시 지정 */
+{SCOPE} .mgrp.open::before{{-webkit-mask-composite:xor;mask-composite:exclude}}
+{SCOPE} .mgrp.open::after{{-webkit-mask-composite:xor,source-in;mask-composite:exclude,intersect;opacity:.45}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')
