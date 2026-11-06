@@ -3505,3 +3505,7 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .page-head.ph-quest::before{background:url("../img/icon/quest.png") center/contain no-repeat;width:40px;height:40px;top:50%;transform:translateY(-50%);image-rendering:auto}
 .page-head.ph-quest{padding-left:66px}
 @media (max-width:720px){.page-head.ph-quest{padding-left:58px}.page-head.ph-quest::before{width:36px;height:36px}}
+/* 탐색 페이지 제목 아이콘(유저 이미지) — 마크업은 03-world라 화면 이름(body[data-route])으로 고름 */
+body[data-route="explore"] #view .page-head::before{background:url("../img/icon/explore.png") center/contain no-repeat;width:40px;height:40px;top:50%;transform:translateY(-50%)}
+body[data-route="explore"] #view .page-head{padding-left:66px}
+@media (max-width:720px){body[data-route="explore"] #view .page-head{padding-left:58px}body[data-route="explore"] #view .page-head::before{width:36px;height:36px}}
