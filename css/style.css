@@ -3662,3 +3662,5 @@ body[data-route="battle"] #view .page-head::before{-webkit-mask-image:url("../im
 }
 /* 접힌 메뉴(던전 등)를 펼쳐 페이지가 길어질 때 세로 스크롤바가 새로 생기며 화면이 왼쪽으로 밀리던 것 → 세로 스크롤바를 늘 표시(짧은 화면은 빈 막대) */
 html{overflow-y:scroll}
+.si-agi{color:#7fd6a8}
+.dr-stats{grid-template-columns:repeat(5,minmax(0,1fr))}

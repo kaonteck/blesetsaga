@@ -69,6 +69,7 @@ function portraitHTML(big){
   return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button" title="이미지 설정">이미지 설정</button></div>`;
 }
 const ICON={
+  agi:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8.6 2.2 13.8 8l-5.2 5.8M3.2 4.6 6.6 8l-3.4 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   maxMp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6C8 1.6 3.4 7 3.4 10a4.6 4.6 0 0 0 9.2 0C12.6 7 8 1.6 8 1.6z" fill="currentColor"/><path d="M6 10.4a2 2 0 0 0 1.6 1.9" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round"/></svg>`,
   mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.3 10.9 5.2 7.4 14.7 3.9 5.2z" fill="currentColor"/><path d="M3.9 5.2h7M5.9 5.2 7.4 14.7 8.9 5.2M5.9 5.2 7.4 1.3 8.9 5.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".75" stroke-linejoin="round"/><path d="M13.2 8.6v3.2M11.6 10.2h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12.6" cy="3.4" r=".9" fill="currentColor"/></svg>`,
   maxHp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2S1.8 10.4 1.8 6.1A3.3 3.3 0 0 1 8 4.4a3.3 3.3 0 0 1 6.2 1.7c0 4.3-6.2 8.1-6.2 8.1z" fill="currentColor"/></svg>`,
@@ -76,10 +77,11 @@ const ICON={
   def:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l5.6 2v4.2c0 3.4-2.4 5.8-5.6 7-3.2-1.2-5.6-3.6-5.6-7V3.5z" fill="currentColor"/><path d="M8 3.6v9.2" stroke="var(--slab)" stroke-width="1.1" opacity=".55"/></svg>`,
   luk:`<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.8" y="1.8" width="12.4" height="12.4" rx="2.8" fill="currentColor"/><circle cx="5.2" cy="5.2" r="1.25" fill="var(--slab)"/><circle cx="8" cy="8" r="1.25" fill="var(--slab)"/><circle cx="10.8" cy="10.8" r="1.25" fill="var(--slab)"/><circle cx="10.8" cy="5.2" r="1.25" fill="var(--slab)"/><circle cx="5.2" cy="10.8" r="1.25" fill="var(--slab)"/></svg>`
 };
-const STAT_TIP={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',luk:'행운'};
+const STAT_TIP={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',agi:'민첩 · 몬스터 공격 회피',luk:'행운'};
 function statIcon(k,v,sm){return `<li class="si si-${k}" data-tip="${STAT_TIP[k]}" tabindex="0" aria-label="${STAT_TIP[k]} ${v}">${ICON[k]}<b>${v}</b></li>`;}
 function statLine(st,sm){return `<ul class="statline num ${sm?'sm':''}">${['maxHp',st.pk||'atk','def','luk'].map(k=>statIcon(k,st[k])).join('')}</ul>`;}
 const SKILL_FX={
+  bash:[['dmg','공격력(물리)으로 계산 · MP 0']],
   save:[['dn','받는 대미지 −10%']],save2:[['dn','받는 대미지 −30%']],
   crimehazard:[['dmg','대미지 +25%']],forestaller:[['buff','도발']],
   execution:[['dmg','추가 대미지 0~22% · 3턴']],
@@ -339,7 +341,7 @@ function sideCard(){
     <div class="sc-st"><div class="sc-sh">STATUS</div>
       <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxHp inl">${ICON.maxHp}</span>체력</span><span class="num">${cur.toLocaleString('ko-KR')}/${mx.toLocaleString('ko-KR')}</span></div><div class="bar hp"><i style="width:${Math.round(hp*100)}%"></i></div></div>
       ${st.maxMp?`<div class="sc-gauge sc-mp"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxMp inl">${ICON.maxMp}</span>MP</span><span class="num">${st.maxMp.toLocaleString('ko-KR')}/${st.maxMp.toLocaleString('ko-KR')}</span></div><div class="bar mp"><i style="width:100%"></i></div></div>`:''}
-      <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
+      <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('agi','민첩')}${row('luk','행운')}</ul>
       <div class="sc-gold">${goldHTML(me.gold)}</div></div></div>`;
 }
 /* ── 오른쪽 고정: 퀵바(바로가기 3칸) · 진행 중인 목록 · 주간 미션 · 채팅 ── */
@@ -1149,7 +1151,7 @@ function eqBreak(k){const L=Object.entries(S.me.equip||{}).map(([sl,id])=>{const
 function ibBreak(k){const t=now();return ((S.me.itemBuffs)||[]).filter(b=>b.until>t&&b.stat===k).map(b=>`${ITEMS[b.src]?ITEMS[b.src].name:'아이템'} +${b.val} · ${Math.ceil((b.until-t)/60000)}분 남음`).join('\n');}
 function enhOf(id){return (S.me.enh||{})[id]||0;}
 function itemName(id){const l=enhOf(id);return ITEMS[id]?ITEMS[id].name+(l?` +${l}`:''):id;}
-const SKILL_ICON_MAP={attack:'attack',save:'save',save2:'save',crimehazard:'crime',forestaller:'fore'};
+const SKILL_ICON_MAP={attack:'attack',bash:'attack',save:'save',save2:'save',crimehazard:'crime',forestaller:'fore'};
 function skillImg(k){return SKILL_IMG[SKILL_ICON_MAP[k]]||SKILL_IMG.attack;}
 function itemNameH(id){const l=enhOf(id);return ITEMS[id]?esc(ITEMS[id].name)+(l?` <span class="enhp">+${l}</span>`:''):esc(id);}
 function itemBonus(k){const t=now();return ((S.me&&S.me.itemBuffs)||[]).filter(b=>b.until>t&&b.stat===k).reduce((a,b)=>a+b.val,0);}

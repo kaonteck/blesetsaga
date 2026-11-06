@@ -893,7 +893,7 @@ function drunHud(R,k){const me=S.me,st=myStats(),maxHp=st.maxHp,hp=Math.max(0,Ma
     body=`<div class="gact-h"><span class="hud-tag">ITEM</span>아이템 <small>던전 안에서는 회복약만 쓸 수 있습니다 · HP 50 회복</small></div>
       <div class="ginv">${items.map(x=>{const n=me.inv[x]||0;const ok=x==='potion'&&n>0&&R.hp<1;return `<button class="invcell use" data-act="dr-potion" data-item="${x}" ${ok?'':'disabled'} title="${esc(ITEMS[x].desc)}"><img src="${itemImgSrc(ITEMS[x])}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[x].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>`;}
   else body=`<div class="gact-h"><span class="hud-tag">STATUS</span>상태</div>
-      <div class="dr-stats">${[['공격력',st.atk],['마력',st.mag],['방어력',st.def],['행운',st.luk]].map(([l,v])=>`<div><small>${l}</small><b class="num">${v}</b></div>`).join('')}</div>
+      <div class="dr-stats">${[['공격력',st.atk],['마력',st.mag],['방어력',st.def],['민첩',st.agi||0],['행운',st.luk]].map(([l,v])=>`<div><small>${l}</small><b class="num">${v}</b></div>`).join('')}</div>
       <p class="faint" style="font-size:12px;margin:8px 0 0">던전 안에서는 체력이 자동으로 회복되지 않습니다. 나가면 남은 체력이 그대로 유지됩니다.</p>`;
   return `<div class="panel dr-hudp"><div class="hud">
     <div class="hud-face"><div class="hud-portrait ${role}">${face}</div></div>

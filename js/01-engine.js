@@ -5,35 +5,35 @@ const ROLE={tank:'탱커',dps:'딜러',heal:'힐러'};
 const CLASSES={
   defender:{name:'디펜더',en:'Defender',tier:1,role:'tank',range:'3×3',sigil:'盾',adv:['warrior','knight'],
     desc:'몬스터를 제압해 자신을 표적으로 삼게 만들고 파티를 지킨다.',
-    stat:{hp:190,atk:30,def:8,luk:5},grow:{hp:12,atk:2,def:1,luk:0.15},skills:['attack','save','crimehazard','forestaller']},
+    stat:{hp:190,atk:30,def:8,luk:5,agi:4},grow:{hp:12,atk:2,def:1,luk:0.15,agi:0.15},skills:['attack','save','crimehazard','forestaller']},
   warrior:{name:'워리어',en:'Warrior',tier:2,base:'defender',role:'tank',range:'3×3',sigil:'戰',bonus:{hp:20,atk:8},
     desc:'공격형 플레이 위주로 몬스터의 시야를 장악하는 클래스.',skills:['attack','save2','crimehazard','forestaller','execution','roar','berserker']},
   knight:{name:'나이트',en:'Knight',tier:2,base:'defender',role:'tank',range:'3×3',sigil:'騎',bonus:{hp:40,def:3},
     desc:'방어형 플레이 위주로 아군을 보호하고 탱킹을 보조하는 클래스.',skills:['attack','save2','crimehazard','forestaller','attention','link','link2','sanctuary']},
   infighter:{name:'인파이터',en:'Infighter',tier:1,role:'dps',range:'3×3',sigil:'拳',adv:['mystic','destroyer'],
     desc:'무기와 신체에 마력을 실어 근접에서 몰아친다.',
-    stat:{hp:140,atk:46,def:4,luk:10},grow:{hp:8,atk:3,def:0.5,luk:0.2},skills:['jolt','takedown','battlefield']},
+    stat:{hp:140,atk:46,def:4,luk:10,agi:10},grow:{hp:8,atk:3,def:0.5,luk:0.2,agi:0.35},skills:['jolt','takedown','battlefield']},
   mystic:{name:'미스틱',en:'Mystic',tier:2,base:'infighter',role:'dps',range:'3×3',sigil:'影',bonus:{atk:6,luk:5},
     desc:'빈틈을 노려 연계와 독으로 끝을 낸다.',skills:['jolt','takedown','battlefield','rush','hitend','subterfuge']},
   destroyer:{name:'디스트로이어',en:'Destroyer',tier:2,base:'infighter',role:'dps',range:'3×3',sigil:'破',bonus:{atk:10},
     desc:'약점을 파고들어 한 번에 무너뜨린다.',skills:['jolt','takedown','battlefield','overkill','might','carnage']},
   mage:{name:'메이지',en:'Mage',tier:1,role:'dps',range:'5×5',sigil:'炎',adv:['salamander'],
     desc:'마력의 불꽃으로 멀리서 공격한다.',
-    stat:{hp:115,atk:50,def:2,luk:8},grow:{hp:7,atk:3.2,def:0.4,luk:0.15},skills:['flame','cinder','blaze']},
+    stat:{hp:115,atk:50,def:2,luk:8,agi:6},grow:{hp:7,atk:3.2,def:0.4,luk:0.15,agi:0.2},skills:['bash','flame','cinder','blaze']},
   salamander:{name:'샐래맨더',en:'Salamander',tier:2,base:'mage',role:'dps',range:'5×5',sigil:'焰',bonus:{atk:10},
-    desc:'지옥의 푸른 불까지 다루는 화염술사.',skills:['flame','cinder','blaze','meteor','hellfire','eternalflame']},
+    desc:'지옥의 푸른 불까지 다루는 화염술사.',skills:['bash','flame','cinder','blaze','meteor','hellfire','eternalflame']},
   shooter:{name:'슈터',en:'Shooter',tier:1,role:'dps',range:'5×5',sigil:'矢',adv:['dualist'],
     desc:'독과 연막으로 전장을 다루는 사격수.',
-    stat:{hp:120,atk:44,def:3,luk:12},grow:{hp:7,atk:3,def:0.4,luk:0.25},skills:['shooting','poisonshot','smoke']},
+    stat:{hp:120,atk:44,def:3,luk:12,agi:12},grow:{hp:7,atk:3,def:0.4,luk:0.25,agi:0.4},skills:['shooting','poisonshot','smoke']},
   dualist:{name:'듀얼리스트',en:'Dualist',tier:2,base:'shooter',role:'dps',range:'5×5',sigil:'雙',bonus:{atk:6,luk:6},
     desc:'특수 탄환과 연사로 크리티컬을 노린다.',skills:['shooting','poisonshot','smoke','legendary','overburning','fusillade']},
   priest:{name:'프리스트',en:'Priest',tier:1,role:'heal',range:'5×5',sigil:'聖',adv:['demigod','summoner'],
     desc:'신의 축복으로 동료를 치유하고 되살린다.',
-    stat:{hp:130,atk:34,def:4,luk:6},grow:{hp:8,atk:2.1,def:0.5,luk:0.15},skills:['shining','cure','sinsayer','smite']},
+    stat:{hp:130,atk:34,def:4,luk:6,agi:5},grow:{hp:8,atk:2.1,def:0.5,luk:0.15,agi:0.18},skills:['bash','shining','cure','sinsayer','smite']},
   demigod:{name:'데미갓',en:'Demigod',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'神',bonus:{hp:20,atk:4},
-    desc:'신을 강림시켜 파티 전체를 회복한다.',skills:['shining','cure','sinsayer','smite','judgment','bless','fasciation','pray','utopia']},
+    desc:'신을 강림시켜 파티 전체를 회복한다.',skills:['bash','shining','cure','sinsayer','smite','judgment','bless','fasciation','pray','utopia']},
   summoner:{name:'서머너',en:'Summoner',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'召',bonus:{hp:20,luk:4},
-    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['shining','cure','sinsayer','smite','vindicate','dispel','blind','downworld','dystopia','backslider']}
+    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['bash','shining','cure','sinsayer','smite','vindicate','dispel','blind','downworld','dystopia','backslider']}
 };
 const JOBS=CLASSES;
 const ORIGIN={defender:'황혼녘 강가',infighter:'바위 산맥',mage:'붉은 모래사막',shooter:'오아시스 마을',priest:'적막의 숲'};
@@ -87,7 +87,7 @@ function lootText(m){return rewardItemsHTML(m.loot||[]);}
 const gearOfTier=T=>GEAR_IDS.filter(id=>ITEMS[id].tier===T);
 function pickLoot(m){const L=m.loot||[];if(!L.length)return 'potion';const me=S&&S.me;
   if(me&&Math.random()<0.7){const mine=L.filter(k=>{const it=ITEMS[k];return it&&(!it.wtype||(CLASS_WEAPON[me.job]||[]).includes(it.wtype));});if(mine.length)return pick(mine);}return pick(L);}
-const STATK={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',luk:'행운',mov:'이동 범위'};
+const STATK={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',agi:'민첩',luk:'행운',mov:'이동 범위'};
 const ART={
 forest:String.raw`    \ | /   \ | /
    --(  o    o  )--
@@ -178,6 +178,7 @@ const SKILLS={
   overkill:{name:'오버킬',en:'Overkill',type:'dice',target:'enemy',combo:{from:'jolt',bonus:15},desc:'졸트로 노린 대상의 약점을 파고든다.'},
   might:{name:'권능',en:'Might',type:'dice',target:'enemy',combo:{from:'overkill',bonus:40},crit:true,desc:'오버킬과 연계하여 연속으로 강한 공격을 가한다.'},
   carnage:{name:'대학살',en:'Carnage',type:'addon',special:true,uses:1,with:['overkill'],desc:'오버킬과 함께 사용. 대미지가 공격력의 2배 이상이면 이번 턴 포함 3턴 동안 모든 스킬 대미지 ×2.'},
+  bash:{name:'무기 공격',en:'Strike',type:'dice',target:'enemy',phys:true,desc:'지팡이·홀·오브로 직접 내려친다. 마력 대신 공격력(물리)으로 계산해 약하지만 MP를 쓰지 않는다.'},
   flame:{name:'플레임',en:'Flame',type:'dice',target:'enemy',desc:'대상을 마력으로 공격한다.'},
   cinder:{name:'신더',en:'Cinder',type:'nodice',phase:'pre',target:'enemy',desc:'대상에게 의욕감소(몬스터 공격 대미지 −12%)를 2턴 동안 건다.'},
   blaze:{name:'블레이즈',en:'Blaze',type:'dice',target:'enemy',combo:{from:'flame',bonus:15},desc:'여러 개의 불덩이를 발사한다.'},
@@ -210,7 +211,7 @@ const SKILLS={
    스킬 MP 소모(LV1 기준 값). 실제 소모 = 값 × 그 전투원의 MP 성장 배율(mpScale) → 최대 MP와 같은 비율로 커진다.
    기본 공격(클래스의 첫 공격 스킬)은 0. 횟수 제한 스킬은 크게. 매 턴 최대 MP의 10% 회복, 방어하면 15% 더.
    클래스 기본 MP(MP_BASE)는 운영 페이지 '클래스' 탭에서 덮어쓸 수 있다. */
-const SKILL_MP={attack:0,jolt:0,flame:0,shooting:0,shining:0,
+const SKILL_MP={attack:0,bash:0,jolt:0,flame:0,shooting:0,shining:0,
   forestaller:6,attention:6,execution:5,save:15,save2:18,crimehazard:16,roar:24,berserker:24,link:18,link2:26,sanctuary:40,
   rush:6,hitend:10,overkill:6,might:12,battlefield:9,takedown:26,subterfuge:26,carnage:34,
   cinder:10,blaze:12,meteor:20,hellfire:16,eternalflame:60,
@@ -222,7 +223,7 @@ const MP_BASE={defender:60,warrior:60,knight:70,infighter:80,mystic:90,destroyer
 const MP_REGEN=0.10,MP_DEFEND=0.15;
 function mpCost(p,k){const s=SKILLS[k];if(!s||!s.mp)return 0;let sc=p&&p.mpScale;if(!sc&&p&&p.job&&CLASSES[p.job]&&p.level){try{sc=statsFor(p.job,p.level,{},{}).mpScale;}catch(e){}}return Math.max(1,Math.round(s.mp*(sc||1)));}
 function mpNeed(p,a){return a&&a.kind==='skill'?mpCost(p,a.skill)+(a.addon?mpCost(p,a.addon):0):0;}
-function basicSkill(cls){return CLASSES[cls].skills.find(s=>SKILLS[s].type==='dice');}
+function basicSkill(cls){return CLASSES[cls].skills.find(s=>SKILLS[s].type==='dice'&&!SKILLS[s].phys);}
 /* 판정 · 크리티컬 · 회복 공식 (전투 공식 정리는 docs/combat-formulas.md) */
 const JUDGE_MIN=0.8,JUDGE_MAX=1.2,CRIT_MULT=1.5,MON_HIT=0.45,DEF_K=50;
 function judgeRoll(rng){return JUDGE_MIN+(JUDGE_MAX-JUDGE_MIN)*rng();}
@@ -232,8 +233,11 @@ function rollD(n,rng){return 1+Math.floor(rng()*Math.max(1,Math.round(n)));}
 const ENH_MAX=10;
 function enhStep(v){return Math.max(1,Math.round(Math.abs(v)*0.15))*Math.sign(v||1);}
 function itemStats(id,lv){const it=ITEMS[id];if(!it||!it.stats)return {};const o={};for(const k in it.stats)o[k]=it.stats[k]+(lv||0)*(it.stats[k]>0?enhStep(it.stats[k]):0);return o;}
+const MAGIC_PHYS=0.35;   /* 마법 계열의 물리 공격력 = 마력 성장 × 0.35 (장비 공격력은 따로 더해짐) */
 const MAGIC_BASE=['mage','priest']; /* 슈터·듀얼리스트는 원거리 물리 딜러 → 공격력(2026-11-07 유저 결정), MP는 그대로 씀 */
 function isMagic(job){const c=CLASSES[job];return !!c&&MAGIC_BASE.includes(c.base||job);}
+/* 민첩: 몬스터 공격을 피할 확률 = 민첩 ÷ (민첩 + 400), 최대 20% */
+const AGI_K=400,AGI_MAX=0.2;function agiDodge(a){return Math.min(AGI_MAX,Math.max(0,a)/(Math.max(0,a)+AGI_K));}
 function powOf(st){return st.pk==='mag'?st.mag:st.atk;}
 /* 클래스 HP/MP 설정(운영 페이지 '클래스' 탭 → 서버 content kind 'cls').
    설정이 있으면: 최대 HP = 최초 HP × (1 + 상승% / 100 × 레벨 계수). 레벨 계수 L 은 아래 statsFor 와 같다.
@@ -248,7 +252,7 @@ function applyClassCfg(rows){const n={};(rows||[]).forEach(r=>{if(r&&r.kind==='c
 function lvK(level){return (level-1)*(1+(level-1)/196);}
 function statsFor(cls,level,equip,enh){
   const c=CLASSES[cls],b=CLASSES[c.base||cls],L=lvK(level);
-  const s={maxHp:Math.round(b.stat.hp+b.grow.hp*L),atk:Math.round(b.stat.atk+b.grow.atk*L),def:Math.round(b.stat.def+b.grow.def*L),luk:Math.round(b.stat.luk+b.grow.luk*L),mov:0,mag:0};
+  const s={maxHp:Math.round(b.stat.hp+b.grow.hp*L),atk:Math.round(b.stat.atk+b.grow.atk*L),def:Math.round(b.stat.def+b.grow.def*L),luk:Math.round(b.stat.luk+b.grow.luk*L),agi:Math.round((b.stat.agi||0)+(b.grow.agi||0)*L),mov:0,mag:0};
   for(const k in (c.bonus||{}))s[k==='hp'?'maxHp':k]+=c.bonus[k];
   const CC=clsCfg(cls),num=(v,d)=>typeof v==='number'&&isFinite(v)?v:d;
   if(CC){const f=CC.cfg;const hp0=Math.max(1,num(f.hp,b.stat.hp));s.maxHp=Math.round(hp0*(1+num(f.hpPct,0)/100*L))+(CC.own?0:((c.bonus||{}).hp||0));}
@@ -257,7 +261,8 @@ function statsFor(cls,level,equip,enh){
     else if(CC){m0=num(CC.cfg.mp,MP_BASE[bid]??mb)+(mb-(MP_BASE[bid]??mb));pc=num(CC.cfg.mpPct,pc);}
     const sc=1+pc/100*L;s.mpScale=sc;s.maxMp=Math.max(0,Math.round(m0*sc));}
   /* 마력 계열(메이지·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
-  if(isMagic(cls)){s.mag=s.atk;s.atk=0;}
+  /* 그 대신 공격력(물리)은 힘의 MAGIC_PHYS만큼 — 지팡이·홀·오브로 직접 치는 '무기 공격'(bash)용 */
+  if(isMagic(cls)){s.mag=s.atk;s.atk=Math.round(s.atk*MAGIC_PHYS);}
   for(const slot in (equip||{})){const id=equip[slot];const st=itemStats(id,(enh||{})[id]);for(const k in st)s[k]=(s[k]||0)+st[k];}
   s.pk=isMagic(cls)?'mag':'atk';
   return s;
@@ -265,7 +270,7 @@ function statsFor(cls,level,equip,enh){
 function roleOf(cls){return CLASSES[cls].role;}
 function makeFighter(p){
   const s=statsFor(p.job,p.level,p.equip,p.enh);
-  return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,atk:powOf(s),hp:s.maxHp,mp:s.maxMp,
+  return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,atk:powOf(s),patk:s.atk,hp:s.maxHp,mp:s.maxMp,
     dead:false,uses:{},buffs:[],poison:null,burnP:null,hot:null,bound:0,charm:0,held:0,frost:0,conf:0,supUses:0,last:null,lastTurn:-9,obTurn:-9,doubleTurn:-9,
     dealt:0,turnDealt:0,protect:false,reduce:0,defending:false,action:null,action2:null,confirmed:false,direct:0,planAt:0};
 }
@@ -429,10 +434,11 @@ function resolveTurn(b,rng,hooks){
       if(ad==='dystopia'){living(b).forEach(x=>x.hp=Math.max(1,x.hp-Math.round(x.maxHp*0.03)));log('act',`${p.name} · 디스토피아! 아군 최대 HP 3%씩 제물`);}
     }
     if(a.skill==='execution')addBuff(p,'execution',T,T+2);
-    const f=judgeRoll(rng);let pure=Math.round(p.atk*f);const raw=pure;
+    const PW=s.phys?(p.patk??p.atk):p.atk;   /* 무기 공격(bash)은 물리 공격력 */
+    const f=judgeRoll(rng);let pure=Math.round(PW*f);const raw=pure;
     if(a.skill==='overburning')pure*=2;
     const parts=[`${raw} (판정 ${Math.round(f*100)}%)${a.skill==='overburning'?'×2':''}`];
-    const pct=v=>Math.round(p.atk*v/100);
+    const pct=v=>Math.round(PW*v/100);
     let add=s.bonus?pct(s.bonus):0;if(s.bonus)parts.push(`+${add}`);
     if(comboReady(p,a.skill,T)){const c=pct(s.combo.bonus);add+=c;parts.push(`연계 +${c}`);}
     const critCh=critChance(p,s);let crit=rng()*100<critCh;
@@ -497,6 +503,7 @@ function resolveTurn(b,rng,hooks){
   const tel=b.tel;
   const hitP=(p,mult)=>{
     if(p.protect||b.sanct)return {d:0,note:'보호'};
+    if(p.agi>0&&rng()<agiDodge(p.agi))return {d:0,note:'회피'};
     let d=m.atk*MON_HIT*judgeRoll(rng)*mult;if(b.dmgTakenMult)d*=b.dmgTakenMult;if(p.defending)d*=0.5;
     d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?0.88:1);d=Math.max(0,Math.round(d));
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
@@ -516,7 +523,7 @@ function resolveTurn(b,rng,hooks){
     if(ex.length)log('mon',`${m.name} · 추가 효과 · ${ex.join(', ')}`);};
   /* 지난 턴 시간차 공격이 이번 턴에 터진다 */
   if(b.pend&&b.pend.at===T){const pd=b.pend;b.pend=null;const L=living(b).filter(p=>pd.type==='aoe'||(pd.type==='area'?pd.cells.includes(p.pos):p.id===pd.target));
-    const parts=L.map(p=>{const r=hitP(p,pd.mult);return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}`;});
+    const parts=L.map(p=>{const r=hitP(p,pd.mult);return `${p.name} ${r.d}${r.note?'('+r.note+')':''}${p.dead?'(쓰러짐)':''}`;});
     log('mon',`${m.name} · ${pd.name} (시간차) → ${parts.length?parts.join(', '):'모두 피했다'}`);fxApply(pd.fx,L);}
   if(PF&&PF.delay&&tel&&!tel.wipe&&['area','aoe','single','dot'].includes(tel.type)){
     b.pend={type:tel.type==='dot'?'single':tel.type,cells:tel.cells||[],target:tel.target,mult:tel.mult,name:tel.name,fx:{...PF,delay:null},at:T+1};
@@ -530,10 +537,10 @@ function resolveTurn(b,rng,hooks){
   else
   if(tel.type==='area'){
     const hit=living(b).filter(p=>tel.cells.includes(p.pos));fxT=hit;
-    const parts=hit.map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
+    const parts=hit.map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&!r.note){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note?'('+r.note+')':''}${p.dead?'(쓰러짐)':''}${ex}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.length?parts.join(', '):'모두 피했다'}`);
   }else if(tel.type==='aoe'){fxT=living(b);
-    const parts=living(b).map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&r.note!=='보호'){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note==='보호'?'(보호)':''}${p.dead?'(쓰러짐)':''}${ex}`;});
+    const parts=living(b).map(p=>{const r=hitP(p,tel.mult);let ex='';if(!p.dead&&!r.note){if(m.blindChance&&rng()<m.blindChance){p.blind=2;ex+='·실명';}if(m.noHealAoe){p.noHeal=2;ex+='·회복 불가';}if(m.pullHeal){p.healDown=2;ex+='·회복 −30%';}}return `${p.name} ${r.d}${r.note?'('+r.note+')':''}${p.dead?'(쓰러짐)':''}${ex}`;});
     log('mon',`${m.name} · ${tel.name} → ${parts.join(', ')}`);
   }else{
     let t=P(tel.target),note='';
@@ -549,12 +556,12 @@ function resolveTurn(b,rng,hooks){
       else log('mon',`${m.name} · 되비침 · 당신처럼 가만히 서 있다`);}
     if(t&&!mirrored){
       const r=hitP(t,tel.mult);let extra='';
-      if(tel.type==='dot'&&!t.dead&&r.note!=='보호'){t.poison={turns:3,dmg:m.dotDmg,name:m.dotName};extra=` · ${m.dotName} 3턴`;}
-      if(m.wrapChance&&!t.dead&&r.note!=='보호'&&rng()<m.wrapChance){t.bound=Math.max(t.bound||0,2);t.boundBy='tentacle';extra+=' · 휘감김 (다음 턴 스킬 불가)';}
-      if(m.sealChance&&!t.dead&&r.note!=='보호'&&rng()<m.sealChance){const pool=CLASSES[t.job].skills.filter(k=>SKILLS[k]&&!['addon','passive'].includes(SKILLS[k].type)&&k!==basicSkill(t.job));const k=pool[Math.floor(rng()*pool.length)];if(k){t.sealed={skill:k,turns:2};extra+=` · 봉인 (${SKILLS[k].name} 2턴 사용 불가)`;}}
-      if(m.rootChance&&!t.dead&&r.note!=='보호'&&rng()<m.rootChance){t.bound=Math.max(t.bound||0,2);t.boundBy='root';extra+=' · 뿌리 속박 (다음 턴 스킬 불가)';}
-      if(m.charmChance&&!t.dead&&r.note!=='보호'&&rng()<m.charmChance){if(b.noCharm)extra+=' · 귀마개로 매혹을 막았다';else{t.charm=2;extra+=' · 매혹 (다음 턴 행동 불가)';}}
-      fxT=[t];log('mon',`${m.name} · ${tel.name} → ${t.name}${note} ${r.d} 대미지${r.note==='보호'?' (보호됨)':''}${t.dead?' · 쓰러짐':''}${extra}`);
+      if(tel.type==='dot'&&!t.dead&&!r.note){t.poison={turns:3,dmg:m.dotDmg,name:m.dotName};extra=` · ${m.dotName} 3턴`;}
+      if(m.wrapChance&&!t.dead&&!r.note&&rng()<m.wrapChance){t.bound=Math.max(t.bound||0,2);t.boundBy='tentacle';extra+=' · 휘감김 (다음 턴 스킬 불가)';}
+      if(m.sealChance&&!t.dead&&!r.note&&rng()<m.sealChance){const pool=CLASSES[t.job].skills.filter(k=>SKILLS[k]&&!['addon','passive'].includes(SKILLS[k].type)&&k!==basicSkill(t.job));const k=pool[Math.floor(rng()*pool.length)];if(k){t.sealed={skill:k,turns:2};extra+=` · 봉인 (${SKILLS[k].name} 2턴 사용 불가)`;}}
+      if(m.rootChance&&!t.dead&&!r.note&&rng()<m.rootChance){t.bound=Math.max(t.bound||0,2);t.boundBy='root';extra+=' · 뿌리 속박 (다음 턴 스킬 불가)';}
+      if(m.charmChance&&!t.dead&&!r.note&&rng()<m.charmChance){if(b.noCharm)extra+=' · 귀마개로 매혹을 막았다';else{t.charm=2;extra+=' · 매혹 (다음 턴 행동 불가)';}}
+      fxT=[t];log('mon',`${m.name} · ${tel.name} → ${t.name}${note} ${r.d} 대미지${r.note==='보호'?' (보호됨)':r.note==='회피'?' (회피!)':''}${t.dead?' · 쓰러짐':''}${extra}`);
     }
   }
   if(PF&&!delayedNow){fxApply(PF,fxT);
