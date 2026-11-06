@@ -66,12 +66,12 @@ const VIEWS={};   // 탭 id → async render(el)
 function tabHTML(k,l){return `${icon(k)}<span class="tl">${l}</span>${A.badge[k]?`<span class="num">${A.badge[k]}</span>`:''}`;}
 function shell(){
   const nick=A.names[A.user.id]||A.user.email.split('@')[0];
-  const app=$('#app');app.classList.add('shell');app.style.alignContent='start';
-  app.innerHTML=`<aside class="side" style="min-width:0">
+  const app=$('#app');app.classList.add('shell');
+  app.innerHTML=`<aside class="side">
       <div class="side-brand">블레셋 전기<small>운영 페이지</small></div>
       <nav class="side-nav" role="tablist">${GROUPS.map(([g,it])=>`<div class="nav-g">${g?`<span class="nav-gl">${g}</span>`:''}${it.map(([k,l])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${A.tab===k}">${tabHTML(k,l)}</button>`).join('')}</div>`).join('')}</nav>
-      <div class="side-me"><span>${esc(nick)}</span><div class="row" style="flex-wrap:nowrap"><a class="btn btn-sm" href="./" target="_blank" rel="noopener">게임 열기</a><button class="btn btn-g btn-sm" id="logout">로그아웃</button></div></div>
-    </aside><main class="wrap" id="view" style="min-width:0"></main>`;
+      <div class="side-me"><span>${esc(nick)}</span><div class="row"><a class="btn btn-sm" href="./" target="_blank" rel="noopener">게임 열기</a><button class="btn btn-g btn-sm" id="logout">로그아웃</button></div></div>
+    </aside><main class="wrap" id="view"></main>`;
   $$('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));
   $('#logout').onclick=async()=>{if(!await ask('로그아웃','이 브라우저의 게임에서도 함께 로그아웃됩니다.','로그아웃'))return;await A.sb.auth.signOut();location.reload();};
 }
