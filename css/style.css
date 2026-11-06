@@ -3445,3 +3445,24 @@ body.tp-2 .me-name .lv,body.tp-2 .sc-lvl,body.tp-2 .info-lv{visibility:hidden}
 .exr-fx.fx-bubbles,.exr-fx.fx-fog{opacity:.85}.exr-fx.fx-embers{opacity:.75}
 html[data-theme="light"] .exr-fx.fx-snow{filter:brightness(.62) saturate(1.8);opacity:.75}
 html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] .exr-fx.fx-fireflies{opacity:.6}
+
+/* ── 프론트 2026-11-07(유저 요청): 토벌전 목록 가로형 — 한 줄에 한 보스, 세로로 쌓음 ──
+   .mgrid는 토벌전 탭에서만 씀. monCard 마크업 그대로: 그림 · 이름/지역 · 조건 칩 · 보상 칩 · 입장 상태 */
+.mgrid{grid-template-columns:minmax(0,1fr)}
+.mgrid>.mcard{display:grid;grid-template-columns:120px minmax(0,1fr) auto;grid-auto-rows:auto;column-gap:18px;row-gap:6px;align-items:center;padding:12px 18px}
+.mgrid>.mcard>:first-child{grid-column:1;grid-row:1/span 2;align-self:center;margin:0}
+.mgrid>.mcard>pre.ascii:first-child{width:120px;font-size:7px;line-height:1.15;padding:8px;text-align:center;overflow:hidden}
+.mgrid>.mcard>.mon-img:first-child{width:120px;max-width:none}
+.mgrid>.mcard>div:nth-child(2){grid-column:2;grid-row:1;align-self:end;min-width:0}
+.mgrid>.mcard>div:nth-child(2) p{margin:2px 0 0}
+.mgrid>.mcard>.row:nth-child(3){grid-column:2;grid-row:2;align-self:start;flex-wrap:wrap}
+.mgrid>.mcard>.row:nth-child(4){grid-column:3;grid-row:1;justify-self:end;align-self:end}
+.mgrid>.mcard>p:last-child{grid-column:3;grid-row:2;justify-self:end;align-self:start;margin:0;text-align:right}
+@media (max-width:640px){
+  .mgrid>.mcard{grid-template-columns:84px minmax(0,1fr);column-gap:12px;padding:12px}
+  .mgrid>.mcard>:first-child{grid-row:1/span 4;align-self:start}
+  .mgrid>.mcard>pre.ascii:first-child,.mgrid>.mcard>.mon-img:first-child{width:84px}
+  .mgrid>.mcard>pre.ascii:first-child{font-size:5px;padding:5px}
+  .mgrid>.mcard>.row:nth-child(4){grid-column:2;grid-row:3;justify-self:start}
+  .mgrid>.mcard>p:last-child{grid-column:2;grid-row:4;justify-self:start;text-align:left}
+}
