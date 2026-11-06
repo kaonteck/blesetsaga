@@ -508,6 +508,8 @@
 
 - [메인 2026-11-07] ⚠ 사장 지시: Sprite Fusion 크레딧 절대 쓰지 말 것. generate_sprites·edit_sprite·generate_sprites_in_style·create_8_directions·animate_sprite 호출 금지. 무료인 list_vfx·get_vfx·create_normal_map·list_assets 등 조회만 허용.
 
+- [메인 2026-11-07] 레이드 › 파티 레이드 목록 줄(`monCardH`, 03)·던전 탭 카드(`dungeonTab`, 05)에 운영 페이지에서 올린 몬스터 그림(`monImg`가 있을 때만, 없으면 예전 그대로). 프론트 참고: style.css 끝 `.mh-pic`·`.dun-pic`·`.dun-card.has-pic`.
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.

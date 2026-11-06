@@ -188,7 +188,7 @@ function monCard(m,extra){const lr=levelReason(m,S.me.level)||raidBlock(m);
 /* 가로형 레이드 보스 카드: 그림 · 이름/지역/조건 · 입장 상태 */
 function monCardH(m){const lvLock=S.me.level<m.level;const lr=lvLock?'':(levelReason(m,S.me.level)||raidBlock(m));
   return `<div class="panel mcard mcard-h ${lvLock?'locked':''}" data-act="link" data-link="monster:${m.id}" role="button" tabindex="0">
-    <div class="mh-main"><div class="mname">${esc(m.name)}</div>
+    ${monImg(m)?monPic(m,'mh-pic','aria-hidden="true"'):''}<div class="mh-main"><div class="mname">${esc(m.name)}</div>
       <div class="row" style="gap:6px"><span class="muted" style="font-size:12.5px;margin-right:4px">${esc(m.region||'')}</span><span class="chip num">LV${m.level}+</span><span class="chip num">${m.min}~${m.max}명</span>${['tank','dps','heal'].map(r=>m.roles[r]?`<span class="chip ${r}">${ROLE[r]} ${m.roles[r]}</span>`:'').join('')}</div></div>
     <div class="mh-st">${lvLock?`<span class="mh-lock" aria-label="LV ${m.level} 제한"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.3 7V5.1a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><small class="num">(LV ${m.level} 제한)</small></span>`:lr?`<p class="reason">${esc(lr)}</p>`:'<p class="ok-t">입장 가능</p>'}${lvLock?'':'<span class="mh-go" aria-hidden="true">›</span>'}</div></div>`;}
 function cntRow(items){return `<div class="cntrow">${items.map(([l,v,n])=>`<span class="cnt"><small>${l}</small><b class="num">${v}</b>${n?`<em>${n}</em>`:''}</span>`).join('')}</div>`;}

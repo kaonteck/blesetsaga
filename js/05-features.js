@@ -829,7 +829,8 @@ function dungeonTab(){
       if(id==='temple'){act=weeklyClosed()?`<p class="faint" style="font-size:12px">백야의 신전은 지금 닫혀 있습니다.</p>`:`<div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="rtab" data-tab="weekly">토벌전으로</button></div>`;}
       else if(m){const done=d.dungeon[m.id];const lr=levelReason(m,S.me.level);const R=dungeonReward(m,dtg(m.id));
         act=`<div class="dun-rw">보상 · <b>EXP ${R.exp}</b> · <b>${R.gold}골드</b>${(m.loot||[]).length?` · 보물상자에서 ${lootText(m)}`:''}</div><div class="row cj-act">${done?'<span class="chip dim">오늘 클리어 완료 · 05:00 초기화</span>':lr?`<button class="btn btn-sm" disabled>${esc(`LV${m.level} 이상 필요`)}</button>`:`<button class="btn btn-sm btn-primary" data-act="dfight" data-id="${m.id}" ${busy?'disabled':''}>개인 입장</button><button class="btn btn-sm" data-act="dparty" data-id="${m.id}" ${busy?'disabled':''}>파티 입장 (최대 4인)</button>${busy?`<span class="faint" style="font-size:12px;align-self:center">${esc(busy)}</span>`:''}`}</div>`;}
-      return `<article class="dun-card ${S.sel.dfocus===id?'focus':''}" id="dun-${id}"><div class="dun-t"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${esc(I.label||'인스턴스 던전')}</div><h3>${esc(n)}</h3>
+      const pic=m&&monImg(m)?monPic(m,'dun-pic','aria-hidden="true"'):'';
+      return `<article class="dun-card ${S.sel.dfocus===id?'focus':''} ${pic?'has-pic':''}" id="dun-${id}">${pic}<div class="dun-t"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>${esc(I.label||'인스턴스 던전')}</div><h3>${esc(n)}</h3>
         ${I.quote?`<p class="dun-q">“${esc(I.quote)}”</p>`:''}<div class="dun-meta">최소 레벨 <b>${I.lv||(m?m.level:'-')}</b> · 인원 <b>${esc(I.ppl||'1–4인')}</b></div><p class="dun-x">${esc(I.text||'')}</p>${act}</div></article>`;}).join('')}</div></details>`;}).join('');
   return `${cntRow([['던전 클리어',`${Object.keys(d.dungeon).length}`,'던전별 하루 1회 보상'],['초기화','05:00','매일']])}<div class="dun-wrap">${secs}</div>`;
 }
