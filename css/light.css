@@ -1665,8 +1665,6 @@ html[data-theme="light"] .gplace{border:1px solid color-mix(in srgb,var(--gold-h
 html[data-theme="light"] .gplace b{color:var(--gold-hi)}
 html[data-theme="light"] .gfx .gplace{box-shadow:0 6px 18px rgba(20,28,45,0.122)}
 html[data-theme="light"] .gboard.placing .gcell:hover{background:color-mix(in srgb,#95afe3 18%,transparent)}
-html[data-theme="light"] .sks .sk-cat{color:#ebeef4}
-html[data-theme="light"] .sk-cat.c-sup{background:#95afe3}
 html[data-theme="light"] .slot .slv{color:var(--muted)}
 html[data-theme="light"] .slot .slv.bad{color:var(--bad)}
 
@@ -1691,8 +1689,6 @@ html[data-theme="light"] .mass-card .chip.heal:not(.cls):not(.dim){background:co
 html[data-theme="light"] .chip.st-debuff,html[data-theme="light"] .hud-fx.st-debuff{color:#fff}
 /* 빨간 알림 뱃지(채팅 탭 숫자 등) 글자는 흰색(메인) */
 html[data-theme="light"] .badge{color:#fff}
-/* 만신전 스킬 구분 칩 글자는 짙게(메인) */
-html[data-theme="light"] .sks .sk-cat{color:#111}
 html[data-theme="light"] .gtel,html[data-theme="light"] .gtel.aoe{background:#fff;box-shadow:none}
 html[data-theme="light"] .gtel .gtel-k,html[data-theme="light"] .gtel .tk-run{color:#c62828}
 html[data-theme="light"] .hud-lvl,html[data-theme="light"] .hud-tag{color:#8a6a1c}

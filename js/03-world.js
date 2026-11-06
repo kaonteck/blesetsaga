@@ -664,7 +664,9 @@ GICON.defend=SHIELD_SVG;
 let GS_GO={};
 /* 스킬 구분: 회복 · 공격 · 보조 (이 순서로 정렬) */
 const SK_CAT={heal:'회복',atk:'공격',sup:'보조'},SK_CAT_ORD={heal:0,atk:1,sup:2};
-function skCat(k){const s=SKILLS[k];if(!s)return 'sup';if(s.type==='heal')return 'heal';if(s.target==='enemy'&&(s.type==='dice'||s.type==='nodice'))return 'atk';return 'sup';}
+function skCat(k){const s=SKILLS[k];if(!s)return 'sup';if(s.cat)return s.cat;if(s.type==='heal')return 'heal';if(s.target==='enemy'&&(s.type==='dice'||s.type==='nodice'))return 'atk';return 'sup';}
+/* 스킬마다 구분 속성(SKILLS[k].cat = heal·atk·sup)을 붙여 둠 — 화면 표시는 없고 정렬·구분용 */
+for(const k in SKILLS)if(!SKILLS[k].cat)SKILLS[k].cat=skCat(k);
 function gridSkillPanel(b,me){
   if(me.bound>0){GS_GO={bound:true};return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다. 방어만 확정할 수 있습니다.</p>`;}
   addonSane(me);
@@ -673,7 +675,7 @@ function gridSkillPanel(b,me){
   const tip=(title,body,extra)=>`<span class="sk-tip" role="tooltip"><b>${title}</b>${extra||''}<span>${body}</span></span>`;
   const slot=k=>{const s=SKILLS[k];const err=checkAct(b,me,{kind:'skill',skill:k,target:s.target==='dead'?(b.players.find(x=>x.dead)||{}).id:me.id},hooks.hasItem);
     const soft=err&&((s.target==='ally'&&err==='대상이 유효하지 않음')||err.startsWith('대상이 회복 사거리'));const hard=err&&!soft;const on=a.kind==='skill'&&a.skill===k;const bd=skillBadges(k,me,b);
-    return `<button class="sks ${on?'on':''} ${k===basic?'basic':''}" data-act="pickact" data-kind="skill" data-skill="${k}" ${hard?'disabled':''} aria-label="${esc(s.name)}"><img src="${skillImg(k)}" alt=""><i class="sk-cat c-${skCat(k)}" aria-hidden="true">${SK_CAT[skCat(k)]}</i><span class="sks-n">${k===basic?'기본 공격':esc(s.name)}</span>${tip(`${esc(s.name)} <small>${s.en}</small>`,esc(s.desc),(bd?`<span class="row" style="gap:3px">${bd}</span>`:'')+(hard?`<em>${esc(err)}</em>`:''))}</button>`;};
+    return `<button class="sks ${on?'on':''} ${k===basic?'basic':''}" data-cat="${skCat(k)}" data-act="pickact" data-kind="skill" data-skill="${k}" ${hard?'disabled':''} aria-label="${esc(s.name)}"><img src="${skillImg(k)}" alt=""><span class="sks-n">${k===basic?'기본 공격':esc(s.name)}</span>${tip(`${esc(s.name)} <small>${s.en}</small>`,esc(s.desc),(bd?`<span class="row" style="gap:3px">${bd}</span>`:'')+(hard?`<em>${esc(err)}</em>`:''))}</button>`;};
   const addons=sk.filter(k=>SKILLS[k].type==='addon'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv));const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
   /* 이중 선택(함께 쓰는) 스킬: 앞쪽에 붉은 띠, 뒤에 + 표시 후 나머지 스킬 */
   const addonHTML=addons.map(k=>{const ad=SKILLS[k];const ok=usesLeft(me,k)>0&&(!isDice||!ad.with||ad.with.includes(a.skill));const armed=a.addon===k||S.sel.addonArm===k;
