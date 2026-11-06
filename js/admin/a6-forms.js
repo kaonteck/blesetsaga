@@ -392,9 +392,11 @@ function cpForm(M){const ks=cpKeys(M);
    저장: mass.patterns.<패턴>.fx = {knock:{c},delay:{},bind:{t},frost:{},poison:{d,t},burn:{d,t},reflect:{r},confuse:{t}} — 게임 엔진 resolveTurn ⑥이 읽음 */
 const PFX=[['knock','넉백','맞은 블레서를 보스 반대쪽으로 밀어냄',[['c','칸',2]]],['delay','시간차 공격','이번 턴엔 예고만, 다음 턴에 터짐',[]],['bind','속박','n턴 행동 불가(이동·스킬 모두)',[['t','턴',1]]],['frost','동상','다음 1턴 이동 불가',[]],
   ['poison','중독','턴마다 HP − n, n턴',[['d','대미지',20],['t','턴',3]]],['burn','화상','턴마다 HP − n, n턴',[['d','대미지',20],['t','턴',3]]],['reflect','반사','이번 턴 보스가 받은 대미지를 때린 블레서에게 되돌림',[['r','%',100]]],['confuse','혼란','n턴 동안 내 행동 대신 주변 블레서에게 기본 공격',[['t','턴',1]]]];
-function pfxRow(pk,cur){const fx=(cur&&cur.fx)||{};
-  return `<div class="pfx"><span class="faint small">추가 효과</span>${PFX.map(([k,l,d,ps])=>{const on=!!fx[k];
-    return `<span class="pfx-i ${on?'on':''}"><label class="chk" title="${esc(d)}"><input type="checkbox" data-fa="pfx" data-k="${esc(pk)}" data-f="${k}" ${on?'checked':''}> ${esc(l)}</label>${on?ps.map(([pp,pl,dv])=>`<input type="number" min="1" step="1" class="nsm" data-p="mass.patterns.${pk}.fx.${k}.${pp}" data-t="num" value="${fx[k][pp]??dv}" aria-label="${esc(l)} ${pl}"><span class="faint small">${pl}</span>`).join(''):''}</span>`;}).join('')}</div>`;}
+function pfxRow(pk,cur){const fx=(cur&&cur.fx)||{};const on=PFX.filter(x=>fx[x[0]]),off=PFX.filter(x=>!fx[x[0]]);
+  /* 프론트 2026-11-07(유저 요청): 체크박스 8개 → 켠 효과만 칩 + '효과 더하기' 드롭다운 */
+  return `<div class="pfx"><span class="pfx-l">추가 효과</span>${on.map(([k,l,d,ps])=>`<span class="pfx-c" title="${esc(d)}"><b>${esc(l)}</b>${ps.map(([pp,pl,dv])=>`<input type="number" min="1" step="1" class="nsm" data-p="mass.patterns.${pk}.fx.${k}.${pp}" data-t="num" value="${fx[k][pp]??dv}" aria-label="${esc(l)} ${pl}"><span class="pfx-u">${pl}</span>`).join('')}<button type="button" class="pfx-x" data-fa="pfx" data-k="${esc(pk)}" data-f="${k}" aria-label="${esc(l)} 빼기" title="빼기">×</button></span>`).join('')}${on.length?'':'<span class="pfx-none">없음</span>'}${off.length?`<select class="pfx-add" data-pfx-add data-k="${esc(pk)}" aria-label="추가 효과 더하기"><option value="">+ 효과 더하기</option>${off.map(([k,l,d])=>`<option value="${k}">${esc(l)} · ${esc(d)}</option>`).join('')}</select>`:''}</div>`;}
+(function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
+  $$('select[data-pfx-add]',box).forEach(el=>el.onchange=()=>{if(!el.value)return;el.dataset.f=el.value;fAct('pfx',el,true);});};})();
 (function(){const f=fAct;fAct=function(a,el,v){if(a==='pfx'){const k=el.dataset.k,ff=el.dataset.f;const M=FM.d.mass=FM.d.mass||{};const P=(M.patterns=M.patterns||{});const D=MPATS();P[k]=P[k]||{name:(D[k]||{}).name,mult:(D[k]||{}).mult};
     const fx=P[k].fx=P[k].fx||{};if(v){const def=(PFX.find(x=>x[0]===ff)||[])[3]||[];fx[ff]=Object.fromEntries(def.map(([pp,,dv])=>[pp,dv]));}else delete fx[ff];if(!Object.keys(fx).length)delete P[k].fx;sync();redrawForm();return;}return f(a,el,v);};})();
 

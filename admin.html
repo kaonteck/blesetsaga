@@ -319,6 +319,17 @@ details.cp>summary{cursor:pointer;list-style:none}
 .side-me .row{flex-wrap:nowrap}
 .scn .sc-h h4{display:none}
 .scn .sc-h{justify-content:flex-end}
+/* 프론트 2026-11-07: 만신전 패턴 추가 효과 — 켠 효과만 칩 + 드롭다운(글자 세로로 깨지던 것) */
+.pfx{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;padding:2px 0 6px}
+.pfx .pfx-l{color:var(--muted);font-size:12px;white-space:nowrap;margin-right:2px}
+.pfx .pfx-none{color:var(--faint,var(--muted));font-size:12px;white-space:nowrap}
+.pfx .pfx-c{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;padding:3px 4px 3px 10px;border-radius:999px;border:1px solid rgba(201,164,106,.45);background:rgba(201,164,106,.12)}
+.pfx .pfx-c b{font-weight:600;white-space:nowrap}
+.fm .pt .pfx .pfx-c input.nsm,.pfx .pfx-c input.nsm{width:56px;height:26px;padding:2px 6px;min-width:0}
+.pfx .pfx-u{color:var(--muted);font-size:11.5px;white-space:nowrap}
+.pfx .pfx-x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;width:22px;height:22px;border-radius:50%;padding:0}
+.pfx .pfx-x:hover{color:inherit;background:rgba(255,255,255,.08)}
+.fm .pt .pfx select.pfx-add,.pfx select.pfx-add{width:132px;max-width:100%;min-width:0;height:28px;padding:2px 8px;font-size:12.5px;flex:0 1 auto}
 </style>
 </head>
 <body>
