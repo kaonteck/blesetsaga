@@ -4,7 +4,7 @@
    게임: 01-engine applyClassCfg(08-server ctApply 가 부름) → statsFor.
      최대 HP = 최초 HP × (1 + 상승% / 100 × 레벨 계수)   레벨 계수 = (LV−1) × (1 + (LV−1)/196)
    상위 클래스에 따로 값을 두지 않으면 기본 클래스 값 + 그 클래스의 HP 보너스를 따라간다.
-   MP는 아직 게임에서 쓰는 곳이 없어 HUD 표시만. */
+   MP: 스킬마다 소모(01-engine SKILL_MP·mpCost), 매 턴 10% 회복·방어 시 +15%. */
 const CLS_KIND='cls';
 const CLS_F=[['hp','최초 HP',1,1],['hpPct','HP 상승 %',0,0.01],['mp','최초 MP',0,1],['mpPct','MP 상승 %',0,0.01]];
 const CLS_PV=[1,20,50,80,99];
@@ -15,7 +15,7 @@ const clsSrv=id=>{const r=(A.content[CLS_KIND]||{})[id];return r&&r.data||null;}
 /* 지금 게임에 적용되는 값 · 어디서 온 값인지 */
 function clsLive(id){const D=clsDef()[id]||{};const own=clsSrv(id);if(own)return {v:{...D,...own},src:'own'};
   const b=D.base&&clsSrv(D.base);if(b){const bd=clsDef()[D.base]||{};const bonus=(D.hp||0)-(bd.hp||0);
-    return {v:{...D,hp:(b.hp??bd.hp)+bonus,hpPct:b.hpPct??D.hpPct,mp:b.mp??D.mp,mpPct:b.mpPct??D.mpPct},src:'base'};}
+    return {v:{...D,hp:(b.hp??bd.hp)+bonus,hpPct:b.hpPct??D.hpPct,mp:(b.mp??bd.mp)+((D.mp||0)-(bd.mp||0)),mpPct:b.mpPct??D.mpPct},src:'base'};}
   return {v:D,src:'def'};}
 function clsCur(id){return {...clsLive(id).v,...(CLS.edit[id]||{})};}
 function clsDirty(id){const e=CLS.edit[id];if(!e)return false;const L=clsLive(id).v;return CLS_F.some(([k])=>e[k]!==undefined&&e[k]!==L[k]);}
@@ -31,7 +31,7 @@ function clsTable(){const ids=Object.keys(clsDef());if(!ids.length)return '<p cl
   const base=ids.filter(i=>!clsDef()[i].base);const order=base.flatMap(b=>[b,...ids.filter(i=>clsDef()[i].base===b)]);ids.forEach(i=>{if(!order.includes(i))order.push(i);});
   const nd=ids.filter(clsDirty).length;
   return `<div class="panel"><div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-      <p class="small muted" style="margin:0">최대 HP = 최초 HP × (1 + 상승% ÷ 100 × 레벨 계수) · 레벨 계수 = (LV−1) × (1 + (LV−1) ÷ 196). 장비 HP는 이 위에 더해집니다.<br>상위 클래스에 값을 따로 두지 않으면 기본 클래스 값(+ 그 클래스 HP 보너스)을 따라갑니다. MP는 아직 전투에서 쓰지 않고 HUD에만 보입니다.</p>
+      <p class="small muted" style="margin:0">최대 HP = 최초 HP × (1 + 상승% ÷ 100 × 레벨 계수) · 레벨 계수 = (LV−1) × (1 + (LV−1) ÷ 196). 장비 HP는 이 위에 더해집니다.<br>상위 클래스에 값을 따로 두지 않으면 기본 클래스 값(+ 그 클래스 HP 보너스)을 따라갑니다. 스킬마다 MP를 쓰고(기본 공격은 0), 매 턴 최대 MP의 10%가 차고 방어하면 15% 더 찹니다. 스킬 소모량도 MP 상승 %만큼 함께 커집니다.</p>
       <button class="btn btn-primary" data-cl="puball" ${nd?'':'disabled'}>바뀐 것 모두 공개${nd?` (${nd})`:''}</button></div>
     <div class="cl-wrap"><table class="cl-t"><thead><tr><th>클래스</th>${CLS_F.map(([,l])=>`<th>${l}</th>`).join('')}<th>미리보기 HP / MP</th><th></th></tr></thead>
     <tbody>${order.map(clsRow).join('')}</tbody></table></div></div>`;}

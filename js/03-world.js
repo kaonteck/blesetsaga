@@ -485,7 +485,7 @@ function unitCard(p,b,close){
   return `<div class="ucard"><div class="uc-face">${face}</div><div class="uc-main"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(p.name)}</b>${close?`<button class="ibtn sm" data-act="${close}" data-id="" aria-label="닫기">✕</button>`:''}</div>
     <div class="row" style="gap:4px">${roleChip(p.job)}<span class="chip num dim">LV${p.level}</span>${b&&p.pos!=null?`<span class="chip num dim">${cellName(p.pos)}</span>`:''}</div></div></div>
     <div class="gt-row"><span>HP</span><div class="bar hp" title="${p.hp}/${p.maxHp}"><i style="width:${pct(p.hp,p.maxHp)}%"></i></div><b class="num">${p.hp}/${p.maxHp}</b></div>
-    <div class="gt-row"><span>MP</span><div class="bar mp"><i style="width:${p.maxMp?100:0}%"></i></div><b class="num ${p.maxMp?'':'faint'}">${p.maxMp||'—'}</b></div>
+    <div class="gt-row"><span>MP</span><div class="bar mp"><i style="width:${p.maxMp?Math.round((p.mp??p.maxMp)/p.maxMp*100):0}%"></i></div><b class="num ${p.maxMp?'':'faint'}">${p.maxMp?(p.mp??p.maxMp):'—'}</b></div>
     <ul class="statline num sm">${statIcon('atk',p.atk)}${statIcon('def',p.def)}${statIcon('luk',p.luk)}</ul>
     ${st.length?`<div class="gt-s">${st.map(esc).join(' · ')}</div>`:''}${b?`<div class="gt-s faint">행동 · ${esc(gActLabel(b,p))}</div>`:''}`;}
 function openRaidWho(name,btn){const key='r:'+name;if(S.sel.rmem===key){closeRmem();return;}closeRmem();const u=raidUnit(name);if(!u){openUinfo(name,btn);return;}
@@ -591,7 +591,7 @@ function gfAct(b,me){
     <div class="hud-main">
       <div class="hud-top"><div class="hud-id"><b>${esc(me.name)}</b><span class="hud-lvl num">LV.${me.level}</span><span class="hud-cls ${me.role}">${esc(CLASSES[me.job].name)}</span>${me.pos!=null?`<span class="hud-pos num">위치 ${cellName(me.pos)}</span>`:''}${gfTgt(b,me,mode)}${st.map(([x,k])=>`<span class="hud-fx st-${k}">${esc(x)}</span>`).join('')}</div>
         <div class="hud-bars"><div class="hb hp ${hpP<30?'low':''}" title="${me.hp}/${me.maxHp}"><i style="width:${hpP}%"></i><span>HP</span><b class="num">${me.hp}<small>/${me.maxHp}</small></b></div>
-          <div class="hb mp"><i style="width:${me.maxMp?100:0}%"></i><span>MP</span><b class="num">${me.maxMp?`${me.maxMp}<small>/${me.maxMp}</small>`:'—'}</b></div></div></div>
+          <div class="hb mp"><i style="width:${me.maxMp?Math.round((me.mp??me.maxMp)/me.maxMp*100):0}%"></i><span>MP</span><b class="num">${me.maxMp?`${me.mp??me.maxMp}<small>/${me.maxMp}</small>`:'—'}</b></div></div></div>
       <div class="hud-body gact-body">${body}</div></div>
     ${pad.replace(/<\/div>$/,gfGo(b,me,mode)+'</div>')}</div>`;
 }

@@ -109,6 +109,7 @@ const SKILL_FX={
 function skillBadges(k,p,b){
   const s=SKILLS[k];const out=[];
   if(s.special)out.push('<span class="chip warn">특수</span>');
+  if(s.mp&&typeof mpCost==='function'){const q=p||(typeof S!=='undefined'&&S.me&&CLASSES[S.me.job]&&CLASSES[S.me.job].skills.includes(k)?S.me:null);const c=q?mpCost(q,k):s.mp;if(c)out.push(`<span class="chip mp-c${q&&q.mp!=null&&c>q.mp?' short':''}" title="${q?'지금 레벨 기준 MP 소모':'LV1 기준 MP 소모'}">MP ${c}</span>`);}
   if(s.type==='addon')out.push('<span class="chip dim">함께 사용</span>');
   if(s.type==='passive')out.push('<span class="chip dim">패시브</span>');
   if(s.lv)out.push(`<span class="chip dim">LV${s.lv}</span>`);
@@ -902,7 +903,8 @@ function fighterCard(b,p){
     <div class="nm"><b>${esc(p.name)}</b>${conf}</div>
     <div class="row fx-row" style="gap:4px">${roleChip(p.job)}<span class="chip num dim">LV${p.level}</span>${targeted?'<span class="chip warn">예고 대상</span>':''}${st.join('')}</div>
     <div class="bar hp"><i style="width:${pct(p.hp,p.maxHp)}%"></i></div>
-    <div class="vals num"><span>HP ${p.hp}/${p.maxHp}</span></div></div>`;
+    ${p.maxMp?`<div class="bar mp"><i style="width:${pct(p.mp??p.maxMp,p.maxMp)}%"></i></div>`:''}
+    <div class="vals num"><span>HP ${p.hp}/${p.maxHp}</span>${p.maxMp?`<span class="mpv">MP ${p.mp??p.maxMp}/${p.maxMp}</span>`:''}</div></div>`;
 }
 function actOpt(b,me,k,a,primary){
   const s=SKILLS[k];const err=checkAct(b,me,{kind:'skill',skill:k,target:s.target==='dead'?(b.players.find(x=>x.dead)||{}).id:me.id},hooks.hasItem,primary);

@@ -3482,3 +3482,8 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .ng .ng-row{border-radius:12px}
 /* 폰·태블릿(손가락)에서 작은 버튼 누르는 높이 최소 34px(글자·여백은 그대로, 위아래만) */
 @media (pointer:coarse){#view .btn.btn-sm,.modal .btn.btn-sm,.pop .btn.btn-sm{min-height:34px}}
+/* MP 소모 (메인 2026-11-07) */
+.chip.mp-c{background:rgba(90,140,230,.16);border-color:rgba(110,160,240,.45);color:#9fc0ff;font-weight:600}
+.chip.mp-c.short{background:rgba(220,80,80,.16);border-color:rgba(230,100,100,.5);color:#ff9d9d}
+.fighter .bar.mp{height:4px;margin-top:3px}.fighter .bar.mp>i{background:#5b8def}
+.vals .mpv{margin-left:10px;color:#9fc0ff}

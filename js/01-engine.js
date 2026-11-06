@@ -206,6 +206,22 @@ const SKILLS={
   dispel:{name:'디스펠',en:'Dispel',type:'support',phase:'pre',target:'ally',uses:2,desc:'소환수가 대상 아군의 상태 이상(독·매혹·뿌리 속박)을 거둬 간다. 다른 행동보다 먼저 처리돼, 매혹된 아군도 이번 턴에 행동할 수 있다.'},
   backslider:{name:'타락자',en:'Backslider',type:'support',phase:'pre',target:'ally',uses:1,special:true,desc:'대상의 대미지를 이번 턴 동안 ×2.'}
 };
+/* ── MP ──
+   스킬 MP 소모(LV1 기준 값). 실제 소모 = 값 × 그 전투원의 MP 성장 배율(mpScale) → 최대 MP와 같은 비율로 커진다.
+   기본 공격(클래스의 첫 공격 스킬)은 0. 횟수 제한 스킬은 크게. 매 턴 최대 MP의 10% 회복, 방어하면 15% 더.
+   클래스 기본 MP(MP_BASE)는 운영 페이지 '클래스' 탭에서 덮어쓸 수 있다. */
+const SKILL_MP={attack:0,jolt:0,flame:0,shooting:0,shining:0,
+  forestaller:6,attention:6,execution:5,save:15,save2:18,crimehazard:16,roar:24,berserker:24,link:18,link2:26,sanctuary:40,
+  rush:6,hitend:10,overkill:6,might:12,battlefield:9,takedown:26,subterfuge:26,carnage:34,
+  cinder:10,blaze:12,meteor:20,hellfire:16,eternalflame:60,
+  poisonshot:10,legendary:15,overburning:12,smoke:36,fusillade:0,
+  smite:12,cure:14,sinsayer:48,judgment:48,bless:40,fasciation:62,pray:48,utopia:80,
+  vindicate:46,blind:52,downworld:52,dystopia:60,dispel:36,backslider:52};
+for(const k in SKILL_MP)if(SKILLS[k])SKILLS[k].mp=SKILL_MP[k];
+const MP_BASE={defender:60,warrior:60,knight:70,infighter:80,mystic:90,destroyer:80,mage:150,salamander:160,shooter:110,dualist:120,priest:160,demigod:170,summoner:190};
+const MP_REGEN=0.10,MP_DEFEND=0.15;
+function mpCost(p,k){const s=SKILLS[k];if(!s||!s.mp)return 0;let sc=p&&p.mpScale;if(!sc&&p&&p.job&&CLASSES[p.job]&&p.level){try{sc=statsFor(p.job,p.level,{},{}).mpScale;}catch(e){}}return Math.max(1,Math.round(s.mp*(sc||1)));}
+function mpNeed(p,a){return a&&a.kind==='skill'?mpCost(p,a.skill)+(a.addon?mpCost(p,a.addon):0):0;}
 function basicSkill(cls){return CLASSES[cls].skills.find(s=>SKILLS[s].type==='dice');}
 /* 판정 · 크리티컬 · 회복 공식 (전투 공식 정리는 docs/combat-formulas.md) */
 const JUDGE_MIN=0.8,JUDGE_MAX=1.2,CRIT_MULT=1.5,MON_HIT=0.45,DEF_K=50;
@@ -221,11 +237,11 @@ function isMagic(job){const c=CLASSES[job];return !!c&&MAGIC_BASE.includes(c.bas
 function powOf(st){return st.pk==='mag'?st.mag:st.atk;}
 /* 클래스 HP/MP 설정(운영 페이지 '클래스' 탭 → 서버 content kind 'cls').
    설정이 있으면: 최대 HP = 최초 HP × (1 + 상승% / 100 × 레벨 계수). 레벨 계수 L 은 아래 statsFor 와 같다.
-   설정이 없으면 예전 공식(기본 클래스 stat·grow + 상위 클래스 bonus) 그대로. MP는 아직 쓰는 곳이 없어 표시만. */
+   설정이 없으면 예전 공식(기본 클래스 stat·grow + 상위 클래스 bonus) 그대로. MP는 아래 SKILL_MP·MP_BASE 참고. */
 let CLASS_CFG={};
 const MP_DEF={base:100,pct:4};
 function classDefaults(){const o={};for(const id in CLASSES){const c=CLASSES[id],b=CLASSES[c.base||id];const hp=b.stat.hp+((c.bonus||{}).hp||0);
-  o[id]={name:c.name,base:c.base||null,hp,hpPct:Math.round(b.grow.hp/hp*10000)/100,mp:MP_DEF.base,mpPct:MP_DEF.pct};}return o;}
+  o[id]={name:c.name,base:c.base||null,hp,hpPct:Math.round(b.grow.hp/hp*10000)/100,mp:MP_BASE[id]??MP_DEF.base,mpPct:MP_DEF.pct};}return o;}
 function clsCfg(cls){const c=CLASSES[cls];if(!c)return null;const own=CLASS_CFG[cls];if(own)return {cfg:own,own:true};const bc=c.base&&CLASS_CFG[c.base];return bc?{cfg:bc,own:false}:null;}
 function applyClassCfg(rows){const n={};(rows||[]).forEach(r=>{if(r&&r.kind==='cls'&&CLASSES[r.id]&&r.data&&typeof r.data==='object'){const d=r.data,o={};['hp','hpPct','mp','mpPct'].forEach(k=>{if(typeof d[k]==='number'&&isFinite(d[k]))o[k]=d[k];});n[r.id]=o;}});
   const ch=JSON.stringify(n)!==JSON.stringify(CLASS_CFG);CLASS_CFG=n;return ch;}
@@ -236,7 +252,10 @@ function statsFor(cls,level,equip,enh){
   for(const k in (c.bonus||{}))s[k==='hp'?'maxHp':k]+=c.bonus[k];
   const CC=clsCfg(cls),num=(v,d)=>typeof v==='number'&&isFinite(v)?v:d;
   if(CC){const f=CC.cfg;const hp0=Math.max(1,num(f.hp,b.stat.hp));s.maxHp=Math.round(hp0*(1+num(f.hpPct,0)/100*L))+(CC.own?0:((c.bonus||{}).hp||0));}
-  {const f=CC?CC.cfg:{};s.maxMp=Math.max(0,Math.round(num(f.mp,MP_DEF.base)*(1+num(f.mpPct,MP_DEF.pct)/100*L)));}
+  {const bid=c.base||cls,mb=MP_BASE[cls]??MP_DEF.base;let m0=mb,pc=MP_DEF.pct;
+    if(CC&&CC.own){m0=num(CC.cfg.mp,mb);pc=num(CC.cfg.mpPct,pc);}
+    else if(CC){m0=num(CC.cfg.mp,MP_BASE[bid]??mb)+(mb-(MP_BASE[bid]??mb));pc=num(CC.cfg.mpPct,pc);}
+    const sc=1+pc/100*L;s.mpScale=sc;s.maxMp=Math.max(0,Math.round(m0*sc));}
   /* 마력 계열(메이지·슈터·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
   if(isMagic(cls)){s.mag=s.atk;s.atk=0;}
   for(const slot in (equip||{})){const id=equip[slot];const st=itemStats(id,(enh||{})[id]);for(const k in st)s[k]=(s[k]||0)+st[k];}
@@ -246,7 +265,7 @@ function statsFor(cls,level,equip,enh){
 function roleOf(cls){return CLASSES[cls].role;}
 function makeFighter(p){
   const s=statsFor(p.job,p.level,p.equip,p.enh);
-  return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,atk:powOf(s),hp:s.maxHp,
+  return {id:p.id,name:p.name,job:p.job,role:roleOf(p.job),level:p.level,isMe:!!p.isMe,...s,atk:powOf(s),hp:s.maxHp,mp:s.maxMp,
     dead:false,uses:{},buffs:[],poison:null,burnP:null,hot:null,bound:0,charm:0,held:0,frost:0,conf:0,supUses:0,last:null,lastTurn:-9,obTurn:-9,doubleTurn:-9,
     dealt:0,turnDealt:0,protect:false,reduce:0,defending:false,action:null,action2:null,confirmed:false,direct:0,planAt:0};
 }
@@ -285,7 +304,7 @@ function soloPhase(b){const m=b.mon,P=m.sphases;if(!P||!P.length)return;const pc
   if(k===m.sph)return;m.sph=k;const ph=P[k];m.atk=Math.round(m.baseAtk*(ph.atkMul||1));
   ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.wipeIn)b.wipeAt=b.turn+ph.wipeIn;if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
   b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 공격력 ×${ph.atkMul||1}`});}
-function startTurn(b,rng){
+function startTurn(b,rng){b.inRes=0;
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
   b.players.forEach(p=>{p.action=null;p.action2=null;p.confirmed=false;p.defending=false;p.protect=false;p.reduce=0;p.turnDealt=0;});
   const m=b.mon,alive=living(b);
@@ -331,6 +350,7 @@ function checkAct(b,p,a,hasItem,primary){
   if(s.type==='addon'||s.type==='passive')return '단독으로 사용할 수 없음';
   if(usesLeft(p,a.skill)<=0)return '사용 횟수 소진';
   if(primary&&primary.skill===a.skill&&s.uses)return '같은 제한 스킬을 두 번 쓸 수 없음';
+  if(p.mp!=null){const need=mpNeed(p,a)+(primary&&!b.inRes?mpNeed(p,primary):0);if(need>p.mp)return `MP 부족 (${need} 필요)`;}
   if(a.skill==='attention'&&!supActive(b))return '제압이 유효하지 않음';
   if(a.skill==='overburning'&&p.obTurn!==b.turn)return '레전더리 샷 조건 미충족';
   if(s.target==='enemy'&&b.mon.hp<=0)return '대상이 유효하지 않음';
@@ -353,7 +373,8 @@ function resolveTurn(b,rng,hooks){
   const heal=(src,t,amt,label)=>{if(t.dead)return 0;if(t.noHeal>0){log('sys',`${t.name} · 회복 불가 · ${label} 무효`);return 0;}if(t.healDown>0)amt=Math.round(amt*0.7);if(b.healMult&&src&&src.id)amt=Math.round(amt*b.healMult);const miss=t.maxHp-t.hp;const h=Math.min(amt,miss);t.hp+=h;if(src&&src.id)src.healed=(src.healed||0)+h;
     if(amt>miss&&supActive(b)){b.sup.overheal++;}
     log('heal',`${src.name} · ${label} → ${t.name} ${h} 회복${amt>miss?' (오버 힐)':''}`);return h;};
-  const spend=(p,k)=>{if(SKILLS[k].uses)p.uses[k]=(p.uses[k]||0)+1;};
+  const spend=(p,k)=>{if(SKILLS[k].uses)p.uses[k]=(p.uses[k]||0)+1;const c=mpCost(p,k);if(c&&p.mp!=null)p.mp=Math.max(0,p.mp-c);};
+  b.inRes=1;
   // ③ 미확정자 자동 방어
   b.players.forEach(p=>{if(!p.dead&&!p.confirmed){p.action={kind:'defend',auto:true};p.confirmed=true;log('sys',`${p.name} · 시간 초과로 자동 방어`);}});
   const acts=p=>[p.action,canDouble(p,b)?p.action2:null].filter(Boolean);
@@ -541,6 +562,8 @@ function resolveTurn(b,rng,hooks){
       b.players.forEach(p=>{if(p.dead||!(p.turnDealt>0))return;const d=Math.round(p.turnDealt*rr);p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;ref.push(`${p.name} ${d}${p.dead?'(쓰러짐)':''}`);});
       log('mon',`${m.name} · 반사 → ${ref.length?ref.join(', '):'반사할 대미지 없음'}`);}}
   // ⑦ 지속 효과와 만료
+  b.inRes=0;
+  for(const p of b.players){if(!p.dead&&p.maxMp&&p.mp!=null)p.mp=Math.min(p.maxMp,p.mp+Math.round(p.maxMp*(MP_REGEN+(p.defending?MP_DEFEND:0))));}
   for(const p of b.players){
     if(!p.dead&&p.burnP){if(p.protect||b.sanct)log('sys',`${p.name} · 보호로 화상 무효`);else{p.hp=Math.max(0,p.hp-p.burnP.dmg);log('mon',`${p.name} · 화상 ${p.burnP.dmg}${p.hp===0?' (쓰러짐)':''}`);if(p.hp===0)p.dead=true;}p.burnP.turns--;if(p.burnP.turns<=0)p.burnP=null;}
     if(p.held>0)p.held--;if(p.frost>0)p.frost--;if(p.conf>0)p.conf--;
@@ -567,10 +590,14 @@ function resolveTurn(b,rng,hooks){
     b.mirPrev={kind:!a||a.kind==='defend'||a.kind==='wait'?'rest':a.kind==='item'?'item':(me.turnDealt||0)>0?'atk':hd>0?'heal':'other',dealt:me.turnDealt||0,healPct:hd/Math.max(1,me.maxHp)};}
   startTurn(b,rng);
 }
-function decideBot(b,p,rng){
+function decideBot(b,p,rng){return mpFit(b,p,decideBot0(b,p,rng));}
+/* 봇 행동이 MP를 넘으면: 함께 쓰는 스킬 빼기 → 기본 공격 → 방어 */
+function mpFit(b,p,a){if(!a||a.kind!=='skill'||p.mp==null)return a;if(mpNeed(p,a)<=p.mp)return a;
+  if(a.addon){const x={...a};delete x.addon;if(mpNeed(p,x)<=p.mp)return x;}const bs=basicSkill(p.job);return SKILLS[a.skill]&&SKILLS[a.skill].target==='enemy'||p.role!=='heal'?{kind:'skill',skill:bs}:{kind:'defend'};}
+function decideBot0(b,p,rng){
   const m=b.mon,tel=b.tel,al=living(b),T=b.turn,sk=CLASSES[p.job].skills;
   if(p.bound>0)return {kind:'defend'};
-  const has=k=>sk.includes(k)&&usesLeft(p,k)>0&&!(SKILLS[k].lv&&(p.level||1)<SKILLS[k].lv);
+  const has=k=>sk.includes(k)&&usesLeft(p,k)>0&&!(SKILLS[k].lv&&(p.level||1)<SKILLS[k].lv)&&(p.mp==null||mpCost(p,k)<=p.mp);
   const A=(skill,extra)=>({kind:'skill',skill,...(extra||{})});
   const targeted=tel.type==='aoe'||tel.target===p.id||(supActive(b)&&b.sup.by===p.id);
   const big=Math.round(m.atk*tel.mult*0.8)-p.def;
