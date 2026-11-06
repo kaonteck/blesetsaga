@@ -252,6 +252,8 @@ def main():
 {SCOPE} .chip.st-debuff,{SCOPE} .hud-fx.st-debuff{{color:#fff}}
 /* 빨간 알림 뱃지(채팅 탭 숫자 등) 글자는 흰색(메인) */
 {SCOPE} .badge{{color:#fff}}
+/* 만신전 스킬 구분 칩 글자는 짙게(메인) */
+{SCOPE} .sks .sk-cat{{color:#111}}
 {SCOPE} .gtel,{SCOPE} .gtel.aoe{{background:#fff;box-shadow:none}}
 {SCOPE} .gtel .gtel-k,{SCOPE} .gtel .tk-run{{color:#c62828}}
 {SCOPE} .hud-lvl,{SCOPE} .hud-tag{{color:#8a6a1c}}

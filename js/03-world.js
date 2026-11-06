@@ -439,14 +439,52 @@ function massStart(){
   gridPlace(b,Math.random);b.turn=0;b.log=b.log.slice(0,1);b.log.push({t:'sys',text:`만신전 · ${n}인 · 10×10 전장 · 제한 ${C.battleMinutes}분 · 한 칸 최대 ${CELL_CAP}명`});
   {const ev=(S.events||[]).find(x=>x.id===M.evId);const land=ev&&ev.land;if(land&&isSnow(landW(land))){b.snow=true;b.log.push({t:'warn',text:`❄ 눈보라 · ${LANDS[land]} · 이동 범위 보너스 무효(3×3 고정), 이동 시 25% 확률로 발이 묶임`});}}
   startTurn(b,Math.random);
+  placeBegin(b);
   b.ctx={type:'mass',ev:M.evId};b.endsAt=now()+C.battleMinutes*60000;b.rules.exp=0;b.rules.gold=0;b.rules.drops=[];
   {const by=pick(M.roster);const ks=Object.keys(BLESS);for(let i=ks.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ks[i],ks[j]]=[ks[j],ks[i]];}b.bless={by:by.isMe?S.me.name:by.name,me:!!by.isMe,cards:ks,pick:null};S.sel.blessOpen=null;
     if(!by.isMe){const bid=b.id;later(rnd(2500,5000),()=>{const B=S.battle;if(B&&B.id===bid&&B.bless&&!B.bless.pick){const i=Math.floor(Math.random()*B.bless.cards.length);S.sel.blessOpen=i;applyBless(B,B.bless.cards[i]);save();if(S.route==='battle')render();if($('.modal.bless'))showBless(true);else toast(`${B.bless.by}님이 「${BLESS[B.bless.pick][0]}」을(를) 골랐습니다.`,'good');}});}}
-  b.deadline=now()+b.rules.turnSeconds*1000+(b.bless.me?20000:0);planBots(b);
+  b.deadline=now()+PLACE_SEC*1000+120000;   /* 위치 선정이 끝나면 placeDone이 첫 턴 시간을 다시 잡음 */
   M.phase='battle';S.battle=b;resetAct();S.sel.gmode='fight';S.sel.gcell=null;S.sel.gitem=null;
   S.route='battle';save();render();notify(`${m.name} 만신전 시작 · ${n}인`,'good');
   showBless(false);
 }
+/* ── 만신전 시작 위치 선정 (유저 요청 2026-11-07) ──
+   가호를 고른 뒤 60초 동안 지도 칸을 눌러 설 자리를 고름(보스 칸 빼고 아무 곳, 한 칸 최대 CELL_CAP명 · 먼저 고른 사람 우선).
+   모두 고르면 바로, 60초가 지나면 안 고른 사람은 역할에 맞는 자리로 자동 배치하고 레이드 시작.
+   b.place={t0,go,until,auto:{id:칸},botAt:{id:시각},done:{id:1}} · 서버 공유 전투에서는 공대장 화면이 진행(파티원은 party_act turn -3). */
+const PLACE_SEC=60,PLACE_BLESS_WAIT=25000;
+function placeBegin(b){const auto={};b.players.forEach(p=>{auto[p.id]=p.pos;p.pos=null;});b.place={t0:now(),go:null,until:null,auto,botAt:{},done:{}};}
+function placeHost(b){return !b.shared||(typeof ptHost==='function'&&ptHost(b));}
+function placeBotish(p){return !p.isMe&&!p.real;}
+function placeOk(b,i){return i>=0&&i<GRID*GRID&&!BOSS_CELLS.includes(i)&&b.players.filter(p=>p.pos===i).length<CELL_CAP;}
+function placeSet(b,p,i){if(!b.place||!placeOk(b,i)&&p.pos!==i)return false;p.pos=i;b.place.done[p.id]=1;return true;}
+function placeAutoCell(b,p){const a=b.place&&b.place.auto[p.id];if(a!=null&&placeOk(b,a))return a;
+  const want=p.role==='tank'?1:p.role==='heal'?3:rangeR(p)>=2?2:1;const all=[...Array(GRID*GRID).keys()].filter(i=>placeOk(b,i));
+  const best=all.filter(i=>bossDist(i)===want);const pool=best.length?best:all;return pool[Math.floor(Math.random()*pool.length)];}
+function placeStartClock(b){if(!b.place||b.place.go)return;b.place.go=now();b.place.until=b.place.go+PLACE_SEC*1000;
+  b.players.forEach(p=>{if(placeBotish(p))b.place.botAt[p.id]=b.place.go+rnd(1500,9000);});
+  b.log.push({t:'sys',text:`위치 선정 · ${PLACE_SEC}초 안에 지도에서 설 자리를 고르세요 (한 칸 최대 ${CELL_CAP}명 · 먼저 고른 사람 우선)`});}
+function placeTick(b,t){const P=b.place;if(!P)return;
+  const el=document.querySelector('[data-place-left]');if(el)el.textContent=P.until?Math.max(0,Math.ceil((P.until-t)/1000))+'초':'가호 선택 중';
+  if(P.until){const left=Math.max(0,Math.ceil((P.until-t)/1000));document.querySelectorAll('[data-timer]').forEach(x=>{x.textContent=left+'초';x.classList.toggle('low',left<=10);});}
+  const pn=document.querySelector('[data-place-n]');if(pn)pn.textContent=`${b.players.filter(p=>p.pos!=null).length}/${b.players.length}`;
+  if(!placeHost(b))return;
+  const blessOpen=(b.bless&&!b.bless.pick)||b.blessR;
+  if(blessOpen&&t-P.t0>=PLACE_BLESS_WAIT){if(b.blessR&&!b.bless){b.bless=b.blessR;delete b.blessR;}if(b.bless&&!b.bless.pick){applyBless(b,pick(b.bless.cards));if($('.modal.bless'))modal('');}}
+  if(!P.go&&!((b.bless&&!b.bless.pick)||b.blessR))placeStartClock(b);
+  if(!P.go)return;
+  let dirty=false;
+  b.players.forEach(p=>{if(placeBotish(p)&&p.pos==null&&t>=(P.botAt[p.id]||0)){placeSet(b,p,placeAutoCell(b,p));dirty=true;}});
+  if(b.players.every(p=>p.pos!=null)||t>=P.until){placeDone(b);return;}
+  if(dirty){save();if(S.route==='battle')renderFight();if(b.shared&&typeof ptPushSoon==='function')ptPushSoon();}}
+function placeDone(b){const P=b.place;if(!P)return;const late=b.players.filter(p=>p.pos==null);
+  late.forEach(p=>{p.pos=placeAutoCell(b,p);});
+  const spent=now()-P.t0;b.place=null;if(b.endsAt)b.endsAt+=spent;
+  b.turn=0;startTurn(b,Math.random);b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);
+  b.log.push({t:'sys',text:`전원 위치 선정 완료${late.length?` · 자동 배치 ${late.map(p=>p.name).join(', ')}`:''} · 레이드 시작`});
+  save();if(S.route==='battle')render();toast('위치 선정 완료 · 레이드를 시작합니다.','good');if(b.shared&&typeof ptPush==='function')ptPush();}
+function placeBanner(b){const P=b.place;if(!P)return '';const me=b.players.find(p=>p.isMe);
+  return `<div class="gplace" role="status"><b>위치 선정</b><span>${me&&me.pos!=null?`내 자리 · ${cellName(me.pos)} (다른 칸을 눌러 바꿀 수 있음)`:'지도에서 설 자리를 누르세요'}</span><span class="num">선정 <em data-place-n>${b.players.filter(p=>p.pos!=null).length}/${b.players.length}</em> · 남은 시간 <em data-place-left>${P.until?Math.max(0,Math.ceil((P.until-now())/1000))+'초':'가호 선택 중'}</em></span></div>`;}
 function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');const B0=S.battle;if(B0&&B0.bless&&B0.bless.pick){const bid=B0.id;clearTimeout(showBless._t);showBless._t=setTimeout(()=>{const B=S.battle;if(B&&B.id===bid&&$('.modal.bless'))modal('');},anim?3200:2200);}  /* 가호가 정해지면 잠시 보여 준 뒤 자동으로 닫음 */if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
 function massTick(t){
   const M=S.mass;if(!M||M.phase!=='gather')return;
@@ -524,7 +562,7 @@ function gridBoard(b,me){
   const tp=S.sel.gtok&&b.players.find(p=>p.id===S.sel.gtok);
   if(tp&&tp.pos!=null){const [r,c]=gxy(tp.pos);
     h+=`<div class="gtip" style="${c>5?`right:${(10-c)*10}%`:`left:${(c+1)*10}%`};${r>5?`bottom:${(10-r)*10}%`:`top:${r*10}%`}">${unitCard(tp,b,'g-tok')}</div>`;}
-  return `<div class="gboard">${h}</div>`;
+  return `${placeBanner(b)}<div class="gboard${b.place?' placing':''}">${h}</div>`;
 }
 function gActLabel(b,p){if(p.dead)return '쓰러짐';if(!p.confirmed)return '선택 중…';const a=p.action;if(!a)return '-';
   const it=p.itemAct?` + ${ITEMS[p.itemAct.item]?ITEMS[p.itemAct.item].name:''}`:'';
@@ -624,15 +662,18 @@ function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')
 const SHIELD_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.2-8 11-4.6-1.8-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 6v12" stroke="currentColor" stroke-width="1.2" opacity=".6"/></svg>';
 GICON.defend=SHIELD_SVG;
 let GS_GO={};
+/* 스킬 구분: 회복 · 공격 · 보조 (이 순서로 정렬) */
+const SK_CAT={heal:'회복',atk:'공격',sup:'보조'},SK_CAT_ORD={heal:0,atk:1,sup:2};
+function skCat(k){const s=SKILLS[k];if(!s)return 'sup';if(s.type==='heal')return 'heal';if(s.target==='enemy'&&(s.type==='dice'||s.type==='nodice'))return 'atk';return 'sup';}
 function gridSkillPanel(b,me){
   if(me.bound>0){GS_GO={bound:true};return `<p class="reason">빛의 속박 · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다. 방어만 확정할 수 있습니다.</p>`;}
   addonSane(me);
   const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);const a=S.sel.act||{kind:'skill',skill:basic};
-  const list=[basic,...sk.filter(k=>k!==basic&&!['addon','passive'].includes(SKILLS[k].type))];
+  const list=[basic,...sk.filter(k=>k!==basic&&!['addon','passive'].includes(SKILLS[k].type))].map((k,i)=>[k,i]).sort((x,y)=>SK_CAT_ORD[skCat(x[0])]-SK_CAT_ORD[skCat(y[0])]||x[1]-y[1]).map(x=>x[0]);
   const tip=(title,body,extra)=>`<span class="sk-tip" role="tooltip"><b>${title}</b>${extra||''}<span>${body}</span></span>`;
   const slot=k=>{const s=SKILLS[k];const err=checkAct(b,me,{kind:'skill',skill:k,target:s.target==='dead'?(b.players.find(x=>x.dead)||{}).id:me.id},hooks.hasItem);
     const soft=err&&((s.target==='ally'&&err==='대상이 유효하지 않음')||err.startsWith('대상이 회복 사거리'));const hard=err&&!soft;const on=a.kind==='skill'&&a.skill===k;const bd=skillBadges(k,me,b);
-    return `<button class="sks ${on?'on':''} ${k===basic?'basic':''}" data-act="pickact" data-kind="skill" data-skill="${k}" ${hard?'disabled':''} aria-label="${esc(s.name)}"><img src="${skillImg(k)}" alt=""><span class="sks-n">${k===basic?'기본 공격':esc(s.name)}</span>${tip(`${esc(s.name)} <small>${s.en}</small>`,esc(s.desc),(bd?`<span class="row" style="gap:3px">${bd}</span>`:'')+(hard?`<em>${esc(err)}</em>`:''))}</button>`;};
+    return `<button class="sks ${on?'on':''} ${k===basic?'basic':''}" data-act="pickact" data-kind="skill" data-skill="${k}" ${hard?'disabled':''} aria-label="${esc(s.name)}"><img src="${skillImg(k)}" alt=""><i class="sk-cat c-${skCat(k)}" aria-hidden="true">${SK_CAT[skCat(k)]}</i><span class="sks-n">${k===basic?'기본 공격':esc(s.name)}</span>${tip(`${esc(s.name)} <small>${s.en}</small>`,esc(s.desc),(bd?`<span class="row" style="gap:3px">${bd}</span>`:'')+(hard?`<em>${esc(err)}</em>`:''))}</button>`;};
   const addons=sk.filter(k=>SKILLS[k].type==='addon'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv));const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
   /* 이중 선택(함께 쓰는) 스킬: 앞쪽에 붉은 띠, 뒤에 + 표시 후 나머지 스킬 */
   const addonHTML=addons.map(k=>{const ad=SKILLS[k];const ok=usesLeft(me,k)>0&&(!isDice||!ad.with||ad.with.includes(a.skill));const armed=a.addon===k||S.sel.addonArm===k;

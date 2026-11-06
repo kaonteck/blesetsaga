@@ -1511,7 +1511,8 @@ function tick(){
   // 전투
   const b=S.battle;
   if(b&&!b.over&&b.grid&&b.endsAt&&t>=b.endsAt){b.over='lose';b.log.push({t:'lose',text:'제한 시간 종료 · 보스를 쓰러뜨리지 못했다'});finishBattle(b);save();if(S.route==='battle')render();return;}
-  if(b&&!b.over){
+  if(b&&!b.over&&b.place){if(typeof placeTick==='function')placeTick(b,t);}
+  else if(b&&!b.over){
     let dirty=false;
     b.players.forEach(p=>{if(!p.isMe&&!p.dead&&!p.confirmed&&t>=p.planAt){p.action=b.grid?decideGridBot(b,p,Math.random):decideBot(b,p,Math.random);if(canDouble(p,b))p.action2=decideBot2(b,p);p.confirmed=true;dirty=true;}});
     const al=living(b);

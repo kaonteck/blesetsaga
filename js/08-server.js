@@ -945,7 +945,7 @@ async function ptRefreshStateOnce(){const id=PT.chRoom;if(!id)return;const {data
 // ── 전투: 파티장 ──
 function ptSnapshot(b){
   const s=JSON.parse(JSON.stringify(b,(k,v)=>k==='result'?undefined:v));
-  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;if(b.endsAt)s.endsIn=Math.max(0,b.endsAt-now());delete s.endsAt;if(s.blessR&&!s.bless)s.bless=s.blessR;delete s.blessR;
+  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;if(b.endsAt)s.endsIn=Math.max(0,b.endsAt-now());delete s.endsAt;if(s.blessR&&!s.bless)s.bless=s.blessR;delete s.blessR;if(b.place)s.place={go:b.place.go?1:0,untilIn:b.place.until?Math.max(0,b.place.until-now()):null};
   return s;
 }
 function ptPushSoon(){const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=setTimeout(()=>ptPush(),500);}
@@ -964,6 +964,7 @@ async function ptPush(){
 function ptApplyAct(row){
   if(row.turn===-1){ptDrunHpAct(row);return;}
   if(row.turn===-2){if(row.action)mtBlessPick(row);return;}
+  if(row.turn===-3){if(row.action)mtPlacePick(row);return;}
   const b=ptBattle();if(!ptHost(b)||b.over||row.turn!==b.turn)return;
   const f=b.players.find(p=>p.uid===row.uid&&!p.isMe);if(!f||f.dead)return;
   if(!row.action){f.action=null;f.action2=null;f.confirmed=false;b.allAt=null;}
@@ -996,6 +997,7 @@ function ptApplyState(state,rev){
   // 보낸 행동이 아직 파티장 화면에 안 닿았으면 내 화면에서는 정한 그대로
   if(PT.sent&&PT.sent.turn===b.turn&&PT.sent.room===b.shared.room&&!me.confirmed&&PT.sent.action){me.action=PT.sent.action.action;me.action2=PT.sent.action.action2||null;if(b.grid)me.itemAct=PT.sent.action.itemAct||null;me.confirmed=true;}
   b.deadline=now()+(+state.deadlineIn||0);b.allAt=null;delete b.deadlineIn;
+  if(b.place&&typeof b.place==='object'){const u=b.place.untilIn;b.place={t0:now(),go:b.place.go?now():null,until:u!=null?now()+Math.max(0,Math.min(120000,+u||0)):null,auto:{},botAt:{},done:{}};}else delete b.place;
   const first=!prev,newTurn=!prev||prev.turn!==b.turn;
   if(prev&&prev.result)b.result=prev.result;
   S.battle=b;
@@ -1197,6 +1199,7 @@ function ptApplyDrunState(state){
       if(me){
         if(PT.sent&&PT.sent.turn===b.turn&&PT.sent.room===rid&&!me.confirmed&&PT.sent.action){me.action=PT.sent.action.action;me.action2=PT.sent.action.action2||null;me.confirmed=true;}
         b.deadline=now()+(+state.deadlineIn||0);b.allAt=null;delete b.deadlineIn;
+  if(b.place&&typeof b.place==='object'){const u=b.place.untilIn;b.place={t0:now(),go:b.place.go?now():null,until:u!=null?now()+Math.max(0,Math.min(120000,+u||0)):null,auto:{},botAt:{},done:{}};}else delete b.place;
         first=!prev;const newTurn=!prev||prev.turn!==b.turn;
         if(prev&&prev.result)b.result=prev.result;
         S.battle=b;if(first){S.route='battle';toast(`${R.idx+1}페이즈 · ${b.mon.name} · 파티 전투`,'good');}
@@ -1304,6 +1307,11 @@ function mtBlessHold(b){
   B.me=false;B.uid=f.uid;b.blessR=B;delete b.bless;b.deadline+=20000;
   if($('.modal.bless'))modal('');save();ptPush();return true;
 }
+// 만신전 위치 선정: 원정대원이 고른 칸(party_act turn -3) → 공대장 화면이 먼저 온 순서대로 받음
+function mtPlacePick(row){const b=ptBattle();if(!ptHost(b)||b.over||!b.place||!b.place.go)return;
+  const f=b.players.find(p=>p.uid===row.uid&&!p.isMe);if(!f)return;const i=Math.floor(+row.action.place);
+  if(!(i>=0&&i<GRID*GRID))return;if(!placeSet(b,f,i))return;save();
+  if(b.players.every(p=>p.pos!=null)){placeDone(b);return;}if(S.route==='battle')renderFight();ptPushSoon();}
 function mtBlessPick(row){
   const b=ptBattle();if(!ptHost(b)||b.over||!b.blessR)return;const B=b.blessR;
   if(B.pick||row.uid!==B.uid)return;const i=Math.floor(+row.action.bless);if(!(i>=0&&i<B.cards.length))return;

@@ -3664,3 +3664,13 @@ body[data-route="battle"] #view .page-head::before{-webkit-mask-image:url("../im
 html{overflow-y:scroll}
 .si-agi{color:#7fd6a8}
 .dr-stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+/* 만신전 위치 선정 · 지도 글자 안 잡히게 · 스킬 구분 칩 (메인 2026-11-07) */
+#gf-map,#gf-map *,.gboard,.gboard *{-webkit-user-select:none;user-select:none}
+.gplace{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;padding:8px 14px;margin:0 0 8px;border:1px solid color-mix(in srgb,var(--gold-hi) 50%,transparent);border-radius:10px;background:color-mix(in srgb,var(--gold-hi) 12%,var(--slab));font-size:13px}
+.gplace b{color:var(--gold-hi)}.gplace em{font-style:normal;font-weight:700}
+.gfx .gplace{position:absolute;left:50%;top:132px;transform:translateX(-50%);z-index:6;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.gboard.placing .gcell:not(.mine){cursor:pointer}
+.gboard.placing .gcell:hover{background:color-mix(in srgb,var(--gold-hi) 18%,transparent)}
+.sks{position:relative}
+.sks .sk-cat{position:absolute;left:2px;top:2px;z-index:2;font-style:normal;font-size:9.5px;font-weight:700;line-height:1;padding:2px 4px;border-radius:4px;color:#111;pointer-events:none}
+.sk-cat.c-heal{background:#7fd6a0}.sk-cat.c-atk{background:#f08a8a}.sk-cat.c-sup{background:#9fb8ee}

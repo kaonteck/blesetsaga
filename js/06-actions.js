@@ -85,6 +85,15 @@ function raidFold(card,open,html){const g=card.closest('.mgrp');if(!g)return;con
   g.classList.remove('open');const done=()=>{if(card.getAttribute('aria-expanded')!=='true')card.classList.remove('open');};if(!cur){done();return;}if(reduce||!cur.animate){cur.remove();done();return;}
   const cs=getComputedStyle(cur);const a=cur.animate([{height:cur.offsetHeight+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,opacity:1},{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0}],{duration:240,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
   a.onfinish=()=>{cur.remove();done();};}
+/* 만신전 위치 선정: 칸 누르기 */
+function placePick(b,i){const me=b.players.find(p=>p.isMe);if(!me||!b.place)return;
+  if(!b.place.go&&((b.bless&&!b.bless.pick)||b.blessR)){toast('가호를 고른 뒤에 자리를 고를 수 있습니다.','warn');return;}
+  if(BOSS_CELLS.includes(i)){toast('보스 자리에는 설 수 없습니다.','warn');return;}
+  if(me.pos===i)return;
+  if(!placeOk(b,i)){toast('이미 선택된 자리입니다. 다른 칸을 골라 주세요.','warn');return;}
+  if(b.shared&&typeof ptHost==='function'&&!ptHost(b)){me.pos=i;renderFight();ptRpc('party_act',{p_room:b.shared.room,p_turn:-3,p_action:{place:i}}).catch(e=>{console.warn(e);toast('자리를 보내지 못했습니다. 다시 눌러 주세요.','warn');});return;}
+  placeSet(b,me,i);save();if(b.shared&&typeof ptPushSoon==='function')ptPushSoon();
+  if(b.players.every(p=>p.pos!=null))placeDone(b);else renderFight();}
 const ACTS={
   rmem:(d,el)=>openRmem(d.id,el),
   uinfo:(d,el)=>openUinfo(d.name,el),
@@ -427,7 +436,7 @@ const ACTS={
     if(C.minRoles.tank+C.minRoles.heal+C.minRoles.dps>C.minPlayers)e.push(`역할 최소 합(${C.minRoles.tank+C.minRoles.heal+C.minRoles.dps})이 최소 인원(${C.minPlayers})보다 큼`);
     if(!(C.gatherMinutes>=1&&C.battleMinutes>=1&&C.turnSeconds>=10))e.push('시간 값');if(e.length){toast('규칙 오류: '+e.join(' · '),'bad');return;}
     logChange('만신전 규칙',diff(massCfg(),C).map(x=>({...x,before:short(x.before),after:short(x.after)})));S.data.mass=C;save();render();toast('공통 규칙을 저장했습니다.','good');},
-  'g-cell':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;S.sel.gtok=null;const me=b.players.find(p=>p.isMe);if(me.confirmed||me.dead)return;const i=+d.i;if((S.sel.gmode||'fight')!=='move'){S.sel.gmode='move';}if(canMoveTo(b,me,i))S.sel.gcell=i;else toast(cellCount(b,i,me)>=CELL_CAP?'이 칸은 정원(2명)이 찼습니다.':'이동 범위 밖입니다.','warn');renderFight();},
+  'g-cell':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;if(b.place){placePick(b,+d.i);return;}S.sel.gtok=null;const me=b.players.find(p=>p.isMe);if(me.confirmed||me.dead)return;const i=+d.i;if((S.sel.gmode||'fight')!=='move'){S.sel.gmode='move';}if(canMoveTo(b,me,i))S.sel.gcell=i;else toast(cellCount(b,i,me)>=CELL_CAP?'이 칸은 정원(2명)이 찼습니다.':'이동 범위 밖입니다.','warn');renderFight();},
   'walk-step':d=>{const q=quest(d.id),qp=q&&S.qp[q.id];if(!qp||qp.status!=='active')return;const st=q.steps[qp.step];const n=st&&(st.walk||st.walkErase);if(!n)return;qp.walk=Math.min(n,(qp.walk||0)+1);
     if(st.walkErase){S.sel.wkT=S.sel.wkT&&S.sel.wkT.q===q.id?S.sel.wkT:{q:q.id,t:[]};S.sel.wkT.t[qp.walk-1]=now();}save();render();},
   'mt-next':d=>{const q=quest(d.id),qp=q&&S.qp[q.id];if(!qp)return;const st=q.steps[qp.step];if(!st||!st.mirrorTalk)return;qp.mt=Math.min(st.mirrorTalk.lines.length,(qp.mt||0)+1);save();render();setTimeout(()=>{try{playClick();}catch(e){}},500);},

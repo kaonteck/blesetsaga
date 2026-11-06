@@ -1661,6 +1661,12 @@ html[data-theme="light"] .mgrp.open::before{background:conic-gradient(from var(-
 html[data-theme="light"] .mgrp.open::after{border:0;box-shadow:none;background:conic-gradient(from var(--mga),transparent 0deg 215deg,var(--g3) 260deg,var(--g1) 300deg,var(--g2) 332deg,transparent 360deg);-webkit-mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(90deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent);mask:linear-gradient(#ebeef4 0 0) content-box,linear-gradient(90deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent),linear-gradient(180deg,transparent,#ebeef4 18px,#ebeef4 calc(100% - 18px),transparent)}
 html[data-theme="light"] .page-head.ph-quest::before,html[data-theme="light"] body[data-route="explore"] #view .page-head::before,html[data-theme="light"] body[data-route="battle"] #view .page-head::before{background:#14181f;border:0;box-shadow:none}
 html[data-theme="light"] .mgrp.open::after{border:1px solid #95afe3;background:none;box-shadow:none}
+html[data-theme="light"] .gplace{border:1px solid color-mix(in srgb,var(--gold-hi) 50%,transparent);background:color-mix(in srgb,#95afe3 12%,var(--slab))}
+html[data-theme="light"] .gplace b{color:var(--gold-hi)}
+html[data-theme="light"] .gfx .gplace{box-shadow:0 6px 18px rgba(20,28,45,0.122)}
+html[data-theme="light"] .gboard.placing .gcell:hover{background:color-mix(in srgb,#95afe3 18%,transparent)}
+html[data-theme="light"] .sks .sk-cat{color:#ebeef4}
+html[data-theme="light"] .sk-cat.c-sup{background:#95afe3}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
@@ -1683,6 +1689,8 @@ html[data-theme="light"] .mass-card .chip.heal:not(.cls):not(.dim){background:co
 html[data-theme="light"] .chip.st-debuff,html[data-theme="light"] .hud-fx.st-debuff{color:#fff}
 /* 빨간 알림 뱃지(채팅 탭 숫자 등) 글자는 흰색(메인) */
 html[data-theme="light"] .badge{color:#fff}
+/* 만신전 스킬 구분 칩 글자는 짙게(메인) */
+html[data-theme="light"] .sks .sk-cat{color:#111}
 html[data-theme="light"] .gtel,html[data-theme="light"] .gtel.aoe{background:#fff;box-shadow:none}
 html[data-theme="light"] .gtel .gtel-k,html[data-theme="light"] .gtel .tk-run{color:#c62828}
 html[data-theme="light"] .hud-lvl,html[data-theme="light"] .hud-tag{color:#8a6a1c}
