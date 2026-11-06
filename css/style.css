@@ -3500,3 +3500,8 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .sc .sc-mp{margin-top:8px}
 .sc .sc-mp .bar.mp>i{background:#5b8def}
 .si-maxMp{color:#6f9cf5}
+
+/* 퀘스트 페이지 제목 아이콘(유저 이미지) */
+.page-head.ph-quest::before{background:url("../img/icon/quest.png") center/contain no-repeat;width:40px;height:40px;top:50%;transform:translateY(-50%);image-rendering:auto}
+.page-head.ph-quest{padding-left:66px}
+@media (max-width:720px){.page-head.ph-quest{padding-left:58px}.page-head.ph-quest::before{width:36px;height:36px}}
