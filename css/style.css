@@ -3584,3 +3584,9 @@ body[data-route="battle"] #view .page-head{padding-left:66px}
 .hud-portrait .uc-sig .cls-ic{filter:drop-shadow(0 0 10px rgba(255,255,255,.35))}
 /* 캐릭터 생성 깃발: 고른 깃발 아이콘도 흰색(클래스 아이콘 흰색 통일) */
 .cflag.on .cfl-ic{background:#fff}
+/* 퀘스트·탐색·레이드 제목 아이콘 60%로(40→24px, 폰 36→22px), 글자와의 간격 12px 그대로 */
+.page-head.ph-quest::before,body[data-route="explore"] #view .page-head::before,body[data-route="battle"] #view .page-head::before{width:24px;height:24px}
+.page-head.ph-quest,body[data-route="explore"] #view .page-head,body[data-route="battle"] #view .page-head{padding-left:50px}
+@media (max-width:720px){
+  .page-head.ph-quest::before,body[data-route="explore"] #view .page-head::before,body[data-route="battle"] #view .page-head::before{width:22px;height:22px}
+  .page-head.ph-quest,body[data-route="explore"] #view .page-head,body[data-route="battle"] #view .page-head{padding-left:44px}}
