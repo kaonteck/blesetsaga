@@ -3487,3 +3487,8 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .chip.mp-c.short{background:rgba(220,80,80,.16);border-color:rgba(230,100,100,.5);color:#ff9d9d}
 .fighter .bar.mp{height:4px;margin-top:3px}.fighter .bar.mp>i{background:#5b8def}
 .vals .mpv{margin-left:10px;color:#9fc0ff}
+
+/* 캐릭터 카드 MP 막대 (메인 2026-11-07) */
+.sc .sc-mp{margin-top:8px}
+.sc .sc-mp .bar.mp>i{background:#5b8def}
+.si-maxMp{color:#6f9cf5}

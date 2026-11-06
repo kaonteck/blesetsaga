@@ -535,6 +535,8 @@
 
 - [메인 2026-11-07] **스킬 MP 소모**(유저 요청): 01 `SKILL_MP`(스킬마다 LV1 기준 값, 기본 공격 0·횟수 제한 스킬 크게)·`MP_BASE`(클래스별 기본 MP)·`mpCost`(× 전투원 `mpScale`)·`mpNeed`, `checkAct`에 'MP 부족', `resolveTurn` `spend`에서 차감, ⑦에서 매 턴 10%(방어 +15%) 회복, 봇 `has`·`mpFit`. 전투원에 `mp`·`maxMp`·`mpScale`. 04-ui(프론트 참고): `skillBadges`에 `MP n` 칩(`.mp-c`, 모자라면 `.short`), `fighterCard` MP 막대·값. 03 만신전 HUD·제출 현황 MP는 현재 값. 공식 `docs/combat-formulas.md` MP 절. 봇 시뮬 13클래스 LV30·80 MP 막힘 0.
 
+- [메인 2026-11-07] 캐릭터 카드(`sideCard`, 04-ui) STATUS에 체력 아래 **MP 막대**(`.sc-mp`, 아이콘 `ICON.maxMp` 물방울, 값 `myStats().maxMp`, 전투 밖이라 늘 가득). '마력' 줄은 그대로. 프론트 참고: style.css 끝 `.sc-mp`·`.si-maxMp`, light.css 재생성.
+
 ## 구조
 - **JS는 일반 `<script>` 여러 개가 순서대로 로드**되며 모두 같은 전역 스코프를 공유한다(모듈 아님, 번들러 없음). 파일마다 첫 줄 `'use strict';`.
   - 주의: 함수 선언 호이스팅은 **파일 안에서만** 된다. 로드 시점에 바로 실행되는 코드(최상위 `const X=f()`, `Object.assign(...)` 등)가 **뒤 파일**의 함수를 부르면 오류. 런타임(클릭·render 등)에서 부르는 건 상관없음.
