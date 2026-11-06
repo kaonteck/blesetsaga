@@ -3684,3 +3684,4 @@ html{overflow-y:scroll}
 .slot .slv.bad{color:var(--bad)}
 .slot>.chip{flex:none}
 .slot [data-act="kick"],.slot .slot-kph{flex:none;width:80px;justify-content:center}
+.gfx:has(.gplace) .gsay,.gfight:has(.gplace) .gtel{visibility:hidden}
