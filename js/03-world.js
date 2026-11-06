@@ -227,7 +227,7 @@ function vBattle(){
   }else{
     body=massPanel();
   }
-  return `<div class="wrap page"><div class="page-head"><div><h2>레이드<small class="en">Raid</small></h2><p>던전 · 파티 레이드 · 토벌전 · 만신전을 고르세요. 던전은 혼자 또는 최대 4인 파티로, 파티 레이드는 최소 3인으로 출발합니다.</p></div></div>
+  return `<div class="wrap page"><div class="page-head"><div><h2>레이드<small class="en">Raid</small></h2></div></div>
     <div class="qtabs" role="tablist">${RTABS.filter(([k])=>k!=='weekly'||!weeklyClosed()).map(([k,l])=>`<button role="tab" data-act="rtab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>
     ${body}</div>`;
 }

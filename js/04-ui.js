@@ -718,7 +718,7 @@ function vQuest(){
   const cnt=c=>all.filter(q=>inTab(q,c)).length;
   const note={epic:'이야기 중간의 전투는 혼자 치르는 개인 레이드입니다. 지면 같은 단계에서 다시 도전합니다. 완료한 이야기는 서고에 있습니다.',sub:'세계관에서 파생된 이야기입니다. 조건을 채우면 열립니다. 완료한 이야기는 서고에 있습니다.',repeat:`오늘의 데일리 ${DAILY_Q}개 · 매일 05:00에 목록에서 무작위로 바뀝니다. 오늘 끝낸 데일리는 서고에 있습니다.`,archive:'완료한 퀘스트를 모아 둔 곳입니다. 고른 선택지와 지나온 이야기를 다시 읽을 수 있습니다.'}[tab];
   return `<div class="wrap page">
-    <div class="page-head"><div><h2>퀘스트<small class="en">Quest</small></h2><p>수락 → 상황 읽기 → 선택 → 결과 확인 → 다음 단계 → 보상 수령. 선택은 캐릭터별로 저장됩니다.</p></div></div>
+    <div class="page-head ph-quest"><div><h2>퀘스트<small class="en">Quest</small></h2></div></div>
     <div class="qtabs" role="tablist">${QT.map(([k,l])=>`<button role="tab" data-act="qtab" data-tab="${k}" aria-selected="${tab===k}">${l}<span class="num">${cnt(k)}</span></button>`).join('')}</div>
     <div class="split">
       <div class="panel qcats">${tab==='archive'?`<div class="qarc-bar"><select class="qarc-dd" data-act-change="arccat" aria-label="서고 분류">${[['all','전체'],['epic','메인 스토리'],['sub','서브 스토리'],['repeat','데일리']].map(([k,l])=>`<option value="${k}" ${AC===k?'selected':''}>${l}</option>`).join('')}</select></div>`:`<p class="qtab-note">${note}</p>`}<div class="qgroups" data-cat="${tab}">${questGroupsHTML(tab,qs,sel)}</div></div>

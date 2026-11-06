@@ -1646,6 +1646,9 @@ html[data-theme="light"] .mexp{border:1px solid var(--steel);border-top:0;backgr
 html[data-theme="light"] .mk-checks{border:1px solid var(--rule-2);background:var(--slab-2)}
 html[data-theme="light"] .mon-img.mon-ph{background:var(--night);border:1px solid var(--rule)}
 html[data-theme="light"] .rc-art .mon-img.mon-ph{border:0;background:none}
+html[data-theme="light"] .page-head.ph-quest::before{background:url("../img/icon/quest.png") center/contain no-repeat}
+html[data-theme="light"] body[data-route="explore"] #view .page-head::before{background:url("../img/icon/explore.png") center/contain no-repeat}
+html[data-theme="light"] body[data-route="battle"] #view .page-head::before{background:url("../img/icon/raid.png") center/contain no-repeat}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
