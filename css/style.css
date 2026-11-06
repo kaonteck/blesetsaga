@@ -3748,3 +3748,9 @@ html{overflow-y:scroll}
 .exev.odd h3{letter-spacing:.06em}
 .exev.odd .exev-x{color:#b8b4c8;font-style:italic}
 .exev.odd .exev-r{border-left-color:#5e3a86}
+/* 보스 도전 (07-chal) */
+.chal{margin-top:14px;padding:12px 14px;border:1px solid var(--rule);border-radius:10px}
+.chal-h{display:flex;gap:8px;align-items:baseline;margin-bottom:8px}
+.chal-r{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chal-s{font-size:13px;margin:0 0 8px;word-break:keep-all}
+.chal-o{font-size:13px;margin:6px 0 0}

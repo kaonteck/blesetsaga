@@ -1694,6 +1694,7 @@ html[data-theme="light"] .chr .chr-ev li span{color:var(--muted)}
 html[data-theme="light"] .exev-x{color:var(--ink-2,#2e3645)}
 html[data-theme="light"] .exev-r{border-left:2px solid var(--rule-2,#d5dae4)}
 html[data-theme="light"] .exev.odd .exev-x{color:#3c465a}
+html[data-theme="light"] .chal{border:1px solid var(--rule)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
