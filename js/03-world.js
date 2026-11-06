@@ -301,58 +301,16 @@ const LAND_DESC={frost:'만년설과 얼음 협곡으로 뒤덮인 북쪽 끝의
   swamp:'안개가 걷히지 않는 동쪽의 습지대. 바다뱀의 고리 근처에는 발이 빠지는 늪이 곳곳에 숨어 있다.',
   sea:'해안 절벽과 항구 도시가 이어진 바다의 땅. 인어의 속삭임이 들린다는 곶 끝에는 아무도 오래 머물지 않는다.',
   chaos:'저주가 처음 내려앉은 섬, 블라스파미아. 녹투성이 호수 위 백야의 신전만이 희미한 빛을 낸다.'};
+const REGION_FX_OF={frost:'snow',meadow:'fireflies',ember:'embers',sea:'bubbles',swamp:'fog'};
 function vRegion(land,d,spots){
   const W=todayWeather();const w=W.find(x=>x.name===LANDS[land]);
   return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>
-    <div class="exr-head">${land==='frost'?`<canvas class="exr-fx" id="exr-snow" data-w="${w?w.w:''}" aria-hidden="true"></canvas>`:''}<div class="exr-bar"><button class="btn btn-sm btn-ghost" data-act="ex-back"><span aria-hidden="true">←</span> 돌아가기</button>
+    <div class="exr-head">${REGION_FX_OF[land]?`<canvas class="exr-fx fx-${REGION_FX_OF[land]}" id="exr-fx" data-fx="${REGION_FX_OF[land]}" data-w="${w?w.w:''}" aria-hidden="true"></canvas>`:''}<div class="exr-bar"><button class="btn btn-sm btn-ghost" data-act="ex-back"><span aria-hidden="true">←</span> 돌아가기</button>
       <span class="exr-cnt">탐색 <b>${d.explore}/${EXPLORE_MAX}</b></span>${landDD()}</div>
       <h3>${esc(LANDS[land])}</h3><p class="exr-desc">${esc(LAND_DESC[land]||'')}</p>
       <div class="exr-now">${w?`<span class="exw"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[w.w]}</svg>${WNAME[w.w]} ${w.t}°</span><i aria-hidden="true">·</i>`:''}<span class="num" data-clock>${clockText()}</span></div>${wDebuffHTML(land)}${gatesHTML(land)}${dungeonsHTML(land)}</div>
     <div class="exr-body">${mapDlg(land,S.sel.exFocus||'',true)}</div></div>`;
 }
-/* 눈 내리는 효과 — Sprite Fusion pixel-art VFX 'snow' (MIT, © 2026 Hugo Duprez) 이식. 혹한의 땅 머리말 영역에만. */
-const SNOW_FX=(()=>{const PX=2,FALL=[26,52,86],SWAY=[8,16,30];
-  const hex=h=>{const v=parseInt(h.slice(1),16);return (255<<24|(v&255)<<16|(v&0xff00)|(v>>16&255))>>>0;};
-  const F={W:hex('#ffffff'),w:hex('#e3edff'),b:hex('#9fb1e6'),d:hex('#6c7cb8')};
-  const spr=rows=>{const h=rows.length,w=rows[0].length,d=new Uint32Array(w*h);rows.forEach((r,y)=>[...r].forEach((c,x)=>{if(c!=='.')d[y*w+x]=F[c];}));return {w,h,d};};
-  const CR=[spr(['...b...','.b.w.b.','..bwb..','bwwWwwb','..bwb..','.b.w.b.','...b...']),spr(['b..b..b','.b.w.b.','..wWw..','bwWWWwb','..wWw..','.b.w.b.','b..b..b']),spr(['..b..','.bwb.','bwWwb','.bwb.','..b..'])];
-  const BAY=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
-  const hash=(n,k=0)=>((Math.imul(n+1+k*7919,2654435761)>>>0)%100000)/100000;
-  const noise=(x,sd=0)=>{const i=Math.floor(x),f=x-i,u=f*f*(3-2*f);return hash(i,sd)*2-1+(hash(i+1,sd)-hash(i,sd))*2*u;};
-  function make(o){const A=o.area,X0=A.x,X1=A.x+A.w,TOP=A.y,G=o.ground,D=o.density,WIND=o.wind;let sd=(o.seed||1)>>>0;
-    const R=()=>{let t=(sd=(sd+0x6d2b79f5)>>>0);t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
-    const rg=(a,b)=>a+(b-a)*R();const fl=[];
-    const reset=(f,top)=>{f.x=rg(X0-60,X1);f.y=top?TOP-rg(0,40):rg(TOP,G);f.vy=FALL[f.l]*rg(.75,1.25);f.sw=SWAY[f.l]*rg(.6,1.2);f.f=rg(.8,1.8);f.ph=rg(0,Math.PI*2);f.rest=-1;f.k=Math.floor(rg(0,3));};
-    [[0,260],[1,150],[2,30]].forEach(([l,n])=>{for(let i=0;i<Math.round(n*D);i++){const f={l};reset(f,false);fl.push(f);}});
-    let t=0;
-    return {update(dt){t+=dt;const wind=WIND+16*noise(t*.3,5);
-        for(const f of fl){if(f.rest>=0){if((f.rest-=dt)<0)reset(f,true);continue;}
-          f.y+=f.vy*dt;f.x+=(wind*(.5+f.l*.4)+Math.cos(t*f.f+f.ph)*f.sw)*dt;
-          if(f.y>=G-1){if(f.l===0)reset(f,true);else{f.y=G-1;f.rest=rg(1,2.6);}continue;}
-          if(f.l===0&&f.y>G-30&&hash(Math.floor(f.ph*1000))<.4){reset(f,true);continue;}
-          if(f.x>X1+40)f.x-=X1-X0+100;}},
-      draw(buf,W,H){const set=(x,y,c)=>{x|=0;y|=0;if(x>=0&&y>=0&&x<W&&y<H)buf[y*W+x]=c;};
-        const dot=(x,y,c,a=1)=>{const px=Math.floor(x),py=Math.floor(y);if(a>=1||a>(BAY[((py&3)<<2)|(px&3)]+.5)/16)set(px,py,c);};
-        for(let l=0;l<3;l++)for(const f of fl){if(f.l!==l)continue;const x=f.x/PX,y=f.y/PX;
-          if(f.rest>=0){const a=Math.min(1,f.rest/.8),fy=G/PX;dot(x,fy-1,F.W,a);if(l===2){dot(x-1,fy-1,F.w,a);dot(x+1,fy-1,F.b,a);}continue;}
-          if(l===0)dot(x,y,hash(Math.floor(f.ph*100),1)<.5?F.d:F.b);
-          else if(l===1){dot(x,y,F.W);dot(x+1,y,F.w);dot(x,y+1,F.w);dot(x+1,y+1,F.b);}
-          else{const s=CR[f.k===2?2:Math.floor(t*3+f.ph)&1],x0=Math.round(x-s.w/2),y0=Math.round(y-s.h/2);for(let yy=0;yy<s.h;yy++)for(let xx=0;xx<s.w;xx++){const c=s.d[yy*s.w+xx];if(c>>>24)set(x0+xx,y0+yy,c);}}}}};}
-  let cur=null;
-  function start(cv){if(cur&&cur.cv===cv)return;stop();
-    if(matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    const host=cv.parentElement;const stopAt=host.querySelector('.wdb')||host.querySelector('.exr-now');
-    const cw=host.clientWidth,ch=stopAt?Math.min(host.clientHeight,stopAt.offsetTop+stopAt.offsetHeight+10):host.clientHeight;
-    const W=Math.max(1,Math.round(cw/PX)),H=Math.max(1,Math.round(ch/PX));
-    cv.width=W;cv.height=H;cv.style.height=ch+'px';const ctx=cv.getContext('2d');const img=ctx.createImageData(W,H);const buf=new Uint32Array(img.data.buffer);
-    const wx=cv.dataset.w;const D=(W*H*PX*PX)/(680*370)*(wx==='blizzard'?1.25:wx==='snow'?.85:.4);
-    const fx=make({area:{x:0,y:0,w:W*PX,h:H*PX},ground:H*PX+24,density:Math.max(.15,D),wind:wx==='blizzard'?46:14,seed:7});
-    let last=performance.now();const c={cv,raf:0};cur=c;
-    const loop=ts=>{if(!cv.isConnected){stop();return;}const dt=Math.min(.05,(ts-last)/1000);last=ts;fx.update(dt);buf.fill(0);fx.draw(buf,W,H);ctx.putImageData(img,0,0);c.raf=requestAnimationFrame(loop);};
-    c.raf=requestAnimationFrame(loop);}
-  function stop(){if(cur){cancelAnimationFrame(cur.raf);cur=null;}}
-  return {start,stop};})();
-function initSnow(){const cv=document.getElementById('exr-snow');if(cv)SNOW_FX.start(cv);else SNOW_FX.stop();}
 function initMini(){
   const m=$('#mini');if(!m||!m.dataset.land)return;const inn=m.querySelector('.mini-in');const Z=2.6;
   const ls=MAP_SPOTS.filter(x=>x[3]===m.dataset.land);const pts=ls.length?ls:[[0,0,0,0,50,50]];

@@ -1623,7 +1623,7 @@ html[data-theme="light"] .pt-qline{color:var(--muted)!important}
 html[data-theme="light"] .pt-qline::before{background:var(--faint)}
 html[data-theme="light"] .pt-qline.ok{color:var(--ok)!important}
 html[data-theme="light"] .pt-qline.ok::before{background:var(--ok)}
-html[data-theme="light"] .exr-fx{-webkit-mask-image:linear-gradient(#ebeef4 70%,transparent);mask-image:linear-gradient(#ebeef4 70%,transparent)}
+html[data-theme="light"] .exr-fx.fx-snow{-webkit-mask-image:linear-gradient(#ebeef4 70%,transparent);mask-image:linear-gradient(#ebeef4 70%,transparent)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
