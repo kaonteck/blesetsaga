@@ -12,11 +12,11 @@ const CLASSES={
     desc:'방어형 플레이 위주로 아군을 보호하고 탱킹을 보조하는 클래스.',skills:['attack','save2','crimehazard','forestaller','attention','link','link2','sanctuary']},
   infighter:{name:'인파이터',en:'Infighter',tier:1,role:'dps',range:'3×3',sigil:'拳',adv:['mystic','destroyer'],
     desc:'무기와 신체에 마력을 실어 근접에서 몰아친다.',
-    stat:{hp:140,atk:46,def:4,luk:10,agi:10},grow:{hp:8,atk:3,def:0.5,luk:0.2,agi:0.35},skills:['jolt','takedown','battlefield']},
+    stat:{hp:140,atk:46,def:4,luk:10,agi:10},grow:{hp:8,atk:3,def:0.5,luk:0.2,agi:0.35},skills:['attack','jolt','takedown','battlefield']},
   mystic:{name:'미스틱',en:'Mystic',tier:2,base:'infighter',role:'dps',range:'3×3',sigil:'影',bonus:{atk:6,luk:5},
-    desc:'빈틈을 노려 연계와 독으로 끝을 낸다.',skills:['jolt','takedown','battlefield','rush','hitend','subterfuge']},
+    desc:'빈틈을 노려 연계와 독으로 끝을 낸다.',skills:['attack','jolt','takedown','battlefield','rush','hitend','subterfuge']},
   destroyer:{name:'디스트로이어',en:'Destroyer',tier:2,base:'infighter',role:'dps',range:'3×3',sigil:'破',bonus:{atk:10},
-    desc:'약점을 파고들어 한 번에 무너뜨린다.',skills:['jolt','takedown','battlefield','overkill','might','carnage']},
+    desc:'약점을 파고들어 한 번에 무너뜨린다.',skills:['attack','jolt','takedown','battlefield','overkill','might','carnage']},
   mage:{name:'메이지',en:'Mage',tier:1,role:'dps',range:'5×5',sigil:'炎',adv:['salamander'],
     desc:'마력의 불꽃으로 멀리서 공격한다.',
     stat:{hp:115,atk:50,def:2,luk:8,agi:6},grow:{hp:7,atk:3.2,def:0.4,luk:0.15,agi:0.2},skills:['bash','flame','cinder','blaze']},
@@ -24,9 +24,9 @@ const CLASSES={
     desc:'지옥의 푸른 불까지 다루는 화염술사.',skills:['bash','flame','cinder','blaze','meteor','hellfire','eternalflame']},
   shooter:{name:'슈터',en:'Shooter',tier:1,role:'dps',range:'5×5',sigil:'矢',adv:['dualist'],
     desc:'독과 연막으로 전장을 다루는 사격수.',
-    stat:{hp:120,atk:44,def:3,luk:12,agi:12},grow:{hp:7,atk:3,def:0.4,luk:0.25,agi:0.4},skills:['shooting','poisonshot','smoke']},
+    stat:{hp:120,atk:44,def:3,luk:12,agi:12},grow:{hp:7,atk:3,def:0.4,luk:0.25,agi:0.4},skills:['attack','shooting','poisonshot','smoke']},
   dualist:{name:'듀얼리스트',en:'Dualist',tier:2,base:'shooter',role:'dps',range:'5×5',sigil:'雙',bonus:{atk:6,luk:6},
-    desc:'특수 탄환과 연사로 크리티컬을 노린다.',skills:['shooting','poisonshot','smoke','legendary','overburning','fusillade']},
+    desc:'특수 탄환과 연사로 크리티컬을 노린다.',skills:['attack','shooting','poisonshot','smoke','legendary','overburning','fusillade']},
   priest:{name:'프리스트',en:'Priest',tier:1,role:'heal',range:'5×5',sigil:'聖',adv:['demigod','summoner'],
     desc:'신의 축복으로 동료를 치유하고 되살린다.',
     stat:{hp:130,atk:34,def:4,luk:6,agi:5},grow:{hp:8,atk:2.1,def:0.5,luk:0.15,agi:0.18},skills:['bash','shining','cure','sinsayer','smite']},
@@ -211,7 +211,7 @@ const SKILLS={
    스킬 MP 소모(LV1 기준 값). 실제 소모 = 값 × 그 전투원의 MP 성장 배율(mpScale) → 최대 MP와 같은 비율로 커진다.
    기본 공격(클래스의 첫 공격 스킬)은 0. 횟수 제한 스킬은 크게. 매 턴 최대 MP의 10% 회복, 방어하면 15% 더.
    클래스 기본 MP(MP_BASE)는 운영 페이지 '클래스' 탭에서 덮어쓸 수 있다. */
-const SKILL_MP={attack:0,bash:0,jolt:0,flame:0,shooting:0,shining:0,
+const SKILL_MP={attack:0,bash:0,jolt:6,flame:8,shooting:6,shining:8,
   forestaller:6,attention:6,execution:5,save:15,save2:18,crimehazard:16,roar:24,berserker:24,link:18,link2:26,sanctuary:40,
   rush:6,hitend:10,overkill:6,might:12,battlefield:9,takedown:26,subterfuge:26,carnage:34,
   cinder:10,blaze:12,meteor:20,hellfire:16,eternalflame:60,
@@ -223,7 +223,12 @@ const MP_BASE={defender:60,warrior:60,knight:70,infighter:80,mystic:90,destroyer
 const MP_REGEN=0.10,MP_DEFEND=0.15;
 function mpCost(p,k){const s=SKILLS[k];if(!s||!s.mp)return 0;let sc=p&&p.mpScale;if(!sc&&p&&p.job&&CLASSES[p.job]&&p.level){try{sc=statsFor(p.job,p.level,{},{}).mpScale;}catch(e){}}return Math.max(1,Math.round(s.mp*(sc||1)));}
 function mpNeed(p,a){return a&&a.kind==='skill'?mpCost(p,a.skill)+(a.addon?mpCost(p,a.addon):0):0;}
-function basicSkill(cls){return CLASSES[cls].skills.find(s=>SKILLS[s].type==='dice'&&!SKILLS[s].phys);}
+/* 기본 공격 = MP를 안 쓰는 무기 공격(공격·무기 공격). 그 밖의 스킬은 전부 MP를 씀(2026-11-07 유저 결정) */
+const FREE_BASIC=['attack','bash'];
+function basicSkill(cls){const sk=CLASSES[cls].skills;return sk.find(k=>FREE_BASIC.includes(k))||sk.find(s=>SKILLS[s].type==='dice');}
+/* 봇이 평소에 쓰는 주 공격(플레임·샤이닝·졸트·집중 사격 등, MP가 모자라면 mpFit이 기본 공격으로 바꿈) */
+const MAIN_BASIC={infighter:'jolt',mage:'flame',shooter:'shooting',priest:'shining'};
+function mainBasic(cls){const c=CLASSES[cls];const k=MAIN_BASIC[c.base||cls];return k&&c.skills.includes(k)?k:basicSkill(cls);}
 /* 판정 · 크리티컬 · 회복 공식 (전투 공식 정리는 docs/combat-formulas.md) */
 const JUDGE_MIN=0.8,JUDGE_MAX=1.2,CRIT_MULT=1.5,MON_HIT=0.45,DEF_K=50;
 function judgeRoll(rng){return JUDGE_MIN+(JUDGE_MAX-JUDGE_MIN)*rng();}
@@ -609,7 +614,7 @@ function decideBot0(b,p,rng){
   const targeted=tel.type==='aoe'||tel.target===p.id||(supActive(b)&&b.sup.by===p.id);
   const big=Math.round(m.atk*tel.mult*0.8)-p.def;
   const low=al.slice().sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp)[0];
-  const basic=basicSkill(p.job);
+  const basic=mainBasic(p.job);
   if(p.role==='tank'){
     const lowAllies=al.filter(x=>x.hp/x.maxHp<0.45).length;
     if(has('sanctuary')&&tel.type==='aoe'&&lowAllies>=2)return A('sanctuary');
