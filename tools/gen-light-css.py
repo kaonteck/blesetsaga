@@ -252,6 +252,13 @@ def main():
 {SCOPE} .chip.st-debuff,{SCOPE} .hud-fx.st-debuff{{color:#fff}}
 /* 빨간 알림 뱃지(채팅 탭 숫자 등) 글자는 흰색(메인) */
 {SCOPE} .badge{{color:#fff}}
+/* 만신전·토벌전 지도: 라이트에서 칸이 안 보이던 것 → 로고 색(#5577bf) 칸·옅은 칸 이름, 보스 대사는 흰 바탕 + 포인트 색 글자(메인) */
+{SCOPE} .gcell{{border-color:rgba(85,119,191,.38);background:rgba(85,119,191,.07)}}
+{SCOPE} .gc-lab{{color:rgba(85,119,191,.42)}}
+{SCOPE} .gcell.reach{{background:rgba(85,119,191,.22);border-color:rgba(85,119,191,.65)}}
+{SCOPE} .gcell.danger{{background:rgba(214,64,64,.18);border-color:rgba(214,64,64,.55)}}
+{SCOPE} .gcell.danger.reach{{background:linear-gradient(135deg,rgba(214,64,64,.22),rgba(85,119,191,.2))}}
+@media (min-width:1101px){{{SCOPE} .gfx>#gf-tel .gsay{{background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.96) 22%,rgba(255,255,255,.96) 78%,transparent 100%)}}{SCOPE} .gfx>#gf-tel .gsay p{{color:#3f63b0}}{SCOPE} .gfx>#gf-tel .gsay small{{color:#5577bf}}{SCOPE} .gfx>#gf-tel .gsay::before,{SCOPE} .gfx>#gf-tel .gsay::after{{background:linear-gradient(90deg,transparent,rgba(85,119,191,.5) 30%,rgba(85,119,191,.5) 70%,transparent)}}{SCOPE} .gfx>#gf-tel .gsay.aoe small{{color:#c62828}}{SCOPE} .gfx>#gf-tel .gsay.aoe::before,{SCOPE} .gfx>#gf-tel .gsay.aoe::after{{background:linear-gradient(90deg,transparent,rgba(198,40,40,.55) 30%,rgba(198,40,40,.55) 70%,transparent)}}}}
 {SCOPE} .gtel,{SCOPE} .gtel.aoe{{background:#fff;box-shadow:none}}
 {SCOPE} .gtel .gtel-k,{SCOPE} .gtel .tk-run{{color:#c62828}}
 {SCOPE} .hud-lvl,{SCOPE} .hud-tag{{color:#8a6a1c}}
