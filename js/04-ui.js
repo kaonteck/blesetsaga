@@ -1650,6 +1650,16 @@ function renderPop(){
   const b=el.querySelector('.pop-body');if(b)b.scrollTop=sc;
 }
 
+/* 팝업을 연 아이콘 바로 아래에: 팝업 오른쪽 끝 = 아이콘 오른쪽 끝(화면 밖으로 나가면 왼쪽 16px 안쪽에서 멈춤) */
+function popAnchor(){
+  const p=document.querySelector('#pop>.pop');if(!p||!S||!S.sel)return;
+  const b=document.querySelector(`#top [data-pop="${S.sel.pop}"]`);if(!b){p.style.right='';return;}
+  const vw=document.documentElement.clientWidth,r=b.getBoundingClientRect();if(!r.width){p.style.right='';return;}
+  const want=vw-r.right,max=Math.max(16,vw-p.offsetWidth-16);
+  p.style.right=Math.round(Math.min(Math.max(want,8),max))+'px';
+}
+(function(){const el=document.getElementById('pop');if(!el)return;new MutationObserver(()=>{if(el.firstElementChild)popAnchor();}).observe(el,{childList:true});addEventListener('resize',()=>{try{popAnchor();}catch(e){}});})();
+
 /* ───────── 우편함 ───────── */
 const MAIL_TABS=[['all','전체'],['unread','읽지 않음'],['gift','선물'],['archive','보관']];
 function hasItems(m){return Object.values(m.items||{}).some(n=>n>0);}
