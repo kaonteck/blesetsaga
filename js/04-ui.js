@@ -26,7 +26,8 @@ const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/p
 const artUrl=u=>typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';
 const itemImgSrc=it=>artUrl(it&&it.img)||ITEM_IMG;
 function monImg(m){const u=m&&m.img;return typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';}
-function monPic(m,cls,extra){const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<pre class="ascii ${cls||''}" ${extra||''}>${esc(ART[m&&m.art]||ART.generic)}</pre>`;}
+const MON_PH='img/mon-placeholder.png';   // 그림을 올리지 않은 몬스터의 임시 이미지(예전 글자 그림 대신)
+function monPic(m,cls,extra){const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<img class="mon-img mon-ph ${cls||''}" src="${MON_PH}" alt="${esc((m&&m.name)||'')}" loading="lazy" ${extra||''}>`;}
 function openLink(l){
   if(!l)return;const [k,v]=l.split(':');
   if(k==='monster')go('battle',{monster:v});else if(k==='quest')go('quest',{quest:v});else go(k);
@@ -414,7 +415,7 @@ function recruitCard(r){
   const m=monster(r.monsterId);if(!m)return '';
   const c=roleCounts(r);const reason=joinReason(r);const busy=busyReason();
   return `<article class="rcard${r.real?' rc-real':''}">
-    <button class="rc-art" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기">${monImg(m)?monPic(m,'','aria-hidden="true"'):`<pre aria-hidden="true">${esc(ART[m.art]||ART.generic)}</pre>`}${r.real?'<span class="rc-real-b">블레서</span>':''}<span class="rc-mon">${esc(m.name)} · LV${m.level}+</span></button>
+    <button class="rc-art" data-act="link" data-link="monster:${m.id}" aria-label="${esc(m.name)} 상세 보기">${monPic(m,'','aria-hidden="true"')}${r.real?'<span class="rc-real-b">블레서</span>':''}<span class="rc-mon">${esc(m.name)} · LV${m.level}+</span></button>
     <div class="rc-body">
       <div class="rc-top"><b class="rc-name">${esc(r.name||m.name)}</b><span class="num rc-count" aria-label="현재 ${r.members.length}명, 마감 ${r.target}명">${r.members.length}/${r.target}</span></div>
       <small class="muted">파티장 ${esc(r.leader)}</small>

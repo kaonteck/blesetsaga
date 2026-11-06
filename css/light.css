@@ -1626,6 +1626,8 @@ html[data-theme="light"] .pt-qline.ok::before{background:var(--ok)}
 html[data-theme="light"] .exr-fx.fx-snow{-webkit-mask-image:linear-gradient(#ebeef4 70%,transparent);mask-image:linear-gradient(#ebeef4 70%,transparent)}
 html[data-theme="light"] .mcard-h .mon-img.mh-pic{border:1px solid var(--rule);background:var(--slab-2)}
 html[data-theme="light"] .dun-card .mon-img.dun-pic{border:1px solid var(--rule);background:var(--slab-2)}
+html[data-theme="light"] .mon-img.mon-ph{background:var(--night);border:1px solid var(--rule)}
+html[data-theme="light"] .rc-art .mon-img.mon-ph{border:0;background:none}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

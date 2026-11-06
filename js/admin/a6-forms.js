@@ -182,6 +182,7 @@ function genericForm(k,d){
     if(k==='monster'){
       if(key==='kind')return isMass?'':fPick('kind',lab,MON_CAT);
       if(key==='drops')return dropsRows();
+      if(key==='art')return '';   // 예전 글자 그림 고르기 — 이제 게임에서 안 씀(그림이 없으면 임시 이미지)
       if(key==='img')return monImgRow();
       if(key==='sphases')return phasesForm();
       if(key==='mass')return massForm();}
@@ -337,14 +338,14 @@ function fAct(a,el,v){const q=FM.d,k=el.dataset.k,i=el.dataset.i!=null?+el.datas
 function codeToForm(){const d=parseEditor();if(!d)return;FM.d=d;redrawForm();showCheck(null,'코드 내용을 양식에 반영했습니다.');}
 
 /* ── 몬스터 이미지(img): 올리면 monster-art 버킷에 저장하고 주소를 img 칸에 넣는다 · 메인 2026-11-05 ──
-   PNG·JPG·WEBP·GIF, 긴 변 512px로 줄여 WEBP로 저장(GIF는 움직임 유지를 위해 그대로, 2MB 이하). 지우면 게임은 ASCII 그림으로 돌아감 */
+   PNG·JPG·WEBP·GIF, 긴 변 512px로 줄여 WEBP로 저장(GIF는 움직임 유지를 위해 그대로, 2MB 이하). 지우면 게임은 임시 이미지(img/mon-placeholder.png)로 돌아감 */
 const MONART_BUCKET='monster-art';
-function monImgRow(){return imgRow('img','이미지','비우면 위 ASCII 그림 · 긴 변 512px로 줄여 저장','');}
+function monImgRow(){return imgRow('img','이미지','비우면 게임에 임시 이미지 · 긴 변 512px로 줄여 저장','');}
 /* 이미지 칸(몬스터·아이템·퀘스트 장면 공통): p = 값 경로, pre = 버킷 안 폴더 */
 function imgRow(p,label,hint,pre){const u=pget(FM.d,p)||'';const sid=('imgst-'+p).replace(/[^\w-]/g,'_');
   return `<div class="f wide monimg"><span class="fl">${labH(label+KSEP+p.split('.').pop())} <small class="faint">${esc(hint)}</small></span>
     <div class="row" style="gap:12px;align-items:flex-start">
-      <div class="monimg-pv">${u?`<img src="${esc(u)}" alt="미리보기">`:'<span class="faint small">이미지 없음</span>'}</div>
+      <div class="monimg-pv">${u?`<img src="${esc(u)}" alt="미리보기">`:pre===''?'<img class="ph" src="img/mon-placeholder.png" alt="임시 이미지"><span class="ph-l">임시 이미지</span>':'<span class="faint small">이미지 없음</span>'}</div>
       <div class="stack" style="gap:6px"><label class="btn btn-sm">이미지 올리기<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hide" data-fimg="${esc(p)}" data-fpre="${esc(pre)}" data-fst="${sid}"></label>
         ${u?`<button type="button" class="btn btn-g btn-sm" data-fa="img-clear" data-ip="${esc(p)}">이미지 빼기</button>`:''}<small class="faint" id="${sid}"></small></div></div></div>`;}
 function monImgResize(file){return new Promise((res,rej)=>{if(file.type==='image/gif'){if(file.size>2097152)rej(new Error('GIF는 2MB 이하만 올릴 수 있습니다'));else res(file);return;}
