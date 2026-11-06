@@ -64,6 +64,7 @@ function portraitHTML(big){
   return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button" title="이미지 설정">이미지 설정</button></div>`;
 }
 const ICON={
+  maxMp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6C8 1.6 3.4 7 3.4 10a4.6 4.6 0 0 0 9.2 0C12.6 7 8 1.6 8 1.6z" fill="currentColor"/><path d="M6 10.4a2 2 0 0 0 1.6 1.9" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round"/></svg>`,
   mag:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.3 10.9 5.2 7.4 14.7 3.9 5.2z" fill="currentColor"/><path d="M3.9 5.2h7M5.9 5.2 7.4 14.7 8.9 5.2M5.9 5.2 7.4 1.3 8.9 5.2" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".75" stroke-linejoin="round"/><path d="M13.2 8.6v3.2M11.6 10.2h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12.6" cy="3.4" r=".9" fill="currentColor"/></svg>`,
   maxHp:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2S1.8 10.4 1.8 6.1A3.3 3.3 0 0 1 8 4.4a3.3 3.3 0 0 1 6.2 1.7c0 4.3-6.2 8.1-6.2 8.1z" fill="currentColor"/></svg>`,
   atk:`<svg viewBox="0 0 16 16" aria-hidden="true"><polygon points="14,2 13.4,5.3 7,11.7 4.3,9 10.7,2.6" fill="currentColor"/><path d="M3.1 8.4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5.2 10.8l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
@@ -316,6 +317,7 @@ function sideCard(){
     <div class="sc-gauge xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`${me.exp} / ${need}`}"><div class="sc-gh"><span class="sc-gl">경험치</span><span class="num">${cap?'MAX':`${me.exp.toLocaleString('ko-KR')}/${need.toLocaleString('ko-KR')}`}</span></div><div class="bar xp"><i style="width:${xp}%"></i></div></div>
     <div class="sc-st"><div class="sc-sh">STATUS</div>
       <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxHp inl">${ICON.maxHp}</span>체력</span><span class="num">${cur.toLocaleString('ko-KR')}/${mx.toLocaleString('ko-KR')}</span></div><div class="bar hp"><i style="width:${Math.round(hp*100)}%"></i></div></div>
+      ${st.maxMp?`<div class="sc-gauge sc-mp"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxMp inl">${ICON.maxMp}</span>MP</span><span class="num">${st.maxMp.toLocaleString('ko-KR')}/${st.maxMp.toLocaleString('ko-KR')}</span></div><div class="bar mp"><i style="width:100%"></i></div></div>`:''}
       <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
       <div class="sc-gold">${goldHTML(me.gold)}</div></div></div>`;
 }

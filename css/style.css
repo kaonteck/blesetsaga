@@ -3495,3 +3495,8 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
   details:is(.qarch,.skilllist,.dun-dd)[open]::details-content{block-size:auto;opacity:1}
 }
 @media (prefers-reduced-motion:reduce){details:is(.qarch,.skilllist,.dun-dd)::details-content{transition:none}}
+
+/* 캐릭터 카드 MP 막대 (메인 2026-11-07) */
+.sc .sc-mp{margin-top:8px}
+.sc .sc-mp .bar.mp>i{background:#5b8def}
+.si-maxMp{color:#6f9cf5}
