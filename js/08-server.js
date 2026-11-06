@@ -1233,12 +1233,20 @@ async function mtFetch(){
   if(!SB||!SB_UID||!S||!S.me)return;
   try{const since=new Date(Date.now()-90*60000).toISOString();
     const {data,error}=await SB.from('party_rooms').select('id,kind,leader,spawner,monster_id,target,status,members,until,meta,updated_at')
-      .eq('kind','mass').neq('status','closed').gt('until',since).order('until',{ascending:false}).limit(3);
+      .eq('kind','mass').neq('status','closed').gt('until',since).order('until',{ascending:false}).limit(6);
     if(error||!data)return;
-    const M=mtShared();
-    if(M&&!data.some(r=>r.id===M.shared.room)&&!(S.battle&&S.battle.ctx&&S.battle.ctx.type==='mass'&&!S.battle.over)){mtEnd(M.shared.room,'');if(S.route==='battle')render();}
-    const r=(M&&data.find(x=>x.id===M.shared.room))||data.find(x=>x.status==='gather'&&Date.parse(x.until)>now());
-    if(r)mtApply(r);}
+    const M=mtShared();const inB=S.battle&&S.battle.ctx&&S.battle.ctx.type==='mass'&&!S.battle.over;
+    if(M&&!data.some(r=>r.id===M.shared.room)&&!inB){mtEnd(M.shared.room,'');if(S.route==='battle')render();}
+    /* 030 두 방(메인 2026-11-07): 내가 들어간 방 > 보고 있던 방(모집 중) > 모집 중인 다른 방. 보고만 있던 방이 출발하면 남은 방으로 옮겨 보여 줌 */
+    const gOK=x=>x.status==='gather'&&Date.parse(x.until)>now();
+    const mineR=data.find(x=>(x.members||[]).some(m=>m.uid===SB_UID));
+    const M1=mtShared();const cur=M1&&data.find(x=>x.id===M1.shared.room);
+    const open=x=>gOK(x)&&(x.members||[]).length<x.target;const pickO=data.find(open);
+    let r=mineR||(cur&&gOK(cur)&&(open(cur)||!pickO)?cur:null)||pickO||data.find(gOK)||cur;
+    if(M1&&r&&r.id!==M1.shared.room&&!inB&&M1.phase==='gather'&&!M1.roster.some(x=>x.isMe))mtEnd(M1.shared.room,'');
+    if(r){mtApply(r);const M2=mtShared();if(M2&&M2.shared.room===r.id){const g=r.meta&&r.meta.grp;
+      M2.sibs=g?data.filter(x=>x.meta&&x.meta.grp===g).map(x=>({id:x.id,slot:+(x.meta.slot)||1,n:(x.members||[]).length,target:x.target,status:x.status,me:(x.members||[]).some(m=>m.uid===SB_UID)})).sort((a,b)=>a.slot-b.slot):null;
+      if(S.route==='battle'&&!S.battle){const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();}}}}
   catch(e){console.warn(e);}
 }
 function mtEnd(rid,text){
@@ -1265,7 +1273,7 @@ function mtApply(r){
   M.roster=(r.members||[]).map(x=>({name:String(x.name||'').slice(0,16),job:isClass(x.job)?x.job:'defender',level:Math.max(1,Math.min(99,Math.round(+x.level||1))),isMe:x.uid===SB_UID,uid:x.uid,real:true}));
   const lead=(r.members||[]).find(x=>x.uid===r.leader);M.leader=lead?lead.name:null;M.leaderUid=lead?lead.uid:null;M.target=Math.min(20,r.target||20);M.until=until;
   const seen=S.massSeen=Array.isArray(S.massSeen)?S.massSeen:[];
-  if(fresh&&r.status==='gather'&&!seen.includes(r.id)){seen.push(r.id);S.massSeen=seen.slice(-20);if(!me){notify(`[만신전 출현] ${m.name}${e.loc?' · '+e.loc:''}`,'warn');evPopup(e,m);}}
+  if(fresh&&r.status==='gather'&&!seen.includes(r.id)&&!(meta.grp&&seen.includes('g:'+meta.grp))){seen.push(r.id);if(meta.grp)seen.push('g:'+meta.grp);S.massSeen=seen.slice(-20);if(!me){notify(`[만신전 출현] ${m.name}${e.loc?' · '+e.loc:''}`,'warn');evPopup(e,m);}}
   save();
   if(S.route==='battle'&&!S.battle){const ae=document.activeElement;if(!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))render();}else renderTop();
 }
@@ -1455,10 +1463,13 @@ if(ONLINE){
   const _massJoin=ACTS['mass-join'];
   ACTS['mass-join']=(d,el,e)=>{
     const M=mtShared();if(!M)return _massJoin(d,el,e);
-    const m=monster(M.monsterId);const why=busyReason()||levelReason(m,S.me.level)||(m&&m.id==='guardian'&&typeof summusLock==='function'?summusLock():'')||(M.roster.length>=M.target?'정원이 찼습니다':'');   // 숨무스 만신전: 8장 완료자만(메인 2026-11-05)
+    const sib=(M.sibs||[]).filter(x=>x.status==='gather');let room=d&&d.room||M.shared.room;
+    if(!(d&&d.room)){const cu=sib.find(x=>x.id===room);if(cu&&cu.n>=cu.target){const o=sib.find(x=>x.n<x.target);if(o)room=o.id;}}
+    const sr=sib.find(x=>x.id===room);
+    const m=monster(M.monsterId);const why=(M.roster.some(x=>x.isMe)&&room!==M.shared.room?'':busyReason())||levelReason(m,S.me.level)||(m&&m.id==='guardian'&&typeof summusLock==='function'?summusLock():'')||((sr?sr.n>=sr.target:M.roster.length>=M.target)?'정원이 찼습니다':'');   // 숨무스 만신전: 8장 완료자만(메인 2026-11-05)
     if(why){toast(why,'warn');return;}
     if(typeof entryGate==='function'&&entryGate('mass-join',d,true))return;
-    ptRpcCard('mass_join',{p_room:M.shared.room,p_card:ptCard()}).then(r=>{PT.room=r;mtApply(r);ptSubscribe(r.id);toast('만신전 원정대에 참가했습니다.','good');})
+    ptRpcCard('mass_join',{p_room:room,p_card:ptCard()}).then(r=>{if(r.id!==M.shared.room){ptUnsub();mtEnd(M.shared.room,'');}PT.room=r;mtApply(r);ptSubscribe(r.id);const sl=r.meta&&r.meta.slot;toast(`만신전 원정대${sl?` ${sl}방`:''}에 참가했습니다.`,'good');mtFetch();})
       .catch(err=>{toast(/FULL/.test(err&&err.message||'')?'정원이 찼습니다.':/NOT_GATHER/.test(err&&err.message||'')?'집결이 끝났습니다.':ptErr(err),'warn');mtFetch();});
   };
   const _massLeave=ACTS['mass-leave'];
@@ -1486,8 +1497,12 @@ if(ONLINE){
     const meIn=M.roster.some(x=>x.isMe),iLead=M.leaderUid===SB_UID;
     if(meIn&&iLead&&!h.includes('data-act="mass-go"'))h=h.replace('<button class="btn" data-act="mass-leave">집결 취소</button>','<button class="btn" data-act="mass-leave">집결 취소</button><button class="btn btn-primary" data-act="mass-go">지금 출발</button>');
     const note=`<p class="faint pt-mline" style="font-size:12.5px;margin:6px 0 0">실제 블레서 ${M.roster.length}명 · 출발하면 빈자리는 연습용 동료가 채웁니다${M.leader?` · 공대장 ${esc(M.leader)}`:' · 먼저 참가한 블레서가 공대장'}</p>`;
-    return h.replace(/(<p class="(?:ok-t|reason)" style="font-size:12.5px">)[^<]*(<\/p>)/,note);
+    const sib=(M.sibs||[]).length>1?`<div class="mass-rooms" role="group" aria-label="원정대 방">${M.sibs.map(x=>{const on=x.id===M.shared.room,full=x.n>=x.target,closed=x.status!=='gather';
+        return `<button class="btn btn-sm ${on?'btn-primary':''}" data-act="${on?'mass-view':'mass-join'}" data-room="${x.id}" ${closed||(!on&&full)?'disabled':''} aria-pressed="${on}">${x.slot}방 <span class="num">${x.n}/${x.target}</span>${x.me?' · 참가 중':closed?' · 출발함':full?' · 가득':''}</button>`;}).join('')}</div>`:'';
+    h=h.replace(/(<p class="(?:ok-t|reason)" style="font-size:12.5px">)[^<]*(<\/p>)/,note);
+    return sib?h.replace('<div class="mass-roster">',sib+'<div class="mass-roster">'):h;
   };
+  ACTS['mass-view']=()=>{};
 
   // 랜덤 매칭: 실제 블레서 먼저, 없으면 예전처럼 봇
   const _tryMatch=tryMatch;
