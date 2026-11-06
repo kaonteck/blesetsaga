@@ -3690,3 +3690,26 @@ html{overflow-y:scroll}
 @keyframes vsTx{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.vil-say.vs-in,.vil-say.vs-in>*{animation:none}}
 .gfx:has(.gplace) .gsay,.gfight:has(.gplace) .gtel{visibility:hidden}
+/* 퀵슬롯 구성 창 개편 · 파티원(대상) 칸 (메인 2026-11-07) */
+.qs-modal .qs-slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.qs-modal .qs-slot{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:7px 9px;border:1px solid var(--rule);border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;text-align:left;min-width:0}
+.qs-modal .qs-slot b{font-size:12px;color:var(--text)}
+.qs-modal .qs-slot small{font-size:11px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qs-modal .qs-slot.on{border-color:#dcc489;background:rgba(220,196,137,.12)}
+.qs-modal .qs-slot.on b{color:#dcc489}
+.qs-modal .qs-q{width:100%;margin-bottom:6px}
+.qs-modal .qs-plist{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;border:1px solid var(--rule);border-radius:9px;padding:4px}
+.qs-modal .qs-p{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:8px;padding:6px 8px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text);cursor:pointer;text-align:left}
+.qs-modal .qs-p[hidden]{display:none}
+.qs-modal .qs-p:hover{background:var(--slab-2)}
+.qs-modal .qs-p.on{border-color:#dcc489;background:rgba(220,196,137,.12)}
+.qs-modal .qs-p b{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qs-modal .qs-p em{font-style:normal;color:var(--faint);font-weight:400}
+.qs-modal .qs-p small{font-size:11px;color:var(--faint);white-space:nowrap}
+.qs-pi,.gqs-pt{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:700;color:#111;background:var(--dps)}
+.qs-pi.r-tank,.gqs-s.r-tank .gqs-pt{background:var(--tank)}.qs-pi.r-heal,.gqs-s.r-heal .gqs-pt{background:var(--heal)}.qs-pi.r-dps,.gqs-s.r-dps .gqs-pt{background:var(--dps)}
+@media (min-width:1101px){
+  .gfx .gqs-s.pt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .gfx .gqs-s.pt small{font-size:9.5px;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .gfx .gqs-s.pt.dead{opacity:.55}
+}

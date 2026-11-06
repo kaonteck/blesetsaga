@@ -454,11 +454,19 @@ const ACTS={
   'seq-e28':()=>{seqE28();},
   'sub-fold':()=>{S.sel.subFold=!S.sel.subFold;if(S.battle&&S.battle.grid)renderFight();},
   'rank-fold':()=>{S.sel.rankFold=!S.sel.rankFold;const el=document.getElementById('gf-rank2');if(el&&S.battle){el.innerHTML=gfRank(S.battle);el._h=el.innerHTML;}},
-  'qs-edit':d=>{qsEditModal(+d.i||0);},
+  'qs-edit':d=>{const v=qsCfg().s[+d.i||0];S.sel.qsTab=v?v.split(':')[0]:null;qsEditModal(+d.i||0);},
   'qs-set':d=>{const q=qsCfg();q.s[+d.i]=d.v||null;save();qsEditModal(+d.i);if(S.battle&&S.battle.grid)renderFight();},
+  'qs-tab':d=>{S.sel.qsTab=d.tab;qsEditModal(+d.i);},
   'qs-dir':()=>{const q=qsCfg();q.dir=q.dir==='v'?'h':'v';save();renderFight();requestAnimationFrame(()=>{const w=document.getElementById('gf-qs'),h=w&&w.offsetParent;if(!w||!h||q.x==null)return;q.x=Math.min(q.x,h.clientWidth-w.offsetWidth);q.y=Math.min(q.y,h.clientHeight-w.offsetHeight);w.style.left=q.x+'px';w.style.top=q.y+'px';save();});},
   'qs-use':d=>{const b=S.battle;if(!b||!b.grid||b.over)return;const me=b.players.find(p=>p.isMe);if(!me||me.confirmed||me.dead)return;const v=qsCfg().s[+d.i];if(!v)return;const [t,k]=v.split(':');
     if(t==='it'){ACTS['g-item']({item:S.sel.gitem&&S.sel.gitem.item===k?'':k});return;}
+    if(t==='pt'){const p=b.players.find(x=>x.name===k);if(!p){toast(`${k}님은 이번 전투에 없습니다.`,'warn');return;}
+      if(S.sel.gitem){ACTS['g-itemt']({id:p.id});return;}
+      const a=S.sel.act;const sk=a&&a.kind==='skill'&&SKILLS[a.skill];
+      if(!sk||!['ally','dead'].includes(sk.target)){toast('대상 지정 스킬(회복·부활 등)이나 아이템을 먼저 누르세요.','warn');return;}
+      if(sk.target==='dead'&&!p.dead){toast(`${p.name}님은 쓰러지지 않았습니다.`,'warn');return;}
+      if(sk.target==='ally'&&p.dead){toast(`${p.name}님은 쓰러져 있습니다.`,'warn');return;}
+      ACTS.picktarget({id:p.id});return;}
     const s=SKILLS[k];if(!s)return;if(s.type==='addon'){if((S.sel.gmode||'fight')!=='fight'){gmAnimMark(S.sel.gmode,'fight');S.sel.gmode='fight';}ACTS.pickaddon({skill:k});return;}
     if((S.sel.gmode||'fight')!=='fight'){gmAnimMark(S.sel.gmode,'fight');S.sel.gmode='fight';}ACTS.pickact({kind:'skill',skill:k});},
   'g-item':d=>{S.sel.gitem=d.item?{item:d.item,target:null}:null;renderFight();},

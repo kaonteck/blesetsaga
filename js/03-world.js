@@ -716,25 +716,47 @@ const GCL={w:0,h:0};
     const el=document.querySelector('.gfx .gf-cl');if(el){el.style.setProperty('--gcl-w',GCL.w+'px');el.style.setProperty('--gcl-h',GCL.h+'px');}});
   const end=()=>{if(st){st=null;const m=document.querySelector('.gfx .gf-cl .msgs');if(m)m.scrollTop=m.scrollHeight;}};
   document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
-/* 만신전 퀵슬롯(PC ≥1101px): 4칸, 가로/세로, 끌어서 자유 배치, 칸마다 스킬·아이템을 직접 지정. 저장: S.me.qslot={s:[4],dir:'h'|'v',x,y} */
+/* 만신전 퀵슬롯(PC ≥1101px): 4칸, 가로/세로, 끌어서 자유 배치, 칸마다 스킬·파티원(대상, 'pt:이름')·아이템을 지정. 저장: S.me.qslot={s:[4],dir:'h'|'v',x,y} */
 const QS_ITEMS=['potion','holywater','swiftdraft'];
 function qsCfg(){const q=S.me.qslot||(S.me.qslot={s:[null,null,null,null],dir:'h',x:null,y:null});if(!Array.isArray(q.s)||q.s.length!==4)q.s=[0,1,2,3].map(i=>(q.s||[])[i]||null);return q;}
 function qsPosStyle(){const q=qsCfg();return q.x!=null&&q.y!=null?`left:${q.x}px;top:${q.y}px;right:auto;bottom:auto`:'';}
 function qsOptions(me){const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);
   const skills=[basic,...sk.filter(k=>k!==basic&&SKILLS[k]&&SKILLS[k].type!=='passive'&&!(SKILLS[k].lv&&me.level<SKILLS[k].lv))];
   return [...skills.map(k=>({v:'sk:'+k,name:k===basic?'기본 공격':SKILLS[k].name,img:skillImg(k)})),...QS_ITEMS.filter(k=>ITEMS[k]).map(k=>({v:'it:'+k,name:ITEMS[k].name,img:itemImgSrc(ITEMS[k])}))];}
+function qsParty(b){return (b&&b.players||[]).slice().sort((x,y)=>(y.isMe?1:0)-(x.isMe?1:0));}
 function gfQs(b,me){const q=qsCfg();const opts=qsOptions(me);const lock=me.confirmed||me.dead;const a=S.sel.act||{};const mode=S.sel.gmode||'fight';
-  const cell=(v,i)=>{const o=v&&opts.find(x=>x.v===v);
-    if(!o)return `<button class="gqs-s empty" data-act="qs-edit" data-i="${i}" title="눌러서 스킬·아이템 지정"><span>+</span></button>`;
-    const [t,k]=v.split(':');let on=false,dis=lock,cnt='';
+  const cell=(v,i)=>{const [t,k]=v?v.split(':'):[];
+    if(t==='pt'){const p=b.players.find(x=>x.name===k);const tid=S.sel.gitem?S.sel.gitem.target:a.target;const on=!!(p&&tid===p.id);
+      return `<button class="gqs-s pt r-${p?p.role:'dps'} ${on?'on':''} ${p&&p.dead?'dead':''}" data-act="qs-use" data-i="${i}" ${lock||!p?'disabled':''} title="${esc(k)}${p?'':' · 이번 전투에 없음'} · 대상 지정" aria-label="대상 ${esc(k)}"><span class="gqs-pt">${esc(k.slice(0,1))}</span><small>${esc(p&&p.isMe?'나':k)}</small><b>${i+1}</b></button>`;}
+    const o=v&&opts.find(x=>x.v===v);
+    if(!o)return `<button class="gqs-s empty" data-act="qs-edit" data-i="${i}" title="눌러서 스킬·파티원·아이템 지정"><span>+</span></button>`;
+    let on=false,dis=lock,cnt='';
     if(t==='sk'){const s=SKILLS[k];on=mode==='fight'&&a.kind==='skill'&&a.skill===k||(s.type==='addon'&&(a.addon===k||S.sel.addonArm===k));if(s.uses!=null){const u=usesLeft(me,k);cnt=`<i class="num">${u}</i>`;if(u<=0)dis=true;}}
     else{const n=S.me.inv[k]||0;on=!!(S.sel.gitem&&S.sel.gitem.item===k);cnt=`<i class="num">${n}</i>`;if(!n)dis=true;}
     return `<button class="gqs-s ${on?'on':''}" data-act="qs-use" data-i="${i}" ${dis?'disabled':''} title="${esc(o.name)}" aria-label="${esc(o.name)}"><img src="${o.img}" alt="">${cnt}<b>${i+1}</b></button>`;};
   return `<div class="gqs ${q.dir==='v'?'v':'h'}"><span class="gqs-grip" title="끌어서 옮기기" aria-hidden="true">⋮⋮</span>${q.s.map(cell).join('')}${me.dead?'':(g=>`<button class="gqs-go ${g.on?'on':''}" ${g.on?g.attrs:'disabled'} title="행동 확정">확정</button>`)(gfGoInfo(b,me,mode))}<span class="gqs-tools"><button type="button" data-act="qs-dir" title="${q.dir==='v'?'가로로':'세로로'} 바꾸기" aria-label="배열 바꾸기">${q.dir==='v'?'↔':'↕'}</button><button type="button" data-act="qs-edit" data-i="0" title="퀵슬롯 구성" aria-label="퀵슬롯 구성">⚙</button></span></div>`;}
+/* 퀵슬롯 구성 창: 위에 칸 4개(고른 칸 표시) → 아래 [스킬][파티원][아이템] 구분 → 고른 구분의 목록(파티원은 검색 칸 + 목록) */
+const QS_TAB_L={sk:'스킬',pt:'파티원',it:'아이템'};
 function qsEditModal(focus){const b=S.battle;if(!b)return;const me=b.players.find(p=>p.isMe);const q=qsCfg();const opts=qsOptions(me);
+  const i=Math.max(0,Math.min(3,+focus||0));const cur=q.s[i]||'';const ct=cur.split(':')[0];
+  const tab=S.sel.qsTab&&QS_TAB_L[S.sel.qsTab]?S.sel.qsTab:(QS_TAB_L[ct]?ct:'sk');
+  const label=v=>{if(!v)return '비어 있음';const [t,k]=v.split(':');if(t==='pt')return `파티원 · ${k}`;const o=opts.find(x=>x.v===v);return o?`${QS_TAB_L[t]} · ${o.name}`:'비어 있음';};
+  const slotBtn=(v,j)=>`<button type="button" class="qs-slot ${j===i?'on':''}" data-act="qs-edit" data-i="${j}"><b class="num">${j+1}</b><small>${esc(label(v))}</small></button>`;
+  const optBtn=o=>`<button type="button" class="qs-opt ${cur===o.v?'on':''}" data-act="qs-set" data-i="${i}" data-v="${esc(o.v)}" title="${esc(o.name)}">${o.img?`<img src="${o.img}" alt="">`:o.ic||'<span>✕</span>'}<small>${esc(o.name)}</small></button>`;
+  let body='';
+  if(tab==='sk')body=`<div class="qs-opts">${opts.filter(o=>o.v.startsWith('sk:')).map(optBtn).join('')}</div>`;
+  else if(tab==='it')body=`<div class="qs-opts">${opts.filter(o=>o.v.startsWith('it:')).map(optBtn).join('')}</div>`;
+  else{const ps=qsParty(b);body=`<p class="faint" style="font-size:12px;margin:0 0 6px">대상 지정 스킬(회복·부활·디스펠 등)이나 아이템을 먼저 누르고, 이 파티원 칸을 누르면 그 사람이 대상이 됩니다.</p>
+    <input type="search" class="qs-q" data-qs-q placeholder="파티원 이름 검색" autocomplete="off" aria-label="파티원 검색">
+    <div class="qs-plist" data-qs-plist>${ps.map(p=>`<button type="button" class="qs-p ${cur==='pt:'+p.name?'on':''}" data-act="qs-set" data-i="${i}" data-v="pt:${esc(p.name)}" data-n="${esc(p.name.toLowerCase())}"><span class="qs-pi r-${p.role}">${esc(p.name.slice(0,1))}</span><b>${esc(p.name)}${p.isMe?' <em>(나)</em>':''}</b><small>${esc(className(p.job))} · LV${p.level}</small></button>`).join('')}<p class="faint qs-none" hidden>찾는 파티원이 없습니다.</p></div>`;}
   modal(`<div class="row" style="justify-content:space-between"><h3>퀵슬롯 구성</h3><button class="btn btn-sm btn-ghost" data-act="closemodal">닫기</button></div>
-    <p class="faint" style="font-size:12px;margin:0 0 10px">칸마다 스킬이나 아이템을 고르세요. 퀵슬롯은 손잡이(⋮⋮)를 끌어 화면 어디로든 옮길 수 있습니다.</p>
-    ${q.s.map((v,i)=>`<div class="qs-row ${i===focus?'focus':''}"><b class="num">${i+1}</b><div class="qs-opts">${[{v:'',name:'비우기',img:''},...opts].map(o=>`<button type="button" class="qs-opt ${(v||'')===o.v?'on':''}" data-act="qs-set" data-i="${i}" data-v="${o.v}" title="${esc(o.name)}">${o.img?`<img src="${o.img}" alt="">`:'<span>✕</span>'}<small>${esc(o.name)}</small></button>`).join('')}</div></div>`).join('')}`);const mm=$('.modal');if(mm)mm.classList.add('wide','qs-modal');}
+    <p class="faint" style="font-size:12px;margin:0 0 10px">칸을 고르고, 스킬 · 파티원 · 아이템 중 넣을 것을 고르세요. 퀵슬롯은 손잡이(⋮⋮)를 끌어 옮길 수 있습니다.</p>
+    <div class="qs-slots">${q.s.map(slotBtn).join('')}</div>
+    <div class="row" style="justify-content:space-between;gap:8px;margin:12px 0 8px"><div class="seg qs-tabs">${Object.entries(QS_TAB_L).map(([k,l])=>`<button type="button" data-act="qs-tab" data-i="${i}" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>${cur?`<button type="button" class="btn btn-sm btn-ghost" data-act="qs-set" data-i="${i}" data-v="">이 칸 비우기</button>`:''}</div>
+    ${body}`);
+  const mm=$('.modal');if(mm)mm.classList.add('wide','qs-modal');const qi=$('[data-qs-q]');if(qi)setTimeout(()=>{try{qi.focus();}catch(e){}},0);}
+if(typeof document!=='undefined')document.addEventListener('input',e=>{const t=e.target;if(!t||!t.matches||!t.matches('[data-qs-q]'))return;const v=t.value.trim().toLowerCase();let n=0;
+  document.querySelectorAll('[data-qs-plist] .qs-p').forEach(x=>{const ok=!v||x.dataset.n.includes(v);x.hidden=!ok;if(ok)n++;});const none=document.querySelector('[data-qs-plist] .qs-none');if(none)none.hidden=n>0;});
 (function(){if(typeof document==='undefined')return;let st=null;
   document.addEventListener('pointerdown',e=>{const g=e.target.closest&&e.target.closest('.gqs-grip');if(!g)return;const w=document.getElementById('gf-qs'),host=w&&w.offsetParent;if(!w||!host)return;
     const r=w.getBoundingClientRect(),h=host.getBoundingClientRect();st={dx:e.clientX-r.left,dy:e.clientY-r.top,h};e.preventDefault();try{g.setPointerCapture(e.pointerId);}catch(_){}});

@@ -1667,6 +1667,20 @@ html[data-theme="light"] .gfx .gplace{box-shadow:0 6px 18px rgba(20,28,45,0.122)
 html[data-theme="light"] .gboard.placing .gcell:hover{background:color-mix(in srgb,#95afe3 18%,transparent)}
 html[data-theme="light"] .slot .slv{color:var(--muted)}
 html[data-theme="light"] .slot .slv.bad{color:var(--bad)}
+html[data-theme="light"] .qs-modal .qs-slot{border:1px solid var(--rule);background:transparent;color:var(--muted)}
+html[data-theme="light"] .qs-modal .qs-slot b{color:var(--text)}
+html[data-theme="light"] .qs-modal .qs-slot.on{background:rgba(220,196,137,0.12)}
+html[data-theme="light"] .qs-modal .qs-plist{border:1px solid var(--rule)}
+html[data-theme="light"] .qs-modal .qs-p{border:1px solid transparent;background:transparent;color:var(--text)}
+html[data-theme="light"] .qs-modal .qs-p:hover{background:var(--slab-2)}
+html[data-theme="light"] .qs-modal .qs-p.on{background:rgba(220,196,137,0.12)}
+html[data-theme="light"] .qs-modal .qs-p em{color:var(--faint)}
+html[data-theme="light"] .qs-modal .qs-p small{color:var(--faint)}
+html[data-theme="light"] .qs-pi,html[data-theme="light"] .gqs-pt{color:#ebeef4;background:var(--dps)}
+html[data-theme="light"] .qs-pi.r-tank,html[data-theme="light"] .gqs-s.r-tank .gqs-pt{background:var(--tank)}
+html[data-theme="light"] .qs-pi.r-heal,html[data-theme="light"] .gqs-s.r-heal .gqs-pt{background:var(--heal)}
+html[data-theme="light"] .qs-pi.r-dps,html[data-theme="light"] .gqs-s.r-dps .gqs-pt{background:var(--dps)}
+@media (min-width:1101px){html[data-theme="light"] .gfx .gqs-s.pt small{color:var(--muted)}}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
