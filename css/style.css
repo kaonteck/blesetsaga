@@ -3613,3 +3613,20 @@ body[data-route="battle"] #view .page-head{padding-left:66px}
   mask-composite:exclude,intersect}
 @keyframes mgaSpin{to{--mga:360deg}}
 @media (prefers-reduced-motion:reduce){.mgrp.open::before,.mgrp.open::after{animation:none;--mga:300deg}}
+/* 퀘스트·탐색·레이드 제목 아이콘: 테두리 있는 그림 → 비슷한 모양의 흰색 선 아이콘(img/icon/*-w.svg), 크기는 제목 글자(28px)에 맞춤 */
+.page-head.ph-quest::before,body[data-route="explore"] #view .page-head::before,body[data-route="battle"] #view .page-head::before{
+  width:28px;height:28px;background:#fff;image-rendering:auto;border:0;box-shadow:none;
+  -webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.page-head.ph-quest::before{-webkit-mask-image:url("../img/icon/quest-w.svg");mask-image:url("../img/icon/quest-w.svg")}
+body[data-route="explore"] #view .page-head::before{-webkit-mask-image:url("../img/icon/explore-w.svg");mask-image:url("../img/icon/explore-w.svg")}
+body[data-route="battle"] #view .page-head::before{-webkit-mask-image:url("../img/icon/raid-w.svg");mask-image:url("../img/icon/raid-w.svg")}
+.page-head.ph-quest,body[data-route="explore"] #view .page-head,body[data-route="battle"] #view .page-head{padding-left:54px}
+@media (max-width:720px){
+  .page-head.ph-quest::before,body[data-route="explore"] #view .page-head::before,body[data-route="battle"] #view .page-head::before{width:24px;height:24px}
+  .page-head.ph-quest,body[data-route="explore"] #view .page-head,body[data-route="battle"] #view .page-head{padding-left:48px}}
+/* 레이드 펼친 몬스터 묶음: 바깥 빛 없애고, 외곽선 위로 아주 가는 은은한 푸른 빛(#D9E5FF)만 흐름 */
+.mgrp.open::after{display:none}
+.mgrp.open::before{padding:1px;opacity:.9;
+  background:conic-gradient(from var(--mga),transparent 0deg 250deg,rgba(217,229,255,.25) 290deg,#D9E5FF 330deg,rgba(217,229,255,.25) 348deg,transparent 360deg);
+  filter:drop-shadow(0 0 1.5px rgba(217,229,255,.55))}
+@media (min-resolution:2dppx){.mgrp.open::before{padding:.5px}}
