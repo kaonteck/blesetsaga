@@ -360,7 +360,7 @@ const ACTS={
   acceptq:d=>{const q=quest(d.id);if(questStatus(q)!=='available')return;S.qp[q.id]={status:'active',step:q.start,history:[],pending:null,cycle:kstCycle(),flagsSet:[]};save();render();if(typeof questAcceptFx==='function')questAcceptFx(q.id);toast(`퀘스트 수락 · ${q.title}`);},
   chooseq:d=>{const q=quest(d.id),qp=S.qp[q.id];const c=q.steps[qp.step].choices[+d.i];if(!c||choiceReason(c))return;if(c.glitch){qp.pending=null;logoutGlitch();return;}if(c.reply){replyDlg(q.id,+d.i);return;}qp.pending=+d.i;save();render();},
   nextq:d=>{const q=quest(d.id),qp=S.qp[q.id];const step=q.steps[qp.step];const c=step.choices[qp.pending];if(!c||choiceReason(c)||(c.take&&Object.entries(c.take).some(([k,n])=>(S.me.inv[k]||0)<n))||(c.takeGold&&S.me.gold<c.takeGold)){qp.pending=null;render();return;}
-    qp.history.push({step:qp.step,text:step.text,label:c.label,result:c.result||''});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.unflag){delete S.flags[c.unflag];qp.flagsSet=qp.flagsSet.filter(f=>f!==c.unflag);}if(c.advTo)doAdvance(c.advTo);
+    qp.history.push({step:qp.step,text:memText(step.text),label:c.label,result:memText(c.result||'')});if(c.flag){S.flags[c.flag]=true;qp.flagsSet.push(c.flag);}if(c.unflag){delete S.flags[c.unflag];qp.flagsSet=qp.flagsSet.filter(f=>f!==c.unflag);}if(c.advTo)doAdvance(c.advTo);
     if(c.take){for(const k in c.take){S.me.inv[k]-=c.take[k];if(S.me.inv[k]<=0)delete S.me.inv[k];}}
     if(c.takeGold){S.me.gold-=c.takeGold;bump('goldSpent',c.takeGold);}
     qp.step=c.next;qp.pending=null;save();render();},

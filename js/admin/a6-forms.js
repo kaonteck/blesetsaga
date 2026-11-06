@@ -113,7 +113,7 @@ function sceneForm(q,k,i){const st=q.steps[k];const p='steps.'+k;const isB=!!st.
   const g=st.give;const body=String(st.text||'').replace(ROUTE_RE,'');
   return `<section class="fm-sec scene">${head}<div class="fgrid">
     ${sceneImg(q,k)}
-    <label class="f wide">${i?'장면 글':'퀘스트 내용 (첫 장면 글)'}<textarea data-fa="scene-text" data-k="${k}" rows="3">${esc(body)}</textarea>${g&&!st._noRoute?`<small class="faint">끝에 길 안내가 붙습니다:${esc(hintOf(st))}</small>`:''}</label>
+    <label class="f wide">${i?'장면 글':'퀘스트 내용 (첫 장면 글)'}<textarea data-fa="scene-text" data-k="${k}" rows="3">${esc(body)}</textarea><small class="faint">기록 불러내기: <code>{{mem:기록|문장}}</code> → 그 기록이 있을 때만 문장이 보임 · <code>{{mem:!기록|문장}}</code> = 없을 때만</small>${g&&!st._noRoute?`<small class="faint">끝에 길 안내가 붙습니다:${esc(hintOf(st))}</small>`:''}</label>
     <div class="wide">${fToggle('give:'+k,'중간 경로 · 장소에서 퀘스트 아이템 받기',!!g,g?`<div class="fgrid">
       ${fPick(p+'.give.land','지역',[...LANDS_L(),['@theft','오늘의 도둑 지역']],{act:'hint',t:'str'})}
       ${fPick(p+'.give.spot','장소 (마을)',SPOTS_L(),{act:'hint'})}

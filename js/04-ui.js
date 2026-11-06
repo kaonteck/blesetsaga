@@ -797,7 +797,7 @@ function questDetail(q){
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="claimq" data-id="${q.id}">보상 수령</button></div>`;
     }else if(qp.pending!=null){
       const c=step.choices[qp.pending];
-      h+=`${qTextHTML(step.text)}<div class="result"><div class="ph" style="margin-bottom:6px">선택 · ${esc(c.label)}</div>${esc(c.result||'')}</div>
+      h+=`${qTextHTML(step.text)}<div class="result"><div class="ph" style="margin-bottom:6px">선택 · ${esc(c.label)}</div>${esc(memText(c.result||''))}</div>
         <div class="act-br"><button class="btn btn-primary btn-sm" data-act="nextq" data-id="${q.id}">다음 단계</button></div>`;
     }else if(step.raid){
       const m=monster(step.raid);const open=m&&!weeklyClosed(m);

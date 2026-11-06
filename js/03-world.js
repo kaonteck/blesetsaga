@@ -1030,7 +1030,10 @@ function lockReason(q){
   return r.join(' · ');
 }
 function eraseHTML(h){return h.replace(/\{\{erase:([^}]+)\}\}/g,(_,n)=>`<span class="qerase" aria-label="지워진 이름">${[...n].map((c,i)=>`<span style="--d:${i}">${c}</span>`).join('')}</span>`);}
-function qTextHTML(t){const m=/\s*\((탐색 › [^)]+)\)\s*$/.exec(t||'');const body=m?t.slice(0,m.index):t;
+/* 기록 불러내기(2026-11-07): 장면 글·선택 결과 속 {{mem:기록|문장}} → 그 기록(S.flags)이 있을 때만 문장이 나옴.
+   {{mem:!기록|문장}} = 기록이 없을 때만, {{mem:a,b|문장}} = 모두 있을 때. 문장 안에서는 | 와 }} 를 쓰지 않음. */
+function memText(t){return String(t==null?'':t).replace(/\{\{mem:([^|}]+)\|([^}]*)\}\}/g,(_,f,txt)=>f.split(',').map(x=>x.trim()).filter(Boolean).every(x=>x[0]==='!'?!S.flags[x.slice(1)]:!!S.flags[x])?txt:'').replace(/ {2,}/g,' ');}
+function qTextHTML(t){t=memText(t);const m=/\s*\((탐색 › [^)]+)\)\s*$/.exec(t||'');const body=m?t.slice(0,m.index):t;
   return `<p class="qtext">${eraseHTML(esc(body))}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
 const QSTAT={hidden:['오늘 목록 아님','dim'],locked:['잠김','dim'],available:['수락 가능','ok'],active:['진행 중','warn'],claim:['보상 대기','warn'],done:['완료','dim'],doneToday:['오늘 완료','dim']};
 function choiceReason(c){
