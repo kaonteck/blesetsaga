@@ -270,8 +270,14 @@ document.addEventListener('click',e=>{const h=e.target.closest('.cq-tog');if(!h|
   setTimeout(()=>{const nh=document.querySelector(`.cq-tog[data-act="${act}"][aria-expanded="true"]`);if(!nh)return;const Q=cqParts(nh);if(!Q||!Q.kids.length)return;
     const ns=nh.querySelector('.cq-ar');if(ns)ns.animate([{transform:'rotate(-90deg)'},{transform:'rotate(0deg)'}],{duration:FOLD_MS,easing:FOLD_EASE});
     Q.kids.forEach(k=>{k.style.overflow='hidden';const a=k.animate(foldFrames(k,true),{duration:FOLD_MS,easing:FOLD_EASE});a.onfinish=a.oncancel=()=>{k.style.overflow='';};});},0);},true);
+/* 마을 대사: 새로 말을 걸었을 때만 부드럽게 나타남(다른 이유로 다시 그려질 땐 그대로) */
+let VIL_SAY_TS=0;
+function vilSayAnim(){
+  const el=document.querySelector('.vil-say');const v=S&&S.sel&&S.sel.vil;if(!el||!v)return;
+  if(v.ts&&v.ts!==VIL_SAY_TS){VIL_SAY_TS=v.ts;el.classList.add('vs-in');}
+}
 function afterRender(){
-  syncChatFab();initMapZoom();updateChats();try{foldOpenAnim();}catch(e){}
+  syncChatFab();initMapZoom();updateChats();try{foldOpenAnim();}catch(e){}try{vilSayAnim();}catch(e){}
   const c=$('#fog');if(c)startFog(c);else stopFog();
   fitExlog();fitSideChat();flogScroll();try{initGridZoom();}catch(e){}initMini();try{if(typeof initRegionFx==="function")initRegionFx();}catch(e){}dmgFx();$$('.aq').forEach(el=>el.style.setProperty('--aqw',el.clientWidth+'px'));
   $$('.log').forEach(l=>l.scrollTop=l.scrollHeight);

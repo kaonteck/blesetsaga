@@ -3684,3 +3684,10 @@ html{overflow-y:scroll}
 .slot .slv.bad{color:var(--bad)}
 .slot>.chip{flex:none}
 .slot [data-act="kick"],.slot .slot-kph{flex:none;width:80px;justify-content:center}
+
+/* 마을 대사 부드럽게 나타나기(새 대사일 때만 .vs-in) */
+.vil-say.vs-in{animation:vsIn .42s cubic-bezier(.2,.7,.2,1) both}
+.vil-say.vs-in>*{animation:vsTx .5s ease .1s both}
+@keyframes vsIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes vsTx{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.vil-say.vs-in,.vil-say.vs-in>*{animation:none}}
