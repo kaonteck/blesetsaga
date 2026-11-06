@@ -884,7 +884,7 @@ function vDrun(){
 /* 던전 탐사 중 내 상태 — 만신전 HUD 모양(이동 없음): 진행 · 아이템 · 포기 */
 function drunHud(R,k){const me=S.me,st=myStats(),maxHp=st.maxHp,hp=Math.max(0,Math.round(R.hp*maxHp)),hpP=Math.round(R.hp*100);
   const role=roleOf(me.job),mode=S.sel.drMode==='item'?'item':'stat';
-  const face=me.portrait?`<img src="${me.portrait}" alt="">`:`<span class="uc-sig ${role}">${CLASSES[me.job].sigil}</span>`;
+  const face=me.portrait?`<img src="${me.portrait}" alt="">`:`<span class="uc-sig ${role}">${clsIc(me.job)}</span>`;
   const fx=[...new Set((me.itemBuffs||[]).filter(x=>x.until>now()).map(x=>ITEMS[x.src]?ITEMS[x.src].name:'버프'))];
   const go={monster:'전투',boss:'보스전',chest:'열기',trap:'지나가기',empty:'나아가기'}[k]||'진행';
   const pad=`<div class="hud-cmd dr-cmd" role="group" aria-label="커맨드">${[['next',go,'c-main','drun-next',GICON.fight],['item','아이템','','dr-mode',GICON.item],['quit','포기','','drun-quit',GICON.wait]].map(([key,l,c,act,ic])=>`<button class="hcmd ${c} ${key==='item'&&mode==='item'?'on':''}" data-act="${act}" data-mode="${key==='item'?(mode==='item'?'stat':'item'):''}" ${key==='item'?`aria-pressed="${mode==='item'}"`:''}><span class="hcmd-in">${ic}<b>${l}</b></span></button>`).join('')}</div>`;
@@ -1173,7 +1173,7 @@ const FEED_SEED=[
 ];
 function feed(){if(!S.feed){const t=now();S.feed=FEED_SEED.map(([a,txt,h,likes,cm],i)=>({id:'fd'+i,author:a,text:txt,img:null,ts:t-h*3600e3,likes:likes.slice(),comments:cm.map(([ca,ct,rp],j)=>({id:`fc${i}_${j}`,author:ca,text:ct,ts:t-(h-1)*3600e3+j*600e3,likes:[],replies:(rp||[]).map(([ra,rt],r)=>({id:`fr${i}_${j}_${r}`,author:ra,text:rt,ts:t-(h-2)*3600e3+r*300e3,likes:[]}))}))}));}return S.feed;}
 function pInfo(n){if(S.me&&n===S.me.name)return {job:S.me.job,img:S.me.portrait};const b=bot(n);return {job:b?b.job:'defender',img:b&&b.portrait};}
-function avatar(n,cls){const p=pInfo(n);return p.img?`<img class="fd-av ${cls||''}" src="${p.img}" alt="">`:`<span class="fd-av ${cls||''} ${jobCls(p.job)}">${CLASSES[p.job]?CLASSES[p.job].sigil:'?'}</span>`;}
+function avatar(n,cls){const p=pInfo(n);return p.img?`<img class="fd-av ${cls||''}" src="${p.img}" alt="">`:`<span class="fd-av ${cls||''} ${jobCls(p.job)}">${clsIc(p.job)}</span>`;}
 function richText(t){return esc(t).replace(/\n/g,'<br>');}
 function likeBtn(kind,id,likes){const on=likes.includes(S.me.name);return `<button class="fd-like ${on?'on':''}" data-act="fd-like" data-k="${kind}" data-id="${id}" aria-pressed="${on}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14s-5.6-3.4-5.6-7.3A2.9 2.9 0 0 1 8 5a2.9 2.9 0 0 1 5.6 1.7C13.6 10.6 8 14 8 14z" fill="${on?'currentColor':'none'}" stroke="currentColor" stroke-width="1.3"/></svg>${likes.length||''}</button>`;}
 function emojiBtn(target){return `<span class="emo-w"><button type="button" class="emo-btn" data-act="emo-open" data-t="${target}" aria-label="이모티콘">☺</button>${S.sel.emoFor===target?`<span class="emo-pop">${EMOJIS.map(e=>`<button type="button" data-act="emo-put" data-t="${target}" data-e="${e}">${e}</button>`).join('')}</span>`:''}</span>`;}

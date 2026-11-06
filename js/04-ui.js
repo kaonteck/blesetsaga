@@ -55,13 +55,16 @@ function renderTop(){
   </div>`;
 }
 function fmtDur(ms){const s=Math.max(0,Math.floor(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
-function sigil(job,cls=''){return `<div class="sigil ${cls} ${jobCls(job)}" aria-hidden="true">${JOBS[job].sigil}</div>`;}
+/* 클래스 아이콘(유저 이미지 img/class/ic/<클래스>.png, 흰색) — 그림이 없는 클래스(슈터)는 예전 한자 문장 */
+const CLS_IC=new Set(['defender','warrior','knight','infighter','mystic','destroyer','mage','salamander','dualist','priest','demigod','summoner']);
+function clsIc(job){const c=CLASSES[job];if(!c)return '?';return CLS_IC.has(job)?`<i class="cls-ic" style="-webkit-mask-image:url(img/class/ic/${job}.png);mask-image:url(img/class/ic/${job}.png)" role="img" aria-label="${esc(c.name)}"></i>`:c.sigil;}
+function sigil(job,cls=''){return `<div class="sigil ${cls} ${jobCls(job)}" aria-hidden="true">${clsIc(job)}</div>`;}
 function className(job){const c=CLASSES[job];return c.tier===2?`★ ${c.name}`:c.name;}
 const COIN=`<svg class="coin" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.2" fill="var(--xp)"/><circle cx="8" cy="8" r="5.2" fill="none" stroke="var(--coin-dk)" stroke-width="1.1"/><path d="M8 5.1v5.8M6.3 6.4c0-.8.8-1.2 1.7-1.2s1.7.4 1.7 1.1-.7 1-1.7 1.2-1.8.5-1.8 1.3.8 1.2 1.8 1.2 1.8-.4 1.8-1.2" fill="none" stroke="var(--coin-dk)" stroke-width="1.1" stroke-linecap="round"/></svg>`;
 function goldHTML(n){return `<span class="gold" title="골드"><span class="sr">골드</span>${COIN}<b class="num">${Number(n).toLocaleString('ko-KR')}</b></span>`;}
 function portraitHTML(big){
   const me=S.me;
-  const inner=me.portrait?`<img src="${me.portrait}" alt="${esc(me.name)}의 캐릭터 이미지">`:`<div class="ph-empty ${jobCls(me.job)}"><span class="ph-glyph">${CLASSES[me.job].sigil}</span><span class="ph-cls">${CLASSES[me.job].en}</span></div>`;
+  const inner=me.portrait?`<img src="${me.portrait}" alt="${esc(me.name)}의 캐릭터 이미지">`:`<div class="ph-empty ${jobCls(me.job)}"><span class="ph-glyph">${clsIc(me.job)}</span><span class="ph-cls">${CLASSES[me.job].en}</span></div>`;
   return `<div class="portrait ${big?'big':''}">${inner}<button class="ph-edit" data-act="portrait-open" type="button" title="이미지 설정">이미지 설정</button></div>`;
 }
 const ICON={
@@ -609,7 +612,7 @@ function chatTitleOf(name){
 }
 function chatFaceHTML(name,pi){
   if(S.me&&name===S.me.name&&S.me.portrait)return `<img src="${S.me.portrait}" alt="">`;
-  return pi&&pi.job&&JOBS[pi.job]?`<span class="cmsg-sg ${jobCls(pi.job)}">${JOBS[pi.job].sigil}</span>`:`<span class="cmsg-sg">${esc(String(name||'?').slice(0,1))}</span>`;
+  return pi&&pi.job&&JOBS[pi.job]?`<span class="cmsg-sg ${jobCls(pi.job)}">${clsIc(pi.job)}</span>`:`<span class="cmsg-sg">${esc(String(name||'?').slice(0,1))}</span>`;
 }
 function msgHTML(m,i,arr){
   if(m.sys)return `<div class="msg sys">${esc(m.text)}</div>`;
@@ -1148,7 +1151,7 @@ function vProfile(){
   return `<div class="wrap page ro-page"><div class="page-head"><div><h2>캐릭터<small class="en">Character</small></h2></div></div>
     <div class="ro-bar"><button class="btn btn-sm btn-ghost" data-act="nav" data-route="${S.sel.viewBack||'main'}"><span aria-hidden="true">←</span> 돌아가기</button><span class="ro-tag">🔒 ${esc(name)}님의 캐릭터 · 읽기 전용</span></div>
     <div class="qtabs ctabs" role="tablist">${[['info','정보'],['equip','장비'],['craft','공방']].map(([x,l])=>`<button role="tab" aria-selected="${x==='info'}" ${x==='info'?'':'disabled title="다른 유저의 정보 탭만 볼 수 있습니다"'}>${l}${x==='info'?'':' 🔒'}</button>`).join('')}</div>
-    <div class="char-top"><div class="panel ctop-img"><div class="portrait big">${p.portrait?`<img src="${p.portrait}" alt="">`:`<div class="ph-empty ${jobCls(p.job)}"><span class="ph-glyph">${CLASSES[p.job].sigil}</span><span class="ph-cls">${CLASSES[p.job].en}</span></div>`}</div></div>
+    <div class="char-top"><div class="panel ctop-img"><div class="portrait big">${p.portrait?`<img src="${p.portrait}" alt="">`:`<div class="ph-empty ${jobCls(p.job)}"><span class="ph-glyph">${clsIc(p.job)}</span><span class="ph-cls">${CLASSES[p.job].en}</span></div>`}</div></div>
       <div class="panel ctop-info"><dl class="uinfo-list">
         ${row('이름',`<b style="color:var(--silver)">${esc(name)}</b>`)}${row('클래스',roleChip(p.job))}${row('칭호',tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:'<span class="faint">없음</span>')}
         ${row('레벨',`<span class="lv num">LV ${p.level}</span>`)}${row('상태',statusChip(k))}${row('한줄메모',memo?esc(memo):'<span class="faint">없음</span>')}
