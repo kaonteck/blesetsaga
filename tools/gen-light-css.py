@@ -263,6 +263,28 @@ def main():
 /* 레이드 펼친 묶음 흐르는 빛(프론트): 생성기가 마스크 색을 바꾸며 합성 규칙을 빼먹어 다시 지정 */
 {SCOPE} .mgrp.open::before{{-webkit-mask-composite:xor;mask-composite:exclude}}
 {SCOPE} .mgrp.open::after{{-webkit-mask-composite:xor,source-in;mask-composite:exclude,intersect;opacity:.45}}
+/* 라이트 모드 글자 대비 정리(프론트, 2026-11-07): 흐린 글자·경고·완료 색을 한 톤 진하게(작은 글씨 4.5:1 안팎) */
+{SCOPE}{{--faint:#66708a;--warn:#8a5a10;--ok:#287045;--bad:#b93838;--luck:#6a4fc0}}
+{SCOPE} .btn-primary,{SCOPE} .btn-primary .num{{color:#1a2240}}
+{SCOPE} .chip.tank .faint,{SCOPE} .chip.dps .faint,{SCOPE} .chip.heal .faint{{color:inherit;opacity:.78}}
+{SCOPE} .qcats .li[aria-current="true"] small{{color:#2f62b8}}
+{SCOPE} .qcats .list[data-cat="epic"] .li[aria-current="true"] small{{color:#7a5c14}}
+{SCOPE} .qcats .li[aria-current="true"] b{{color:var(--text)}}
+/* 카지노 골든 오아시스: 연한 금색 글자 → 짙은 금색, 달팽이 트랙 어두운 바탕 → 밝은 모래색 */
+{SCOPE} .md-sec>h3.cas-title,{SCOPE} .cas-title{{color:#7a5c14!important;text-shadow:none}}
+{SCOPE} .cas-g b,{SCOPE} .cshop-t b,{SCOPE} .sn-mult b{{color:#7a5c14}}
+{SCOPE} .cas-c{{color:#8a5a10}}
+{SCOPE} .sn-track{{background:linear-gradient(180deg,#f6efe0,#efe5d2);border-color:rgba(138,106,28,.35)}}
+{SCOPE} .sn-road{{border-bottom-color:rgba(122,92,20,.3)}}
+/* 공방 종류 표시(제작·요리·연금) */
+{SCOPE} .cm-k.k-craft{{color:#9a5a14}}
+{SCOPE} .cm-k.k-cook{{color:#287045}}
+{SCOPE} .cm-k.k-alch{{color:#6a4fc0}}
+{SCOPE} .cf-warn{{color:#8a5a10!important}}
+{SCOPE} .ol-badge{{color:#b93838}}
+{SCOPE} .casino{{background:linear-gradient(160deg,#f7efd9,#fff 60%)!important;border-color:rgba(138,106,28,.4)!important}}
+{SCOPE} .vil-say.theft{{background:#fbecea}}
+{SCOPE} .vil-say.theft p{{color:#a3332b}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')
