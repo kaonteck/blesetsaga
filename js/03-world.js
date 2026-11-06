@@ -223,7 +223,7 @@ function vBattle(){
     ${body}</div>`;
 }
 const LAND_STORY={rock:'E4',swamp:'E7',salt:'E11',sea:'E15',ember:'E19',frost:'E23',chaos:'E27'};
-function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
+function storyLock(land){const q=LAND_STORY[land];if(!q||isAdmin())return '';if(typeof questHidden==='function'&&questHidden())return '';   /* 퀘스트 비공개 동안은 지역을 레벨로만 연다(체크 요청 2026-11-06) */const Q=quest(q);if(S.qp[q]&&S.qp[q].status==='done')return '';return `메인 스토리 「${Q?Q.title:q}」 완료 필요`;}
 function landLock(r){return S.me.level<r.lv?`LV${r.lv} 이상 필요`:storyLock(r.id);}
 function exCard(r,W){const lr=landLock(r);const d=daily();const busy=busyReason();
   const w=W.find(x=>x.name===r.region);const fm=S.data.monsters.filter(m=>m.published&&mkind(m)==='field'&&m.region===r.region);

@@ -424,7 +424,7 @@ const STORY_QUESTS=[
     give:{land:'swamp',spot:'clinic',item:'q_mask',n:1,npc:'약초꾼 이브',text:'"돌아오셨네요, 아우로라 님." 이브가 반갑게 웃다가, 당신 얼굴을 다시 보고 멈칫한다. "…아, 죄송해요. 닮은 분이 계셨어요. 마스크가 없으시군요. 이 마스크에 늪 독샘을 먹이면 안개를 걸러 줘요."'},
     choices:[{label:'마스크를 받아 든다',req:{item:'q_mask'},result:'이브가 늪 독샘 세 개가 필요하다고 한다. 늪의 생물에게서 얻을 수 있다.',next:'s2'},
       {label:'아직 치료소에 가지 못했다',result:'로타스 치료소의 약초꾼을 찾아야 한다.',next:'s1'}]},
-  s2:{text:'이브: "독샘 세 개면 충분해요. 독으로 독을 막는 거예요. 이상하게 들리죠?" (늪 독샘 3개 · 늪의 땅 필드 사냥)',choices:[
+  s2:{text:'이브: "독샘 세 개면 충분해요. 독으로 독을 막는 거예요. 이상하게 들리죠?" (늪 독샘 3개 · 늪의 땅 탐색에서 얻음)',choices:[
     {label:'늪 독샘 3개를 건넨다',req:{items:{venom:3}},take:{venom:3},result:'이브가 독샘을 짜 마스크 안쪽에 바른다. 쓴 냄새가 나더니, 이내 숨이 편해진다.',next:'s3'},
     {label:'아직 모으지 못했다',result:'늪의 생물을 사냥해 독샘을 모아야 한다.',next:'s2'}]},
   s3:{text:'마스크를 쓰고 늪가로 나서자 물속에서 무언가 꿈틀거린다. 마스크 없이 나온 사람을 노리던 거머리 떼가 한꺼번에 몰려온다.',battle:'st_leech',next:'s4',winText:'거머리 떼가 물속으로 흩어진다. 마스크 덕에 독안개 속에서도 숨이 차지 않는다.'},
@@ -1474,7 +1474,7 @@ function ngGear(){const L=S.me.level;const cur=GEAR_TIER.map((g,i)=>({g,T:i+1}))
     return {t:'장비 업그레이드',v:`${cur.g[0]} 장비 (LV${cur.g[2]}+)`,s:from?`얻는 곳 · ${from}`:'지역 던전과 파티 레이드에서 얻을 수 있음',act:`data-act="nav" data-route="battle"`};}
   if(nxt)return {t:'다음 장비',v:`${nxt.g[0]} 장비`,s:`LV${nxt.g[2]}부터 착용 · ${LV_LEFT(nxt.g[2])}`,lock:true};return null;}
 const LV_LEFT=n=>`${Math.max(0,n-S.me.level)}레벨 남음`;
-function nextGoalHTML(){if(!S||!S.me)return '';const rows=[ngStory(),ngHunt(),ngGear()].filter(Boolean);
+function nextGoalHTML(){if(!S||!S.me)return '';const rows=[questHidden()?null:ngStory(),ngHunt(),ngGear()].filter(Boolean);   /* 퀘스트 비공개 동안 '메인 스토리' 칸 숨김(체크 요청 2026-11-06) */
   return `<div class="panel ng"><div class="md-lbl"><i class="lbl-d" aria-hidden="true">◆</i>다음 목표</div><div class="ng-list">${rows.map(r=>`<${r.act?'button':'div'} class="ng-row ${r.lock?'lock':''}" ${r.act||''}><span class="ng-t">${esc(r.t)}</span><b class="ng-v">${esc(r.v)}</b><small class="ng-s">${esc(r.s)}</small></${r.act?'button':'div'}>`).join('')}</div></div>`;}
 
 /* ───────── 기록 (오른쪽 고정 패널) : 모든 개별 기록을 한곳에, 카테고리로 구분 ───────── */
@@ -2048,7 +2048,7 @@ function ccCreate(name){if(S.me)return;
   S.me={name,job:CLASSES[S.sel.newJob]&&CLASSES[S.sel.newJob].tier===1?S.sel.newJob:'defender',level:1,exp:0,gold:100,inv:{potion:2},equip:{},admin:typeof SB_UID!=='undefined'&&SB_UID?SB_ADMIN:true,viewAsUser:false,createdAt:now()};
   S.chat.lobby.push({id:uid('m'),sys:true,text:`${name}님이 라니아케아에 도착했습니다.`,ts:now()});
   save();go('main');later(4000,()=>botSay('lobby','노아',`${name}님 환영해요!`));
-  if(RN==null&&!RN_OFF)rnForm(()=>toast('탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good'));else toast('탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good');}
+  if(RN==null&&!RN_OFF)rnForm(()=>toast(questHidden()?'탐사를 시작합니다. 탐색에서 첫 사냥터를 둘러보세요.':'탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good'));else toast(questHidden()?'탐사를 시작합니다. 탐색에서 첫 사냥터를 둘러보세요.':'탐사를 시작합니다. 퀘스트에서 첫 의뢰를 받아 보세요.','good');}
 function rnForm(done){if(document.getElementById('rn-gate'))return;
   const ov=document.createElement('div');ov.id='rn-gate';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','rn-t');
   ov.innerHTML=`<form class="rn-box" autocomplete="off" novalidate>
