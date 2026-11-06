@@ -260,6 +260,8 @@ def main():
 {SCOPE} .gboss{{background:#9b2c2c;border-color:#7a1f1f}}
 {SCOPE} .gboss b{{color:#fff}}
 {SCOPE} .gboss small{{color:#ffd6d6}}
+{SCOPE} .page-head.ph-quest::before,{SCOPE} body[data-route="explore"] #view .page-head::before,{SCOPE} body[data-route="battle"] #view .page-head::before{{background:#2a3142}}
+{SCOPE} .mgrp.open::before{{background:conic-gradient(from var(--mga),transparent 0deg 250deg,rgba(90,125,200,.25) 290deg,#5a7dc8 330deg,rgba(90,125,200,.25) 348deg,transparent 360deg);filter:none;-webkit-mask-composite:xor;mask-composite:exclude}}
 /* 레이드 펼친 묶음 흐르는 빛(프론트): 생성기가 마스크 색을 바꾸며 합성 규칙을 빼먹어 다시 지정 */
 {SCOPE} .mgrp.open::before{{-webkit-mask-composite:xor;mask-composite:exclude}}
 {SCOPE} .mgrp.open::after{{-webkit-mask-composite:xor,source-in;mask-composite:exclude,intersect;opacity:.45}}
