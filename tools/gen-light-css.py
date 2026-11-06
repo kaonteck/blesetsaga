@@ -241,7 +241,14 @@ def main():
 {SCOPE} .list .li.clickable[aria-current="true"],{SCOPE} .li.clickable[aria-current="true"]{{background:#eef2fa}}
 /* 팝업·채팅 시트 뒤 가림막: 라이트에서도 흰색이 아니라 어둡게 흐리게(프론트) */
 {SCOPE} .scrim,{SCOPE} body.chat-open #chatbk{{background:rgba(28,34,48,.38)}}
-{SCOPE}{{--st-buff:#e0b13a;--st-debuff:#8f63e3;--st-heal:#45bf78}}
+{SCOPE}{{--st-buff:#e0b13a;--st-debuff:#7448d0;--st-heal:#45bf78}}
+/* 역할 칩(탱·딜·힐) 글자 대비 4.5 이상: 라이트에서는 칩 색만 한 톤 진하게(프론트) */
+{SCOPE} .chip.tank:not(.cls){{background:#2a62b8}}
+{SCOPE} .chip.dps:not(.cls){{background:#b53434}}
+{SCOPE} .chip.heal:not(.cls){{background:#1a7442}}
+{SCOPE} .mass-card .chip.tank:not(.cls):not(.dim){{background:color-mix(in srgb,#2a62b8 10%,transparent);border-color:#2a62b8;color:#2a62b8}}
+{SCOPE} .mass-card .chip.dps:not(.cls):not(.dim){{background:color-mix(in srgb,#b53434 10%,transparent);border-color:#b53434;color:#b53434}}
+{SCOPE} .mass-card .chip.heal:not(.cls):not(.dim){{background:color-mix(in srgb,#1a7442 10%,transparent);border-color:#1a7442;color:#1a7442}}
 {SCOPE} .chip.st-debuff,{SCOPE} .hud-fx.st-debuff{{color:#fff}}
 {SCOPE} .gtel,{SCOPE} .gtel.aoe{{background:#fff;box-shadow:none}}
 {SCOPE} .gtel .gtel-k,{SCOPE} .gtel .tk-run{{color:#c62828}}
