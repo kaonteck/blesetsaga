@@ -3674,3 +3674,13 @@ html{overflow-y:scroll}
 .sks{position:relative}
 .sks .sk-cat{position:absolute;left:2px;top:2px;z-index:2;font-style:normal;font-size:9.5px;font-weight:700;line-height:1;padding:2px 4px;border-radius:4px;color:#111;pointer-events:none}
 .sk-cat.c-heal{background:#7fd6a0}.sk-cat.c-atk{background:#f08a8a}.sk-cat.c-sup{background:#9fb8ee}
+
+/* 파티원 목록: 한 사람당 한 줄 — 이름 · LV(글자) · 클래스 · 파티장/용병 … 준비/대기 · 내보내기 */
+.pty-body .slots{grid-template-columns:minmax(0,1fr);gap:6px}
+.pty-body .slot{padding:8px 12px;gap:10px}
+.pty-body .slot.empty-slot{padding:12px}
+.slot .t{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px}
+.slot .slv{font-size:12.5px;color:var(--muted);margin-left:-2px}
+.slot .slv.bad{color:var(--bad)}
+.slot>.chip{flex:none}
+.slot [data-act="kick"],.slot .slot-kph{flex:none;width:80px;justify-content:center}
