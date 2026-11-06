@@ -250,6 +250,8 @@ def main():
 {SCOPE} .mass-card .chip.dps:not(.cls):not(.dim){{background:color-mix(in srgb,#b53434 10%,transparent);border-color:#b53434;color:#b53434}}
 {SCOPE} .mass-card .chip.heal:not(.cls):not(.dim){{background:color-mix(in srgb,#1a7442 10%,transparent);border-color:#1a7442;color:#1a7442}}
 {SCOPE} .chip.st-debuff,{SCOPE} .hud-fx.st-debuff{{color:#fff}}
+/* 빨간 알림 뱃지(채팅 탭 숫자 등) 글자는 흰색(메인) */
+{SCOPE} .badge{{color:#fff}}
 {SCOPE} .gtel,{SCOPE} .gtel.aoe{{background:#fff;box-shadow:none}}
 {SCOPE} .gtel .gtel-k,{SCOPE} .gtel .tk-run{{color:#c62828}}
 {SCOPE} .hud-lvl,{SCOPE} .hud-tag{{color:#8a6a1c}}
