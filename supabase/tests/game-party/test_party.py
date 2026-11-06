@@ -279,6 +279,13 @@ with sync_playwright() as p:
     ok(wait(a,"!!(S.battle&&S.battle.grid&&S.battle.shared)",10000),'파티장 화면: 그리드 토벌 시작')
     ok(wait(bp,"!!(S.battle&&S.battle.grid&&S.battle.shared)",10000) and bp.evaluate("S.battle.endsAt>Date.now()"),'파티원 화면도 같은 그리드 전투(제한 시간 있음)')
     a.evaluate("modal('')");bp.evaluate("modal('')")
+    # 위치 선정(가호 없이 바로): 파티원이 고른 칸 → 파티장 화면, 모두 고르면 시작
+    ok(wait(a,"!!(S.battle.place&&S.battle.place.go)",8000) and wait(bp,"!!S.battle.place",8000),'토벌전도 시작 전 위치 선정(가호 없음)')
+    pc2=bp.evaluate("(()=>{const b=S.battle;for(let i=0;i<100;i++)if(placeOk(b,i)&&bossDist(i)===2)return i;})()")
+    bp.evaluate(f"ACTS['g-cell']({{i:'{pc2}'}})")
+    ok(wait(a,f"S.battle.players.find(p=>p.name==='하늘별').pos==={pc2}",8000),'파티원 자리가 파티장 화면에')
+    a.evaluate("(()=>{const b=S.battle;for(let i=0;i<100;i++)if(placeOk(b,i)&&i!==%d){ACTS['g-cell']({i:String(i)});return;}})()"%pc2)
+    ok(wait(a,"!S.battle.place",15000) and wait(bp,"!S.battle.place",8000),'모두 고르면 60초 전에 바로 시작(둘 다)')
     tgt=bp.evaluate("(()=>{const b=S.battle,me=b.players.find(p=>p.isMe);return reachable(b,me).find(c=>c!==me.pos&&canMoveTo(b,me,c));})()")
     bp.evaluate(f"S.sel.gmode='move';S.sel.gcell={tgt};ACTS['g-confirm']({{kind:'move'}})");bp.wait_for_timeout(600)
     ok(wait(a,f"(()=>{{const f=S.battle.players.find(p=>p.name==='하늘별');return f.confirmed&&f.action&&f.action.kind==='move'&&f.action.to==={tgt};}})()"),'파티원의 그리드 이동이 파티장 화면에')

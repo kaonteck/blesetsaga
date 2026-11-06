@@ -3691,3 +3691,4 @@ html{overflow-y:scroll}
 @keyframes vsIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes vsTx{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.vil-say.vs-in,.vil-say.vs-in>*{animation:none}}
+.gfx:has(.gplace) .gsay,.gfight:has(.gplace) .gtel{visibility:hidden}

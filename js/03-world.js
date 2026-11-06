@@ -549,7 +549,7 @@ function massTarget(b){
   else h+=`<div class="mtg"><span class="mtg-l">도발 수치</span><span class="faint">제압한 탱커 없음 · 탱커 → 누적 대미지·회복량 순으로 표적</span></div>`;
   return h;}
 function gridBoard(b,me){
-  const tel=b.tel;const area=new Set([...(tel&&tel.type==='area'?tel.cells:[]),...(b.pend&&b.pend.type==='area'?b.pend.cells:[])]);const mode=S.sel.gmode||'fight';
+  const tel=b.place?null:b.tel;   /* 위치 선정 중엔 예고 칸 안 보임(실제 자리로 다시 정함) */const area=new Set([...(tel&&tel.type==='area'?tel.cells:[]),...(b.pend&&b.pend.type==='area'?b.pend.cells:[])]);const mode=S.sel.gmode||'fight';
   const reach=new Set(me&&!me.dead&&!me.confirmed&&mode==='move'?reachable(b,me):[]);
   const rng=me&&!me.dead?rangeR(me):0;
   let h='';

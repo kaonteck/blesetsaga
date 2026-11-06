@@ -1996,7 +1996,7 @@ function summusLock(){return (typeof isAdmin==='function'&&isAdmin())||S.qp&&S.q
 function r4Grid(b,m){const MD=massDef(m);b.grid=true;b.pats=MD.patterns;b.massTitle=MD.title;b.phases=clone(MD.phases).sort((a,c)=>c.at-a.at);b.phase=0;b.baseAtk=m.atk;b.mon.atk=m.atk;
   gridPlace(b,Math.random);b.turn=0;b.log=b.log.slice(0,1);b.log.push({t:'sys',text:`토벌전 · ${b.players.length}인 · 10×10 전장 · 제한 20분 · 붉은 칸 예고를 보고 이동해서 피하세요`});startTurn(b,Math.random);b.endsAt=now()+20*60000;}
 (function(){const f=startBattle;startBattle=function(){const p=S.party;const m=p&&monster(p.monsterId);const b0=S.battle;f();const b=S.battle;
-  if(m&&m.gridRaid&&b&&b!==b0&&!b.grid){r4Grid(b,m);b.rules.turnSeconds=massCfg().turnSeconds;b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);S.sel.gmode='fight';S.sel.gcell=null;S.sel.gitem=null;resetAct();
+  if(m&&m.gridRaid&&b&&b!==b0&&!b.grid){r4Grid(b,m);b.rules.turnSeconds=massCfg().turnSeconds;placeBegin(b);b.deadline=now()+PLACE_SEC*1000+120000;   /* 시작 위치 선정(가호 없음) → placeDone이 첫 턴·봇 계획 */S.sel.gmode='fight';S.sel.gcell=null;S.sel.gitem=null;resetAct();
     if(typeof storyBattleFx==='function')try{storyBattleFx(b);}catch(e){}save();if(S.route==='battle')render();}};})();
 /* 퀘스트 숨무스: 목록·매칭 없이 초대 전용 */
 (function(){const f=vMonster;vMonster=function(m){if(!m||!m.questOnly)return f(m);S.sel.mk={...(S.sel.mk||{}),vis:'invite'};let h=f(m);
