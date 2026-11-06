@@ -2066,3 +2066,11 @@ function rnForm(done){if(document.getElementById('rn-gate'))return;
     const err=typeof SB!=='undefined'&&SB&&SB_UID&&typeof rnSaveSrv==='function'?await rnSaveSrv({real_name:v,region:l}):null;
     if(err){bt.disabled=false;er.hidden=false;er.textContent='저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';return;}
     RN=v;RN_LOC=l;ov.remove();if(done)done();};}
+/* ── 후반 이야기 사이 사냥 판수 줄이기(2026-11-07) ──
+   LV60+ 필드 경험치(03 hiExpMul)와 함께, 다음 이야기까지 필드 약 22판이 되게 6·7·8장 일부 퀘스트 완료 경험치를 올림.
+   (시뮬: 예전 27~69판 → 22~23판) 퀘스트 안 모든 보상 exp에 배율, 원래 값은 _exp0에 두고 다시 돌아도 겹치지 않음. 운영 페이지에서 공개한 퀘스트는 건드리지 않음. */
+const STORY_EXP_MUL={E23:1.25,E26:1.1,E28:2.15,E29:2.1,E30:1.05};
+function storyExpTune(){if(!S||!S.data||!S.data.quests)return;const srv=(S.data._srv&&S.data._srv.quest)||{};
+  for(const q of S.data.quests){const f=STORY_EXP_MUL[q.id];if(!f||srv[q.id])continue;const seen=new Set();
+    const walk=o=>{if(!o||typeof o!=='object'||seen.has(o))return;seen.add(o);if(o.reward&&typeof o.reward.exp==='number'){if(o.reward._exp0==null)o.reward._exp0=o.reward.exp;o.reward.exp=Math.round(o.reward._exp0*f/500)*500;}for(const k in o)walk(o[k]);};walk(q.steps);}}
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f.apply(this,arguments);try{storyExpTune();}catch(e){}};})();

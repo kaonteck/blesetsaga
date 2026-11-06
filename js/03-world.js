@@ -10,7 +10,9 @@ function soloMon(o){const L=o.statLevel||o.level;const s=soloStats(o.tier,L);con
 /* 레벨 구간 (상한 99): 지역 8곳이 1–99를 나눠 맡는다 */
 const LAND_BAND={meadow:[1,9],rock:[10,19],swamp:[20,29],salt:[30,39],sea:[40,49],ember:[50,64],frost:[65,79],chaos:[80,99]};
 const needOf=L=>Math.round(100+50*(L-1)+2*(L-1)*(L-1));
-const fieldExp=L=>Math.round(needOf(L)/(4+L*0.12));
+/* LV60부터 필드 경험치를 조금씩 더(+10%/레벨, LV64 이상 ×1.5) — 후반 이야기 사이 사냥 판수 줄이기(2026-11-07) */
+function hiExpMul(L){return L<60?1:1+Math.min(0.5,(L-59)*0.1);}
+const fieldExp=L=>Math.round(needOf(L)/(4+L*0.12)*hiExpMul(L));
 const fieldGold=L=>Math.round(10+L*4);
 const fieldLv=(land,i)=>{const b=LAND_BAND[land];return b?(i===0?b[0]:Math.round((b[0]+b[1])/2)):1;};
 const FIELD_DEF=[
