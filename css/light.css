@@ -1685,6 +1685,12 @@ html[data-theme="light"] #gcount{background:rgba(14,14,18,.78);border:1px solid 
 html[data-theme="light"] #gcount small{color:#dcc489}
 html[data-theme="light"] #gcount em{color:rgba(255,255,255,.6)}
 html[data-theme="light"] #gcount.low b{color:#ff8a7a}
+html[data-theme="light"] #gcount{border:0;box-shadow:none;background:radial-gradient(closest-side,rgba(8,10,16,.72),rgba(8,10,16,.45) 55%,rgba(8,10,16,0))}
+html[data-theme="light"] #gcount small{color:#e8eefc}
+html[data-theme="light"] #gcount small::after{background:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 360 28%22%3E%3Cdefs%3E%3ClinearGradient id=%22l%22 x1=%220%22 x2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23D9E5FF%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%23D9E5FF%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22r%22 x1=%221%22 x2=%220%22%3E%3Cstop offset=%220%22 stop-color=%22%23D9E5FF%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%23D9E5FF%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points=%226,14 150,12.9 150,15.1%22 fill=%22url%28%23l%29%22/%3E%3Cpolygon points=%22354,14 210,12.9 210,15.1%22 fill=%22url%28%23r%29%22/%3E%3Cg fill=%22none%22 stroke=%22%23D9E5FF%22 stroke-width=%221.1%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M150 14 C156 14 158 8.5 163 9.5 C167 10.3 166 15.5 162.5 15.2 C160.5 15 160.6 12.6 162.3 12.6%22/%3E%3Cpath d=%22M210 14 C204 14 202 8.5 197 9.5 C193 10.3 194 15.5 197.5 15.2 C199.5 15 199.4 12.6 197.7 12.6%22/%3E%3C/g%3E%3Ccircle cx=%22168.5%22 cy=%2214%22 r=%221.3%22 fill=%22%23D9E5FF%22/%3E%3Ccircle cx=%22191.5%22 cy=%2214%22 r=%221.3%22 fill=%22%23D9E5FF%22/%3E%3Cpath d=%22M180 3 L182.4 11.6 L191 14 L182.4 16.4 L180 25 L177.6 16.4 L169 14 L177.6 11.6 Z%22 fill=%22%23F4F7FF%22/%3E%3C/svg%3E%0A") center/contain no-repeat}
+html[data-theme="light"] #gcount b{color:#f4f7ff}
+html[data-theme="light"] #gcount.low b{color:#ff8a7a}
+html[data-theme="light"] #gcount em{color:rgba(232,238,252,.6)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
@@ -1751,3 +1757,10 @@ html[data-theme="light"] .ol-badge{color:#b93838}
 html[data-theme="light"] .casino{background:linear-gradient(160deg,#f7efd9,#fff 60%)!important;border-color:rgba(138,106,28,.4)!important}
 html[data-theme="light"] .vil-say.theft{background:#fbecea}
 html[data-theme="light"] .vil-say.theft p{color:#a3332b}
+/* 만신전·토벌전 시작 카운트다운(라이트) */
+html[data-theme="light"] #gcount{border:0;border-radius:0;box-shadow:none;background:radial-gradient(closest-side,rgba(235,238,244,.92),rgba(235,238,244,.6) 55%,rgba(235,238,244,0))}
+html[data-theme="light"] #gcount small{color:#2a3142}
+html[data-theme="light"] #gcount small::after{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 360 28%22%3E%3Cdefs%3E%3ClinearGradient id=%22l%22 x1=%220%22 x2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%235577bf%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%235577bf%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22r%22 x1=%221%22 x2=%220%22%3E%3Cstop offset=%220%22 stop-color=%22%235577bf%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%235577bf%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points=%226,14 150,12.9 150,15.1%22 fill=%22url%28%23l%29%22/%3E%3Cpolygon points=%22354,14 210,12.9 210,15.1%22 fill=%22url%28%23r%29%22/%3E%3Cg fill=%22none%22 stroke=%22%235577bf%22 stroke-width=%221.1%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M150 14 C156 14 158 8.5 163 9.5 C167 10.3 166 15.5 162.5 15.2 C160.5 15 160.6 12.6 162.3 12.6%22/%3E%3Cpath d=%22M210 14 C204 14 202 8.5 197 9.5 C193 10.3 194 15.5 197.5 15.2 C199.5 15 199.4 12.6 197.7 12.6%22/%3E%3C/g%3E%3Ccircle cx=%22168.5%22 cy=%2214%22 r=%221.3%22 fill=%22%235577bf%22/%3E%3Ccircle cx=%22191.5%22 cy=%2214%22 r=%221.3%22 fill=%22%235577bf%22/%3E%3Cpath d=%22M180 3 L182.4 11.6 L191 14 L182.4 16.4 L180 25 L177.6 16.4 L169 14 L177.6 11.6 Z%22 fill=%22%233f63b0%22/%3E%3C/svg%3E%0A")}
+html[data-theme="light"] #gcount b{color:#2a3142;filter:drop-shadow(0 0 14px rgba(85,119,191,.35)) drop-shadow(0 3px 0 rgba(255,255,255,.9))}
+html[data-theme="light"] #gcount.low b{color:#c62828;filter:drop-shadow(0 0 14px rgba(198,40,40,.3)) drop-shadow(0 3px 0 rgba(255,255,255,.9))}
+html[data-theme="light"] #gcount em{color:#5d6680}
