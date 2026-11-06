@@ -139,7 +139,7 @@ def scope_sel(sel):
     return ','.join(parts)
 
 
-KEEP_DARK = re.compile(r'\.(thsw|wm|wmap|mapmodal)\b(?!-dd)|\.wm-(?!dd)|\.hcmd\.on|#glx-ov|\.gsay|\.pv\b|\.pv-|\.walk|\.wk-|\.sundial|\.sd-|\.qtablet|\.qt-|\.lake|\.lk-|\.shards|\.sh-face|\.snowv|\.sv-|\.snow-modal|#seq-ov|#rn-gate|\.cc-|\.cflag|\.cfl-|\.cd-')   # 지역 보기 드롭다운(.wm-dd)은 지도 밖 UI라 라이트로 바꿈
+KEEP_DARK = re.compile(r'#gcount|\.(thsw|wm|wmap|mapmodal)\b(?!-dd)|\.wm-(?!dd)|\.hcmd\.on|#glx-ov|\.gsay|\.pv\b|\.pv-|\.walk|\.wk-|\.sundial|\.sd-|\.qtablet|\.qt-|\.lake|\.lk-|\.shards|\.sh-face|\.snowv|\.sv-|\.snow-modal|#seq-ov|#rn-gate|\.cc-|\.cflag|\.cfl-|\.cd-')   # 지역 보기 드롭다운(.wm-dd)은 지도 밖 UI라 라이트로 바꿈
 
 
 def keep_decls(body):

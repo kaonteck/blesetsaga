@@ -464,7 +464,7 @@ function placeAutoCell(b,p){const a=b.place&&b.place.auto[p.id];if(a!=null&&plac
 function placeStartClock(b){if(!b.place||b.place.go)return;b.place.go=now();b.place.until=b.place.go+PLACE_SEC*1000;
   b.players.forEach(p=>{if(placeBotish(p))b.place.botAt[p.id]=b.place.go+rnd(1500,9000);});
   b.log.push({t:'sys',text:`위치 선정 · ${PLACE_SEC}초 안에 지도에서 설 자리를 고르세요 (한 칸 최대 ${CELL_CAP}명 · 먼저 고른 사람 우선)`});}
-function placeTick(b,t){const P=b.place;if(!P)return;
+function placeTick(b,t){if(b.prep){prepTick(b,t);return;}const P=b.place;if(!P)return;
   const el=document.querySelector('[data-place-left]');if(el)el.textContent=P.until?Math.max(0,Math.ceil((P.until-t)/1000))+'초':'가호 선택 중';
   if(P.until){const left=Math.max(0,Math.ceil((P.until-t)/1000));document.querySelectorAll('[data-timer]').forEach(x=>{x.textContent=left+'초';x.classList.toggle('low',left<=10);});}
   const pn=document.querySelector('[data-place-n]');if(pn)pn.textContent=`${b.players.filter(p=>p.pos!=null).length}/${b.players.length}`;
@@ -479,11 +479,26 @@ function placeTick(b,t){const P=b.place;if(!P)return;
   if(dirty){save();if(S.route==='battle')renderFight();if(b.shared&&typeof ptPushSoon==='function')ptPushSoon();}}
 function placeDone(b){const P=b.place;if(!P)return;const late=b.players.filter(p=>p.pos==null);
   late.forEach(p=>{p.pos=placeAutoCell(b,p);});
-  const spent=now()-P.t0;b.place=null;if(b.endsAt)b.endsAt+=spent;
+  b.place=null;b.prep={t0:P.t0,until:now()+PREP_SEC*1000};
+  b.log.push({t:'sys',text:`전원 위치 선정 완료${late.length?` · 자동 배치 ${late.map(p=>p.name).join(', ')}`:''} · ${PREP_SEC}초 뒤 전투 시작`});
+  save();if(S.route==='battle')render();prepOverlay(b);if(b.shared&&typeof ptPush==='function')ptPush();}
+/* 가호·위치 선정이 끝나면 15초 세고 전투 시작 — 화면 가운데 큰 숫자(#gcount, body에 붙임) */
+const PREP_SEC=15;
+function prepOverlay(b){let el=document.getElementById('gcount');
+  if(!b||!b.prep||b.over||S.route!=='battle'||S.battle!==b){if(el)el.remove();return;}
+  const left=Math.max(0,Math.ceil((b.prep.until-now())/1000));
+  if(!el){el=document.createElement('div');el.id='gcount';el.setAttribute('role','timer');el.setAttribute('aria-live','polite');el.innerHTML='<small>전투 시작까지</small><b></b><em>자리를 확인하세요</em>';document.body.appendChild(el);}
+  const n=el.querySelector('b');if(n.textContent!==String(left)){n.textContent=left;n.classList.remove('gc-pop');void n.offsetWidth;n.classList.add('gc-pop');}
+  el.classList.toggle('low',left<=5);}
+function prepTick(b,t){prepOverlay(b);
+  const left=Math.max(0,Math.ceil((b.prep.until-t)/1000));document.querySelectorAll('[data-timer]').forEach(x=>{x.textContent=left+'초';});
+  if(!placeHost(b)||t<b.prep.until)return;prepDone(b);}
+function prepDone(b){const P=b.prep;if(!P)return;b.prep=null;prepOverlay(null);
+  if(b.endsAt)b.endsAt+=now()-P.t0;
   b.turn=0;startTurn(b,Math.random);b.deadline=now()+b.rules.turnSeconds*1000;planBots(b);
-  b.log.push({t:'sys',text:`전원 위치 선정 완료${late.length?` · 자동 배치 ${late.map(p=>p.name).join(', ')}`:''} · 레이드 시작`});
-  save();if(S.route==='battle')render();toast('위치 선정 완료 · 레이드를 시작합니다.','good');if(b.shared&&typeof ptPush==='function')ptPush();}
-function placeBanner(b){const P=b.place;if(!P)return '';const me=b.players.find(p=>p.isMe);
+  b.log.push({t:'sys',text:'레이드 시작'});
+  save();if(S.route==='battle')render();toast('전투 시작!','good');if(b.shared&&typeof ptPush==='function')ptPush();}
+function placeBanner(b){if(b.prep)return `<div class="gplace" role="status"><b>위치 확정</b><span>잠시 뒤 전투가 시작됩니다 · 보스 공격 예고는 시작할 때 나옵니다</span></div>`;const P=b.place;if(!P)return '';const me=b.players.find(p=>p.isMe);
   return `<div class="gplace" role="status"><b>위치 선정</b><span>${me&&me.pos!=null?`내 자리 · ${cellName(me.pos)} (다른 칸을 눌러 바꿀 수 있음)`:'지도에서 설 자리를 누르세요'}</span><span class="num">선정 <em data-place-n>${b.players.filter(p=>p.pos!=null).length}/${b.players.length}</em> · 남은 시간 <em data-place-left>${P.until?Math.max(0,Math.ceil((P.until-now())/1000))+'초':'가호 선택 중'}</em></span></div>`;}
 function showBless(anim){modal(blessDlg());const mm=$('.modal');if(mm)mm.classList.add('bless');const B0=S.battle;if(B0&&B0.bless&&B0.bless.pick){const bid=B0.id;clearTimeout(showBless._t);showBless._t=setTimeout(()=>{const B=S.battle;if(B&&B.id===bid&&$('.modal.bless'))modal('');},anim?3200:2200);}  /* 가호가 정해지면 잠시 보여 준 뒤 자동으로 닫음 */if(anim){const cs=$$('.modal .bl-card');cs.forEach(c=>c.classList.remove('flip'));setTimeout(()=>cs.forEach((c,i)=>setTimeout(()=>c.classList.add('flip'),c.classList.contains('mine')?0:650+i*90)),40);}}
 function massTick(t){
@@ -549,7 +564,7 @@ function massTarget(b){
   else h+=`<div class="mtg"><span class="mtg-l">도발 수치</span><span class="faint">제압한 탱커 없음 · 탱커 → 누적 대미지·회복량 순으로 표적</span></div>`;
   return h;}
 function gridBoard(b,me){
-  const tel=b.place?null:b.tel;   /* 위치 선정 중엔 예고 칸 안 보임(실제 자리로 다시 정함) */const area=new Set([...(tel&&tel.type==='area'?tel.cells:[]),...(b.pend&&b.pend.type==='area'?b.pend.cells:[])]);const mode=S.sel.gmode||'fight';
+  const tel=b.place||b.prep?null:b.tel;   /* 위치 선정 중엔 예고 칸 안 보임(실제 자리로 다시 정함) */const area=new Set([...(tel&&tel.type==='area'?tel.cells:[]),...(b.pend&&b.pend.type==='area'?b.pend.cells:[])]);const mode=S.sel.gmode||'fight';
   const reach=new Set(me&&!me.dead&&!me.confirmed&&mode==='move'?reachable(b,me):[]);
   const rng=me&&!me.dead?rangeR(me):0;
   let h='';

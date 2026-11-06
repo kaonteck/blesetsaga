@@ -945,7 +945,7 @@ async function ptRefreshStateOnce(){const id=PT.chRoom;if(!id)return;const {data
 // ── 전투: 파티장 ──
 function ptSnapshot(b){
   const s=JSON.parse(JSON.stringify(b,(k,v)=>k==='result'?undefined:v));
-  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;if(b.endsAt)s.endsIn=Math.max(0,b.endsAt-now());delete s.endsAt;if(s.blessR&&!s.bless)s.bless=s.blessR;delete s.blessR;if(b.place)s.place={go:b.place.go?1:0,untilIn:b.place.until?Math.max(0,b.place.until-now()):null};
+  s.log=(s.log||[]).slice(-80);s.deadlineIn=Math.max(0,b.deadline-now());s.hostName=S.me.name;if(b.endsAt)s.endsIn=Math.max(0,b.endsAt-now());delete s.endsAt;if(s.blessR&&!s.bless)s.bless=s.blessR;delete s.blessR;if(b.place)s.place={go:b.place.go?1:0,untilIn:b.place.until?Math.max(0,b.place.until-now()):null};if(b.prep)s.prep={untilIn:Math.max(0,b.prep.until-now())};
   return s;
 }
 function ptPushSoon(){const b=ptBattle();if(!ptHost(b))return;clearTimeout(PT.pushT);PT.pushT=setTimeout(()=>ptPush(),500);}
@@ -998,6 +998,7 @@ function ptApplyState(state,rev){
   if(PT.sent&&PT.sent.turn===b.turn&&PT.sent.room===b.shared.room&&!me.confirmed&&PT.sent.action){me.action=PT.sent.action.action;me.action2=PT.sent.action.action2||null;if(b.grid)me.itemAct=PT.sent.action.itemAct||null;me.confirmed=true;}
   b.deadline=now()+(+state.deadlineIn||0);b.allAt=null;delete b.deadlineIn;
   if(b.place&&typeof b.place==='object'){const u=b.place.untilIn;b.place={t0:now(),go:b.place.go?now():null,until:u!=null?now()+Math.max(0,Math.min(120000,+u||0)):null,auto:{},botAt:{},done:{}};}else delete b.place;
+  if(b.prep&&typeof b.prep==='object'){b.prep={t0:now(),until:now()+Math.max(0,Math.min(30000,+b.prep.untilIn||0))};}else delete b.prep;
   const first=!prev,newTurn=!prev||prev.turn!==b.turn;
   if(prev&&prev.result)b.result=prev.result;
   S.battle=b;
@@ -1200,6 +1201,7 @@ function ptApplyDrunState(state){
         if(PT.sent&&PT.sent.turn===b.turn&&PT.sent.room===rid&&!me.confirmed&&PT.sent.action){me.action=PT.sent.action.action;me.action2=PT.sent.action.action2||null;me.confirmed=true;}
         b.deadline=now()+(+state.deadlineIn||0);b.allAt=null;delete b.deadlineIn;
   if(b.place&&typeof b.place==='object'){const u=b.place.untilIn;b.place={t0:now(),go:b.place.go?now():null,until:u!=null?now()+Math.max(0,Math.min(120000,+u||0)):null,auto:{},botAt:{},done:{}};}else delete b.place;
+  if(b.prep&&typeof b.prep==='object'){b.prep={t0:now(),until:now()+Math.max(0,Math.min(30000,+b.prep.untilIn||0))};}else delete b.prep;
         first=!prev;const newTurn=!prev||prev.turn!==b.turn;
         if(prev&&prev.result)b.result=prev.result;
         S.battle=b;if(first){S.route='battle';toast(`${R.idx+1}페이즈 · ${b.mon.name} · 파티 전투`,'good');}

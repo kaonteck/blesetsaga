@@ -3713,3 +3713,12 @@ html{overflow-y:scroll}
   .gfx .gqs-s.pt small{font-size:9.5px;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
   .gfx .gqs-s.pt.dead{opacity:.55}
 }
+/* 전투 시작 15초 카운트(화면 가운데) */
+#gcount{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px 40px 18px;border-radius:18px;background:rgba(14,14,18,.78);border:1px solid rgba(220,196,137,.45);box-shadow:0 10px 40px rgba(0,0,0,.5);color:#fff;text-align:center}
+#gcount small{font-size:13px;letter-spacing:.08em;color:#dcc489}
+#gcount b{font-size:76px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums;min-width:1.3em}
+#gcount em{font-style:normal;font-size:12px;color:rgba(255,255,255,.6)}
+#gcount.low b{color:#ff8a7a}
+#gcount b.gc-pop{animation:gcPop .45s ease-out}
+@keyframes gcPop{0%{transform:scale(1.35);opacity:.4}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){#gcount b.gc-pop{animation:none}}

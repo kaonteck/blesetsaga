@@ -1681,6 +1681,10 @@ html[data-theme="light"] .qs-pi.r-tank,html[data-theme="light"] .gqs-s.r-tank .g
 html[data-theme="light"] .qs-pi.r-heal,html[data-theme="light"] .gqs-s.r-heal .gqs-pt{background:var(--heal)}
 html[data-theme="light"] .qs-pi.r-dps,html[data-theme="light"] .gqs-s.r-dps .gqs-pt{background:var(--dps)}
 @media (min-width:1101px){html[data-theme="light"] .gfx .gqs-s.pt small{color:var(--muted)}}
+html[data-theme="light"] #gcount{background:rgba(14,14,18,.78);border:1px solid rgba(220,196,137,.45);box-shadow:0 10px 40px rgba(0,0,0,.5);color:#fff}
+html[data-theme="light"] #gcount small{color:#dcc489}
+html[data-theme="light"] #gcount em{color:rgba(255,255,255,.6)}
+html[data-theme="light"] #gcount.low b{color:#ff8a7a}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
