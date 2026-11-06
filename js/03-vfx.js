@@ -1,6 +1,6 @@
 /* ── 지역 머리말 픽셀 효과 ──
    Sprite Fusion pixel-art VFX (MIT License, Copyright (c) 2026 Hugo Duprez) 를 이식.
-   snow=혹한의 땅 · fireflies=초원의 땅 · embers=작열의 땅 · bubbles=바다의 땅 · fog=늪의 땅 · miasma(같은 fog, 녹물·독기 빛깔)=블라스파미아
+   snow=혹한의 땅 · fireflies=초원의 땅 · embers=작열의 땅 · bubbles=바다의 땅 · fog=늪의 땅 · saltstorm(pixelfx blizzard, 소금빛)=소금의 땅 · miasma(같은 fog, 녹물·독기 빛깔)=블라스파미아
    탐색 › 지역 화면의 .exr-head 뒤에 캔버스 하나(#exr-fx). render() 뒤 initRegionFx() 호출(04-ui).
    좌표: 월드 단위 2 = 아트 px 1 = CSS px 2. 동작 줄이기 설정이면 끔. */
 const REGION_FX=(()=>{
@@ -156,13 +156,30 @@ function fog(o){const A=o.area,D=o.density??1,WIND=o.wind??22,N=Math.max(1,Math.
         buf.blend(x,y,TONES[c],alpha*(.6+.2*c));}}}
   return {update(dt){t+=dt;},draw(buf){for(let i=0;i<N;i++)bank(buf,N===1?.5:i/(N-1),i);}};}
 
+/* pixelfx 원본 효과(js/vendor, window.PIXELFX)를 그대로 돌리는 것들. 효과 하나가 320 아트 px 폭이라
+   캔버스 폭이 320 아트 px 이하가 되게 정수배로 키운다(데스크톱 4배 · 모바일 2배, 이어 붙이면 경계가 보여서 하나만). 기준점은 아래 가운데. */
+const PFX_OF={
+  /* 소금의 땅: 눈보라(blizzard)를 소금빛 팔레트로 · 소금 폭풍 */
+  saltstorm:{fx:'blizzard',seed:9,palette:['#1a1612','#2b241d','#463b30','#6b5d4d','#9a8b77','#cbbfac','#ece4d6','#ffffff']}};
+function startPfx(cv,kind,cw,ch){const P=window.PIXELFX,D=PFX_OF[kind];if(!P||!P.fx[D.fx])return;
+  const sc=Math.max(PX,Math.ceil(cw/320)),W=Math.max(1,Math.round(cw/sc)),H=Math.max(1,Math.round(ch/sc));if(W<8||H<8)return;
+  cv.width=W;cv.height=H;cv.style.height=ch+'px';
+  const ctx=cv.getContext('2d'),img=ctx.createImageData(W,H),frame=P.createFrame(W,H);
+  /* 바닥 둔덕은 캔버스 아래로 숨기고(y=H+5) 날리는 띠·알갱이만 보이게 */
+  const fx=P.createFx(P.fx[D.fx],{x:Math.round(W/2),y:H+5,palette:D.palette,seed:D.seed});fx.update(2.5); /* 처음부터 바람이 불고 있게 */
+  const c={cv,raf:0,last:performance.now(),acc:0};cur=c;
+  const draw=()=>{P.clearFrame(frame);fx.draw(frame);P.composite(frame,img.data,null);ctx.putImageData(img,0,0);};
+  const loop=ts=>{if(!cv.isConnected){stop();return;}const dt=Math.min(.05,(ts-c.last)/1000);c.last=ts;c.acc+=dt;
+    if(c.acc>=1/30){fx.update(c.acc);c.acc=0;draw();}c.raf=requestAnimationFrame(loop);};
+  draw();c.raf=requestAnimationFrame(loop);}
 const MAKE={snow,fireflies,embers,bubbles,fog,miasma:fog};
 let cur=null;
 function start(cv){if(cur&&cur.cv===cv)return;stop();
   try{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;}catch(e){}
-  const kind=cv.dataset.fx;if(!MAKE[kind])return;
+  const kind=cv.dataset.fx;if(!MAKE[kind]&&!PFX_OF[kind])return;
   const host=cv.parentElement;const stopAt=host.querySelector('.wdb')||host.querySelector('.exr-now');
   const cw=host.clientWidth,ch=stopAt?Math.min(host.clientHeight,stopAt.offsetTop+stopAt.offsetHeight+12):host.clientHeight;
+  if(PFX_OF[kind])return startPfx(cv,kind,cw,ch);
   const W=Math.max(1,Math.round(cw/PX)),H=Math.max(1,Math.round(ch/PX));if(W<8||H<8)return;
   cv.width=W;cv.height=H;cv.style.height=ch+'px';
   const ctx=cv.getContext('2d');const img=ctx.createImageData(W,H);const out=new Uint32Array(img.data.buffer);

@@ -310,7 +310,7 @@ const LAND_DESC={frost:'만년설과 얼음 협곡으로 뒤덮인 북쪽 끝의
   swamp:'안개가 걷히지 않는 동쪽의 습지대. 바다뱀의 고리 근처에는 발이 빠지는 늪이 곳곳에 숨어 있다.',
   sea:'해안 절벽과 항구 도시가 이어진 바다의 땅. 인어의 속삭임이 들린다는 곶 끝에는 아무도 오래 머물지 않는다.',
   chaos:'저주가 처음 내려앉은 섬, 블라스파미아. 녹투성이 호수 위 백야의 신전만이 희미한 빛을 낸다.'};
-const REGION_FX_OF={frost:'snow',meadow:'fireflies',ember:'embers',sea:'bubbles',swamp:'fog',chaos:'miasma'};
+const REGION_FX_OF={frost:'snow',meadow:'fireflies',ember:'embers',sea:'bubbles',swamp:'fog',chaos:'miasma',salt:'saltstorm'};
 function vRegion(land,d,spots){
   const W=todayWeather();const w=W.find(x=>x.name===LANDS[land]);
   return `<div class="wrap page"><div class="page-head"><div><h2>탐색<small class="en">Explore</small></h2></div></div>
