@@ -2053,7 +2053,7 @@ function rnForm(done){if(document.getElementById('rn-gate'))return;
   const ov=document.createElement('div');ov.id='rn-gate';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','rn-t');
   ov.innerHTML=`<form class="rn-box" autocomplete="off" novalidate>
     <ul class="rn-note"><li>본 내용은 블레서님의 정보를 입력하는 용도입니다(진짜 개인 정보는 입력하지 말아 주세요).</li><li>캐릭터 카드에는 본 내용이 나오지 않습니다.</li></ul>
-    <h3 id="rn-t">블레서 정보</h3>
+    <h3 id="rn-t">캐릭터 설정(현실)</h3>
     <label class="rn-f"><span>본명</span><input id="rn-in" type="text" maxlength="30" placeholder="본명" autocomplete="off"></label>
     <label class="rn-f"><span>접속 지역 <small>(현재 위치)</small></span><input id="rn-loc" type="text" maxlength="40" placeholder="예: 서울" autocomplete="off"></label>
     <p class="errs" id="rn-err" hidden></p><button class="btn btn-primary" type="submit">확인</button></form>`;
