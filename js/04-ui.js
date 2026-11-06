@@ -282,7 +282,7 @@ function sideCard(){
   const me=S.me,st=myStats(),need=expNeed(me.level),cap=me.level>=cfg().levelCap;
   const ib=k=>(st[k]||0)+(typeof itemBonus==='function'?itemBonus(k):0);
   const xp=cap?100:pct(me.exp,need);const canAdv=CLASSES[me.job].tier===1&&me.level>=cfg().jobAdvanceLevel;
-  const mx=ib('maxHp'),hp=hpNow(),cur=Math.round(mx*hp);
+  const mx=ib('maxHp'),hp=hpNow(),cur=Math.round(mx*hp);const mg=ib('mag');  /* 마력: 체력처럼 막대(현재/최대). 마력은 줄어드는 자원이 아니라 늘 가득 */
   const row=(k,l)=>`<li class="sc-row"><span class="si si-${k} inl">${ICON[k]}</span><span class="sc-k">${l}</span><b class="num">${ib(k)}</b></li>`;
   return `<div class="panel me-card sc">
     <div class="sc-por">${portraitHTML(false)}</div>
@@ -294,7 +294,8 @@ function sideCard(){
     <div class="sc-gauge xpwrap" tabindex="0" aria-label="경험치 ${cap?'최대':`${me.exp} / ${need}`}"><div class="sc-gh"><span class="sc-gl">경험치</span><span class="num">${cap?'MAX':`${me.exp.toLocaleString('ko-KR')}/${need.toLocaleString('ko-KR')}`}</span></div><div class="bar xp"><i style="width:${xp}%"></i></div></div>
     <div class="sc-st"><div class="sc-sh">STATUS</div>
       <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-maxHp inl">${ICON.maxHp}</span>체력</span><span class="num">${cur.toLocaleString('ko-KR')}/${mx.toLocaleString('ko-KR')}</span></div><div class="bar hp"><i style="width:${Math.round(hp*100)}%"></i></div></div>
-      <ul class="sc-rows">${row('mag','마력')}${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
+      <div class="sc-gauge"><div class="sc-gh"><span class="sc-gl"><span class="si si-mag inl">${ICON.mag}</span>마력</span><span class="num">${mg.toLocaleString('ko-KR')}/${mg.toLocaleString('ko-KR')}</span></div><div class="bar mag"><i style="width:${mg>0?100:0}%"></i></div></div>
+      <ul class="sc-rows">${row('atk','공격력')}${row('def','방어력')}${row('luk','행운')}</ul>
       <div class="sc-gold">${goldHTML(me.gold)}</div></div></div>`;
 }
 /* ── 오른쪽 고정: 퀵바(바로가기 3칸) · 진행 중인 목록 · 주간 미션 · 채팅 ── */

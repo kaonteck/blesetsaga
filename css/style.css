@@ -3452,3 +3452,6 @@ html[data-theme="light"] .exr-fx.fx-embers{opacity:.45}html[data-theme="light"] 
 .dun-card.has-pic>.dun-t{flex:1 1 0;min-width:0}
 .dun-card .mon-img.dun-pic{flex:none;width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--rule);background:var(--slab-2);padding:0;margin:0}
 @media (max-width:640px){.mcard-h .mon-img.mh-pic{width:56px;height:56px}.dun-card .mon-img.dun-pic{width:64px;height:64px}.dun-card.has-pic{gap:12px}}
+
+/* ── 프론트 2026-11-07(유저 요청): 캐릭터 카드 마력을 체력처럼 막대로 ── */
+.bar.mag>i{background:var(--mag);background-image:none}
