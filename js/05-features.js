@@ -1488,12 +1488,19 @@ function ensureRec(){const me=S&&S.me;if(me&&me.rec&&me.rec.length>REC_MAX)me.re
   me.rec=L.sort((a,b)=>b.ts-a.ts).slice(0,REC_MAX);}
 function recRows(){const q=(S.sel.recQ||'').trim().toLowerCase();const nm=k=>(REC_CAT.find(c=>c[0]===k)||[])[1]||'';
   const L=(S.me.rec||[]).filter(x=>!q||`${nm(x.cat)} ${x.text} ${x.got}`.toLowerCase().includes(q));
-  return L.length?L.map(x=>`<div class="rec-r"><span class="rec-tag"><span class="rec-c rc-${x.cat}">${nm(x.cat)}</span>${x.sub&&x.sub!==nm(x.cat)?`<small class="rec-sub">${esc(x.sub)}</small>`:''}</span><span class="rec-t" title="${esc(x.text+(x.got?' '+x.got:''))}">${esc(x.text)}${x.got?` <b>${esc(x.got)}</b>`:''}</span><small class="rec-w num">${fmtWhen(x.ts)}</small></div>`).join(''):`<p class="faint rec-empty">${q?'검색 결과가 없습니다.':'아직 기록이 없습니다.'}</p>`;}
+  return L.length?L.map(x=>`<div class="rec-r" data-act="rec-more" data-ts="${x.ts}"><span class="rec-tag"><span class="rec-c rc-${x.cat}">${nm(x.cat)}</span>${x.sub&&x.sub!==nm(x.cat)?`<small class="rec-sub">${esc(x.sub)}</small>`:''}</span><span class="rec-t">${esc(x.text)}${x.got?` <b>${esc(x.got)}</b>`:''}</span><small class="rec-w num">${fmtWhen(x.ts)}</small></div>`).join(''):`<p class="faint rec-empty">${q?'검색 결과가 없습니다.':'아직 기록이 없습니다.'}</p>`;}
 function recPanel(){ensureRec();const open=S.sel.recOpen!==false;
   return `<div class="panel recp ${open?'':'folded'}" data-recp><div class="recp-h"><button class="cq-tog" data-act="rec-fold" aria-expanded="${open}">${hTitle('scroll','기록')}<span class="cq-n num" data-rec-n>${(S.me.rec||[]).length}</span><svg class="cq-ar" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     ${open?`<label class="recp-q"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.4 10.4 14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input type="search" data-recq placeholder="기록 검색" value="${esc(S.sel.recQ||'')}" aria-label="기록 검색" autocomplete="off"></label>
     <div class="recp-list" data-rec-list>${recRows()}</div>`:''}</div>`;}
 /* 새 기록이 생기면 목록만 다시 그림(검색창 입력 중에도 포커스 유지) */
+/* 한 줄을 넘는 기록은 누르면 그 줄 바로 아래에 전체 내용 팝오버(우편·환경설정 팝업처럼 떠 있는 작은 창) */
+function recPop(row){const x=(S.me.rec||[]).find(r=>String(r.ts)===row.dataset.ts);if(!x)return;const key='rec:'+x.ts;
+  if(S.sel.rmem===key){closeRmem();return;}const t=row.querySelector('.rec-t');if(!t||t.scrollWidth<=t.clientWidth+1){closeRmem();return;}
+  closeRmem();S.sel.rmem=key;const nm=(REC_CAT.find(c=>c[0]===x.cat)||[])[1]||'';row.classList.add('open');
+  $('#rmenu').innerHTML=`<div class="rmenu rec-pop" role="dialog" aria-label="기록 내용"><div class="rec-pop-h"><span class="rec-c rc-${x.cat}">${nm}</span>${x.sub&&x.sub!==nm?`<small class="rec-sub">${esc(x.sub)}</small>`:''}<small class="rec-w num">${fmtWhen(x.ts)}</small></div><p>${esc(x.text)}${x.got?` <b>${esc(x.got)}</b>`:''}</p></div>`;
+  placeFloat(row,Math.round(row.getBoundingClientRect().width));}
+document.addEventListener('scroll',e=>{if(e.target&&e.target.matches&&e.target.matches('[data-rec-list]')&&S&&String(S.sel.rmem||'').startsWith('rec:'))closeRmem();},{capture:true,passive:true});
 function refreshRec(){const list=$('[data-rec-list]'),n=$('[data-rec-n]');if(n)n.textContent=(S.me.rec||[]).length;if(list){const sc=list.scrollTop;list.innerHTML=recRows();list.scrollTop=sc;}}
 document.addEventListener('input',e=>{const t=e.target;if(!t||!t.matches||!t.matches('[data-recq]'))return;S.sel.recQ=t.value;const list=$('[data-rec-list]');if(list){list.innerHTML=recRows();list.scrollTop=0;}});
 /* 보상 지급 → 기록 (탐색·자동 사냥은 탐색 기록 문장으로 따로 남김) */

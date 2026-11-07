@@ -511,7 +511,7 @@ function openUinfo(name,btn){
   const key='u:'+name;if(S.sel.rmem===key){closeRmem();return;}
   closeRmem();S.sel.rmem=key;$('#rmenu').innerHTML=uinfoHTML(name);placeFloat(btn,250);
 }
-function closeRmem(){if(S&&S.sel.rmem){S.sel.rmem=null;const b=$('#rmenu');if(b)b.innerHTML='';$$('.rc-mem').forEach(x=>x.setAttribute('aria-expanded','false'));}}
+function closeRmem(){$$('.rec-r.open').forEach(x=>x.classList.remove('open'));if(S&&S.sel.rmem){S.sel.rmem=null;const b=$('#rmenu');if(b)b.innerHTML='';$$('.rc-mem').forEach(x=>x.setAttribute('aria-expanded','false'));}}
 window.addEventListener('scroll',closeRmem,{passive:true});window.addEventListener('resize',()=>{if(S)closeRmem();});
 document.addEventListener('scroll',e=>{if(e.target&&e.target.matches&&e.target.matches('[data-msgs],.pop-body,[data-rslide],[data-rplist]'))closeRmem();},{capture:true,passive:true});
 /* 메인 · 모집 중인 파티: 던전 / 파티 레이드 / 토벌전 탭 + [구분] 몬스터 드롭다운 · 가로형 줄 */

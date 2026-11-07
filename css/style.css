@@ -3835,3 +3835,12 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 .rec-tag{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
 .rec-sub{font-size:10.5px;color:var(--faint)}
 .rec-r .rec-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;min-width:0}
+/* 기록: 한 줄 넘는 줄은 눌러서 팝오버로 전체 보기 · 다른 블레서 상세보기에서는 왼쪽 내 STATUS 숨김 */
+.rec-r[data-act="rec-more"]{cursor:pointer}
+.rec-r.open .rec-t{color:var(--gold-hi)}
+.rmenu.rec-pop{padding:10px 12px}
+.rec-pop-h{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.rec-pop-h .rec-w{margin-left:auto}
+.rec-pop p{margin:0;font-size:12.5px;line-height:1.6;color:var(--text);overflow-wrap:anywhere}
+.rec-pop p b{color:var(--xp);font-weight:500}
+.wrap.tri[data-route="profile"] .tri-l .sc-st{display:none}
