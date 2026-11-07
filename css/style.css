@@ -3855,3 +3855,9 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 .rec-pop p{margin:0;font-size:12.5px;line-height:1.6;color:var(--text);overflow-wrap:anywhere}
 .rec-pop p b{color:var(--xp);font-weight:500}
 .wrap.tri[data-route="profile"] .tri-l .sc-st{display:none}
+/* 생물 도감 몬스터 그림 = 물고기 도감 크기(40px) · 칸 여백도 같게 */
+.mdex{gap:3px;padding:10px 6px}
+.mdex .mon-img,.mdex .mon-img.mon-ph{width:40px;height:40px;max-width:40px;padding:0;margin:0 auto;object-fit:contain}
+.mdex .ascii,.mdex.unk .ascii{width:40px;height:40px;max-width:40px;min-height:0;aspect-ratio:auto;padding:0;margin:0 auto;font-size:20px;line-height:40px;overflow:hidden}
+.mdex:not(.unk) .ascii{font-size:3px;line-height:1}
+.mdex .mon-img,.mdex .ascii,.mdex.unk .ascii{border:0;background:none;box-shadow:none;border-radius:0}
