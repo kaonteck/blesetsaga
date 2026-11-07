@@ -125,6 +125,7 @@
 | 028_real_name.sql | 적용됨 (2026-11-06) — 실제 이름 표 `real_names`(본인만 읽기·쓰기) + `item_catalog`에 `q_scrap` |
 | 030_mass_two_rooms.sql | 적용됨 (2026-11-07) — `mass_spawn`이 같은 출현 묶음(`meta.grp`, `slot` 1·2)으로 방 두 개 |
 | 031_weekly_goal.sql | 적용됨 (2026-11-07) — 서버 공동 목표(`weekly_goals`·`weekly_goal_progress`·`goal_add`·`goal_status`·`goal_settle`·`admin_goals`) |
+| 032_goal_pending.sql | 적용됨 (2026-11-07) — 공동 목표 한도를 넘은 기여는 대기분으로 미뤄 두었다가 나중에 넣음 |
 | 029_real_region.sql | 적용됨 (2026-11-06) — `real_names.region`(접속 지역) 추가 |
 | 027_monster_art.sql | 적용됨 (2026-11-05) — 공개 버킷 `monster-art`(2MB, png·jpg·webp·gif), 올리기·바꾸기·지우기는 운영자만 |
 | 028_items_ch8.sql | 적용됨 (2026-11-05, 실제 DB 마이그레이션 이름은 `027_items_ch8`) |

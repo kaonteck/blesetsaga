@@ -561,7 +561,13 @@ select t.ok((select total from weekly_goals where week=goal_week())=0,'운영자
 select t.as(:'P1');
 select t.ok((select goal_add('explore',1)->>'reason')='OTHER_KIND','다른 종류는 아무 일도 안 함');
 select t.ok((select (goal_add('kill:m_dog',1000)->>'added')::int)=300,'한 번에 예산(300)까지만');
-select t.ok((select goal_add('kill',5)->>'reason')='TOO_FAST','예산을 다 쓰면 TOO_FAST');
+select t.ok((select goal_add('kill',5)->>'reason')='QUEUED','예산을 다 쓰면 넘친 양은 대기분으로(032)');
+select t.ok((select (goal_status()->>'pending')::int)=705,'대기분 705 = 넘친 700 + 5');
+select goal_add('kill',1000);
+select t.ok((select goal_add('kill',1000)->>'reason')='TOO_FAST' and (select (goal_status()->>'pending')::int)=2000,'대기분 상한(처치 2,000)을 넘는 양만 버림');
+reset role; update weekly_goal_progress set at=at-interval '10 minutes' where week=goal_week() and user_id=:'P1'; set role authenticated; select t.as(:'P1');
+select t.ok((select (goal_status()->>'mine')::int)=360 and (select (goal_status()->>'pending')::int)=1940,'예산이 다시 차면 상태를 읽을 때 대기분부터 합계로(10분 = 60)');
+reset role; update weekly_goal_progress set n=300, pending=0 where week=goal_week() and user_id=:'P1'; update weekly_goals set total=300 where week=goal_week(); set role authenticated; select t.as(:'P1');
 update weekly_goals set total=999999 where week=goal_week();
 select t.ok((select total from weekly_goals where week=goal_week())=300,'유저는 합계 못 바꿈');
 select t.ok((select (goal_status()->>'mine')::int)=300 and (select (goal_status()->>'total')::int)=300,'상태: 합계·내 기여');
@@ -579,6 +585,7 @@ select t.ok((select count(*) from mail where recipient=:'P2' and text like '[공
 select t.as(:'P3');
 select t.ok((select count(*) from mail where recipient=:'P3' and text like '[공동 목표 달성]%')=0,'기여 안 한 블레서는 우편 없음');
 select t.ok((select goal_add('kill',1)->>'reason')='DONE','달성 뒤에는 더 안 받음');
+select t.ok((select (goal_status()->>'pending')::int)=0,'달성 뒤 대기분 없음');
 select t.ok((select goal_settle())=0,'정산 다시 불러도 두 번 안 보냄');
 select t.as(:'A',true);
 select t.fail($q$update weekly_goals set gold=99999 where week=goal_week()$q$,'보상 보낸 주는 보상 못 바꿈');
