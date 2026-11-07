@@ -604,7 +604,7 @@ function telLine(b){const tel=b.tel,m=b.mon;if(!tel)return '';const dmg=Math.rou
 // 다음 공격 예고: PC 전체 화면(.gfx)에서는 턴마다 잠깐 떴다 사라짐(전투 로그에는 '예고 · …'로 남음). 다시 그려도 처음부터 다시 뜨지 않게 처음 보인 시각을 기억.
 const TEL_SEEN={k:'',at:0};
 // 만신전 보스 대사: 패턴마다 늘 같은 대사 → 대사만 듣고 다음 공격을 알아챌 수 있게. 몬스터에 mass.lines{패턴:대사}가 있으면 그걸 씀({t}=대상 이름).
-const BOSS_SAY={single:'가장 거슬리는 놈부터 꺾어 주마.',dot:'가장 거슬리는 놈에게 독을 먹여 주지.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
+const BOSS_SAY={top:'가장 아프게 찌른 놈 — 네 놈이로구나.',single:'가장 거슬리는 놈부터 꺾어 주마.',dot:'가장 거슬리는 놈에게 독을 먹여 주지.',burst:'하나만 골라, 그 곁까지 짓밟아 주지.',burst2:'둘이다. 둘을 골라 그 곁까지 짓밟는다.',cross:'가로로, 세로로 — 땅을 갈라 주마.',quake:'내 곁에 붙은 것들부터 무너뜨린다.',ring:'멀리 숨은 쥐들, 거기까지 닿는다.',all:'피할 곳은 없다. 모두 무릎 꿇어라.'};
 function bossSay(b){const tel=b.tel;if(!tel)return '';const k=tel.type==='dot'?'dot':(tel.pat||'single');
   const mm=typeof monster==='function'&&b.monsterId?monster(b.monsterId):null;const own=mm&&mm.mass&&mm.mass.lines;let line=(own&&own[k])||BOSS_SAY[k]||'';
   if(line.includes('{t}')){const fix=b.attention?b.players.find(p=>p.id===b.attention):supActive(b)?b.players.find(p=>p.id===b.sup.by):null;const t=(fix&&!fix.dead?fix:null)||b.players.find(p=>p.id===tel.target);line=line.replace(/\{t\}/g,t?t.name:'');}
@@ -628,8 +628,8 @@ const GM_ANIM={to:null,from:null,t:0};
 function gmAnimMark(from,to){GM_ANIM.from=from;GM_ANIM.to=to;clearTimeout(GM_ANIM.t);GM_ANIM.t=setTimeout(()=>{GM_ANIM.from=GM_ANIM.to=null;},400);}
 function gfAct(b,me){
   let mode=S.sel.gmode||'fight';if(mode==='wait'){mode='fight';S.sel.gmode='fight';}const gi=S.sel.gitem;const al=living(b);
-  const CMD_EN={fight:'ATTACK',move:'MOVE',defend:'DEFEND',item:'ITEM',wait:'STANDBY'};
-  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','방어',''],['item','아이템','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''} ${GM_ANIM.to===k&&mode===k?'grow':''} ${GM_ANIM.from===k&&mode!==k?'shrink':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
+  const CMD_EN={fight:'ATTACK',move:'MOVE',defend:'STANDBY',item:'ITEM',wait:'STANDBY'};
+  const pad=`<div class="hud-cmd" role="group" aria-label="커맨드">${[['fight','전투','c-main'],['move','이동',''],['defend','대기',''],['item','아이템','']].map(([k,l,c])=>`<button class="hcmd ${c} ${mode===k?'on':''} ${GM_ANIM.to===k&&mode===k?'grow':''} ${GM_ANIM.from===k&&mode!==k?'shrink':''}" data-act="g-mode" data-mode="${k}" aria-pressed="${mode===k}" ${me.confirmed||me.dead?'disabled':''}><span class="hcmd-in">${GICON[k]}<b>${l}</b></span>${k==='item'&&gi?'<i class="hcmd-badge"></i>':''}</button>`).join('')}</div>`;
   let body='';
   if(me.dead)body=`<div class="gact-done"><p class="reason">전투 불능 상태입니다.</p><p class="muted" style="font-size:12.5px">신세이어를 가진 힐러가 부활시킬 수 있습니다. 직접 행동한 기록이 있으면 보상은 그대로 받습니다.</p></div>`;
   else if(me.confirmed)body=`<div class="gact-done"><div class="ph" style="margin:0 0 4px">제출 완료</div><p class="gact-sum">${esc(gActLabel(b,me))}</p><div class="row"><button class="btn" data-act="editact">행동 수정</button></div><p class="faint" style="font-size:12px">다른 참가자가 모두 제출하면 바로 판정합니다.</p></div>`;
@@ -638,7 +638,7 @@ function gfAct(b,me){
       <div class="gpos"><div><small>현재 위치</small><b class="num">${cellName(me.pos)}</b></div><span class="gpos-ar">→</span><div class="${ok?'on':''}"><small>이동 위치</small><b class="num">${ok?cellName(tgt):'—'}</b></div></div>
       <p class="muted" style="font-size:12.5px">전장에서 파랗게 표시된 칸을 눌러 이동할 곳을 고르세요.${b.tel&&b.tel.type==='area'&&b.tel.cells.includes(me.pos)?' <span class="reason">지금 자리는 예고 범위 안입니다.</span>':''}${ok&&b.tel&&b.tel.type==='area'&&b.tel.cells.includes(tgt)?' <span class="reason">선택한 칸도 예고 범위 안입니다.</span>':''}</p>
 `;}
-  else if(mode==='defend')body=`<div class="gact-h"><span class="hud-tag">DEFEND</span>방어</div><div class="gwait"><p>이번 턴 받는 대미지 <b>50% 감소</b> · 가장 먼저 처리됩니다.</p><small class="faint">이동하거나 공격하지 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small></div>`;
+  else if(mode==='defend')body=`<div class="gact-h"><span class="hud-tag">STANDBY</span>대기</div><div class="gwait"><p>이번 턴 <b>아무것도 하지 않습니다</b>.</p><small class="faint">이동하거나 공격하지 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small></div>`;
   else if(mode==='wait')body=`<div class="gact-h"><span class="hud-tag">STANDBY</span>대기</div><div class="gwait"><p>이번 턴 <b>대기</b>하시겠습니까?</p><small class="faint">움직이지도 공격하지도 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small>
       <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="wait">예, 대기합니다</button><button class="btn" data-act="g-mode" data-mode="fight">아니요</button></div></div>`;
   else if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(k=>ITEMS[k]);
@@ -670,14 +670,14 @@ function gfGo(b,me,mode){if(me.dead)return '';
   /* 행동 확정: 글자는 항상 '행동 확정', 확정할 수 없으면 회색(비활성) */
   const g=gfGoInfo(b,me,mode);return `<button class="btn ${g.on?'btn-primary':''} hcmd-go" ${g.on?g.attrs:'disabled'}><span class="go-l">행동 확정</span></button>`;}
 /* 전투 적용 대상 — 위치 옆 */
-function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')return '<span class="hud-pos hud-tgt">대상 나</span>';if(mode!=='fight')return '';
+function gfTgt(b,me,mode){if(me.dead||me.confirmed)return '';if(mode==='defend')return '';if(mode!=='fight')return '';
   const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};let n='';
   if(a.kind==='defend')n='나';
   else if(a.kind==='skill'&&SKILLS[a.skill]){const t=SKILLS[a.skill].target;
     if(t==='enemy')n=b.mon.name;else if(t==='ally'||t==='dead'){const p=b.players.find(x=>x.id===a.target);n=p?(p.isMe?'나':p.name):'선택 필요';}else n=t==='all'||t==='party'?'파티 전체':'나';}
   return n?`<span class="hud-pos hud-tgt">대상 ${esc(n)}</span>`:'';}
 const SHIELD_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.2-8 11-4.6-1.8-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 6v12" stroke="currentColor" stroke-width="1.2" opacity=".6"/></svg>';
-GICON.defend=SHIELD_SVG;
+GICON.defend=GICON.wait;  /* 방어 폐지 → 대기(모래시계) */
 let GS_GO={};
 /* 스킬 구분: 회복 · 공격 · 보조 (이 순서로 정렬) */
 const SK_CAT={heal:'회복',atk:'공격',sup:'보조'},SK_CAT_ORD={heal:0,atk:1,sup:2};
@@ -702,7 +702,7 @@ function gridSkillPanel(b,me){
   const aerr=a.kind==='skill'&&SKILLS[a.skill]?checkAct(b,me,a,hooks.hasItem):null;const valid=a.kind!=='none'&&!(needT(a)&&!a.target)&&!(aerr&&!(needT(a)&&!a.target));
   GS_GO={valid};const tp=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].target==='enemy'?'':targetPick(b,a);  /* 적 대상은 HUD 위치 옆에 표시 */
   return `<div class="sks-grid">${addonHTML}${list.map(slot).join('')}</div>${tp}${passive}
-    <div class="row"><span class="muted" style="font-size:12.5px">선택: ${esc(a.kind==='defend'?'방어':actLabel(b,a))}${aerr&&!(needT(a)&&!a.target)?` · <span class="reason">${esc(aerr)}</span>`:''}</span></div>`;
+    <div class="row"><span class="muted" style="font-size:12.5px">선택: ${esc(a.kind==='defend'?'대기':actLabel(b,a))}${aerr&&!(needT(a)&&!a.target)?` · <span class="reason">${esc(aerr)}</span>`:''}</span></div>`;
 }
 function gridParts(){const b=S.battle,me=b.players.find(p=>p.isMe);
   const set=(id,html)=>{const el=document.getElementById(id);if(el&&el._h!==html){el.innerHTML=html;el._h=html;}};
@@ -807,8 +807,8 @@ function vGridFight(){const b=S.battle,me=b.players.find(p=>p.isMe);
     </div>`;}
 
 /* ───────── 운영 · 만신전 ───────── */
-const DEFAULT_PATS={single:{name:'단일 강타',mult:1.1},burst:{name:'파쇄 낙인',mult:0.9},burst2:{name:'이중 낙인',mult:0.9},cross:{name:'십자 균열',mult:0.8},quake:{name:'대지 진동',mult:1.0},ring:{name:'외곽 낙뢰',mult:0.7},all:{name:'전장 붕괴',mult:0.5}};
-const PAT_DESC={single:'탱커 우선 한 명 강타 (지속 피해 확률 적용)',burst:'무작위 1명 주변 3×3',burst2:'무작위 2명 주변 3×3',cross:'무작위 1명이 선 가로·세로 줄 전체',quake:'보스 바로 옆 1칸 둘레 (근접 견제)',ring:'보스에서 3칸 이상 떨어진 외곽 (원거리 견제)',all:'전장 전체 · 피할 수 없음'};
+const DEFAULT_PATS={top:{name:'시선 집중',mult:1.2},single:{name:'단일 강타',mult:1.1},burst:{name:'파쇄 낙인',mult:0.9},burst2:{name:'이중 낙인',mult:0.9},cross:{name:'십자 균열',mult:0.8},quake:{name:'대지 진동',mult:1.0},ring:{name:'외곽 낙뢰',mult:0.7},all:{name:'전장 붕괴',mult:0.5}};
+const PAT_DESC={top:'직전 턴까지 누적 대미지 1위 한 명 강타 · 제압 무시 · 예고에 대상 표시',single:'적개심 1위 한 명 강타 (지속 피해 확률 적용)',burst:'무작위 1명 주변 3×3',burst2:'무작위 2명 주변 3×3',cross:'무작위 1명이 선 가로·세로 줄 전체',quake:'보스 바로 옆 1칸 둘레 (근접 견제)',ring:'보스에서 3칸 이상 떨어진 외곽 (원거리 견제)',all:'전장 전체 · 피할 수 없음'};
 const MASS_LINES=['붉은 칸 피해서 움직여요!','탱커분 보스 옆 붙어 주세요','힐 사거리 5×5예요, 가까이 와 주세요','다음 턴 십자 조심','페이즈 넘어갑니다','딜 넣을게요','한 칸에 둘까지만이에요'];
 function massDef(m){const C=massCfg();const d=m&&m.mass||{};return {title:d.title||'',phases:clone(d.phases||C.phases),patterns:{...clone(DEFAULT_PATS),...clone(d.patterns||{})},reward:clone(d.reward||C.reward)};}
 function adminMass(){

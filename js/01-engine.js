@@ -33,7 +33,7 @@ const CLASSES={
   demigod:{name:'데미갓',en:'Demigod',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'神',bonus:{hp:20,atk:4},
     desc:'신을 강림시켜 파티 전체를 회복한다.',skills:['bash','shining','cure','sinsayer','smite','judgment','bless','fasciation','pray','utopia']},
   summoner:{name:'서머너',en:'Summoner',tier:2,base:'priest',role:'heal',range:'5×5',sigil:'召',bonus:{hp:20,luk:4},
-    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['bash','shining','cure','sinsayer','smite','vindicate','dispel','blind','downworld','dystopia','backslider']}
+    desc:'소환수로 보호막과 약화를 거는 지원형 힐러.',skills:['bash','shining','cure','sinsayer','smite','vindicate','veil','dispel','blind','downworld','dystopia','backslider']}
 };
 const JOBS=CLASSES;
 const ORIGIN={defender:'황혼녘 강가',infighter:'바위 산맥',mage:'붉은 모래사막',shooter:'오아시스 마을',priest:'적막의 숲'};
@@ -161,7 +161,7 @@ const SKILLS={
   save:{name:'세이브',en:'Save',type:'support',phase:'pre',target:'self',uses:2,reduce:10,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지 10% 감소.'},
   save2:{name:'세이브 Ⅱ',en:'Save Ⅱ',type:'support',phase:'pre',target:'self',uses:2,reduce:30,desc:'자신의 방어력을 일시적으로 강화한다. 한 턴 동안 받는 대미지 30% 감소.'},
   crimehazard:{name:'크라임 해저드',en:'Crime Hazard',type:'dice',target:'enemy',uses:2,bonus:25,desc:'무기를 강하게 내리찍는다. 추가 대미지 +25%.'},
-  forestaller:{name:'제압',en:'Forestaller',type:'support',phase:'pre',target:'self',desc:'몬스터를 도발하여 자신을 우선 표적으로 삼게 만든다. 일정 이상의 대미지를 요하며, 특정 조건이 충족되면 스킬의 효력이 없어진다.',cond:['딜러가 입힌 총 대미지가 디펜더가 입힌 총 대미지의 네 배 이상 (다시 쓸 때마다 여덟 배, 열여섯 배로 늘어난다)','제압한 탱커가 쓰러짐']},
+  forestaller:{name:'제압',en:'Forestaller',type:'support',phase:'pre',target:'self',mult:0.8,desc:'몬스터를 도발하며 공격해(대미지 ×0.8) 자신을 우선 표적으로 삼게 만든다. 일정 이상의 대미지를 요하며, 특정 조건이 충족되면 스킬의 효력이 없어진다.',cond:['딜러가 입힌 총 대미지가 디펜더가 입힌 총 대미지의 네 배 이상 (다시 쓸 때마다 여덟 배, 열여섯 배로 늘어난다)','제압한 탱커가 쓰러짐']},
   execution:{name:'처형',en:'Execution',type:'dice',target:'enemy',desc:'공격하며 이번 턴 포함 3턴 동안 공격할 때마다 추가 대미지 0~22%를 준다.'},
   roar:{name:'전장의 포효',en:'Roar of a battle',type:'addon',special:true,uses:1,desc:'두 턴 동안 대미지 +60%. 시전자 HP가 최대 HP의 10%만큼 줄어든다. 공격 스킬과 함께 사용.'},
   berserker:{name:'광전사',en:'Berserker',type:'addon',special:true,uses:1,desc:'두 턴 동안 대미지 ×2. 유지되는 동안 시전자 최대 HP 10% 감소. 공격 스킬과 함께 사용.'},
@@ -174,7 +174,7 @@ const SKILLS={
   battlefield:{name:'배틀 필드',en:'Battle field',type:'dice',target:'enemy',desc:'발을 굴러 근방 3×3 영역 모두에게 대미지를 준다. 대상당 한 칸의 대미지만 적용.'},
   rush:{name:'러시',en:'Rush',type:'dice',target:'enemy',combo:{from:'jolt',bonus:15},desc:'대상을 빠르게 난도질한다.'},
   hitend:{name:'히트엔드',en:'Hitend',type:'dice',target:'enemy',combo:{from:'rush',bonus:25},crit:true,desc:'대상의 빈틈을 노려 깊게 찌른다.'},
-  subterfuge:{name:'속임수',en:'Subterfuge',type:'dice',target:'enemy',uses:2,special:true,bonus:25,poison:{pct:12,turns:2},desc:'독을 바른 무기로 공격(+25%). 이번 턴 포함 2턴 동안 공격력의 12% 중독.'},
+  subterfuge:{name:'속임수',en:'Subterfuge',type:'dice',target:'enemy',uses:2,special:true,bonus:25,poison:{pct:5,turns:2},desc:'독을 바른 무기로 공격(+25%). 이번 턴 포함 2턴 동안 공격력의 5% 중독.'},
   overkill:{name:'오버킬',en:'Overkill',type:'dice',target:'enemy',combo:{from:'jolt',bonus:15},desc:'졸트로 노린 대상의 약점을 파고든다.'},
   might:{name:'권능',en:'Might',type:'dice',target:'enemy',combo:{from:'overkill',bonus:40},crit:true,desc:'오버킬과 연계하여 연속으로 강한 공격을 가한다.'},
   carnage:{name:'대학살',en:'Carnage',type:'addon',special:true,uses:1,with:['overkill'],desc:'오버킬과 함께 사용. 대미지가 공격력의 2배 이상이면 이번 턴 포함 3턴 동안 모든 스킬 대미지 ×2.'},
@@ -186,12 +186,12 @@ const SKILLS={
   hellfire:{name:'헬파이어',en:'Hellfire',type:'nodice',target:'enemy',desc:'대상의 신체에 불꽃을 피운다. 이번 턴 포함 3턴 동안 마력의 18% 고정 대미지.'},
   eternalflame:{name:'이터널 플레임',en:'Eternal Flame',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 3턴 동안 판정 90~109%면 ×2, 110% 이상이면 ×3. 단 90% 미만이면 이번 턴과 다음 턴 공격 대미지가 무효.'},
   shooting:{name:'집중 사격',en:'Shooting',type:'dice',target:'enemy',desc:'대상을 무기로 공격한다.'},
-  poisonshot:{name:'포이즌슈팅',en:'Poison Shooting',type:'dice',target:'enemy',poison:{pct:12,turns:3},desc:'독을 바른 총알을 발사한다. 이번 턴 포함 3턴 동안 공격력의 12% 중독. 속임수 중독과 중첩되지 않는다.'},
+  poisonshot:{name:'포이즌슈팅',en:'Poison Shooting',type:'dice',target:'enemy',poison:{pct:5,turns:3},desc:'독을 바른 총알을 발사한다. 이번 턴 포함 3턴 동안 공격력의 5% 중독. 속임수 중독과 중첩되지 않는다.'},
   smoke:{name:'연막탄',en:'Smoke Projectile',type:'dice',target:'enemy',uses:1,bonus:25,desc:'추가 대미지 +25%. 다음 턴 본인을 제외한 파티원 대미지 +15%(시전자 공격력 기준).'},
   legendary:{name:'레전더리 샷',en:'Legendary Shot',type:'dice',target:'enemy',combo:{from:'shooting',bonus:25},crit:true,desc:'특수 탄환을 장전하여 공격한다. 판정이 110% 이상이면 다음 턴 오버 버닝 사용 가능.'},
   overburning:{name:'오버 버닝',en:'Over burning',type:'dice',target:'enemy',desc:'직전 턴 레전더리 샷의 판정이 110% 이상일 때 사용 가능. 결과값 ×2.'},
   fusillade:{name:'연사',en:'Fusillade',type:'passive',special:true,desc:'크리티컬 판정에 성공하면 다음 턴에 스킬을 두 번 사용할 수 있다.'},
-  shining:{name:'샤이닝',en:'Shining',type:'dice',target:'enemy',mult:1.3,holy:true,desc:'대상을 신성한 빛으로 공격한다. 대미지 ×1.3, 영혼형 몬스터에게는 ×1.5 추가.'},
+  shining:{name:'샤이닝',en:'Shining',type:'dice',target:'enemy',mult:1.1,holy:true,desc:'대상을 신성한 빛으로 공격한다. 대미지 ×1.1, 영혼형 몬스터에게는 ×1.5 추가.'},
   smite:{name:'징벌',en:'Smite',type:'dice',target:'enemy',lv:10,drain:30,desc:'신의 벌을 내린다. 준 대미지의 30%만큼 HP가 가장 낮은 아군(혼자면 자신)을 회복한다. LV10부터 사용 가능.'},
   judgment:{name:'심판',en:'Judgment',type:'dice',target:'enemy',uses:2,mult:1.6,crit:true,desc:'하늘의 심판을 내린다. 대미지 ×1.6.'},
   cure:{name:'큐어',en:'Cure',type:'heal',target:'ally',desc:'신의 축복으로 치유한다. 회복량 = 마력 × 판정 × 40% + 마력의 10%.'},
@@ -205,23 +205,29 @@ const SKILLS={
   downworld:{name:'다운월드',en:'Down World',type:'support',phase:'pre',target:'enemy',uses:1,desc:'소환수가 한 턴 동안 대상을 봉쇄한다. 이번 턴 몬스터 대미지 −30%.'},
   dystopia:{name:'디스토피아',en:'Dystopia',type:'addon',special:true,uses:1,desc:'공격 스킬과 함께 사용. 아군 전체가 최대 HP의 3%씩 바쳐 이번 공격 대미지 ×3.'},
   dispel:{name:'디스펠',en:'Dispel',type:'support',phase:'pre',target:'ally',uses:2,desc:'소환수가 대상 아군의 상태 이상(독·매혹·뿌리 속박)을 거둬 간다. 다른 행동보다 먼저 처리돼, 매혹된 아군도 이번 턴에 행동할 수 있다.'},
+  veil:{name:'베일',en:'Veil',type:'support',phase:'pre',target:'ally',desc:'소환수가 빛의 날개로 대상을 보호한다. 5턴간 받는 대미지 10% 감소. 한 번에 한 명에게만 걸린다(새로 걸면 먼저 건 베일은 사라짐).'},
   backslider:{name:'타락자',en:'Backslider',type:'support',phase:'pre',target:'ally',uses:1,special:true,desc:'대상의 대미지를 이번 턴 동안 ×2.'}
 };
 /* ── MP ──
    스킬 MP 소모(LV1 기준 값). 실제 소모 = 값 × 그 전투원의 MP 성장 배율(mpScale) → 최대 MP와 같은 비율로 커진다.
    기본 공격(클래스의 첫 공격 스킬)은 0. 횟수 제한 스킬은 크게. 매 턴 최대 MP의 10% 회복, 방어하면 15% 더.
    클래스 기본 MP(MP_BASE)는 운영 페이지 '클래스' 탭에서 덮어쓸 수 있다. */
-const SKILL_MP={attack:0,bash:0,jolt:6,flame:8,shooting:6,shining:8,
-  forestaller:6,attention:6,execution:5,save:15,save2:18,crimehazard:16,roar:24,berserker:24,link:18,link2:26,sanctuary:40,
+const SKILL_MP={attack:0,bash:0,jolt:6,flame:8,shooting:6,shining:12,
+  forestaller:3,attention:6,execution:5,save:15,save2:18,crimehazard:16,roar:24,berserker:24,link:18,link2:26,sanctuary:40,
   rush:6,hitend:10,overkill:6,might:12,battlefield:9,takedown:26,subterfuge:26,carnage:34,
   cinder:10,blaze:12,meteor:20,hellfire:16,eternalflame:60,
-  poisonshot:10,legendary:15,overburning:12,smoke:36,fusillade:0,
+  poisonshot:14,legendary:15,overburning:12,smoke:36,fusillade:0,
   smite:12,cure:14,sinsayer:48,judgment:48,bless:40,fasciation:62,pray:48,utopia:80,
-  vindicate:46,blind:52,downworld:52,dystopia:60,dispel:36,backslider:52};
+  vindicate:46,blind:52,downworld:52,dystopia:60,dispel:36,backslider:52,veil:0};
 for(const k in SKILL_MP)if(SKILLS[k])SKILLS[k].mp=SKILL_MP[k];
+/* 전투당 사용 횟수(uses) 폐지 → 최대 MP 비율로 소모(2026-11-07 유저 결정). 매 턴 4% 회복이라 한 번 쓰면 한동안 못 씀.
+   함께 쓰는 스킬 55% · 판을 뒤집는 스킬(성역·유토피아·타락자) 90% · 예전 1회 80% · 예전 2회 40% · 베일 45% */
+const MP_PCT_BIG=['sanctuary','utopia','backslider'];
+for(const k in SKILLS){const s=SKILLS[k];if(s.uses){s.mpPct=s.type==='addon'?0.55:MP_PCT_BIG.includes(k)?0.9:s.uses===1?0.8:0.4;delete s.uses;}}
+SKILLS.veil.mpPct=0.45;
 const MP_BASE={defender:60,warrior:60,knight:70,infighter:80,mystic:90,destroyer:80,mage:150,salamander:160,shooter:110,dualist:120,priest:160,demigod:170,summoner:190};
-const MP_REGEN=0.10,MP_DEFEND=0.15;
-function mpCost(p,k){const s=SKILLS[k];if(!s||!s.mp)return 0;let sc=p&&p.mpScale;if(!sc&&p&&p.job&&CLASSES[p.job]&&p.level){try{sc=statsFor(p.job,p.level,{},{}).mpScale;}catch(e){}}return Math.max(1,Math.round(s.mp*(sc||1)));}
+const MP_REGEN=0.04,MP_DEFEND=0;  /* 매 턴 최대 MP 4% 회복 · '방어' 폐지로 추가 회복 없음 */
+function mpCost(p,k){const s=SKILLS[k];if(s&&s.mpPct){let mx=p&&p.maxMp;if(mx==null&&p&&p.job&&CLASSES[p.job]&&p.level){try{mx=statsFor(p.job,p.level,{},{}).maxMp;}catch(e){}}return Math.max(1,Math.round((mx||100)*s.mpPct));}if(!s||!s.mp)return 0;let sc=p&&p.mpScale;if(!sc&&p&&p.job&&CLASSES[p.job]&&p.level){try{sc=statsFor(p.job,p.level,{},{}).mpScale;}catch(e){}}return Math.max(1,Math.round(s.mp*(sc||1)));}
 function mpNeed(p,a){return a&&a.kind==='skill'?mpCost(p,a.skill)+(a.addon?mpCost(p,a.addon):0):0;}
 /* 기본 공격 = MP를 안 쓰는 무기 공격(공격·무기 공격). 그 밖의 스킬은 전부 MP를 씀(2026-11-07 유저 결정) */
 const FREE_BASIC=['attack','bash'];
@@ -233,7 +239,11 @@ function mainBasic(cls){const c=CLASSES[cls];const k=MAIN_BASIC[c.base||cls];ret
 const JUDGE_MIN=0.8,JUDGE_MAX=1.2,CRIT_MULT=1.5,MON_HIT=0.45,DEF_K=50;
 function judgeRoll(rng){return JUDGE_MIN+(JUDGE_MAX-JUDGE_MIN)*rng();}
 function critChance(p,s){if(!s||s.type!=='dice')return 0;return (5+(p.luk||0)*0.5)*(s.crit?2:1);}
-function healAmt(p,rng,bonus){return Math.max(1,Math.round(p.atk*(judgeRoll(rng)*0.4+bonus)));}
+/* 스킬 강화 구간(2026-11-07 유저 결정): LV30·50·80·99에 도달할 때마다 모든 스킬 대미지·회복 ×0.1씩(×1.1 → ×1.4) */
+const SK_TIERS=[30,50,80,99];
+function skTier(lv){return SK_TIERS.filter(x=>(lv||1)>=x).length;}
+function skMul(p){return Math.round((1+0.1*skTier(p&&p.level))*10)/10;}
+function healAmt(p,rng,bonus){return Math.max(1,Math.round(p.atk*(judgeRoll(rng)*0.4+bonus)*skMul(p)));}
 function rollD(n,rng){return 1+Math.floor(rng()*Math.max(1,Math.round(n)));}
 const ENH_MAX=10;
 function enhStep(v){return Math.max(1,Math.round(Math.abs(v)*0.15))*Math.sign(v||1);}
@@ -298,13 +308,21 @@ function createBattle(m,members,rng,cfg){
   return b;
 }
 function supMult(n){return 4*Math.pow(2,Math.min(2,Math.max(0,n-1)));}
+/* 적개심(2026-11-07): 준 대미지 × (탱커 3) + 회복량 × 0.5 + 오버힐 × 1. 제압·시야 강탈이 유효하면 그 탱커 고정.
+   탱커가 너무 약하게 때리면 대미지 높은 딜러나 오버힐을 많이 한 힐러에게 적개심이 넘어간다. 같으면 탱커 → 딜러 → 힐러 */
+var TANK_THREAT=3;
+function threatOf(p){return Math.round((p.dealt||0)*(p.role==='tank'?TANK_THREAT:1)+(p.healed||0)*0.5+(p.overheal||0));}
 function threatOrder(b){const sup=supActive(b)?b.players.find(p=>p.id===b.sup.by):null;
-  return living(b).map(p=>({p,t:(p===sup?1e12:0)+(b.attention===p.id?1e11:0)+(p.role==='tank'?1e6+(p.supUses||0)*1e5:0)+p.dealt+Math.round((p.healed||0)*0.5)})).sort((x,y)=>y.t-x.t).map(x=>x.p);}
+  return living(b).map(p=>({p,t:(p===sup?1e12:0)+(b.attention===p.id?1e11:0)+threatOf(p)*10+(p.role==='tank'?2:p.role==='dps'?1:0)})).sort((x,y)=>y.t-x.t).map(x=>x.p);}
+/* 대미지 1위 공격 대상: 직전 턴까지 누적 대미지 1위(아무도 못 때렸으면 적개심 1위). 제압 무시 */
+function topDealer(b){const al=living(b);const t=al.slice().sort((x,y)=>(y.dealt||0)-(x.dealt||0))[0];return t&&(t.dealt||0)>0?t:threatOrder(b)[0];}
+function iGa(w){const c=String(w||'').trim().slice(-1).charCodeAt(0);if(!(c>=0xAC00&&c<=0xD7A3))return '이(가)';return (c-0xAC00)%28?'이':'가';}
 var MIRROR_CAP=0.25; // 되비침 한 번에 최대 체력의 25%까지
 function supActive(b){return b.sup&&!b.players.find(p=>p.id===b.sup.by).dead;}
 function telText(b){
   const t=b.tel;if(!t)return '';
   if(t.type==='aoe')return `${t.name} · ${b.grid?'전장 전체':'파티 전체'} 광역 공격`;
+  if(t.top){const p=b.players.find(x=>x.id===t.target);return `${b.mon.name}${iGa(b.mon.name)} 시선을 돌린다 (대상 : ${p?p.name:'?'}) · ${t.name}`;}
   if(t.type==='area')return `${t.name} · 붉은 칸 ${t.cells.length}곳 범위 공격 (이동해서 피할 수 있음)`;
   const p=b.players.find(x=>x.id===t.target);
   return `${t.name} → ${p?p.name:'?'}${t.type==='dot'?` · ${b.mon.dotName} 부여`:''}`;
@@ -312,7 +330,7 @@ function telText(b){
 /* 개인 레이드 보스 페이즈(그리드 없음): m.sphases=[{at:HP%,name,atkMul,…덮어쓸 몬스터 값}] — HP가 at% 이하로 내려가면 다음 턴부터 적용 */
 function soloPhase(b){const m=b.mon,P=m.sphases;if(!P||!P.length)return;const pct=m.hp/m.maxHp*100;let k=0;P.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
   if(k===m.sph)return;m.sph=k;const ph=P[k];m.atk=Math.round(m.baseAtk*(ph.atkMul||1));
-  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.wipeIn)b.wipeAt=b.turn+ph.wipeIn;if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
+  ['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal','topEvery','topName','topMult'].forEach(f=>{if(ph[f]!=null)m[f]=ph[f];});if(ph.aoeEvery)m.aoeEvery=Math.max(2,ph.aoeEvery|0);if(ph.wipeIn)b.wipeAt=b.turn+ph.wipeIn;if(ph.dotMul)m.dotDmg=Math.round(m.dotDmg*ph.dotMul);
   b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 공격력 ×${ph.atkMul||1}`});}
 function startTurn(b,rng){b.inRes=0;
   b.turn++;b.shield=0;b.sanct=false;b.bind=0;b.attention=null;
@@ -321,8 +339,10 @@ function startTurn(b,rng){b.inRes=0;
   if(m.loop12&&b.turn>12){b.turn=1;const v=Math.round(m.maxHp*0.05);m.hp=Math.min(m.maxHp,m.hp+v);b.log.push({t:'warn',text:`내일은 오지 않는다 · 턴이 1로 돌아간다 · ${m.name} +${v}`});}
   if(b.grid){gridPhase(b);b.tel=gridTel(b,rng);}
   else if((soloPhase(b),b.turn%m.aoeEvery===0))b.tel={type:'aoe',name:m.aoeName,mult:m.aoeMult};
+  else if(m.topEvery>0&&b.turn%Math.max(2,m.topEvery|0)===0){const t=topDealer(b)||alive[0];b.tel={type:'single',name:m.topName||'시선 집중',mult:m.topMult||m.singleMult*1.3,target:t.id,top:true};}
   else{
-    const target=supActive(b)?b.players.find(p=>p.id===b.sup.by):weightedPick(alive,p=>p.role==='tank'?2:1,rng);
+    /* 단일 공격은 적개심 1위(제압 중이면 그 탱커) */
+    const target=threatOrder(b)[0]||alive[0];
     const dot=rng()<m.dotChance;
     b.tel={type:dot?'dot':'single',name:dot?m.dotName:m.singleName,mult:m.singleMult,target:target.id};
     if(m.mirror&&!b.grid){b.tel={type:'single',name:'되비침',mult:m.singleMult,target:target.id,mirror:true};}
@@ -333,6 +353,7 @@ function startTurn(b,rng){b.inRes=0;
     if(b.wipeAt){if(b.turn>=b.wipeAt)b.tel={type:'aoe',name:'기적의 나팔',mult:1,wipe:true};else if(b.wipeAt-b.turn<=2)b.log.push({t:'warn',text:'나팔 소리가 가까워집니다'});}
   }
   b.log.push({t:'turn',text:`${b.turn}턴`});
+  {const tp=threatOrder(b)[0];if(tp&&b.aggroId&&tp.id!==b.aggroId&&!supActive(b)&&b.players.length>1)b.log.push({t:'warn',text:`${m.name}의 시선이 ${tp.name}에게 옮겨 갔다 (적개심)`});if(tp)b.aggroId=tp.id;}
   b.log.push({t:'warn',text:`예고 · ${telText(b)}`});
 }
 /* 함께 쓰는 스킬(광전사 등)을 쓸 수 없게 되면(횟수 소진·조합 불가) 선택·켜 둔 상태를 자동으로 끔 */
@@ -359,7 +380,7 @@ function checkAct(b,p,a,hasItem,primary){
   if(!CLASSES[p.job].skills.includes(a.skill))return '이 클래스의 스킬이 아님';
   if(s.type==='addon'||s.type==='passive')return '단독으로 사용할 수 없음';
   if(usesLeft(p,a.skill)<=0)return '사용 횟수 소진';
-  if(primary&&primary.skill===a.skill&&s.uses)return '같은 제한 스킬을 두 번 쓸 수 없음';
+  if(primary&&primary.skill===a.skill&&s.mpPct)return '같은 큰 스킬을 두 번 쓸 수 없음';
   if(p.mp!=null){const need=mpNeed(p,a)+(primary&&!b.inRes?mpNeed(p,primary):0);if(need>p.mp)return `MP 부족 (${need} 필요)`;}
   if(a.skill==='attention'&&!supActive(b))return '제압이 유효하지 않음';
   if(a.skill==='overburning'&&p.obTurn!==b.turn)return '레전더리 샷 조건 미충족';
@@ -381,16 +402,16 @@ function resolveTurn(b,rng,hooks){
   hooks=hooks||{};
   const m=b.mon,T=b.turn,log=(t,text)=>b.log.push({t,text}),P=id=>b.players.find(p=>p.id===id);
   const heal=(src,t,amt,label)=>{if(t.dead)return 0;if(t.noHeal>0){log('sys',`${t.name} · 회복 불가 · ${label} 무효`);return 0;}if(t.healDown>0)amt=Math.round(amt*0.7);if(b.healMult&&src&&src.id)amt=Math.round(amt*b.healMult);const miss=t.maxHp-t.hp;const h=Math.min(amt,miss);t.hp+=h;if(src&&src.id)src.healed=(src.healed||0)+h;
-    if(amt>miss&&supActive(b)){b.sup.overheal++;}
+    if(amt>miss&&src&&src.id){src.overheal=(src.overheal||0)+(amt-miss);if(supActive(b))b.sup.overheal++;}
     log('heal',`${src.name} · ${label} → ${t.name} ${h} 회복${amt>miss?' (오버 힐)':''}`);return h;};
   const spend=(p,k)=>{if(SKILLS[k].uses)p.uses[k]=(p.uses[k]||0)+1;const c=mpCost(p,k);if(c&&p.mp!=null)p.mp=Math.max(0,p.mp-c);};
   b.inRes=1;
-  // ③ 미확정자 자동 방어
-  b.players.forEach(p=>{if(!p.dead&&!p.confirmed){p.action={kind:'defend',auto:true};p.confirmed=true;log('sys',`${p.name} · 시간 초과로 자동 방어`);}});
+  // ③ 미확정자 자동 대기 ('defend' = 대기 · 2026-11-07 방어 폐지, 행동 이름은 서버·테스트 호환으로 그대로)
+  b.players.forEach(p=>{if(!p.dead&&!p.confirmed){p.action={kind:'defend',auto:true};p.confirmed=true;log('sys',`${p.name} · 시간 초과로 대기`);}});
   const acts=p=>[p.action,canDouble(p,b)?p.action2:null].filter(Boolean);
   // ③-1 디스펠(상태 이상 해제)는 가장 먼저 — 매혹이 풀린 아군은 이번 턴 행동
   for(const id of b.order){const p=P(id);if(p.dead||p.charm>0)continue;for(const a of acts(p)){if(a.kind!=='skill'||a.skill!=='dispel')continue;a.done=true;p.direct++;
-    const err=checkAct(b,p,a,hooks.hasItem);if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
+    const err=checkAct(b,p,a,hooks.hasItem);if(err){p.defending=true;log('sys',`${p.name} · ${err} → 대기`);continue;}
     spend(p,'dispel');const t=a.target?P(a.target):p;if(!t||t.dead){log('sys',`${p.name} · 디스펠 대상이 없음`);continue;}
     const had=[t.poison&&t.poison.name,t.charm>0&&'매혹',t.boundBy==='root'&&t.bound>0&&'뿌리 속박',t.boundBy==='tentacle'&&t.bound>0&&'휘감김',t.sealed&&'봉인',t.noHeal>0&&'회복 불가',t.blind>0&&'실명'].filter(Boolean);t.poison=null;t.burnP=null;t.held=0;t.frost=0;t.conf=0;t.charm=0;if(t.boundBy==='root'||t.boundBy==='tentacle'){t.bound=0;t.boundBy=null;}t.sealed=null;t.noHeal=0;t.blind=0;t.healDown=0;log('heal',`${p.name} · 디스펠 → ${t.name}${had.length?' '+had.join('·')+' 해제':' (해제할 상태 이상 없음)'}`);}}
   // ③-2 매혹된 블레서는 아이템 말고는 아무것도 하지 못한다
@@ -408,15 +429,15 @@ function resolveTurn(b,rng,hooks){
     const p=P(id);if(p.dead)continue;
     for(const a of acts(p)){
       if(a.done)continue;
-      if(a.kind==='defend'){p.defending=true;if(!a.auto){p.direct++;log('act',`${p.name} · 방어 (받는 대미지 50% 감소)`);}a.done=true;continue;}
+      if(a.kind==='defend'){if(!a.auto){p.direct++;log('act',`${p.name} · 대기`);}a.done=true;continue;}
       if(a.kind!=='skill'||SKILLS[a.skill].phase!=='pre')continue;
       a.done=true;p.direct++;
       const err=checkAct(b,p,a,hooks.hasItem);
-      if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
+      if(err){p.defending=true;log('sys',`${p.name} · ${err} → 대기`);continue;}
       const s=SKILLS[a.skill];spend(p,a.skill);const t=a.target?P(a.target):null;
       switch(a.skill){
         case 'save':case 'save2':p.reduce+=s.reduce;log('act',`${p.name} · ${s.name} (받는 대미지 −${s.reduce}%)`);break;
-        case 'forestaller':p.supUses++;b.sup={by:p.id,mult:supMult(p.supUses),overheal:0};log('act',`${p.name} · 제압! 몬스터의 표적이 된다 (유지 조건: 딜러 총 대미지 < ${p.name} 총 대미지 ×${b.sup.mult})`);break;
+        case 'forestaller':p.supUses++;p.supHit=1;b.sup={by:p.id,mult:supMult(p.supUses),overheal:0};log('act',`${p.name} · 제압! 몬스터의 표적이 된다 (유지 조건: 딜러 총 대미지 < ${p.name} 총 대미지 ×${b.sup.mult})`);break;
         case 'attention':b.attention=p.id;log('act',`${p.name} · 시야 강탈! 이번 턴 표적 고정`);break;
         case 'link':{const lc=Math.round(p.maxHp*0.1);p.hp=Math.max(0,p.hp-lc);t.protect=true;log('act',`${p.name} · 결속 → ${t.name} 보호, 자신은 ${lc} 대미지(최대 HP 10%)${p.hp===0?' (쓰러짐)':''}`);}if(p.hp===0)p.dead=true;break;
         case 'link2':p.protect=true;t.protect=true;log('act',`${p.name} · 결속강화 → ${t.name}와(과) 함께 1턴 보호`);break;
@@ -425,6 +446,7 @@ function resolveTurn(b,rng,hooks){
         case 'vindicate':b.shield+=20;log('act',`${p.name} · 비호 (아군 전체 받는 대미지 −20%)`);break;
         case 'blind':{const v=Math.round(p.atk*0.25);b.players.forEach(x=>addBuff(x,'blind',T,T,{add:v}));log('act',`${p.name} · 블라인드 (이번 턴 아군 대미지 +${v})`);}break;
         case 'downworld':b.bind=30;log('act',`${p.name} · 다운월드 → ${m.name} 봉쇄 (이번 턴 몬스터 대미지 −30%)`);break;
+        case 'veil':b.players.forEach(x=>{x.buffs=x.buffs.filter(y=>y.k!=='veil');});addBuff(t,'veil',T,T+4);log('act',`${p.name} · 베일 → ${t.name} 5턴 동안 받는 대미지 −10%`);break;
         case 'backslider':addBuff(t,'backslider',T,T,{mul:2});log('act',`${p.name} · 타락자 → ${t.name} 이번 턴 대미지 ×2`);break;
       }
     }
@@ -456,13 +478,14 @@ function resolveTurn(b,rng,hooks){
     if(s.holy&&m.art==='spirit'){mul*=1.5;parts.push('신성 ×1.5');}
     if(buffOn(p,'eternal',T)){if(f<0.9){addBuff(p,'null',T,T+1);parts.push('푸른 불 폭주');}else{const em=f>=1.1?3:2;mul*=em;parts.push(`이터널 ×${em}`);}}
     if(crit){mul*=CRIT_MULT;parts.push(`크리티컬 ×${CRIT_MULT}`);}
+    {const tm=skMul(p);if(tm>1){mul*=tm;parts.push(`스킬 강화 ×${tm}`);}}
     let dmg=Math.max(0,Math.round((pure+add)*mul*(1-(m.def||0)/((m.def||0)+100))));
     if(a.addon==='carnage'&&dmg>=p.atk*2){addBuff(p,'carnage',T,T+2,{mul:2});dmg*=2;parts.push('대학살 발동 ×2');}
     if(p.blind>0){dmg=Math.round(dmg*0.75);parts.push('실명 ×0.75');}
     if(buffOn(p,'null',T)){dmg=0;parts.push('대미지 무효');}
     m.hp=Math.max(0,m.hp-dmg);p.dealt+=dmg;p.turnDealt+=dmg;
     log('hit',`${p.name} · ${s.name}${a.addon?' + '+SKILLS[a.addon].name:''} → ${dmg} 대미지 (${parts.join(' · ')})${crit?' · 크리티컬!':''}`);
-    if(s.poison&&m.hp>0){const pd=Math.max(1,Math.round(p.atk*(s.poison.pct||12)/100));m.poison={dmg:pd,turns:s.poison.turns,by:p.id};log('act',`${m.name} · 중독 ${s.poison.turns}턴 (턴당 ${pd})`);}
+    if(s.poison&&m.hp>0){const pd=Math.max(1,Math.round(p.atk*(s.poison.pct||12)/100*skMul(p)));m.poison={dmg:pd,turns:s.poison.turns,by:p.id};log('act',`${m.name} · 중독 ${s.poison.turns}턴 (턴당 ${pd})`);}
     if(s.drain&&dmg>0){const al=living(b).filter(x=>x.hp<x.maxHp).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp);const tg=al[0]||p;heal(p,tg,Math.round(dmg*s.drain/100),`${s.name} 흡수`);}
     if(a.skill==='smoke'){const v=pct(15);b.players.forEach(x=>{if(x!==p)addBuff(x,'smoke',T+1,T+1,{add:v});});}
     if(a.skill==='legendary'&&f>=1.1){p.obTurn=T+1;log('act',`${p.name} · 판정 ${Math.round(f*100)}% · 다음 턴 오버 버닝 가능`);}
@@ -473,10 +496,11 @@ function resolveTurn(b,rng,hooks){
   for(const id of b.order){
     if(m.hp<=0)break;
     const p=P(id);if(p.dead)continue;
+    if(p.supHit){p.supHit=0;if(m.hp>0)attack(p,{skill:'forestaller'});}
     for(const a of acts(p)){
       if(a.done||m.hp<=0||p.dead)continue;a.done=true;p.direct++;
       const err=checkAct(b,p,a,hooks.hasItem,a===p.action2?p.action:null);
-      if(err){p.defending=true;log('sys',`${p.name} · ${err} → 방어로 전환`);continue;}
+      if(err){p.defending=true;log('sys',`${p.name} · ${err} → 대기`);continue;}
       if(a.kind==='item'){
         if(a.item==='j2052'){if(m.journal==='react'){b.jUses=(b.jUses||0)+1;const pg=[null,['1쪽','"오늘도 나갈 방법은 없다…" 그녀가 당신의 목소리를 따라 소리 없이 입술을 움직인다.'],['6쪽','"한 명이 남겠다고 했다… 솔직히 조금 부러웠다." 그녀가 잠시 눈을 감는다.'],['13쪽','"…이거, 제가 쓴 거예요? 제 글씨 같아요."']][b.jUses];
             if(!pg){log('sys','더 펼칠 쪽이 없다');continue;}b.stun=1;if(b.jUses===3)b.jRead13=true;log('act',`${p.name} · 탐사 일지 ${pg[0]}를 펼쳐 읽어 준다 → ${pg[1]} (그녀가 공격을 멈춘다)`);}
@@ -490,7 +514,7 @@ function resolveTurn(b,rng,hooks){
       if(s.type==='dice'){attack(p,a);continue;}
       switch(a.skill){
         case 'takedown':{const v=Math.round(p.atk*0.25);addBuff(p,'takedown',T+1,T+2,{add:v});log('act',`${p.name} · 테이크다운 (다음 턴부터 2턴 대미지 +${v})`);break;}
-        case 'hellfire':{const v=Math.max(1,Math.round(p.atk*0.18));m.burn={dmg:v,turns:3,by:p.id};log('act',`${p.name} · 헬파이어 → ${m.name} 3턴 동안 ${v} 고정 대미지`);break;}
+        case 'hellfire':{const v=Math.max(1,Math.round(p.atk*0.18*skMul(p)));m.burn={dmg:v,turns:3,by:p.id};log('act',`${p.name} · 헬파이어 → ${m.name} 3턴 동안 ${v} 고정 대미지`);break;}
         case 'cure':{const v=healAmt(p,rng,0.10);heal(p,t,v,`큐어`);break;}
         case 'sinsayer':p.revives=(p.revives||0)+1;t.dead=false;t.hp=Math.round(t.maxHp*0.3);t.poison=null;p.bound=3;p.boundBy=null;log('heal',`${p.name} · 신세이어 → ${t.name} 부활 (HP ${t.hp}) · ${p.name} 2턴 빛의 속박`);break;
         case 'bless':{const v=Math.max(1,Math.round(t.maxHp*0.05));t.hot={amt:v,turns:3};log('heal',`${p.name} · 블레스 → ${t.name} 3턴 동안 ${v}씩 회복`);break;}
@@ -509,7 +533,7 @@ function resolveTurn(b,rng,hooks){
   const hitP=(p,mult)=>{
     if(p.protect||b.sanct)return {d:0,note:'보호'};
     if(p.agi>0&&rng()<agiDodge(p.agi))return {d:0,note:'회피'};
-    let d=m.atk*MON_HIT*judgeRoll(rng)*mult;if(b.dmgTakenMult)d*=b.dmgTakenMult;if(p.defending)d*=0.5;
+    let d=m.atk*MON_HIT*judgeRoll(rng)*mult;if(b.dmgTakenMult)d*=b.dmgTakenMult;if(buffOn(p,'veil',T))d*=0.9;
     d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?0.88:1);d=Math.max(0,Math.round(d));
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
   };
@@ -549,14 +573,14 @@ function resolveTurn(b,rng,hooks){
     log('mon',`${m.name} · ${tel.name} → ${parts.join(', ')}`);
   }else{
     let t=P(tel.target),note='';
-    const fix=b.attention?P(b.attention):supActive(b)?P(b.sup.by):null;
+    const fix=tel.top?null:b.attention?P(b.attention):supActive(b)?P(b.sup.by):null;
     if(fix&&!fix.dead&&fix!==t){t=fix;note=b.attention?' (시야 강탈)':' (제압)';}
     if(!t||t.dead){const al=living(b);t=al[Math.floor(rng()*al.length)];note=' (대상 재지정)';}
     /* 7장 거울 속 죄수 「되비침」: 직전 턴 내 행동을 따라 한다(공격 → ×0.6으로 되돌림, 회복 → 같은 비율 회복, 방어·대기 → 쉼, 아이템·기타 → 평소 공격) */
     const mp=tel.mirror&&b.mirPrev;let mirrored=false;
     if(t&&mp&&['atk','heal','rest'].includes(mp.kind)){mirrored=true;
       if(!b.mirTold){b.mirTold=1;log('sys','거울은 당신을 따라 합니다.');}
-      if(mp.kind==='atk'){let d=Math.round(mp.dealt*0.6);if(t.protect||b.sanct)d=0;else if(t.defending)d=Math.round(d*0.5);d=Math.min(d,Math.round(t.maxHp*MIRROR_CAP));t.hp=Math.max(0,t.hp-d);if(t.hp===0)t.dead=true;log('mon',`${m.name} · 되비침 → ${t.name} ${d} 대미지 (당신의 공격을 되돌려준다)${t.dead?' · 쓰러짐':''}`);}
+      if(mp.kind==='atk'){let d=Math.round(mp.dealt*0.6);if(t.protect||b.sanct)d=0;d=Math.min(d,Math.round(t.maxHp*MIRROR_CAP));t.hp=Math.max(0,t.hp-d);if(t.hp===0)t.dead=true;log('mon',`${m.name} · 되비침 → ${t.name} ${d} 대미지 (당신의 공격을 되돌려준다)${t.dead?' · 쓰러짐':''}`);}
       else if(mp.kind==='heal'){const v=Math.round(m.maxHp*Math.min(0.2,mp.healPct));m.hp=Math.min(m.maxHp,m.hp+v);log('mon',`${m.name} · 되비침 · 당신처럼 상처를 돌본다 (+${v})`);}
       else log('mon',`${m.name} · 되비침 · 당신처럼 가만히 서 있다`);}
     if(t&&!mirrored){
@@ -575,7 +599,7 @@ function resolveTurn(b,rng,hooks){
       log('mon',`${m.name} · 반사 → ${ref.length?ref.join(', '):'반사할 대미지 없음'}`);}}
   // ⑦ 지속 효과와 만료
   b.inRes=0;
-  for(const p of b.players){if(!p.dead&&p.maxMp&&p.mp!=null)p.mp=Math.min(p.maxMp,p.mp+Math.round(p.maxMp*(MP_REGEN+(p.defending?MP_DEFEND:0))));}
+  for(const p of b.players){if(!p.dead&&p.maxMp&&p.mp!=null)p.mp=Math.min(p.maxMp,p.mp+Math.round(p.maxMp*MP_REGEN));}
   for(const p of b.players){
     if(!p.dead&&p.burnP){if(p.protect||b.sanct)log('sys',`${p.name} · 보호로 화상 무효`);else{p.hp=Math.max(0,p.hp-p.burnP.dmg);log('mon',`${p.name} · 화상 ${p.burnP.dmg}${p.hp===0?' (쓰러짐)':''}`);if(p.hp===0)p.dead=true;}p.burnP.turns--;if(p.burnP.turns<=0)p.burnP=null;}
     if(p.held>0)p.held--;if(p.frost>0)p.frost--;if(p.conf>0)p.conf--;
@@ -623,7 +647,6 @@ function decideBot0(b,p,rng){
     if(tel.type!=='aoe'&&has('link2')){const t=b.players.find(x=>x.id===tel.target);if(t&&t!==p&&!supActive(b)&&t.hp<big*1.3)return A('link2',{target:t.id});}
     const svk=has('save2')?'save2':has('save')?'save':null;
     if(svk&&targeted&&p.hp<p.maxHp*0.45)return A(svk);
-    if(p.hp<p.maxHp*0.25)return {kind:'defend'};
     const addon=has('roar')&&m.hp>m.maxHp*0.4&&p.hp>p.maxHp*0.6?'roar':has('berserker')&&m.hp>m.maxHp*0.3&&p.hp>p.maxHp*0.6?'berserker':null;
     if(has('crimehazard'))return A('crimehazard',addon?{addon}:{});
     if(sk.includes('execution'))return A('execution',addon?{addon}:{});
@@ -632,6 +655,7 @@ function decideBot0(b,p,rng){
   if(p.role==='heal'){
     const dead=b.players.find(x=>x.dead);
     if(dead&&sk.includes('sinsayer')&&al.length>1)return A('sinsayer',{target:dead.id});
+    if(has('veil')&&!b.players.some(x=>buffOn(x,'veil',T))){const tk=al.find(x=>x.role==='tank')||low;if(tk)return A('veil',{target:tk.id});}
     if(has('dispel')){const st=al.find(x=>x.charm>0)||al.find(x=>x.boundBy==='root'&&x.bound>0)||al.find(x=>x.poison&&x.hp/x.maxHp<0.7);if(st)return A('dispel',{target:st.id});}
     const hurt=al.filter(x=>x.hp/x.maxHp<0.6).length;
     if(has('utopia')&&hurt>=Math.max(2,Math.ceil(al.length/2)))return A('utopia');
@@ -643,12 +667,10 @@ function decideBot0(b,p,rng){
     if(low&&low.hp/low.maxHp<0.85&&has('bless')&&!low.hot)return A('bless',{target:low.id});
     if(has('blind')&&T>=2)return A('blind');
     if(has('backslider')){const top=al.filter(x=>x.role==='dps').sort((a,c)=>c.atk-a.atk)[0];if(top)return A('backslider',{target:top.id});}
-    if(targeted&&p.hp<big)return {kind:'defend'};
     if(has('dystopia')&&al.every(x=>x.hp>x.maxHp*0.5))return A('shining',{addon:'dystopia'});
     return A('shining');
   }
   // 딜러
-  if(targeted&&p.hp<big*1.1)return {kind:'defend'};
   const j=p.job;
   if(has('takedown')&&T===1)return A('takedown');
   if(has('smoke')&&T===1)return A('smoke');
@@ -677,9 +699,9 @@ function canMoveTo(b,p,i){if(p.held>0||p.frost>0)return false;return i>=0&&i<GRI
 function reachable(b,p){const out=[];for(let i=0;i<GRID*GRID;i++)if(canMoveTo(b,p,i))out.push(i);return out;}
 function cellName(i){const [r,c]=gxy(i);return `${'ABCDEFGHIJ'[r]}${c+1}`;}
 function gridArea(c,r){const out=[];const [cr,cc]=gxy(c);for(let y=cr-r;y<=cr+r;y++)for(let x=cc-r;x<=cc+r;x++)if(y>=0&&y<GRID&&x>=0&&x<GRID&&!BOSS_CELLS.includes(y*GRID+x))out.push(y*GRID+x);return out;}
-const GRID_PAT={single:'단일 강타',burst:'파쇄 낙인',burst2:'이중 낙인',cross:'십자 균열',quake:'대지 진동',ring:'외곽 낙뢰',all:'전장 붕괴'};
+const GRID_PAT={top:'시선 집중',single:'단일 강타',burst:'파쇄 낙인',burst2:'이중 낙인',cross:'십자 균열',quake:'대지 진동',ring:'외곽 낙뢰',all:'전장 붕괴'};
 function gridPhase(b){const pct=b.mon.hp/b.mon.maxHp*100;let k=0;b.phases.forEach((ph,i)=>{if(pct<=ph.at)k=i;});
-  if(k!==b.phase||b.turn<=1&&!b.phInit){b.phInit=1;b.phase=k;const ph=b.phases[k];b.mon.atk=Math.round(b.baseAtk*(ph.atkMul||1));['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal'].forEach(f=>{if(ph[f]!=null)b.mon[f]=ph[f];});if(ph.pats)b.pats={...b.pats,...JSON.parse(JSON.stringify(ph.pats))};if(b.turn>1)b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 보스 공격력 ${b.mon.atk}`});}}
+  if(k!==b.phase||b.turn<=1&&!b.phInit){b.phInit=1;b.phase=k;const ph=b.phases[k];b.mon.atk=Math.round(b.baseAtk*(ph.atkMul||1));['singleName','singleMult','aoeName','aoeMult','dotName','dotChance','charmChance','rootChance','mirror','janus','loop12','pacify','wrapChance','blindChance','sealChance','noHealAoe','pullHeal','topEvery','topName','topMult'].forEach(f=>{if(ph[f]!=null)b.mon[f]=ph[f];});if(ph.pats)b.pats={...b.pats,...JSON.parse(JSON.stringify(ph.pats))};if(b.turn>1)b.log.push({t:'warn',text:`◆ ${ph.name}${ph.say?` · ${ph.say}`:''} · 보스 공격력 ${b.mon.atk}`});}}
 function gridTel(b,rng){
   const m=b.mon,ph=b.phases[b.phase]||b.phases[0],al=living(b);
   const pats=(ph.patterns&&ph.patterns.length?ph.patterns:['single']);const pat=pats[Math.floor(rng()*pats.length)];
@@ -690,6 +712,7 @@ function gridTel(b,rng){
     if(PC.aim&&Array.isArray(PC.offs)){const t=rp();if(t){const [r0,c0]=gxy(t.pos);PC.offs.forEach(o=>{const r=r0+(+o[0]||0),c=c0+(+o[1]||0);if(r>=0&&r<GRID&&c>=0&&c<GRID)cells.push(r*GRID+c);});}}
     else cells=(PC.cells||[]).map(x=>Math.floor(+x)).filter(x=>x>=0&&x<GRID*GRID);
     cells=[...new Set(cells)].filter(i=>!BOSS_CELLS.includes(i));if(cells.length)return {type:'area',name:N,mult:MU(0.9),cells,pat};}
+  if(pat==='top'){const t=topDealer(b)||al[0];return {type:'single',name:N,mult:MU(1.2),target:t.id,pat,top:true};}
   if(pat==='all')return {type:'aoe',name:N,mult:MU(0.5),pat};
   if(pat==='burst'){const t=rp();return {type:'area',name:N,mult:MU(0.9),cells:gridArea(t.pos,1),pat};}
   if(pat==='burst2'){const t1=rp(),t2=rp();return {type:'area',name:N,mult:MU(0.9),cells:[...new Set([...gridArea(t1.pos,1),...gridArea(t2.pos,1)])],pat};}

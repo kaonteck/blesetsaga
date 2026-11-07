@@ -85,7 +85,7 @@ function statLine(st,sm){return `<ul class="statline num ${sm?'sm':''}">${['maxH
 const SKILL_FX={
   bash:[['dmg','공격력(물리)으로 계산 · MP 0']],
   save:[['dn','받는 대미지 −10%']],save2:[['dn','받는 대미지 −30%']],
-  crimehazard:[['dmg','대미지 +25%']],forestaller:[['buff','도발']],
+  crimehazard:[['dmg','대미지 +25%']],forestaller:[['dmg','대미지 ×0.8'],['buff','도발']],
   execution:[['dmg','추가 대미지 0~22% · 3턴']],
   roar:[['dmg','대미지 +60% · 2턴'],['dn','시전자 HP −10%']],
   berserker:[['dmg','대미지 ×2 · 2턴'],['dn','최대 HP −10%']],
@@ -93,16 +93,16 @@ const SKILL_FX={
   link:[['buff','아군 보호 1턴'],['dn','자신 HP −10%']],
   link2:[['buff','자신·아군 보호 1턴']],sanctuary:[['buff','아군 전체 보호 1턴']],
   takedown:[['dmg','대미지 +25% · 2턴']],battlefield:[['dmg','3×3 범위 대미지']],
-  subterfuge:[['dmg','대미지 +25%'],['debuff','중독 12% · 2턴']],
+  subterfuge:[['dmg','대미지 +25%'],['debuff','중독 5% · 2턴']],
   carnage:[['dmg','공격력 2배 이상 시 ×2 · 3턴']],
   cinder:[['debuff','몬스터 공격 −12% · 2턴']],
   hellfire:[['dmg','마력 18% 고정 대미지 · 3턴']],
   eternalflame:[['dmg','판정 90%↑ ×2 · 110%↑ ×3 · 3턴']],
-  poisonshot:[['debuff','중독 12% · 3턴']],
+  poisonshot:[['debuff','중독 5% · 3턴']],
   smoke:[['dmg','대미지 +25%'],['buff','파티원 대미지 +15%']],
   legendary:[['buff','판정 110%↑ 시 오버 버닝']],overburning:[['dmg','대미지 ×2']],
   fusillade:[['buff','크리티컬 시 2회 행동']],
-  shining:[['dmg','대미지 ×1.3'],['dmg','영혼형 ×1.5']],
+  shining:[['dmg','대미지 ×1.1'],['dmg','영혼형 ×1.5']],
   smite:[['dmg','공격'],['heal','준 대미지 30% 흡수 회복']],
   judgment:[['dmg','대미지 ×1.6']],
   cure:[['heal','마력 40%×판정 +10%']],sinsayer:[['heal','부활 HP 30%'],['debuff','시전자 2턴 행동 불가']],
@@ -114,6 +114,7 @@ const SKILL_FX={
   blind:[['buff','아군 전체 대미지 +25%']],
   downworld:[['debuff','몬스터 대미지 −30%']],
   dystopia:[['dmg','대미지 ×3'],['dn','아군 전체 HP −3%']],
+  veil:[['dn','받는 대미지 −10% · 5턴'],['buff','한 명만']],
   backslider:[['buff','대상 대미지 ×2']]
 };
 function skillBadges(k,p,b){
@@ -1003,18 +1004,18 @@ function actionPanel(b,me){
   if(me.confirmed){
     return `<div class="row" style="justify-content:space-between"><div><div class="ph" style="margin:0 0 4px">행동 확정</div><p style="color:var(--silver)">${esc(actLabel(b,me.action))}${me.action2?' · 연사 '+esc(actLabel(b,me.action2)):''}</p></div><button class="btn" data-act="editact">행동 수정</button></div>`;
   }
-  if(me.bound>0)return `<div class="acts"><p class="reason">${me.boundBy==='tentacle'?'휘감김':me.boundBy==='root'?'뿌리 속박':'빛의 속박'} · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다.</p><div class="row"><button class="btn btn-primary" data-act="confirmdefend">방어 확정</button></div></div>`;
+  if(me.bound>0)return `<div class="acts"><p class="reason">${me.boundBy==='tentacle'?'휘감김':me.boundBy==='root'?'뿌리 속박':'빛의 속박'} · ${me.bound}턴 동안 어떤 스킬도 쓸 수 없습니다.</p><div class="row"><button class="btn btn-primary" data-act="confirmdefend">대기 확정</button></div></div>`;
   const a=S.sel.act||{kind:'skill',skill:basicSkill(me.job)};
   const tab=S.sel.actTab||'attack';
   let opts='';
   if(b.grid&&tab==='defend')tab='skill';
   if(b.grid&&tab==='attack')opts=actOpt(b,me,basicSkill(me.job),a);
-  else if(b.grid&&tab==='skill'){opts=sk.filter(k=>k!==basicSkill(me.job)&&!['addon','passive'].includes(SKILLS[k].type)).map(k=>actOpt(b,me,k,a)).join('')+`<button class="opt" data-act="pickact" data-kind="defend" aria-pressed="${a.kind==='defend'}"><span>방어</span><small>이번 턴 받는 대미지 50% 감소 · 가장 먼저 처리</small></button>`;}
+  else if(b.grid&&tab==='skill'){opts=sk.filter(k=>k!==basicSkill(me.job)&&!['addon','passive'].includes(SKILLS[k].type)).map(k=>actOpt(b,me,k,a)).join('')+`<button class="opt" data-act="pickact" data-kind="defend" aria-pressed="${a.kind==='defend'}"><span>대기</span><small>이번 턴 아무것도 하지 않음 · 할 일이 없을 때</small></button>`;}
   else if(tab==='attack')opts=sk.filter(k=>SKILLS[k].type==='dice'||(SKILLS[k].type==='nodice'&&SKILLS[k].target==='enemy')).map(k=>actOpt(b,me,k,a)).join('');
   else if(tab==='skill'){
     opts=sk.filter(k=>['support','heal'].includes(SKILLS[k].type)||(SKILLS[k].type==='nodice'&&SKILLS[k].target!=='enemy')).map(k=>actOpt(b,me,k,a)).join('');
     if(!b.grid)opts+=['potion','holywater'].concat(b.mon&&b.mon.journal&&(S.me.inv.j2052||0)>0?['j2052']:[]).map(k=>{const n=S.me.inv[k]||0;return `<button class="opt" data-act="pickact" data-kind="item" data-item="${k}" aria-pressed="${a.kind==='item'&&a.item===k}" ${n?'':'disabled'}><span>${ITEMS[k].name} <span class="num faint">×${n}</span></span><small>${ITEMS[k].desc}</small></button>`;}).join('');
-  }else opts=`<button class="opt" data-act="pickact" data-kind="defend" aria-pressed="${a.kind==='defend'}"><span>방어</span><small>이번 턴 받는 대미지 50% 감소 · 가장 먼저 처리</small></button>`;
+  }else opts=`<button class="opt" data-act="pickact" data-kind="defend" aria-pressed="${a.kind==='defend'}"><span>대기</span><small>이번 턴 아무것도 하지 않음 · 할 일이 없을 때</small></button>`;
   const addons=sk.filter(k=>SKILLS[k].type==='addon');
   const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
   const addonHTML=tab==='attack'&&addons.length?`<div><div class="ph">함께 사용 · 특수</div><div class="row">${addons.map(k=>{const ad=SKILLS[k];const left=usesLeft(me,k);const ok=isDice&&left>0&&(!ad.with||ad.with.includes(a.skill));
@@ -1030,13 +1031,13 @@ function actionPanel(b,me){
   const aerr=b.grid&&a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].target==='enemy'?checkAct(b,me,a,hooks.hasItem):null;
   /* 일반 전투의 두 번째 탭은 보조 스킬 + 아이템: 보조 스킬이 없는 클래스는 '아이템', 있으면 '보조·아이템' */
   const supN=b.grid?0:sk.filter(k=>['support','heal'].includes(SKILLS[k].type)||(SKILLS[k].type==='nodice'&&SKILLS[k].target!=='enemy')).length;
-  return `<div class="acts"><div class="acttabs">${(b.grid?[['attack','기본 공격'],['skill','스킬']]:[['attack','공격'],['skill',supN?'보조·아이템':'아이템'],['defend','방어']]).map(([k,l])=>`<button class="btn" data-act="acttab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
+  return `<div class="acts"><div class="acttabs">${(b.grid?[['attack','기본 공격'],['skill','스킬']]:[['attack','공격'],['skill',supN?'보조·아이템':'아이템'],['defend','대기']]).map(([k,l])=>`<button class="btn" data-act="acttab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
     <div class="opts">${opts}</div>${addonHTML}${targetPick(b,a)}${passive}${second}
     <div class="row">${(()=>{const me2=b.players.find(p=>p.isMe);return me2&&me2.confirmed?'<span class="chip ok">행동 반영됨</span>':'<span class="chip dim">스킬이나 행동을 누르면 바로 반영됩니다</span>';})()}<span class="muted" style="font-size:12.5px">선택: ${esc(actLabel(b,a))}${S.sel.act2?' · 연사 '+esc(actLabel(b,S.sel.act2)):''}</span></div></div>`;
 }
 function actLabel(b,a){
   if(!a)return '-';
-  if(a.kind==='defend')return '방어';
+  if(a.kind==='defend')return '대기';
   const t=a.target?b.players.find(p=>p.id===a.target):null;
   if(a.kind==='item')return `${ITEMS[a.item].name}${t?' → '+t.name:''}`;
   const s=SKILLS[a.skill];if(!s)return '-';

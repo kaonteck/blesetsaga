@@ -970,7 +970,7 @@ function ptApplyAct(row){
   if(!row.action){f.action=null;f.action2=null;f.confirmed=false;b.allAt=null;}
   else{const a=row.action.action||{kind:'defend'};const a2=row.action.action2||null;
     if(b.grid&&a&&(a.kind==='move'||a.kind==='wait')){const to=Math.floor(+a.to);f.action=a.kind==='move'&&to>=0&&to<GRID*GRID?{kind:'move',to}:{kind:'wait'};f.action2=null;}
-    else{const err=checkAct(b,f,a,hooks.hasItem);if(err){b.log.push({t:'sys',text:`${f.name} · 행동을 쓸 수 없어 방어 (${err})`});f.action={kind:'defend'};f.action2=null;}
+    else{const err=checkAct(b,f,a,hooks.hasItem);if(err){b.log.push({t:'sys',text:`${f.name} · 행동을 쓸 수 없어 대기 (${err})`});f.action={kind:'defend'};f.action2=null;}
       else{f.action=a;f.action2=a2&&!checkAct(b,f,a2,hooks.hasItem,a)?a2:null;}}
     if(b.grid){const it=row.action.itemAct;f.itemAct=it&&['potion','holywater','swiftdraft'].includes(it.item)?{item:it.item,target:f.id}:null;}
     f.confirmed=true;}

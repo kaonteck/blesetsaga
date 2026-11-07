@@ -161,7 +161,7 @@ function endForm(q,k){const st=q.steps[k];const p='steps.'+k;const r=st.reward;
 /* ───────── 그 밖의 종류: 값 모양대로 ───────── */
 const FLABEL={name:'이름',title:'제목',kind:'종류',region:'지역',level:'레벨',hp:'체력',atk:'공격력',def:'방어력',exp:'경험치',gold:'골드',published:'유저에게 보이기',desc:'설명',
   type:'종류',price:'가격',sell:'판매가',stock:'재고 (비우면 무제한)',item:'아이템',text:'내용',date:'날짜',loc:'위치',reward:'보상',link:'바로가기',min:'최소 인원',max:'최대 인원',target:'목표 인원',
-  singleName:'단일 공격 이름',singleMult:'단일 공격 배율',aoeName:'광역 공격 이름',aoeMult:'광역 배율',aoeEvery:'광역 주기(턴)',dotName:'지속 피해 이름',dotChance:'지속 피해 확률',dotDmg:'지속 피해량',
+  singleName:'단일 공격 이름',singleMult:'단일 공격 배율',aoeName:'광역 공격 이름',aoeMult:'광역 배율',aoeEvery:'광역 주기(턴)',topEvery:'대미지 1위 공격 주기(턴)',topName:'대미지 1위 공격 이름',topMult:'대미지 1위 공격 배율',dotName:'지속 피해 이름',dotChance:'지속 피해 확률',dotDmg:'지속 피해량',
   hpScale:'인원당 체력 증가',art:'그림',img:'이미지',tag:'분류 표시',slot:'장착 칸',levelReq:'착용 레벨',maxOwn:'최대 보유',roles:'필요 역할',drops:'드롭',stats:'능력치',buff:'버프',maxLevel:'최대 레벨'};
 const FPICK={
   monster:{kind:Object.entries({field:'필드',dungeon:'던전',party:'파티 레이드',weekly:'토벌전',event:'만신전',story:'퀘스트 전투'}),art:[['beast','짐승'],['golem','골렘'],['spirit','정령'],['dragon','용'],['human','인간']]},
@@ -170,7 +170,7 @@ const FPICK={
 };
 // 칸 묶음 [제목, 작은 설명, 칸들] — 묶음에 없는 칸은 '그 밖의 값'
 const FGROUP={
-  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','img','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
+  monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','img','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','topEvery','topName','topMult','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
   item:[['기본 정보','',['id','type','name','tag','desc','art','img','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
 };
 function genericForm(k,d){
@@ -209,7 +209,7 @@ function dropsRows(){const arr=Array.isArray(FM.d.drops)?FM.d.drops:[];const nm=
     ${arr.map(([id,c],i)=>`<div class="row ir"><span class="grow">${esc(nm(id))} <small class="faint">${esc(id)}</small></span><input type="number" min="0" max="100" step="0.5" class="nsm" data-fa="drop-n" data-i="${i}" value="${Math.round((+c||0)*1000)/10}" aria-label="${esc(nm(id))} 확률(%)"><span class="faint small">%</span><button type="button" class="btn btn-g btn-sm" data-fa="drop-del" data-i="${i}">빼기</button></div>`).join('')||'<p class="faint small" style="margin:0 0 6px">아직 없습니다.</p>'}
     ${fPick('',null,itemsL().filter(x=>!arr.some(d=>d[0]===x[0])),{val:'',act:'drop-add',ph:'아이템 검색해서 더하기'})}</div>`;}
 /* ── 몬스터(만신전 말고): 체력에 따라 바뀌는 공격 패턴(sphases) ── */
-const SPH_F=[['at','체력 % 이하','num'],['name','패턴 이름'],['atkMul','공격력 배율','num'],['say','바뀔 때 대사'],['singleName','단일 공격 이름'],['singleMult','단일 배율','num'],['aoeName','광역 공격 이름'],['aoeMult','광역 배율','num'],['aoeEvery','광역 주기(턴)','num'],['dotName','지속 피해 이름'],['dotChance','지속 피해 확률','num']];
+const SPH_F=[['at','체력 % 이하','num'],['name','패턴 이름'],['atkMul','공격력 배율','num'],['say','바뀔 때 대사'],['singleName','단일 공격 이름'],['singleMult','단일 배율','num'],['aoeName','광역 공격 이름'],['aoeMult','광역 배율','num'],['aoeEvery','광역 주기(턴)','num'],['topEvery','대미지 1위 공격 주기(턴)','num'],['topName','대미지 1위 공격 이름'],['topMult','대미지 1위 배율','num'],['dotName','지속 피해 이름'],['dotChance','지속 피해 확률','num']];
 function phasesForm(){const P=Array.isArray(FM.d.sphases)?FM.d.sphases:[];
   return `<div class="f wide"><span class="fl">${labH('공격 패턴 더하기'+KSEP+'sphases')} <small class="faint">체력이 정한 % 아래로 내려가면 다음 턴부터 그 패턴으로 바뀜 · 비운 칸은 위 기본 공격 그대로</small></span>
     ${P.map((ph,i)=>{const extra=Object.keys(ph).filter(f=>!SPH_F.some(x=>x[0]===f));
