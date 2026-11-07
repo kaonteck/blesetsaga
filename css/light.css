@@ -1726,6 +1726,10 @@ html[data-theme="light"] .uinfo .u-btn.btn-primary{background:#95afe3;border-col
 html[data-theme="light"] .uinfo .u-btn:not(.btn-primary):hover,html[data-theme="light"] .uinfo .u-btn:not(.btn-primary):focus-visible{border-color:var(--gold-hi);color:var(--gold-hi);outline:none}
 html[data-theme="light"]:not([data-theme="light"]){--void:#ebeef4;--night:#ebeef4;--slab:#fbfcfd;--slab-2:#f8f9fb;--slab-3:#f3f5f9;--rule:#e0e4eb;--rule-2:#d1d7e2}
 html[data-theme="light"]:not([data-theme="light"]) body{background:#ebeef4!important}
+html[data-theme="light"] .rec-sub{color:var(--faint)}
+html[data-theme="light"] .rec-r.open .rec-t{color:var(--gold-hi)}
+html[data-theme="light"] .rec-pop p{color:var(--text)}
+html[data-theme="light"] .rec-pop p b{color:var(--xp)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}

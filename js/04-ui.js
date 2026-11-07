@@ -511,7 +511,7 @@ function openUinfo(name,btn){
   const key='u:'+name;if(S.sel.rmem===key){closeRmem();return;}
   closeRmem();S.sel.rmem=key;$('#rmenu').innerHTML=uinfoHTML(name);placeFloat(btn,250);
 }
-function closeRmem(){if(S&&S.sel.rmem){S.sel.rmem=null;const b=$('#rmenu');if(b)b.innerHTML='';$$('.rc-mem').forEach(x=>x.setAttribute('aria-expanded','false'));}}
+function closeRmem(){$$('.rec-r.open').forEach(x=>x.classList.remove('open'));if(S&&S.sel.rmem){S.sel.rmem=null;const b=$('#rmenu');if(b)b.innerHTML='';$$('.rc-mem').forEach(x=>x.setAttribute('aria-expanded','false'));}}
 window.addEventListener('scroll',closeRmem,{passive:true});window.addEventListener('resize',()=>{if(S)closeRmem();});
 document.addEventListener('scroll',e=>{if(e.target&&e.target.matches&&e.target.matches('[data-msgs],.pop-body,[data-rslide],[data-rplist]'))closeRmem();},{capture:true,passive:true});
 /* 메인 · 모집 중인 파티: 던전 / 파티 레이드 / 토벌전 탭 + [구분] 몬스터 드롭다운 · 가로형 줄 */
@@ -1470,7 +1470,7 @@ function finishBattle(b){
   }
   if(me.direct>=1){bump('damage',me.dealt||0);bump('crits',me.crits||0);bump('healing',me.healed||0);bump('revives',me.revives||0);
     if(b.over==='win'){bump('raidsWon');const k=S.stats.kills=S.stats.kills||{};k[b.monsterId]=(k[b.monsterId]||0)+1;if(b.eventBonus)bump('bossWins');if(me.dead)bump('fallenWins');}else bump('raidsLost');}
-  {const H=heroLinesOf(b);if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);{const rc={drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type];if(rc)rec(rc,`${b.mon.name}의 마지막 말 · “${H.last}”`);}}}  /* 레이드는 마지막 말 대신 '토벌 완료, 보상'(05 recFromGrant) */
+  {const H=heroLinesOf(b);if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);}}  /* 기록 패널엔 마지막 말 대신 '토벌 완료, 보상'(05 recFromGrant) */
   b.result=r;
   if(ctx.drun)drunAfter(b,me);
   sysParty(b.over==='win'?'승리! 보상은 각자 지급됩니다.':'전투가 끝났습니다.');

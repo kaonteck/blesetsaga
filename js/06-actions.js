@@ -2,7 +2,7 @@
 /* 이벤트 처리 (ACTS · 클릭/폼) */
 /* ───────── 이벤트 ───────── */
 document.addEventListener('click',e=>{if(!S)return;
-  if(S.sel.rmem&&!e.target.closest('#rmenu')&&!e.target.closest('[data-act="rmem"]')&&!e.target.closest('[data-act="uinfo"]')&&!e.target.closest('[data-act="r-who"]'))closeRmem();
+  if(S.sel.rmem&&!e.target.closest('#rmenu')&&!e.target.closest('[data-act="rmem"]')&&!e.target.closest('[data-act="uinfo"]')&&!e.target.closest('[data-act="r-who"]')&&!e.target.closest('[data-act="rec-more"]'))closeRmem();
   if(S.sel.pop&&!e.target.closest('#pop')&&!e.target.closest('[data-act="pop"]')&&!e.target.closest('#modal')){S.sel.pop=null;renderPop();renderTop();}
   if(e.target.closest('button,[role="button"],.opt,.choice'))playClick();
   const el=e.target.closest('[data-act]');if(!el)return;
@@ -97,6 +97,7 @@ function placePick(b,i){const me=b.players.find(p=>p.isMe);if(!me||!b.place)retu
 const ACTS={
   rmem:(d,el)=>openRmem(d.id,el),
   uinfo:(d,el)=>openUinfo(d.name,el),
+  'rec-more':(d,el)=>recPop(el),
   'u-view':d=>{closeRmem();modal('');if(S.me&&d.name===S.me.name){go('character',{ctab:'info'});return;}S.sel.viewBack=S.route==='profile'?(S.sel.viewBack||'main'):S.route;S.sel.viewUser=d.name;go('profile');scrollTo({top:0});},
   'r-who':(d,el)=>openRaidWho(d.name,el),
   'g-subtab':d=>{S.sel.gsub=d.tab;renderFight();},
