@@ -1299,7 +1299,9 @@ function validateMonster(d){
   ['level','min','max','target','hp','atk','def','exp','gold','singleMult','aoeMult','aoeEvery','hpScale','dotChance','dotDmg','roles.tank','roles.dps','roles.heal'].forEach(k=>{if(n(k)==null||!isFinite(n(k)))e.push(`${(AM_FIELDS.find(f=>f[0]===k)||[k,k])[1]}: 숫자를 입력하세요`);});
   if(e.length)return e;
   if(!MKIND[d.kind||'party'])e.push('분류는 party · weekly · event · field · dungeon · story 중 하나여야 합니다');
-  if(['field','dungeon','story'].includes(d.kind)){if(d.min!==1||d.max!==1)e.push('개인 전투 몬스터는 최소·최대 인원이 1명이어야 합니다');}else if(d.min<3)e.push('최소 인원은 3명 이상이어야 합니다');
+  if(['field','story'].includes(d.kind)){if(d.min!==1||d.max!==1)e.push('개인 전투 몬스터는 최소·최대 인원이 1명이어야 합니다');}
+  else if(d.kind==='dungeon'){if(d.min<1||d.max>4)e.push('던전 몬스터는 1~4명 사이로 정해 주세요');}   // 던전은 5페이즈 파티 탐사(게임은 1~4명, 05 ensureDunParty)
+  else if(d.min<3)e.push('최소 인원은 3명 이상이어야 합니다');
   if(d.min>d.max)e.push('최소 인원이 최대 인원보다 클 수 없습니다');
   const rs=d.roles.tank+d.roles.dps+d.roles.heal;
   if(rs>d.min)e.push(`역할별 최소 인원의 합(${rs})이 최소 인원(${d.min})보다 큽니다`);
