@@ -28,7 +28,7 @@ const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/p
 /* 아이템·퀘스트 장면 그림도 같은 버킷(monster-art)에 올린 주소만 씀 · 상점은 같은 id 아이템 그림을 그대로 */
 const artUrl=u=>typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';
 const itemImgSrc=it=>artUrl(it&&it.img)||ITEM_IMG;
-function monImg(m){if(m&&m.noImg)return '';const u=m&&m.img;return typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';}
+function monImg(m){if(m&&m.noImg)return '';const u=m&&m.img;return typeof u==='string'&&(u.startsWith(MON_IMG_BASE)||/^img\/mon\/[\w.-]+$/.test(u))&&!/["'<>\s]/.test(u)?u:'';}   /* 운영 버킷 그림 또는 게임에 들어 있는 그림(img/mon/) */
 const MON_PH='img/mon-placeholder.png';   // 그림을 올리지 않은 몬스터의 임시 이미지(예전 글자 그림 대신)
 function monPic(m,cls,extra){if(m&&m.noImg)return '';const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<img class="mon-img mon-ph ${cls||''}" src="${MON_PH}" alt="${esc((m&&m.name)||'')}" loading="lazy" ${extra||''}>`;}
 function openLink(l){

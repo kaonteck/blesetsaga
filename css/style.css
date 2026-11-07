@@ -3869,3 +3869,6 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 .crop-chat .rep{display:none}
 /* 몬스터 '이미지 없이 보이기'(noImg) — 그림 칸이 빠지면 내용이 줄 전체를 씀 */
 .boss>:first-child:not(.mon-img):not(.mon-art){grid-column:1/-1}
+/* 몬스터 상세: 칸이 좁아(3단) 그림 옆 글이 한두 글자씩 꺾이던 것 → 그림을 위에, 글을 아래 전체 폭으로 */
+.boss:has(>.mon-img.big){grid-template-columns:minmax(0,1fr);gap:12px}
+.boss>.mon-img.big{width:min(220px,100%)}

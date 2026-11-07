@@ -1792,8 +1792,12 @@ STORY_MONS.push(
     sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 경악',say:'경악에 맞으면 회복할 수 없고, 봉인의 사슬에 맞으면 스킬 하나가 2턴 봉인된다(정화의 성수·디스펠로 해제)',atkMul:1.3,pullHeal:false,noHealAoe:true,singleName:'봉인의 사슬',sealChance:0.4,aoeName:'경악',aoeEvery:3},{at:25,name:'3페이즈 · 기적의 나팔',say:'나팔 소리만 남는다',atkMul:1.6,noHealAoe:false,sealChance:0.2,aoeName:'기적의 나팔',aoeMult:0.8,aoeEvery:2}]}));
 var CE_HP=1.8*1.3,CE_ATK=1.3*1.15,JA_HP=1.9*1.3,JA_ATK=1.35*1.15,AU_HP=1.2,SU_HP=2.2*1.6,SU_ATK=1.4*1.45;
 [['st_cephalo',CE_HP,CE_ATK],['st_janus',JA_HP,JA_ATK],['st_aurora',AU_HP,1],['st_summus',SU_HP,SU_ATK]].forEach(([id,h,a])=>{const m=STORY_MONS.find(x=>x.id===id);m.hp=Math.round(m.hp*h);m.atk=Math.round(m.atk*a);m.dotDmg=Math.round(m.atk*0.15);});
+/* 8장 지하 2층 · 이단 심문관 인퀴시토르(유저 요청 2026-11-08) — 케팔로포다와 야누스 사이. 퀘스트에서는 토벌전(그리드)만 쓰고, 이 스토리 몬스터는 토벌 수치의 바탕 */
+STORY_MONS.push(soloMon({id:'st_inquis',name:'지하신전의 이단 심문관, 인퀴시토르',art:'spirit',kind:'story',region:'백야의 신전 지하 2층',level:84,statLevel:85,tier:'story',desc:'이단 재판을 관장하던 고대 혼돈의 사제. 타락의 힘을 흡수한 뒤 돌변하여 다른 신도들마저 모조리 불태웠다. 생전의 모습을 잃고 타오르는 화염 속에서 영원한 형벌을 집행하고 있다.',singleName:'화형 선고',aoeName:'형벌의 불꽃',dotName:'화상',dotChance:0.2}));
+{const m=STORY_MONS.find(x=>x.id==='st_inquis');m.hp=Math.round(m.hp*1.85*1.3);m.atk=Math.round(m.atk*1.32*1.15);m.dotDmg=Math.round(m.atk*0.15);}
 Object.assign(HERO_LINES,{
   st_cephalo:{say:['나팔이 울리기 전에, 제물은 제단으로.','부활은 축복이다. 축복은 거절할 수 없다.'],last:'…다음 제물은, 이미 와 있구나.'},
+  st_inquis:{say:['이단이다. 너희 모두, 이단이다.','불은 죄를 태운다. 남는 것은 재뿐이다.','형벌은 끝나지 않는다. 나도, 너희도.'],last:'…곧 그분에게도…. 안식을… 주시옵고…'},
   st_janus:{say:['오늘이 끝나면 내일이 온다고, 다들 그렇게 믿고 들어왔지.','나는 아침을 기다렸다. 아직 기다린다.'],last:'…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다.'},
   st_aurora:{say:['아홉 시. 아홉 시까지 어딘가에 가야 했던 것 같은데, 어디였는지 모르겠어요.','지하철… 이라는 게 있었어요. 사람이 아주 많은 상자였어요. 다들 작은 빛나는 판을 보고 있었고요.','그쪽 세계에도 비가 오나요? 우산을 두고 와서… 아, 무슨 얘기를 하는 거죠, 제가.','로그아웃. 그 단어, 저도 찾았었어요. 메뉴를 아무리 열어도 없었어요.','여기 계속 계셔도 돼요.'],last:''},
   st_summus:{say:['기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니.','모두가 왕좌 앞으로 모으리라.','죽음과 자연은 경악할 지어다.'],last:'…출근, 늦겠다.'}});
@@ -1869,10 +1873,25 @@ function seqE30(done){const L=[];const sys=t=>L.push({k:'sys',t,d:1300,s:()=>key
   L.push({k:'err',t:'! E□R□□',d:1600,s:warnBeep},{k:'narr',t:'따스한 볕이 내렸다.',d:2400,s:()=>{birds();windGust();}});
   L.push({k:'sys',t:'<아?로?>   기원?□ □?□      필드 위 모든 생명?□',d:2600},{k:'err',t:'! □□□□□',d:1400,s:warnBeep},{k:'sys',t:'모든 생명체를 부활시키      시오.',d:1800},{k:'sys',t:'부활  ?합니다.',d:2000},{k:'sys',t:'힘을 소진한 <아?로?>          일시적인 잠에 들        다.',d:2400});
   playSeq(L,done);}
+/* 지하 2층 · 인퀴시토르 등장 · 사망(유저 확정 문안 2026-11-08) */
+function seqInq(done){const L=[];const nar=(t,d)=>L.push({k:'narr',t,d:d||2300});
+  L.push({k:'sys',t:'✉ SYSTEM',d:900,s:()=>keyClick(0.03*sndVol('click'))},{k:'sys',t:'<백야의 신전, 지하 2층>에 도달하였습니다.',d:1400,s:()=>keyClick(0.03*sndVol('click'))});
+  L.push({k:'gap',d:900});nar('그와 동시에 후끈한 열기가 우리들의 전신을 덮쳐왔다.');
+  L[L.length-1].s=()=>{try{windGust();}catch(e){}};
+  nar('아주 오래된 것 같은, 타는 냄새와 재의 냄새가 났다.');
+  nar('모두 타버린 뒤 그을음만 남은 것 같은 넓고 검은 홀 가운데에 무언가의 덩어리가 있었다.',2800);
+  nar('밝은 붉은 색으로 끝없이 타오르던 덩어리는 이내 위로 솟아오르더니 하나의 형태가 되었다.',2800);
+  L.push({k:'gap',d:900},{k:'raw',t:'<지하신전의 이단 심문관, 인퀴시토르>',d:1600,s:()=>trumpet(true)});
+  L.push({k:'say',t:'이단 재판을 관장하던 고대 혼돈의 사제.',d:2000},{k:'say',t:'타락의 힘을 흡수한 뒤 돌변하여 다른 신도들 마저 모조리 불태웠다.',d:2400},{k:'say',t:'생전의 모습을 잃고 타오르는 화염 속에서 영원한 형벌을 집행하고 있다.',d:2600});
+  playSeq(L,done);}
+const INQ_LAST=['신도들이여…….','모두 어디로….','저주 받은…. 이여….','저를… 영원한 고통 속에서….. 해방….','…끝내 되돌리지…. 못한….','곧 그분에게도….','안식을… 주시옵고…'];
+function seqInqDie(done){const L=[{k:'sys',t:'<인퀴시토르>가 구슬픈 비명과 함께 폭발합니다.',d:1200,s:()=>{warnBeep();try{windGust();}catch(e){}}},{k:'gap',d:1200}];
+  INQ_LAST.forEach((t,i)=>L.push({k:'say',t,d:i?2300:1800}));playSeq(L,done);}
+const SEQ_FN={e30:d=>seqE30(d),e28:d=>seqE28(d),inq:d=>seqInq(d),inqDie:d=>seqInqDie(d)};
 /* 단계 연출: 소원의 벽 · E30 전멸 후 메시지 */
 (function(){const f=stepFx;stepFx=function(q,qp,step){if(!step)return null;
   if(step.wishWall)return {html:wishTableHTML(true),hold:false,text:null};
-  if(step.seq){const key=q.id+':'+qp.step;S.sel.seqSeen=S.sel.seqSeen||{};if(!S.sel.seqSeen[key]){S.sel.seqSeen[key]=1;(step.seq==='e30'?seqE30:seqE28)(()=>{if(S.route==='quest')render();});return {hold:true,html:'<div class="qsilence"></div>'};}if(SEQ.on)return {hold:true,html:'<div class="qsilence"></div>'};}
+  if(step.seq){const key=q.id+':'+qp.step;S.sel.seqSeen=S.sel.seqSeen||{};if(!S.sel.seqSeen[key]){S.sel.seqSeen[key]=1;(SEQ_FN[step.seq]||seqE28)(()=>{if(S.route==='quest')render();});return {hold:true,html:'<div class="qsilence"></div>'};}if(SEQ.on)return {hold:true,html:'<div class="qsilence"></div>'};}
   if(step.clockPlus)return {html:templeClockHTML(),hold:false,text:null};
   return f(q,qp,step);};})();
 /* 퀘스트 받을 때: E28은 검은 화면의 깨진 말부터 */
@@ -1912,7 +1931,13 @@ STORY_QUESTS.push(
     {label:'위층으로 올라간다',result:'뒤를 돌아본다. 시체들은 그대로 있다. 사라지지 않는다.',next:'end',flag:'e28_under'}]},
   end:{end:true,text:'물에 잠긴 지하 제단',reward:{exp:20000,gold:3200,items:{potion:2,holywater:1}}}}},
  {id:'E29',cat:'epic',title:'중장 · 여명과 황혼 사이',published:true,level:86,prereq:'E28',repeat:null,cond:{},
-  desc:'지하에서 올라오면 끝없이 긴 회랑. 회랑 끝 대주교의 문 앞에서 누군가 기다린다. [8장 「백야의 신전」]',start:'s1',steps:{
+  desc:'지하 제단에서 올라오면 모두 타 버린 지하 2층, 그 위로 끝없이 긴 회랑. 회랑 끝 대주교의 문 앞에서 누군가 기다린다. [8장 「백야의 신전」]',start:'i1',steps:{
+  i1:{text:'백야의 신전 지하 2층. 모두 타 버린 뒤 그을음만 남은 넓고 검은 홀. 가운데에서 붉은 형태가 끝없이 타오른다. 지하신전의 이단 심문관, 인퀴시토르. (권장 LV86 · 토벌전 4~8인 · 회복약 3개, 정화의 성수 2개 이상)',seq:'inq',choices:[
+    {label:'홀 가운데로 걸어간다',result:'열기가 얼굴을 덮친다. 불꽃 사이에서 하얀 가면 같은 얼굴이 이쪽을 본다. "이단이다."',next:'i2'},
+    {label:'물러나 준비한다',result:'재가 천천히 내려앉는다. 불꽃은 꺼지지 않는다.',next:'i1'}]},
+  i2:{text:'"불은 죄를 태운다. 남는 것은 재뿐이다." 혼자서는 상대할 수 없다. 토벌대(4~8인)를 꾸려 홀로 간다. 낙인과 불길에 맞으면 화상을 입고(정화의 성수로 해제), 체력이 줄면 이단 심문(60%) · 영원한 형벌(25%)이 시작된다.',raid:'t_inquis',next:'i3',winText:'인퀴시토르가 구슬픈 비명과 함께 폭발한다.'},
+  i3:{text:'불꽃이 사그라든다. 홀 가운데에는 재와, 아직 따뜻한 그을음만 남았다. 재 속에서 무언가가 반짝인다. 위층으로 이어지는 계단이 드러난다.',seq:'inqDie',choices:[
+    {label:'계단을 오른다',result:'뒤를 돌아본다. 재는 그대로 있다. 바람이 없는데도 조금씩 흩어진다.',next:'s1',flag:'e29_inquis'}]},
   s1:{text:'끝없이 긴 회랑. 벽 가득 문장이 새겨져 있다. 회랑의 그림자 속에서 신관들이 걸어 나온다.',battle:'st_shadowpriest',next:'s2',winText:'그림자 신관들이 벽 속으로 스며든다. 벽의 문장들이 드러난다.'},
   s2:{text:'소원의 벽. 새겨진 문장들이 낯익다. 소원과, 그 소원이 이루어진 모양. 맨 아래 줄은 비어 있고, 그 칸에 커서가 깜빡인다.',wishWall:true,choices:[
     {label:'회랑 끝으로 걷는다',result:'회랑은 끝이 없을 것처럼 길다. 창밖은 여명이었다가, 황혼이었다가, 다시 여명이다. 내일은 오지 않는다.',next:'s3',flag:'e29_wall'}]},
@@ -1962,9 +1987,9 @@ QCHAPTERS.push(['ch8','8장 「백야의 신전」',['E28','E29','E30','E31']]);
    · 원래 숨무스(guardian): 이벤트 만신전으로만(8~20인).
    잡몹·아우로라(□□)는 개인 전투 그대로. */
 const SUMMUS_EV=[1.833,1.316];  /* 밸런스 2차(2026-11-07): 봇 8인 정석 승률 약 45~50% (예전 2.2,1.0) */  /* 만신전 숨무스: 퀘스트 숨무스(4인) 대비 HP·공격 배율 — 8인 기준 */
-const R4_MUL={t_cephalo:['st_cephalo',2.4,3.4],t_janus:['st_janus',3.52,1.7],q_summus:['st_summus',1.76,4.2]};
+const R4_MUL={t_cephalo:['st_cephalo',2.4,3.4],t_inquis:['st_inquis',2.4,3.4],t_janus:['st_janus',3.52,1.7],q_summus:['st_summus',1.76,4.2]};
 /* 밸런스 2차(2026-11-07): 토벌전은 파티 레이드보다 어렵게 — 봇 4인 정석 승률 약 65~75%. [체력, 공격] 추가 배율(지속 피해량은 그대로) */
-const R4_BAL={t_cephalo:[2.5,2.35],t_janus:[1.8,2.35],q_summus:[3,1.33]};  /* 봇 4인 시뮬: 케팔로포다 95–100% · 야누스 87–100% · 숨무스 72–100%(평균 약 87%, 아이템 미사용) */
+const R4_BAL={t_cephalo:[2.5,2.35],t_inquis:[2.2,2.35],t_janus:[1.8,2.35],q_summus:[3,1.33]};  /* 봇 4인 시뮬: 케팔로포다 95–100% · 야누스 87–100% · 숨무스 72–100%(평균 약 87%, 아이템 미사용) */
 const R4_DEF={
  t_cephalo:{name:'지하 신전의 사제, 케팔로포다',art:'beast',region:'백야의 신전 지하 제단',level:80,story:'E28',exp:18000,gold:2600,drops:[['chaos',0.6],['potion',0.5]],
   desc:'두 팔과 여덟 개의 다리를 가진 고대 혼돈의 사제. 신과 함께 타락한 기운을 흡수하여 그 모습이 흉측하게 변했다. 물에 잠긴 제단에서 4인 토벌대를 기다린다.',
@@ -1973,6 +1998,13 @@ const R4_DEF={
    {at:100,name:'1페이즈',atkMul:1,patterns:['single','single','burst'],pats:{single:{name:'두 팔 내려치기',mult:1.1},burst:{name:'물보라',mult:0.8}}},
    {at:60,name:'2페이즈 · 여덟 다리',say:'휘감기면 다음 턴 스킬 불가, 먹물에 맞으면 대미지 감소(정화의 성수·디스펠로 해제)',atkMul:1.3,wrapChance:0.3,blindChance:0.5,patterns:['single','cross','burst2'],pats:{single:{name:'여덟 다리 휘감기',mult:1.0},cross:{name:'먹물 물결',mult:0.75},burst2:{name:'먹물 물결',mult:0.8}}},
    {at:25,name:'3페이즈 · 혼돈의 기도',say:'기도문이 멈추고 물방울 소리만 남는다',atkMul:1.6,wrapChance:0.15,blindChance:0,patterns:['all','quake','burst2'],pats:{all:{name:'혼돈의 기도',mult:0.45},quake:{name:'제단의 소용돌이',mult:1.0},burst2:{name:'먹물 물결',mult:0.8}}}]}},
+ t_inquis:{name:'지하신전의 이단 심문관, 인퀴시토르',art:'spirit',img:'img/mon/t_inquis.webp',region:'백야의 신전 지하 2층',level:84,story:'E29',exp:20000,gold:2800,drops:[['chaos',0.6],['potion',0.5]],
+  desc:'이단 재판을 관장하던 고대 혼돈의 사제. 타락의 힘을 흡수한 뒤 돌변하여 다른 신도들마저 모조리 불태웠다. 생전의 모습을 잃고 타오르는 화염 속에서 영원한 형벌을 집행하고 있다.',
+  dotName:'화상',dotChance:0.15,fx:{},
+  mass:{title:'백야의 신전 · 지하 2층',lines:{single:'이단에게는 화형을.',dot:'죄는 재가 될 때까지 탄다.',burst:'낙인을 받아라.',burst2:'둘. 둘 다 이단이다.',cross:'정화의 불길이 길을 연다.',quake:'불 곁에 선 자부터.',ring:'도망치는 자도 타오른다.',all:'형벌은 끝나지 않는다.'},phases:[
+   {at:100,name:'1페이즈',atkMul:1,patterns:['single','single','burst'],pats:{single:{name:'화형 선고',mult:1.1},burst:{name:'불씨 낙인',mult:0.85,fx:{burn:{t:3,d:70}}}}},
+   {at:60,name:'2페이즈 · 이단 심문',say:'불씨 낙인·정화의 불길에 맞으면 3턴 화상(정화의 성수로 해제) · 재의 낙인은 다음 턴에 터진다',atkMul:1.3,patterns:['single','cross','burst2','ring'],pats:{cross:{name:'정화의 불길',mult:0.8,fx:{burn:{t:3,d:70}}},burst2:{name:'재의 낙인',mult:0.9,fx:{delay:{}}},ring:{name:'불타는 홀',mult:0.7}}},
+   {at:25,name:'3페이즈 · 영원한 형벌',say:'홀 전체가 타오른다',atkMul:1.6,patterns:['all','quake','burst2'],pats:{all:{name:'형벌의 불꽃',mult:0.45,fx:{burn:{t:2,d:60}}},quake:{name:'타오르는 덩어리',mult:1.0},burst2:{name:'재의 낙인',mult:0.9}}}]}},
  t_janus:{name:'타락한 신의 힘을 흡수한 주교, 야누스',art:'golem',region:'대주교의 문 앞',level:86,story:'E29',exp:22000,gold:3000,drops:[['chaos',0.6],['potion',0.5]],
   desc:'제사를 관장하던 고대 혼돈의 신전의 대주교. 여명과 황혼 사이에 갇혀 내일을 맞이하지 못하고 있다. 여명의 얼굴은 스스로 회복하며 약하게, 황혼의 얼굴은 강하게 친다.',
   dotName:'저녁 그림자',dotChance:0.15,fx:{janus:true},
@@ -1998,7 +2030,7 @@ const SUMMUS_EVENT=(()=>{const q=R4_MONS.find(m=>m.id==='q_summus');const ev={..
   region:'백야의 신전',desc:'고대 혼돈의 신전의 교황이었던 자. 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 고통 받고 있다. 매주 월요일 05:00, 다시 깨어난다.',exp:900,gold:500};
   delete ev.gridRaid;delete ev.questOnly;delete ev.story;ev.mass={...clone(q.mass),title:'만신전 · 백야의 신전',reward:{join:{exp:20000,gold:3000,items:{}},kill:{exp:30000,gold:5000,items:{chaos:3,potion:2},pick:['cloak','amulet','crest']}}};return ev;})();
 {const i=DEFAULT_MONSTERS.findIndex(x=>x.id==='guardian');if(i>=0)DEFAULT_MONSTERS[i]=clone(SUMMUS_EVENT);}
-Object.assign(HERO_LINES,{t_cephalo:HERO_LINES.st_cephalo,t_janus:HERO_LINES.st_janus,q_summus:HERO_LINES.st_summus,guardian:HERO_LINES.st_summus});
+Object.assign(HERO_LINES,{t_cephalo:HERO_LINES.st_cephalo,t_inquis:HERO_LINES.st_inquis,t_janus:HERO_LINES.st_janus,q_summus:HERO_LINES.st_summus,guardian:HERO_LINES.st_summus});
 /* 참가 자격: 그 퀘스트를 받았거나(진행 중) 마친 블레서. 운영자는 항상 */
 function r4Step(m){const q=quest(m.story);if(!q)return null;return Object.keys(q.steps).find(k=>q.steps[k].raid===m.id)||null;}
 function r4Open(m){if(typeof isAdmin==='function'&&isAdmin())return true;if(!m||!m.story)return false;const qp=S.qp&&S.qp[m.story];return !!qp&&['active','claim','done'].includes(qp.status);}
