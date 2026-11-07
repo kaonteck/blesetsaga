@@ -3775,7 +3775,3 @@ html{overflow-y:scroll}
 #gcount.low b{color:#ff8a7a;filter:drop-shadow(0 0 16px rgba(255,90,70,.55)) drop-shadow(0 3px 0 rgba(0,0,0,.55))}
 #gcount em{font-size:12px;margin-top:8px;letter-spacing:.06em;color:rgba(232,238,252,.6)}
 @media (max-width:760px){#gcount{top:40%;padding:28px 44px 24px}#gcount small{font-size:13px}#gcount small::after{width:240px;height:20px}#gcount b{font-size:84px}}
-/* 배경 화면 이미지(유저 요청, 다크·라이트 공통 · 패널 색은 그대로) — 화면에 고정, 폰은 작은 이미지 */
-html{background:#07080d url("../img/bg/smoke.jpg") center/cover no-repeat fixed}
-body{background:transparent!important;background-image:none!important}
-@media (max-width:760px){html{background-image:url("../img/bg/smoke-sm.jpg");background-attachment:scroll}html::before{content:"";position:fixed;inset:0;z-index:-1;background:#07080d url("../img/bg/smoke-sm.jpg") center/cover no-repeat}}
