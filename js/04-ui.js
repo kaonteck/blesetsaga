@@ -21,7 +21,9 @@ const QUEST_HIDDEN=false;
 const questHidden=()=>QUEST_HIDDEN&&!isAdmin();
 /* LV90 이상 퀘스트(E30·E31·S8b)는 아직 닫아 둠(유저 요청 2026-11-08) — 운영자만 보임. 열 때는 QUEST_LV_CAP=999 */
 const QUEST_LV_CAP=90;
-const questCapped=q=>!!q&&q.level>=QUEST_LV_CAP&&!isAdmin();
+/* 8장 「백야의 신전」 퀘스트 전부 잠금(유저 요청 2026-11-08, 볼륨 확장 작업 중) — 운영자만 보임. 열 때는 CH8_LOCK=false */
+const CH8_LOCK=true,CH8_RE=/^(E2[89]|E3[01]|S8)/;
+const questCapped=q=>!!q&&(q.level>=QUEST_LV_CAP||CH8_LOCK&&CH8_RE.test(q.id))&&!isAdmin();
 function go(route,sel){if(route==='quest'&&questHidden()){toast('퀘스트 페이지는 잠시 준비 중입니다.','warn');return;}S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
 /* 몬스터 그림: 운영 페이지에서 올린 이미지(monster-art 버킷 주소만)가 있으면 그것, 없으면 ASCII */
 const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/public/monster-art/';
