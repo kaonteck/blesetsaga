@@ -3779,3 +3779,10 @@ html{overflow-y:scroll}
 html{background:#07080d url("../img/bg/smoke.jpg") center/cover no-repeat fixed}
 body{background:transparent!important;background-image:none!important}
 @media (max-width:760px){html{background-image:url("../img/bg/smoke-sm.jpg");background-attachment:scroll}html::before{content:"";position:fixed;inset:0;z-index:-1;background:#07080d url("../img/bg/smoke-sm.jpg") center/cover no-repeat}}
+
+/* 다크 테마 바탕·패널 색을 Claude 앱 다크 모드에 맞춤(유저 요청) — 따뜻한 짙은 회색. 라이트는 그대로 */
+:root:not([data-theme="light"]){
+  --void:#262624; --night:#1f1e1d; --slab:#30302e; --slab-2:#383835; --slab-3:#42413e;
+  --rule:#454440; --rule-2:#5a5852;
+}
+html:not([data-theme="light"]) body{background:#262624!important}
