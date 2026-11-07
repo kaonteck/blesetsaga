@@ -85,7 +85,9 @@ function fitMainCols(){if(typeof getComputedStyle!=='function')return;fitClear()
   const cb=cb0;const target=Math.max(side,cb);
   const all=[...C.querySelectorAll(FIT_SEL)].filter(e=>e.offsetParent&&!e.parentElement.closest(FIT_SEL)&&R0(e).height>0);
   /* 목록의 한 줄(접는 칸·같은 모양이 3개 이상 늘어선 것)은 늘리지 않음 — 마지막 줄만 커져 어색해짐 */
-  const rowLike=e=>e.tagName==='DETAILS'||[...e.parentElement.children].filter(x=>x.tagName===e.tagName&&x.classList[0]===e.classList[0]).length>=3;
+  const sibs3=e=>[...e.parentElement.children].filter(x=>x.tagName===e.tagName&&x.classList[0]===e.classList[0]).length>=3;
+  /* 한 겹 감싼 목록(.mgrp 안의 .mcard 등)도 줄로 봄 — 가운데 칸까지 올라가며 확인 */
+  const rowLike=e=>{if(e.tagName==='DETAILS')return true;for(let n=e;n&&n!==C&&n.parentElement;n=n.parentElement)if(sibs3(n))return true;return false;};
   const lows=all.filter(p=>{const a=R0(p);return !all.some(q=>{if(q===p)return false;const b=R0(q);return b.top>=a.bottom-2&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>8;});});
   if(target<=cb+1||!lows.length||lows.some(rowLike))return;
   const gap=cb-Math.max(...lows.map(bot));/* 패널 아래 여백(페이지 안쪽 여백)은 그대로 */
