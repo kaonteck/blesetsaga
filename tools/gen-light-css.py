@@ -303,6 +303,9 @@ def main():
 {SCOPE} #gcount b{{color:#2a3142;filter:drop-shadow(0 0 14px rgba(85,119,191,.35)) drop-shadow(0 3px 0 rgba(255,255,255,.9))}}
 {SCOPE} #gcount.low b{{color:#c62828;filter:drop-shadow(0 0 14px rgba(198,40,40,.3)) drop-shadow(0 3px 0 rgba(255,255,255,.9))}}
 {SCOPE} #gcount em{{color:#5d6680}}
+/* 이번 주 공동 목표 칸: 라이트는 패널보다 한 톤 어둡게(프론트) */
+{SCOPE} .gq{{background:#eceff5;border-color:#d3d9e4}}
+{SCOPE} .gq .gq-bar{{background:#dde2eb}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')

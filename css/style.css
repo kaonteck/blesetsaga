@@ -3861,3 +3861,6 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 .mdex .ascii,.mdex.unk .ascii{width:40px;height:40px;max-width:40px;min-height:0;aspect-ratio:auto;padding:0;margin:0 auto;font-size:20px;line-height:40px;overflow:hidden}
 .mdex:not(.unk) .ascii{font-size:3px;line-height:1}
 .mdex .mon-img,.mdex .ascii,.mdex.unk .ascii{border:0;background:none;box-shadow:none;border-radius:0}
+/* 이번 주 공동 목표 칸: 패널보다 한 톤 밝게(라이트는 생성기 tail에서 한 톤 어둡게) */
+.gq{background:#2a2a2a;border-color:#3a3a3a}
+.gq .gq-bar{background:#1c1c1c}
