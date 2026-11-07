@@ -16,9 +16,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NAV_OPEN){NAV_OPEN=
 function emoClose(){if(!S.sel||!S.sel.emoFor)return;S.sel.emoFor=null;$$('.emo-pop').forEach(x=>x.remove());}
 document.addEventListener('click',e=>{if(S.sel&&S.sel.emoFor&&!e.target.closest('.emo-w'))emoClose();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')emoClose();});
-/* 퀘스트 페이지 임시 비공개(유저 요청 2026-11-05, 풀라고 할 때 false로): 운영자만 열림 */
-const QUEST_HIDDEN=true;
+/* 퀘스트 페이지 임시 비공개(유저 요청 2026-11-05) → 2026-11-08 공개(유저 요청). 다시 닫으려면 true */
+const QUEST_HIDDEN=false;
 const questHidden=()=>QUEST_HIDDEN&&!isAdmin();
+/* LV90 이상 퀘스트(E30·E31·S8b)는 아직 닫아 둠(유저 요청 2026-11-08) — 운영자만 보임. 열 때는 QUEST_LV_CAP=999 */
+const QUEST_LV_CAP=90;
+const questCapped=q=>!!q&&q.level>=QUEST_LV_CAP&&!isAdmin();
 function go(route,sel){if(route==='quest'&&questHidden()){toast('퀘스트 페이지는 잠시 준비 중입니다.','warn');return;}S.route=route;NAV_OPEN=false;if(sel)Object.assign(S.sel,sel);try{history.replaceState(null,'','#'+route);}catch(e){}render();window.scrollTo(0,0);save();}
 /* 몬스터 그림: 운영 페이지에서 올린 이미지(monster-art 버킷 주소만)가 있으면 그것, 없으면 ASCII */
 const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/public/monster-art/';
@@ -761,7 +764,7 @@ const QDONE=['done','doneToday'];
 function qLi(q,sel){const st=questStatus(q);return `<div class="li clickable" data-act="openquest" data-id="${q.id}" ${q.id===sel?'aria-current="true"':''}><div class="t"><b>${esc(q.title)}</b><small>LV${q.level}${q.prereq?' · 선행 '+esc((quest(q.prereq)||{}).title||q.prereq):''}${hasBattle(q)?' · 개인 레이드':''}</small></div><span class="chip ${QSTAT[st][1]}">${QSTAT[st][0]}</span></div>`;}
 function qGroup(key,title,list,sel,defOpen,meta){const O=S.sel.qgrp||{};const open=key in O?O[key]:defOpen;
   return `<div class="qgrp ${open?'open':''}"><button class="qgrp-h" data-act="qgrp" data-k="${key}" data-def="${defOpen?1:0}" aria-expanded="${open}"><span class="qgrp-t">${esc(title)}</span><span class="qgrp-m num">${meta}</span><svg class="qgrp-c" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>${open?`<div class="list">${list.map(q=>qLi(q,sel)).join('')}</div>`:''}</div>`;}
-function questGroupsHTML(tab,qs,sel){if(!qs.length)return `<p class="empty">${tab==='archive'?'아직 완료한 퀘스트가 없습니다.':'없음'}</p>`;
+function questGroupsHTML(tab,qs,sel){if(!qs.length)return `<p class="empty">${tab==='archive'?'아직 완료한 퀘스트가 없습니다.':(tab==='epic'||tab==='sub')&&S.data.quests.some(q=>q.cat===tab&&q.published&&questCapped(q))?'다음 이야기는 준비 중입니다.':'없음'}</p>`;
   if(tab==='archive'){const byLv=(a,b)=>(a.level-b.level)||a.title.localeCompare(b.title,'ko');const used=new Set();const out=[];
     QCHAPTERS.forEach(([key,title,ids])=>{const L=ids.map(id=>qs.find(q=>q.id===id)).filter(Boolean);L.forEach(q=>used.add(q.id));if(L.length)out.push(qGroup('arc_'+key,title,L,sel,L.some(q=>q.id===sel),`${L.length}/${ids.length}`));});
     const ep=qs.filter(q=>q.cat==='epic'&&!used.has(q.id)).sort(byLv);if(ep.length)out.push(qGroup('arc_epic','그 밖의 메인 이야기',ep,sel,ep.some(q=>q.id===sel),`${ep.length}`));

@@ -1019,6 +1019,7 @@ function questStatus(q){
   if(q.repeat&&!dailyPicks().includes(q.id))return 'hidden';
   if(q.repeat){if(S.claimedQ[`${q.id}:${kstCycle()}`])return 'doneToday';}
   else if(qp&&qp.status==='done')return 'done';
+  if(typeof questCapped==='function'&&questCapped(q))return 'hidden';   // LV90 이상 퀘스트 아직 닫힘(04 QUEST_LV_CAP)
   if(me.level<q.level)return 'locked';
   if(q.prereq&&!(S.qp[q.prereq]&&S.qp[q.prereq].status==='done'))return 'locked';
   if(condReason(q))return 'locked';
