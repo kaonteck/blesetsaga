@@ -3844,3 +3844,6 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 .rec-pop p{margin:0;font-size:12.5px;line-height:1.6;color:var(--text);overflow-wrap:anywhere}
 .rec-pop p b{color:var(--xp);font-weight:500}
 .wrap.tri[data-route="profile"] .tri-l .sc-st{display:none}
+/* 이번 주 공동 목표 칸: 패널보다 한 톤 밝게(라이트는 생성기 tail에서 한 톤 어둡게) */
+.gq{background:#2a2a2a;border-color:#3a3a3a}
+.gq .gq-bar{background:#1c1c1c}

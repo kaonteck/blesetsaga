@@ -1730,6 +1730,8 @@ html[data-theme="light"] .rec-sub{color:var(--faint)}
 html[data-theme="light"] .rec-r.open .rec-t{color:var(--gold-hi)}
 html[data-theme="light"] .rec-pop p{color:var(--text)}
 html[data-theme="light"] .rec-pop p b{color:var(--xp)}
+html[data-theme="light"] .gq{background:#f6f8fb;border-color:#dbdfe8}
+html[data-theme="light"] .gq .gq-bar{background:#fdfdfe}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
@@ -1803,3 +1805,6 @@ html[data-theme="light"] #gcount small::after{background-image:url("data:image/s
 html[data-theme="light"] #gcount b{color:#2a3142;filter:drop-shadow(0 0 14px rgba(85,119,191,.35)) drop-shadow(0 3px 0 rgba(255,255,255,.9))}
 html[data-theme="light"] #gcount.low b{color:#c62828;filter:drop-shadow(0 0 14px rgba(198,40,40,.3)) drop-shadow(0 3px 0 rgba(255,255,255,.9))}
 html[data-theme="light"] #gcount em{color:#5d6680}
+/* 이번 주 공동 목표 칸: 라이트는 패널보다 한 톤 어둡게(프론트) */
+html[data-theme="light"] .gq{background:#eceff5;border-color:#d3d9e4}
+html[data-theme="light"] .gq .gq-bar{background:#dde2eb}
