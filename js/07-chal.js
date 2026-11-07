@@ -1,15 +1,15 @@
 'use strict';
 /* ══ 보스 도전 모드 (5-1) ══════════════════════════════════════════
-   서고에서 이미 깬 스토리 보스(장 마지막 보스 + 8장 보스)를 조건을 걸고 다시 싸움.
+   서고에서 이미 깬 스토리 보스(장 마지막 보스 + 8장 토벌 보스(아우로라는 원래 이길 수 없는 전투라 뺌))를 조건을 걸고 다시 싸움.
    - 모든 도전: 제한 턴(`CHAL_BOSS[보스].turns`, 넘기면 패배).
    - 혼자 싸우는 보스: 회복약(회복 아이템) 사용 금지.
-   - 4인 이상 토벌(케팔로포다·야누스·숨무스): 아무도 쓰러지지 않기(한 번이라도 쓰러지면 실패).
+   - 4인 이상 토벌(케팔로포다·야누스·숨무스): 아무도 쓰러지지 않기. 어겨도 전투는 계속(파티원 퀘스트 진행은 원래대로), 도전 기록만 실패.
    - 보상: 처음 성공할 때만 한 번(`firstReward`) + 성공 수 칭호(도전자 1 · 시련을 즐기는 자 5 · 완벽주의자 전부).
    - 기록 `S.me.chal[보스]={best,at,n}`. 퀘스트 진행·주간 토벌 규칙은 건드리지 않음.
    - 수치는 임시(봇 시뮬 75% 지점 턴 수 기준) — 바꾸려면 CHAL_BOSS 숫자만. */
 const CHAL_BOSS={
   st_witch:{q:'E4',turns:7},st_monk:{q:'E7',turns:9},st_serpent:{q:'E11',turns:9},st_saltlord:{q:'E15',turns:10},
-  st_siren:{q:'E19',turns:11},st_rootguard:{q:'E23',turns:12},st_prisoner:{q:'E27',turns:11},st_aurora:{q:'E30',turns:30},
+  st_siren:{q:'E19',turns:11},st_rootguard:{q:'E23',turns:12},st_prisoner:{q:'E27',turns:11},
   t_cephalo:{q:'E28',turns:20,grid:1},t_janus:{q:'E29',turns:20,grid:1},q_summus:{q:'E31',turns:25,grid:1}
 };
 const CHAL_BY_Q=Object.fromEntries(Object.entries(CHAL_BOSS).map(([k,v])=>[v.q,k]));
@@ -54,7 +54,9 @@ function chalSummus(m){const C=S.sel.chal;return m&&m.id==='q_summus'&&C&&C.id==
 /* 턴마다: 쓰러짐 기록 · 제한 턴 */
 (function(){const f=doResolve;doResolve=function(...a){f(...a);const b=S.battle;if(!b||!b.chal)return;
   if(b.players.some(p=>p.dead))b.chal.fell=true;
-  if(!b.over&&b.chal.grid&&b.chal.fell){b.over='lose';b.log.push({t:'bad',text:'보스 도전 실패 · 누군가 쓰러졌습니다.'});finishBattle(b);save();renderFight();return;}
+  /* 토벌(파티): 조건을 어겨도 전투는 그대로 — 같이 싸우는 블레서의 퀘스트 진행·보상은 원래대로, 도전 기록만 실패 */
+  if(b.chal.grid){const why=b.chal.fell?'누군가 쓰러졌습니다':b.turn>b.chal.turns?`제한 ${b.chal.turns}턴을 넘겼습니다`:'';
+    if(why&&!b.chal.failed){b.chal.failed=1;b.log.push({t:'bad',text:`보스 도전 실패 · ${why} (전투는 계속됩니다)`});save();renderFight();}return;}
   if(!b.over&&b.turn>b.chal.turns){b.over='lose';b.log.push({t:'bad',text:`보스 도전 실패 · 제한 ${b.chal.turns}턴을 넘겼습니다.`});finishBattle(b);save();renderFight();}};})();
 /* 끝날 때: 기록·첫 성공 보상 */
 (function(){const f=finishBattle;finishBattle=function(b){const done=S.claimedB[b.id];f(b);if(done||!b.chal)return;const C=b.chal;
