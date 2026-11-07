@@ -222,9 +222,41 @@ const SKILL_MP={attack:0,bash:0,jolt:6,flame:8,shooting:6,shining:12,
 for(const k in SKILL_MP)if(SKILLS[k])SKILLS[k].mp=SKILL_MP[k];
 /* 전투당 사용 횟수(uses) 폐지 → 최대 MP 비율로 소모(2026-11-07 유저 결정). 매 턴 4% 회복이라 한 번 쓰면 한동안 못 씀.
    함께 쓰는 스킬 55% · 판을 뒤집는 스킬(성역·유토피아·타락자) 90% · 예전 1회 80% · 예전 2회 40% · 베일 45% */
+/* 스킬 효과 계수(운영 페이지 클래스 › 스킬에서 바꿀 수 있음). 기본값 = 예전 코드에 박혀 있던 숫자 */
+const SKILL_V={link:{hp:10},cinder:{pct:12,turns:2},vindicate:{pct:20},blind:{pct:25},downworld:{pct:30},veil:{pct:10,turns:5},backslider:{mul:2},
+  roar:{pct:60,hp:10},berserker:{mul:2,hp:10},dystopia:{mul:3,hp:3},execution:{pct:22},smoke:{pct:15},takedown:{pct:25},hellfire:{pct:18,turns:3},
+  cure:{pct:10},sinsayer:{pct:30},bless:{pct:5,turns:3},fasciation:{pct:12},utopia:{pct:40},pray:{hp:15}};
+function SV(k,f){const s=SKILLS[k],v=s&&s.v;return v&&typeof v[f]==='number'&&isFinite(v[f])?v[f]:((SKILL_V[k]||{})[f]??0);}
 const MP_PCT_BIG=['sanctuary','utopia','backslider'];
 for(const k in SKILLS){const s=SKILLS[k];if(s.uses){s.mpPct=s.type==='addon'?0.55:MP_PCT_BIG.includes(k)?0.9:s.uses===1?0.8:0.4;delete s.uses;}}
 SKILLS.veil.mpPct=0.45;
+for(const k in SKILL_V)if(SKILLS[k])SKILLS[k].v={...SKILL_V[k]};
+/* 운영 페이지 스킬 설정(서버 content kind 'skill', id = 스킬 id) — 이름·설명·아이콘·필요 레벨·MP·계수·조건·효과 칩을 덮어씀.
+   지우면 코드 기본값으로 돌아감(SKILL_DEF). 종류(type)·대상(target)은 전투 규칙이라 바꾸지 않음 */
+const SKILL_DEF=JSON.parse(JSON.stringify(SKILLS));
+const SKILL_OV_F={name:'s',en:'s',desc:'s',img:'s',lv:'n',mp:'n',mpPct:'n',mult:'n',bonus:'n',reduce:'n',drain:'n',crit:'b',special:'b'};
+let SKILL_OV={};
+function applySkillCfg(rows){const n={};(rows||[]).forEach(r=>{if(!r||r.kind!=='skill'||!SKILL_DEF[r.id]||!r.data||typeof r.data!=='object')return;const d=r.data,o={};
+    for(const f in SKILL_OV_F){const t=SKILL_OV_F[f],v=d[f];if(v===undefined||v===null)continue;if(t==='s'&&typeof v==='string')o[f]=v.slice(0,f==='desc'?600:f==='img'?400:40);else if(t==='n'&&typeof v==='number'&&isFinite(v)&&v>=0)o[f]=v;else if(t==='b'&&typeof v==='boolean')o[f]=v;}
+    if(d.poison&&typeof d.poison==='object'){const pp={};['pct','turns'].forEach(k=>{if(typeof d.poison[k]==='number'&&isFinite(d.poison[k])&&d.poison[k]>=0)pp[k]=d.poison[k];});if(Object.keys(pp).length)o.poison=pp;}
+    if(d.combo&&typeof d.combo.bonus==='number'&&isFinite(d.combo.bonus))o.comboBonus=d.combo.bonus;
+    if(d.v&&typeof d.v==='object'){const vv={};for(const k in d.v)if(typeof d.v[k]==='number'&&isFinite(d.v[k])&&d.v[k]>=0)vv[k]=d.v[k];o.v=vv;}
+    if(Array.isArray(d.cond))o.cond=d.cond.filter(x=>typeof x==='string').map(x=>x.slice(0,200)).slice(0,6);
+    if(Array.isArray(d.fx))o.fx=d.fx.filter(x=>Array.isArray(x)&&typeof x[0]==='string'&&typeof x[1]==='string').map(x=>[x[0].replace(/[^a-z]/g,'').slice(0,8),x[1].slice(0,40)]).slice(0,6);
+    n[r.id]=o;});
+  const ch=JSON.stringify(n)!==JSON.stringify(SKILL_OV);if(!ch)return false;SKILL_OV=n;
+  for(const k in SKILL_DEF){const S0=JSON.parse(JSON.stringify(SKILL_DEF[k]));const s=SKILLS[k];for(const f of Object.keys(s))if(!(f in S0))delete s[f];Object.assign(s,S0);
+    const o=n[k];if(!o)continue;
+    for(const f in SKILL_OV_F)if(o[f]!==undefined)s[f]=o[f];
+    if(o.mpPct===0)delete s.mpPct;   /* MP를 '고정 값'으로 바꾼 경우(비율 0) */
+    if(o.poison&&s.poison)s.poison={...s.poison,...o.poison};
+    if(o.comboBonus!==undefined&&s.combo)s.combo={...s.combo,bonus:o.comboBonus};
+    if(o.v)s.v={...(s.v||{}),...o.v};
+    if(o.cond)s.cond=o.cond;if(o.fx)s.fx=o.fx;}
+  return true;}
+/* 운영 페이지 기본값 읽기용(스킬 · 쓰는 클래스 · 화면 효과 칩) */
+function skillDefaults(){const o={};for(const k in SKILL_DEF){const s=SKILL_DEF[k];o[k]={...JSON.parse(JSON.stringify(s)),classes:Object.keys(CLASSES).filter(c=>CLASSES[c].skills.includes(k)),
+    fx:(typeof SKILL_FX!=='undefined'&&SKILL_FX[k])||[],vKeys:Object.keys(SKILL_V[k]||{})};}return o;}
 const MP_BASE={defender:60,warrior:60,knight:70,infighter:80,mystic:90,destroyer:80,mage:150,salamander:160,shooter:110,dualist:120,priest:160,demigod:170,summoner:190};
 const MP_REGEN=0.04,MP_DEFEND=0;  /* 매 턴 최대 MP 4% 회복 · '방어' 폐지로 추가 회복 없음 */
 function mpCost(p,k){const s=SKILLS[k];if(s&&s.mpPct){let mx=p&&p.maxMp;if(mx==null&&p&&p.job&&CLASSES[p.job]&&p.level){try{mx=statsFor(p.job,p.level,{},{}).maxMp;}catch(e){}}return Math.max(1,Math.round((mx||100)*s.mpPct));}if(!s||!s.mp)return 0;let sc=p&&p.mpScale;if(!sc&&p&&p.job&&CLASSES[p.job]&&p.level){try{sc=statsFor(p.job,p.level,{},{}).mpScale;}catch(e){}}return Math.max(1,Math.round(s.mp*(sc||1)));}
@@ -259,10 +291,22 @@ function powOf(st){return st.pk==='mag'?st.mag:st.atk;}
    설정이 없으면 예전 공식(기본 클래스 stat·grow + 상위 클래스 bonus) 그대로. MP는 아래 SKILL_MP·MP_BASE 참고. */
 let CLASS_CFG={};
 const MP_DEF={base:100,pct:4};
+/* 능력치 성장(운영 페이지 클래스 페이지): 공격력·마력·방어력·민첩·행운도 HP와 같은 식 — 값 = 최초 값 × (1 + 상승% / 100 × 레벨 계수).
+   칸을 비워 두면 예전 공식(기본 클래스 stat·grow + 상위 클래스 bonus). 마법 계열의 '공격력'은 무기 공격(물리)용 */
+const CLS_STATS=['atk','mag','def','agi','luk'];
+function classStatDef(id){const c=CLASSES[id],b=CLASSES[c.base||id],bo=c.bonus||{},mg=isMagic(id),o={};
+  const pair=(v0,g)=>{const v=Math.max(0,v0);return [Math.round(v*100)/100,v>0?Math.round(g/v*10000)/100:0];};
+  const pw=b.stat.atk+(bo.atk||0);
+  [o.atk,o.atkPct]=mg?pair(pw*MAGIC_PHYS,b.grow.atk*MAGIC_PHYS):pair(pw,b.grow.atk);
+  [o.mag,o.magPct]=mg?pair(pw,b.grow.atk):[0,0];
+  [o.def,o.defPct]=pair(b.stat.def+(bo.def||0),b.grow.def);
+  [o.agi,o.agiPct]=pair((b.stat.agi||0)+(bo.agi||0),b.grow.agi||0);
+  [o.luk,o.lukPct]=pair(b.stat.luk+(bo.luk||0),b.grow.luk);
+  return o;}
 function classDefaults(){const o={};for(const id in CLASSES){const c=CLASSES[id],b=CLASSES[c.base||id];const hp=b.stat.hp+((c.bonus||{}).hp||0);
-  o[id]={name:c.name,base:c.base||null,hp,hpPct:Math.round(b.grow.hp/hp*10000)/100,mp:MP_BASE[id]??MP_DEF.base,mpPct:MP_DEF.pct};}return o;}
+  o[id]={name:c.name,en:c.en,base:c.base||null,role:c.role,tier:c.tier,magic:isMagic(id),skills:c.skills.slice(),hp,hpPct:Math.round(b.grow.hp/hp*10000)/100,mp:MP_BASE[id]??MP_DEF.base,mpPct:MP_DEF.pct,...classStatDef(id)};}return o;}
 function clsCfg(cls){const c=CLASSES[cls];if(!c)return null;const own=CLASS_CFG[cls];if(own)return {cfg:own,own:true};const bc=c.base&&CLASS_CFG[c.base];return bc?{cfg:bc,own:false}:null;}
-function applyClassCfg(rows){const n={};(rows||[]).forEach(r=>{if(r&&r.kind==='cls'&&CLASSES[r.id]&&r.data&&typeof r.data==='object'){const d=r.data,o={};['hp','hpPct','mp','mpPct'].forEach(k=>{if(typeof d[k]==='number'&&isFinite(d[k]))o[k]=d[k];});n[r.id]=o;}});
+function applyClassCfg(rows){const n={};(rows||[]).forEach(r=>{if(r&&r.kind==='cls'&&CLASSES[r.id]&&r.data&&typeof r.data==='object'){const d=r.data,o={};['hp','hpPct','mp','mpPct',...CLS_STATS.flatMap(x=>[x,x+'Pct'])].forEach(k=>{if(typeof d[k]==='number'&&isFinite(d[k])&&d[k]>=0)o[k]=d[k];});n[r.id]=o;}});
   const ch=JSON.stringify(n)!==JSON.stringify(CLASS_CFG);CLASS_CFG=n;return ch;}
 function lvK(level){return (level-1)*(1+(level-1)/196);}
 function statsFor(cls,level,equip,enh){
@@ -278,6 +322,9 @@ function statsFor(cls,level,equip,enh){
   /* 마력 계열(메이지·프리스트 계열): 클래스의 힘 수치가 마력으로 간다 */
   /* 그 대신 공격력(물리)은 힘의 MAGIC_PHYS만큼 — 지팡이·홀·오브로 직접 치는 '무기 공격'(bash)용 */
   if(isMagic(cls)){s.mag=s.atk;s.atk=Math.round(s.atk*MAGIC_PHYS);}
+  /* 운영 페이지 능력치 성장: 값이 있는 능력치만 덮어씀(상위 클래스가 기본 클래스 값을 따라가면 그 클래스 보너스는 더함) */
+  if(CC){const f=CC.cfg,bo=c.bonus||{};for(const k of CLS_STATS){const v0=f[k];if(typeof v0!=='number'||!isFinite(v0))continue;
+    let v=Math.round(v0*(1+num(f[k+'Pct'],0)/100*L));if(!CC.own){const bk=k==='mag'?(isMagic(cls)?bo.atk:0):k==='atk'&&isMagic(cls)?0:bo[k];v+=bk||0;}s[k]=Math.max(0,v);}}
   for(const slot in (equip||{})){const id=equip[slot];const st=itemStats(id,(enh||{})[id]);for(const k in st)s[k]=(s[k]||0)+st[k];}
   s.pk=isMagic(cls)?'mag':'atk';
   return s;
@@ -439,15 +486,15 @@ function resolveTurn(b,rng,hooks){
         case 'save':case 'save2':p.reduce+=s.reduce;log('act',`${p.name} · ${s.name} (받는 대미지 −${s.reduce}%)`);break;
         case 'forestaller':p.supUses++;p.supHit=1;b.sup={by:p.id,mult:supMult(p.supUses),overheal:0};log('act',`${p.name} · 제압! 몬스터의 표적이 된다 (유지 조건: 딜러 총 대미지 < ${p.name} 총 대미지 ×${b.sup.mult})`);break;
         case 'attention':b.attention=p.id;log('act',`${p.name} · 시야 강탈! 이번 턴 표적 고정`);break;
-        case 'link':{const lc=Math.round(p.maxHp*0.1);p.hp=Math.max(0,p.hp-lc);t.protect=true;log('act',`${p.name} · 결속 → ${t.name} 보호, 자신은 ${lc} 대미지(최대 HP 10%)${p.hp===0?' (쓰러짐)':''}`);}if(p.hp===0)p.dead=true;break;
+        case 'link':{const lc=Math.round(p.maxHp*SV('link','hp')/100);p.hp=Math.max(0,p.hp-lc);t.protect=true;log('act',`${p.name} · 결속 → ${t.name} 보호, 자신은 ${lc} 대미지(최대 HP ${SV('link','hp')}%)${p.hp===0?' (쓰러짐)':''}`);}if(p.hp===0)p.dead=true;break;
         case 'link2':p.protect=true;t.protect=true;log('act',`${p.name} · 결속강화 → ${t.name}와(과) 함께 1턴 보호`);break;
         case 'sanctuary':b.sanct=true;log('act',`${p.name} · 성역! 아군 전체 1턴 보호`);break;
-        case 'cinder':m.weaken=2;log('act',`${p.name} · 신더 → ${m.name} 의욕감소 2턴 (공격 −12%)`);break;
-        case 'vindicate':b.shield+=20;log('act',`${p.name} · 비호 (아군 전체 받는 대미지 −20%)`);break;
-        case 'blind':{const v=Math.round(p.atk*0.25);b.players.forEach(x=>addBuff(x,'blind',T,T,{add:v}));log('act',`${p.name} · 블라인드 (이번 턴 아군 대미지 +${v})`);}break;
-        case 'downworld':b.bind=30;log('act',`${p.name} · 다운월드 → ${m.name} 봉쇄 (이번 턴 몬스터 대미지 −30%)`);break;
-        case 'veil':b.players.forEach(x=>{x.buffs=x.buffs.filter(y=>y.k!=='veil');});addBuff(t,'veil',T,T+4);log('act',`${p.name} · 베일 → ${t.name} 5턴 동안 받는 대미지 −10%`);break;
-        case 'backslider':addBuff(t,'backslider',T,T,{mul:2});log('act',`${p.name} · 타락자 → ${t.name} 이번 턴 대미지 ×2`);break;
+        case 'cinder':m.weaken=SV('cinder','turns');m.weakenPct=SV('cinder','pct');log('act',`${p.name} · 신더 → ${m.name} 의욕감소 ${m.weaken}턴 (공격 −${m.weakenPct}%)`);break;
+        case 'vindicate':{const v=SV('vindicate','pct');b.shield+=v;log('act',`${p.name} · 비호 (아군 전체 받는 대미지 −${v}%)`);}break;
+        case 'blind':{const v=Math.round(p.atk*SV('blind','pct')/100);b.players.forEach(x=>addBuff(x,'blind',T,T,{add:v}));log('act',`${p.name} · 블라인드 (이번 턴 아군 대미지 +${v})`);}break;
+        case 'downworld':{const v=SV('downworld','pct');b.bind=v;log('act',`${p.name} · 다운월드 → ${m.name} 봉쇄 (이번 턴 몬스터 대미지 −${v}%)`);}break;
+        case 'veil':b.players.forEach(x=>{x.buffs=x.buffs.filter(y=>y.k!=='veil');});{const n=Math.max(1,SV('veil','turns')|0);addBuff(t,'veil',T,T+n-1,{pct:SV('veil','pct')});log('act',`${p.name} · 베일 → ${t.name} ${n}턴 동안 받는 대미지 −${SV('veil','pct')}%`);}break;
+        case 'backslider':{const v=SV('backslider','mul');addBuff(t,'backslider',T,T,{mul:v});log('act',`${p.name} · 타락자 → ${t.name} 이번 턴 대미지 ×${v}`);}break;
       }
     }
   }
@@ -455,10 +502,10 @@ function resolveTurn(b,rng,hooks){
   const attack=(p,a)=>{
     const s=SKILLS[a.skill];
     if(a.addon){spend(p,a.addon);const ad=a.addon;
-      if(ad==='roar'){const v=Math.round(p.atk*0.6),c=Math.round(p.maxHp*0.1);addBuff(p,'roar',T,T+1,{add:v});p.hp=Math.max(1,p.hp-c);log('act',`${p.name} · 전장의 포효! 2턴 대미지 +${v} (HP −${c})`);}
-      if(ad==='berserker'){const c=Math.round(p.maxHp*0.1);addBuff(p,'berserk',T,T+1,{mul:2,cut:c});p.maxHp-=c;p.hp=Math.min(p.hp,p.maxHp);log('act',`${p.name} · 광전사! 2턴 대미지 ×2 (최대 HP −${c})`);}
+      if(ad==='roar'){const v=Math.round(p.atk*SV('roar','pct')/100),c=Math.round(p.maxHp*SV('roar','hp')/100);addBuff(p,'roar',T,T+1,{add:v});p.hp=Math.max(1,p.hp-c);log('act',`${p.name} · 전장의 포효! 2턴 대미지 +${v} (HP −${c})`);}
+      if(ad==='berserker'){const c=Math.round(p.maxHp*SV('berserker','hp')/100),mu=SV('berserker','mul');addBuff(p,'berserk',T,T+1,{mul:mu,cut:c});p.maxHp-=c;p.hp=Math.min(p.hp,p.maxHp);log('act',`${p.name} · 광전사! 2턴 대미지 ×${mu} (최대 HP −${c})`);}
       if(ad==='eternalflame'){addBuff(p,'eternal',T,T+2);log('act',`${p.name} · 이터널 플레임! 3턴 동안 지옥의 푸른 불`);}
-      if(ad==='dystopia'){living(b).forEach(x=>x.hp=Math.max(1,x.hp-Math.round(x.maxHp*0.03)));log('act',`${p.name} · 디스토피아! 아군 최대 HP 3%씩 제물`);}
+      if(ad==='dystopia'){const hc=SV('dystopia','hp');living(b).forEach(x=>x.hp=Math.max(1,x.hp-Math.round(x.maxHp*hc/100)));log('act',`${p.name} · 디스토피아! 아군 최대 HP ${hc}%씩 제물`);}
     }
     if(a.skill==='execution')addBuff(p,'execution',T,T+2);
     const PW=s.phys?(p.patk??p.atk):p.atk;   /* 무기 공격(bash)은 물리 공격력 */
@@ -469,11 +516,11 @@ function resolveTurn(b,rng,hooks){
     let add=s.bonus?pct(s.bonus):0;if(s.bonus)parts.push(`+${add}`);
     if(comboReady(p,a.skill,T)){const c=pct(s.combo.bonus);add+=c;parts.push(`연계 +${c}`);}
     const critCh=critChance(p,s);let crit=rng()*100<critCh;
-    if(buffOn(p,'execution',T)){const e=Math.round(p.atk*rng()*0.22);add+=e;parts.push(`처형 +${e}`);}
+    if(buffOn(p,'execution',T)){const e=Math.round(p.atk*rng()*SV('execution','pct')/100);add+=e;parts.push(`처형 +${e}`);}
     for(const k of ['roar','takedown','smoke','blind','ember']){const bf=buffOn(p,k,T);if(bf){add+=bf.add;parts.push(`${{roar:'포효',takedown:'테이크다운',smoke:'연막',blind:'블라인드',ember:'화염 공명'}[k]} +${bf.add}`);}}
     let mul=1;
     for(const k of ['berserk','carnage','backslider']){const bf=buffOn(p,k,T);if(bf){mul*=bf.mul;parts.push(`${{berserk:'광전사',carnage:'대학살',backslider:'타락자'}[k]} ×${bf.mul}`);}}
-    if(a.addon==='dystopia'){mul*=3;parts.push('디스토피아 ×3');}
+    if(a.addon==='dystopia'){const dm=SV('dystopia','mul');mul*=dm;parts.push(`디스토피아 ×${dm}`);}
     if(s.mult){mul*=s.mult;parts.push(`${s.name} ×${s.mult}`);}
     if(s.holy&&m.art==='spirit'){mul*=1.5;parts.push('신성 ×1.5');}
     if(buffOn(p,'eternal',T)){if(f<0.9){addBuff(p,'null',T,T+1);parts.push('푸른 불 폭주');}else{const em=f>=1.1?3:2;mul*=em;parts.push(`이터널 ×${em}`);}}
@@ -487,7 +534,7 @@ function resolveTurn(b,rng,hooks){
     log('hit',`${p.name} · ${s.name}${a.addon?' + '+SKILLS[a.addon].name:''} → ${dmg} 대미지 (${parts.join(' · ')})${crit?' · 크리티컬!':''}`);
     if(s.poison&&m.hp>0){const pd=Math.max(1,Math.round(p.atk*(s.poison.pct||12)/100*skMul(p)));m.poison={dmg:pd,turns:s.poison.turns,by:p.id};log('act',`${m.name} · 중독 ${s.poison.turns}턴 (턴당 ${pd})`);}
     if(s.drain&&dmg>0){const al=living(b).filter(x=>x.hp<x.maxHp).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp);const tg=al[0]||p;heal(p,tg,Math.round(dmg*s.drain/100),`${s.name} 흡수`);}
-    if(a.skill==='smoke'){const v=pct(15);b.players.forEach(x=>{if(x!==p)addBuff(x,'smoke',T+1,T+1,{add:v});});}
+    if(a.skill==='smoke'){const v=pct(SV('smoke','pct'));b.players.forEach(x=>{if(x!==p)addBuff(x,'smoke',T+1,T+1,{add:v});});}
     if(a.skill==='legendary'&&f>=1.1){p.obTurn=T+1;log('act',`${p.name} · 판정 ${Math.round(f*100)}% · 다음 턴 오버 버닝 가능`);}
     if(crit)p.crits=(p.crits||0)+1;
     if(crit&&p.job==='dualist'&&CLASSES.dualist.skills.includes('fusillade')){p.doubleTurn=T+1;log('act',`${p.name} · 연사! 다음 턴 스킬 2회`);}
@@ -513,14 +560,14 @@ function resolveTurn(b,rng,hooks){
       const s=SKILLS[a.skill];spend(p,a.skill);const t=a.target?P(a.target):null;
       if(s.type==='dice'){attack(p,a);continue;}
       switch(a.skill){
-        case 'takedown':{const v=Math.round(p.atk*0.25);addBuff(p,'takedown',T+1,T+2,{add:v});log('act',`${p.name} · 테이크다운 (다음 턴부터 2턴 대미지 +${v})`);break;}
-        case 'hellfire':{const v=Math.max(1,Math.round(p.atk*0.18*skMul(p)));m.burn={dmg:v,turns:3,by:p.id};log('act',`${p.name} · 헬파이어 → ${m.name} 3턴 동안 ${v} 고정 대미지`);break;}
-        case 'cure':{const v=healAmt(p,rng,0.10);heal(p,t,v,`큐어`);break;}
-        case 'sinsayer':p.revives=(p.revives||0)+1;t.dead=false;t.hp=Math.round(t.maxHp*0.3);t.poison=null;p.bound=3;p.boundBy=null;log('heal',`${p.name} · 신세이어 → ${t.name} 부활 (HP ${t.hp}) · ${p.name} 2턴 빛의 속박`);break;
-        case 'bless':{const v=Math.max(1,Math.round(t.maxHp*0.05));t.hot={amt:v,turns:3};log('heal',`${p.name} · 블레스 → ${t.name} 3턴 동안 ${v}씩 회복`);break;}
-        case 'fasciation':{const v=healAmt(p,rng,0.12);healables(b,p,living(b)).forEach(x=>heal(p,x,v,`결속자`));break;}
-        case 'utopia':{const v=healAmt(p,rng,0.40);healables(b,p,living(b)).forEach(x=>heal(p,x,v,`유토피아`));break;}
-        case 'pray':{const c=Math.round(p.maxHp*0.15);p.hp=Math.max(1,p.hp-c);heal(p,t,t.maxHp,`프레이 (HP ${c} 봉헌)`);break;}
+        case 'takedown':{const v=Math.round(p.atk*SV('takedown','pct')/100);addBuff(p,'takedown',T+1,T+2,{add:v});log('act',`${p.name} · 테이크다운 (다음 턴부터 2턴 대미지 +${v})`);break;}
+        case 'hellfire':{const v=Math.max(1,Math.round(p.atk*SV('hellfire','pct')/100*skMul(p))),n=Math.max(1,SV('hellfire','turns')|0);m.burn={dmg:v,turns:n,by:p.id};log('act',`${p.name} · 헬파이어 → ${m.name} ${n}턴 동안 ${v} 고정 대미지`);break;}
+        case 'cure':{const v=healAmt(p,rng,SV('cure','pct')/100);heal(p,t,v,`큐어`);break;}
+        case 'sinsayer':p.revives=(p.revives||0)+1;t.dead=false;t.hp=Math.round(t.maxHp*SV('sinsayer','pct')/100);t.poison=null;p.bound=3;p.boundBy=null;log('heal',`${p.name} · 신세이어 → ${t.name} 부활 (HP ${t.hp}) · ${p.name} 2턴 빛의 속박`);break;
+        case 'bless':{const v=Math.max(1,Math.round(t.maxHp*SV('bless','pct')/100)),n=Math.max(1,SV('bless','turns')|0);t.hot={amt:v,turns:n};log('heal',`${p.name} · 블레스 → ${t.name} ${n}턴 동안 ${v}씩 회복`);break;}
+        case 'fasciation':{const v=healAmt(p,rng,SV('fasciation','pct')/100);healables(b,p,living(b)).forEach(x=>heal(p,x,v,`결속자`));break;}
+        case 'utopia':{const v=healAmt(p,rng,SV('utopia','pct')/100);healables(b,p,living(b)).forEach(x=>heal(p,x,v,`유토피아`));break;}
+        case 'pray':{const c=Math.round(p.maxHp*SV('pray','hp')/100);p.hp=Math.max(1,p.hp-c);heal(p,t,t.maxHp,`프레이 (HP ${c} 봉헌)`);break;}
       }
     }
   }
@@ -533,8 +580,8 @@ function resolveTurn(b,rng,hooks){
   const hitP=(p,mult)=>{
     if(p.protect||b.sanct)return {d:0,note:'보호'};
     if(p.agi>0&&rng()<agiDodge(p.agi))return {d:0,note:'회피'};
-    let d=m.atk*MON_HIT*judgeRoll(rng)*mult;if(b.dmgTakenMult)d*=b.dmgTakenMult;if(buffOn(p,'veil',T))d*=0.9;
-    d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?0.88:1);d=Math.max(0,Math.round(d));
+    let d=m.atk*MON_HIT*judgeRoll(rng)*mult;if(b.dmgTakenMult)d*=b.dmgTakenMult;{const vb=buffOn(p,'veil',T);if(vb)d*=1-Math.min(90,vb.pct??SV('veil','pct'))/100;}
+    d*=1-p.def/(p.def+DEF_K);d*=(1-Math.min(90,p.reduce)/100)*(1-Math.min(90,b.shield)/100)*(1-Math.min(90,b.bind)/100)*(m.weaken>0?1-Math.min(90,m.weakenPct??12)/100:1);d=Math.max(0,Math.round(d));
     p.hp=Math.max(0,p.hp-d);if(p.hp===0)p.dead=true;return {d,note:''};
   };
   const PF=b.grid&&b.pats&&tel&&tel.pat&&b.pats[tel.pat]&&b.pats[tel.pat].fx||null;let fxT=[];

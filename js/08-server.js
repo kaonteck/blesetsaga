@@ -140,6 +140,7 @@ function ctApply(rows){
   [ensureRelevel,ensureVilQuest,ensureDunParty].forEach(f=>{try{f();}catch(e){}});
   const D=S.data,M=D._srv=D._srv||{};let changed=false;
   try{if(typeof applyClassCfg==='function'&&applyClassCfg(rows))changed=true;}catch(e){console.warn(e);}
+  try{if(typeof applySkillCfg==='function'&&applySkillCfg(rows))changed=true;}catch(e){console.warn(e);}
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   const list=k=>{if(k==='market')market();return D[CT_LIST[k]]=D[CT_LIST[k]]||[];};
   const get=(k,id)=>CT_LIST[k]?list(k).find(x=>x.id===id):k==='item'?ITEMS[id]:k==='setting'?D[id]:undefined;

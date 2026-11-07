@@ -126,7 +126,7 @@ function skillBadges(k,p,b){
   if(s.lv)out.push(`<span class="chip dim">LV${s.lv}</span>`);
   if(s.crit)out.push('<span class="chip dps">크리티컬 확률 2배</span>');
   if(s.combo)out.push(`<span class="chip ${p&&b&&comboReady(p,k,b.turn)?'ok':'fx-dmg'}">${SKILLS[s.combo.from].name} 연계 +${s.combo.bonus}%</span>`);
-  (SKILL_FX[k]||[]).forEach(([c,t])=>out.push(`<span class="chip fx-${c}">${t}</span>`));
+  (s.fx||SKILL_FX[k]||[]).forEach(([c,t])=>out.push(`<span class="chip fx-${esc(c)}">${s.fx?esc(t):t}</span>`));
   return out.join('');
 }
 function roleChip(job){const r=roleOf(job);return `<span class="chip cls ${r}" title="${ROLE[r]}">${className(job)}</span>`;}
@@ -1163,7 +1163,7 @@ function ibBreak(k){const t=now();return ((S.me.itemBuffs)||[]).filter(b=>b.unti
 function enhOf(id){return (S.me.enh||{})[id]||0;}
 function itemName(id){const l=enhOf(id);return ITEMS[id]?ITEMS[id].name+(l?` +${l}`:''):id;}
 const SKILL_ICON_MAP={attack:'attack',bash:'attack',save:'save',save2:'save',crimehazard:'crime',forestaller:'fore'};
-function skillImg(k){return SKILL_IMG[SKILL_ICON_MAP[k]]||SKILL_IMG.attack;}
+function skillImg(k){const s=SKILLS[k],u=s&&s.img&&typeof artUrl==='function'?artUrl(s.img):'';return u||SKILL_IMG[SKILL_ICON_MAP[k]]||SKILL_IMG.attack;}  /* 운영 페이지에서 올린 스킬 아이콘 우선 */
 function itemNameH(id){const l=enhOf(id);return ITEMS[id]?esc(ITEMS[id].name)+(l?` <span class="enhp">+${l}</span>`:''):esc(id);}
 function itemBonus(k){const t=now();return ((S.me&&S.me.itemBuffs)||[]).filter(b=>b.until>t&&b.stat===k).reduce((a,b)=>a+b.val,0);}
 function botBonds(name){

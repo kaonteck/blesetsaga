@@ -345,6 +345,36 @@ details.cp>summary{cursor:pointer;list-style:none}
 .cl-pv em{font-style:normal;opacity:.6;margin-right:4px}.cl-pv i{opacity:.5;margin:0 2px;font-style:normal}
 .cl-act [hidden]{display:none!important}
 .cl-act{white-space:nowrap}.cl-act .btn{margin-left:4px}
+/* 클래스 개별 페이지 (a7-classes · 메인 2026-11-07) */
+.cl-grp{display:grid;gap:6px;margin-bottom:12px}
+.cl-card{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(0,2fr) auto 16px;align-items:center;gap:12px;text-align:left;width:100%;padding:10px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--slab-2,transparent);color:inherit;cursor:pointer;font:inherit}
+.cl-card:hover{border-color:var(--rule-2,#555)}.cl-card.adv{margin-left:22px;width:calc(100% - 22px)}
+.cl-cn b{display:block}.cl-cn small{font-size:12px}
+.cl-cs{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.cl-cc{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.cl-go{opacity:.5;font-size:18px}
+.cl-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}.cl-top h2{margin:0 6px 0 4px;font-size:20px}.cl-top h2 small{font-size:12.5px;font-weight:400}
+.ph-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}.ph-row h3{margin:0}
+.cl-hact{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.cl-hact [hidden]{display:none!important}
+.cl-t td.num,.cl-t th.num{text-align:right;white-space:nowrap}
+.sk-list{display:grid;gap:8px}
+.sk-card{border:1px solid var(--rule);border-radius:10px;background:var(--slab-2,transparent)}
+.sk-card.dirty{border-color:rgba(220,196,137,.6)}
+.sk-card>summary{display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;list-style:none}.sk-card>summary::-webkit-details-marker{display:none}
+.sk-h{display:flex;flex-direction:column;gap:3px;min-width:0}.sk-h small{font-weight:400}
+.sk-chips{display:flex;gap:4px;flex-wrap:wrap}.sk-chips .chip{font-size:11px}
+.sk-ic{width:36px;height:36px;border-radius:8px;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--slab-3,#333);border:1px solid var(--rule)}
+.sk-ic.big{width:56px;height:56px}.sk-ic img{width:100%;height:100%;object-fit:cover}.sk-ic0{font-weight:700;opacity:.7}
+.sk-body{padding:4px 14px 14px;border-top:1px solid var(--rule)}
+.sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px 14px;margin-top:10px}
+.sk-grid .f{display:flex;flex-direction:column;gap:4px;min-width:0}.sk-grid .f.wide{grid-column:1/-1}.sk-grid .f.cb{flex-direction:row;align-items:center;gap:6px}
+.sk-grid input[type=number],.sk-grid input[type=text]{width:100%}.sk-grid textarea{width:100%;resize:vertical}
+.sk-grid .sk-icf{grid-column:1/-1}
+.sk-fx{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sk-fxr{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--rule);border-radius:999px;padding:2px 4px 2px 6px}
+.sk-fxr .pfx-x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;width:22px;height:22px;border-radius:50%;padding:0}.sk-fxr .pfx-x:hover{color:inherit}
+.sk-fxr select{height:26px;font-size:12px;padding:0 4px}.sk-fxr input{width:150px;height:26px;font-size:12.5px;padding:2px 6px}
+.sk-act{justify-content:flex-end;gap:6px;margin-top:12px}.sk-act [hidden]{display:none!important}
+@media (max-width:760px){.cl-card{grid-template-columns:1fr auto}.cl-cs{grid-column:1/-1}.cl-cc{grid-column:1/-1;justify-content:flex-start}.cl-go{display:none}.cl-card.adv{margin-left:10px;width:calc(100% - 10px)}}
 </style>
 </head>
 <body>
