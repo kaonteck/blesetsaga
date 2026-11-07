@@ -1423,7 +1423,7 @@ function skyBar(){
 <span><i class="t-fog">안개</i> 그 지역 탐색 시 35% 확률로 길을 잃어 보상 없이 횟수만 줄어듭니다.</span>
 <span><i class="t-snow">눈 · 눈보라</i> 그 지역에 만신전이 열리면 이동 범위가 3×3으로 고정되고, 이동할 때 25% 확률로 발이 묶입니다.</span>
 <span><i class="t-rain">비 · 뇌우</i> 길드 본진에 비가 오면 그 길드의 작업 실패 확률이 5% 오릅니다. 대장장이(바위의 땅) 제작·강화 · 요리(바다의 땅) · 연금술(소금의 땅)</span></span></span></span>
-    <ul class="sky-list">${ws.map(x=>`<li class="w-${x.w}" title="${x.name} · ${WNAME[x.w]} ${x.t}°C"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[x.w]}</svg><span class="sky-n">${x.name}</span><span class="sky-t num">${WNAME[x.w]} ${x.t}°</span></li>`).join('')}</ul></div>
+    <ul class="sky-list">${ws.map(x=>`<li class="w-${x.w}" title="${x.name} · ${WNAME[x.w]} ${x.t}°C"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[x.w]}</svg>${(k=>k?`<button class="sky-n" data-act="sky-land" data-land="${k}" title="${x.name} 지역으로">${x.name}</button>`:`<span class="sky-n">${x.name}</span>`)(Object.keys(LANDS).find(k=>LANDS[k]===x.name))}<span class="sky-t num">${WNAME[x.w]} ${x.t}°</span></li>`).join('')}</ul></div>
     <div class="sky-r"><span class="sky-date">${gameDate(p)}</span><span class="sky-clock num" data-clock>${clockText()}</span></div></div>`;
 }
 function activeEvents(){const t=now();S.events=(S.events||[]).filter(e=>e.until>t);return S.events;}

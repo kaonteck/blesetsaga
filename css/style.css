@@ -3779,3 +3779,39 @@ html{overflow-y:scroll}
 html{background:#07080d url("../img/bg/smoke.jpg") center/cover no-repeat fixed}
 body{background:transparent!important;background-image:none!important}
 @media (max-width:760px){html{background-image:url("../img/bg/smoke-sm.jpg");background-attachment:scroll}html::before{content:"";position:fixed;inset:0;z-index:-1;background:#07080d url("../img/bg/smoke-sm.jpg") center/cover no-repeat}}
+/* ── 메인: 바로가기 패널 · 날씨 지역 이름 링크 · 화면 높이 맞춤 (07-scut) ── */
+.scut>h3{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.scut-ed{font-size:12px;color:var(--faint);background:none;border:0;padding:2px 4px;cursor:pointer;letter-spacing:0;text-transform:none;font-weight:400}
+.scut-ed:hover,.scut-ed[aria-pressed="true"]{color:var(--gold-hi)}
+.scut-g{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.scut-s{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;padding:10px 4px 8px;border:1px solid var(--rule-2);border-radius:10px;background:rgba(255,255,255,.02);color:var(--silver);cursor:pointer;min-width:0}
+.scut-s svg{width:22px;height:22px;flex:none}
+.scut-s:hover,.scut-s:focus-visible{border-color:var(--gold-hi);color:var(--text);outline:none}
+.scut-s.on{border-color:var(--gold-hi);color:var(--gold-hi)}
+.scut-s.empty{border-style:dashed;color:var(--faint)}
+.scut-l{display:flex;flex-direction:column;align-items:center;gap:1px;max-width:100%;line-height:1.25}
+.scut-l b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.scut-l small{font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.scut.editing .scut-s{border-style:dashed}
+.scut-x{position:absolute;top:4px;right:6px;font-style:normal;font-size:11px;color:var(--faint)}
+@media (max-width:1240px){.scut-g{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:420px){.scut-g{gap:6px}.scut-s{min-height:70px}}
+.modal.sc-m{max-width:520px}
+.sc-dlg{display:flex;flex-direction:column;gap:10px}
+.sc-q{width:100%;box-sizing:border-box}
+.sc-list{max-height:min(56vh,460px);overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:2px}
+.sc-gh{font-size:11.5px;color:var(--faint);margin-bottom:5px}
+.sc-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px}
+.sc-opt{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--rule-2);border-radius:8px;background:none;color:var(--text);font-size:12.5px;text-align:left;cursor:pointer;min-width:0}
+.sc-opt svg{width:17px;height:17px;flex:none;color:var(--silver)}
+.sc-opt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-opt:hover,.sc-opt:focus-visible{border-color:var(--gold-hi);outline:none}
+.sc-opt.on{border-color:var(--gold-hi);color:var(--gold-hi)}
+.sc-opt[hidden],.sc-grp[hidden]{display:none}
+button.sky-n{background:none;border:0;padding:0;font:inherit;font-size:11px;color:var(--text);cursor:pointer;text-align:left;max-width:100%}
+button.sky-n:hover,button.sky-n:focus-visible{color:var(--gold-hi);text-decoration:underline;text-underline-offset:2px;outline:none}
+@media (min-width:981px){
+  .wrap.tri[data-route="main"] .tri-l,.wrap.tri[data-route="main"] .tri-r{max-height:none;overflow:visible}
+  .wrap.tri[data-route="main"] .tri-r .panel.chat.chat-main{flex:1 1 0;height:auto;min-height:300px}
+  .wrap.tri[data-route="main"] .main-c>.rpanel .rp-list{flex:1 1 0;height:auto;min-height:calc(var(--rr-h)*4 + 8px*3)}
+}
