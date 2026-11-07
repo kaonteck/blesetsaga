@@ -105,7 +105,7 @@ async function sbEnter(user){
   if(!st||imported||st!==cloud){save();}
   if(imported)setTimeout(()=>toast('이 브라우저에 있던 기존 진행 기록을 계정으로 옮겼습니다.','good'),1200);
   ctStart(ctP);rnGate();
-  pfSync();mlStart();ltStart();chStart();fdStart();iqStart();fbStart();ptStart();
+  pfSync();mlStart();ltStart();chStart();fdStart();iqStart();fbStart();ptStart();gzStart();
 }
 
 /* ───────── 실제 이름 (028 real_names · 메인 2026-11-06) ─────────
@@ -1100,7 +1100,8 @@ function ptLoop(){
 async function ptStart(){
   ptFetchRooms();
   try{PT.listCh=SB.channel('party-list').on('postgres_changes',{event:'*',schema:'public',table:'party_rooms'},pl=>{clearTimeout(PT.listT);PT.listT=setTimeout(()=>{ptFetchRooms();mtFetch();},700);}).subscribe();}catch(e){}
-  setInterval(ptFetchRooms,120000);setInterval(mtFetch,60000);   // 실시간(party-list)이 주mtFetch();
+  setInterval(ptFetchRooms,120000);setInterval(mtFetch,60000);   /* 실시간(party-list)이 주 */
+  mtFetch();
   clearInterval(PT.loop);PT.loop=setInterval(ptLoop,1000);
   const b=ptBattle();
   if(S.party&&S.party.shared)ptSubscribe(S.party.roomId);
@@ -1587,3 +1588,36 @@ if(ONLINE){
     return h;
   };
 }
+
+/* ── 서버 공동 목표(031, 메인 요청 5-3) ──
+   게임 쪽 쓰는 법(메인):
+     goalAdd('kill:'+몬스터id, 마릿수)  · goalAdd('explore',1) · goalAdd('fish',1) · goalAdd('dungeon',1) · goalAdd('raid',1)
+       → 이번 주 목표와 종류가 다르면 서버에 안 보냄. 같은 종류는 3초 모아서 한 번에 보냄. 로컬(파일) 모드에서는 아무 일도 안 함.
+     GOAL  → 이번 주 상태 {week, ends, kind, name, descr, target, total, mine, pending, done, gold, items, prev:{name,target,total,done,mine}|null} 또는 null
+             pending = 한도를 넘어 아직 합계에 안 들어간 내 기여(032, 예산이 차면 1분마다 조금씩 들어감)
+     onGoal(GOAL)  → 메인이 이 이름으로 함수를 두면 상태가 바뀔 때마다 불림(화면 갱신용)
+     goalMatch(kind) → 지금 목표에 셀 행동인지(true/false)
+   서버: 1분마다 다시 읽음. 한 블레서가 올릴 수 있는 양은 서버가 1분 단위로 제한(처치 1분 6마리·최대 300 쌓임 등),
+   넘친 양은 버리지 않고 대기분으로 미뤄 두었다가 나중에 넣음(032, 대기분 상한 처치 2,000·탐색·낚시 50·던전·레이드 30). */
+let GOAL=null;
+const GZ={q:{},t:null,poll:null,busy:false};
+function goalMatch(kind){const g=GOAL;if(!g||g.done||!kind)return false;return kind===g.kind||(g.kind==='kill'&&/^kill:/.test(kind));}
+function gzNotify(){try{if(typeof onGoal==='function')onGoal(GOAL);}catch(e){console.warn(e);}}
+async function gzFetch(){if(!SB||!SB_UID||typeof SB.rpc!=='function')return;try{const {data,error}=await SB.rpc('goal_status');if(error)throw error;GOAL=data||null;gzNotify();}catch(e){}}
+function goalAdd(kind,n=1){
+  if(!SB||!SB_UID||!goalMatch(kind))return;n=Math.max(0,Math.floor(+n||0));if(!n)return;
+  GZ.q[kind]=(GZ.q[kind]||0)+n;clearTimeout(GZ.t);GZ.t=setTimeout(gzFlush,3000);
+}
+async function gzFlush(){
+  if(GZ.busy){clearTimeout(GZ.t);GZ.t=setTimeout(gzFlush,1000);return;}
+  const q=GZ.q;GZ.q={};const ks=Object.keys(q);if(!ks.length)return;GZ.busy=true;
+  try{for(const k of ks){const {data,error}=await SB.rpc('goal_add',{p_kind:k,p_n:Math.min(1000,q[k])});if(error)throw error;
+      if(data&&GOAL&&data.total!=null){const was=GOAL.done;GOAL.total=data.total;if(data.mine!=null)GOAL.mine=data.mine;if(data.pending!=null)GOAL.pending=data.pending;GOAL.done=!!data.done;
+        if(!was&&GOAL.done){try{toast(`공동 목표 「${GOAL.name}」 달성! 기여한 블레서에게 우편이 갑니다.`,'good');}catch(e){}if(typeof mlFetch==='function')setTimeout(mlFetch,1500);}}
+      if(data&&data.reason==='OTHER_KIND')gzFetch();}   // 주가 바뀌었을 수 있음
+    gzNotify();
+  }catch(e){console.warn('goal_add',e);}finally{GZ.busy=false;}
+}
+function gzStart(){if(!SB||typeof SB.rpc!=='function')return;gzFetch();SB.rpc('goal_settle').then(()=>{},()=>{});clearInterval(GZ.poll);GZ.poll=setInterval(gzFetch,60000);
+  addEventListener('pagehide',()=>{if(Object.keys(GZ.q).length)gzFlush();});}
+

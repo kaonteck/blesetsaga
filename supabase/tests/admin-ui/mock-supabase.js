@@ -18,6 +18,8 @@ function upsertContent(r,restore){const i=DB.content.findIndex(x=>x.kind===r.kin
   const o=DB.content[i],n={...o,...r,rev:o.rev+1,updated_at:now()};DB.content[i]=n;log({kind:r.kind,id:r.id,op:restore?'restore':'update',before:o,after:n,rev:n.rev});return n;}
 const RPC={
   fish_settle(){return 0;},
+  goal_settle(){return 0;},
+  admin_goals:()=>(DB.weekly_goals||[]).map(r=>({total:0,people:0,paid_n:0,auto:false,descr:'',items:{},gold:0,done_at:null,paid_at:null,...r})),
   admin_save_flags:()=>(DB.guard_flags||[]),
   admin_clear_flags:a=>{DB.guard_flags=(DB.guard_flags||[]).filter(r=>r.user_id!==a.p_user);return null;},
   admin_players:()=>DB.profiles.map((p,i)=>({...p,job:'defender',level:p.level??(5+i),status:i===1?'online':'offline',last_seen:now(),banned_until:p.banned_until||null,ban_reason:p.ban_reason||null,is_admin:p.user_id===ADMIN.id,last_sign_in:now(),saved_at:now(),joined_at:now(),invite:'BLESET01'})),
@@ -35,7 +37,7 @@ const RPC={
   admin_restore:a=>{const h=DB.content_history.find(x=>x.hid===a.p_hid);const s=h.after||h.before;return upsertContent({kind:h.kind,id:h.id,data:s.data,published:s.published},true);},
   admin_import:a=>{let n=0;a.p_rows.forEach(r=>{const ex=DB.content.some(x=>x.kind===r.kind&&x.id===r.id);if(!ex||a.p_overwrite){upsertContent({kind:r.kind,id:r.id,data:r.data});n++;}});return n;},
 };
-window.__DB=DB;window.__RPC_CALLS=[];
+DB.weekly_goals=DB.weekly_goals||[];window.__DB=DB;window.__RPC_CALLS=[];
 class QB{
   constructor(t){this.t=t;this.f=[];this.op='select';this.opts={};}
   select(c,o){if(this.op==='select')this.opts=o||{};return this;}
