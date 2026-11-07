@@ -38,8 +38,8 @@ const CLASSES={
 const JOBS=CLASSES;
 const ORIGIN={defender:'황혼녘 강가',infighter:'바위 산맥',mage:'붉은 모래사막',shooter:'오아시스 마을',priest:'적막의 숲'};
 const ITEMS={
-  potion:{name:'회복약',type:'use',target:'self',desc:'레이드 중 사용 · 자신의 HP 50 회복 · 평소에 사용하면 10분 동안 HP +20',price:30,buff:{stat:'maxHp',val:20,min:10}},
-  holywater:{name:'정화의 성수',type:'use',target:'self',desc:'레이드 중 사용 · 자신의 상태 이상 제거 · 평소에 사용하면 10분 동안 행운 +3',price:40,buff:{stat:'luk',val:3,min:10}},
+  potion:{name:'회복약',type:'use',target:'self',useHeal:50,useHealPct:20,desc:'레이드 중 사용 · 자신의 HP 50 회복 · 평소에 사용하면 10분 동안 HP +20',price:30,buff:{stat:'maxHp',val:20,min:10}},
+  holywater:{name:'정화의 성수',type:'use',target:'self',useCure:true,desc:'레이드 중 사용 · 자신의 상태 이상 제거 · 평소에 사용하면 10분 동안 행운 +3',price:40,buff:{stat:'luk',val:3,min:10}},
   elixir:{name:'용기의 영약',type:'use',target:'self',desc:'불씨 조각과 진주로 연성한 영약. 마시면 60분 동안 공격력 +8, 행운 +4.',price:150,buff:{stat:'atk',val:8,min:60},buff2:{stat:'luk',val:4,min:60}},
   sword:{name:'낡은 순례자 검',type:'equip',slot:'weapon',wtype:'gsword',stats:{atk:3},desc:'순례자들이 호신용으로 지니던 검',price:90},
   shield:{name:'성역의 대방패',type:'equip',slot:'weapon',wtype:'sws',stats:{def:3,maxHp:25},desc:'성역 기사단의 문장이 새겨진 방패'},
@@ -553,8 +553,7 @@ function resolveTurn(b,rng,hooks){
             if(!pg){log('sys','더 펼칠 쪽이 없다');continue;}b.stun=1;if(b.jUses===3)b.jRead13=true;log('act',`${p.name} · 탐사 일지 ${pg[0]}를 펼쳐 읽어 준다 → ${pg[1]} (그녀가 공격을 멈춘다)`);}
           else log('sys',`${m.name}은(는) 일지를 보지 않습니다.`);continue;}
         hooks.useItem&&hooks.useItem(p.id,a.item);
-        if(a.item==='potion')heal(p,p,Math.max(50,Math.round(p.maxHp*0.2)),'회복약');
-        else if(a.item==='holywater'){p.poison=null;p.charm=0;if(p.boundBy==='root'||p.boundBy==='tentacle'){p.bound=0;p.boundBy=null;}p.sealed=null;p.noHeal=0;p.blind=0;p.healDown=0;log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
+        useBattleItem(p,a.item,log,heal);
         continue;
       }
       const s=SKILLS[a.skill];spend(p,a.skill);const t=a.target?P(a.target):null;
@@ -778,13 +777,24 @@ function gridPlace(b,rng){
   b.players.forEach(p=>{const d=want(p);const opts=[];for(let i=0;i<GRID*GRID;i++)if(!BOSS_CELLS.includes(i)&&bossDist(i)===d&&cellCount(b,i)<CELL_CAP)opts.push(i);
     const pool=opts.length?opts:[...Array(GRID*GRID).keys()].filter(i=>!BOSS_CELLS.includes(i)&&cellCount(b,i)<CELL_CAP);p.pos=pool[Math.floor(rng()*pool.length)];});
 }
+/* 전투에서 쓰는 아이템 효과 — 운영 페이지 아이템 '사용 효과' 칸(2026-11-08)
+   useHeal: HP 회복량(고정) · useHealPct: 최대 HP의 %(둘 다 있으면 큰 쪽) · useCure: 상태 이상 제거. 소모품(type 'use')에 하나라도 있으면 전투 아이템 목록에 나온다.
+   운영 페이지에서 예전 모양으로 덮은 회복약·성수는 예전 효과 그대로 */
+function itemFx(k){const it=ITEMS[k]||{};if(k==='potion'&&it.useHeal==null&&it.useHealPct==null)return {...it,useHeal:50,useHealPct:20};if(k==='holywater'&&it.useCure==null)return {...it,useCure:true};return it;}
+function battleItem(k){const it=itemFx(k);return !!ITEMS[k]&&it.type==='use'&&(+it.useHeal>0||+it.useHealPct>0||!!it.useCure);}
+function battleItems(){const L=Object.keys(ITEMS).filter(battleItem);return ['potion','holywater'].filter(k=>L.includes(k)).concat(L.filter(k=>k!=='potion'&&k!=='holywater'));}
+function itemHealAmt(k,p){const it=itemFx(k);return Math.max(+it.useHeal||0,Math.round(p.maxHp*(+it.useHealPct||0)/100));}
+function itemCure(p){p.poison=null;p.burnP=null;p.charm=0;p.held=0;p.frost=0;p.conf=0;if(p.boundBy==='root'||p.boundBy==='tentacle'){p.bound=0;p.boundBy=null;}p.sealed=null;p.noHeal=0;p.blind=0;p.healDown=0;}
+function useBattleItem(p,k,log,heal){const it=itemFx(k),nm=it.name||k;let did=false;
+  if(+it.useHeal>0||+it.useHealPct>0){did=true;if(heal)heal(p,p,itemHealAmt(k,p),nm);else if(!p.dead){const h=Math.min(itemHealAmt(k,p),p.maxHp-p.hp);p.hp+=h;log('heal',`${p.name} · ${nm} → ${h} 회복`);}}
+  if(it.useCure){did=true;itemCure(p);log('heal',`${p.name} · ${nm} → 상태 이상 제거`);}
+  return did;}
 function gridPre(b,rng,hooks){
   const log=(t,text)=>b.log.push({t,text}),P=id=>b.players.find(p=>p.id===id);
   for(const id of b.order){const p=P(id);if(p.dead||!p.itemAct)continue;const it=p.itemAct;p.itemAct=null;
     if(!hooks.hasItem||!hooks.hasItem(p.id,it.item)){log('sys',`${p.name} · 아이템이 없어 사용하지 못함`);continue;}
     hooks.useItem&&hooks.useItem(p.id,it.item);p.direct++;
-    if(it.item==='potion'){const t=p;if(!t.dead){const h=Math.min(50,t.maxHp-t.hp);t.hp+=h;log('heal',`${p.name} · 회복약 → ${t.name} ${h} 회복`);}}
-    else if(it.item==='holywater'){p.poison=null;p.burnP=null;p.charm=0;p.held=0;p.frost=0;p.conf=0;if(p.boundBy==='root'){p.bound=0;p.boundBy=null;}log('heal',`${p.name} · 정화의 성수 → 상태 이상 제거`);}
+    if(it.item!=='swiftdraft')useBattleItem(p,it.item,log,null);
     else if(it.item==='swiftdraft'){p.swift=b.turn;log('act',`${p.name} · 신속의 물약 (이번 턴 이동 범위 +1)`);}}
   for(const id of b.order){const p=P(id);if(p.dead||!p.confirmed||!p.action)continue;const a=p.action;
     if(a.kind==='move'){a.done=true;p.direct++;const from=p.pos;

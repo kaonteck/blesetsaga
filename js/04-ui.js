@@ -1019,7 +1019,7 @@ function actionPanel(b,me){
   else if(tab==='attack')opts=sk.filter(k=>SKILLS[k].type==='dice'||(SKILLS[k].type==='nodice'&&SKILLS[k].target==='enemy')).map(k=>actOpt(b,me,k,a)).join('');
   else if(tab==='skill'){
     opts=sk.filter(k=>['support','heal'].includes(SKILLS[k].type)||(SKILLS[k].type==='nodice'&&SKILLS[k].target!=='enemy')).map(k=>actOpt(b,me,k,a)).join('');
-    if(!b.grid)opts+=['potion','holywater'].concat(b.mon&&b.mon.journal&&(S.me.inv.j2052||0)>0?['j2052']:[]).map(k=>{const n=S.me.inv[k]||0;return `<button class="opt" data-act="pickact" data-kind="item" data-item="${k}" aria-pressed="${a.kind==='item'&&a.item===k}" ${n?'':'disabled'}><span>${ITEMS[k].name} <span class="num faint">×${n}</span></span><small>${ITEMS[k].desc}</small></button>`;}).join('');
+    if(!b.grid)opts+=battleItems().concat(b.mon&&b.mon.journal&&(S.me.inv.j2052||0)>0?['j2052']:[]).map(k=>{const n=S.me.inv[k]||0;return `<button class="opt" data-act="pickact" data-kind="item" data-item="${k}" aria-pressed="${a.kind==='item'&&a.item===k}" ${n?'':'disabled'}><span>${ITEMS[k].name} <span class="num faint">×${n}</span></span><small>${ITEMS[k].desc}</small></button>`;}).join('');
   }else opts=`<button class="opt" data-act="pickact" data-kind="defend" aria-pressed="${a.kind==='defend'}"><span>대기</span><small>이번 턴 아무것도 하지 않음 · 할 일이 없을 때</small></button>`;
   const addons=sk.filter(k=>SKILLS[k].type==='addon');
   const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';

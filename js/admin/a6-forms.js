@@ -171,12 +171,13 @@ const FPICK={
 // 칸 묶음 [제목, 작은 설명, 칸들] — 묶음에 없는 칸은 '그 밖의 값'
 const FGROUP={
   monster:[['기본 정보','이름·종류·그림',['id','kind','name','art','img','region','published','desc']],['레벨 · 인원','',['level','maxLevel','min','max','target','roles']],['능력치','',['hp','hpScale','atk','def']],['공격 패턴','기본 공격 · 패턴 더하기',['singleName','singleMult','aoeName','aoeMult','aoeEvery','topEvery','topName','topMult','dotName','dotChance','dotDmg','sphases','mass']],['보상','',['exp','gold','drops']]],
-  item:[['기본 정보','',['id','type','name','tag','desc','art','img','published']],['능력치','버프',['stats','buff','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
+  item:[['기본 정보','',['id','type','name','tag','desc','art','img','published']],['능력치 · 사용 효과','장비는 착용 능력치 · 소모품은 전투 중 효과와 평소 사용 버프',['stats','useHeal','useHealPct','useCure','buff','buff2','heal','dura','enh']],['착용 조건','',['slot','levelReq','classReq','wtype','maxOwn']],['가격','',['price','sell']]],
 };
 function genericForm(k,d){
   const keys=Object.keys(d);const P=FPICK[k]||{};
   const isMass=k==='monster'&&d.kind==='event';
   if(k==='monster')(isMass?['drops','mass']:['drops','sphases']).forEach(x=>{if(!keys.includes(x))keys.push(x);});
+  if(k==='item'){const add=d.type==='equip'?['stats']:d.type==='use'?['useHeal','useHealPct','useCure','buff','buff2']:[];add.forEach(x=>{if(!keys.includes(x))keys.push(x);});}
   if((k==='monster'||k==='item')&&!keys.includes('img'))keys.splice(Math.max(0,keys.indexOf(k==='item'?'desc':'art')+1),0,'img');
   const row=key=>{const v=d[key];const lab=FLABEL[key]?FLABEL[key]+KSEP+key:key;
     if(k==='monster'){
@@ -187,6 +188,7 @@ function genericForm(k,d){
       if(key==='noImg')return '';   // '이미지 없이 보이기' — 이미지 칸 안의 체크로 다룸
       if(key==='sphases')return phasesForm();
       if(key==='mass')return massForm();}
+    if(k==='item'&&IFX_KEYS.includes(key))return itemFxRow(key,d);
     if(k==='item'&&key==='img')return imgRow('img','이미지','상점에서 같은 아이템에도 그대로 · 긴 변 512px로 줄여 저장','item/');
     if(k==='market'&&key==='item')return fPick(key,lab,itemsL(),{wide:true});
     if(P[key])return fPick(key,lab,P[key]);
@@ -436,3 +438,26 @@ function imgCrop(file,pre){return new Promise((res,rej)=>{const url=URL.createOb
 (function(){const f=monImgResize;monImgResize=async function(file){if(file.type==='image/gif')return f(file);const pre=monImgResize._pre||'';
   const r=await imgCrop(file,pre);return r==='full'?f(file):r;};})();
 (function(){const f=monImgUpload;monImgUpload=function(file,p,pre,sid){monImgResize._pre=pre||'';return f(file,p,pre,sid);};})();
+
+/* ── 아이템 능력치 · 사용 효과를 칸으로(유저 요청 2026-11-08) ──
+   stats(착용 능력치) · useHeal/useHealPct/useCure(전투 중 사용 효과, 01 battleItem) · buff/buff2(평소에 사용하면 n분 동안). 비우거나 0이면 그 값을 지움 */
+const IFX_KEYS=['stats','useHeal','useHealPct','useCure','buff','buff2'];
+const IFX_STATS=[['maxHp','체력'],['atk','공격력'],['mag','마력'],['def','방어력'],['agi','민첩'],['luk','행운'],['mov','이동']];
+function ifxNum(o,k,label,v,o2={}){const id=fid();return `<label class="f" for="${id}"><span class="fl">${labH(label+KSEP+(o?o+'.':'')+k)}${o2.hint?` <small class="faint">${esc(o2.hint)}</small>`:''}</span><input id="${id}" type="number" ${o2.min!=null?`min="${o2.min}"`:''} step="${o2.step||1}" data-fa="ifx-num" data-o="${o||''}" data-k="${k}" value="${v??''}" placeholder="${esc(o2.ph||'없음')}"></label>`;}
+function itemFxRow(key,d){
+  if(key==='stats'){const st=d.stats||{};return `<div class="f wide"><span class="fl">${labH('착용 능력치'+KSEP+'stats')} <small class="faint">장착하면 더해지는 값 · 비우면 없음</small></span><div class="fgrid">${IFX_STATS.map(([k,l])=>ifxNum('stats',k,l,st[k])).join('')}</div></div>`;}
+  if(key==='useHeal')return ifxNum('','useHeal','전투 중 HP 회복량',d.useHeal,{min:0,hint:'고정 값'});
+  if(key==='useHealPct')return ifxNum('','useHealPct','전투 중 HP 회복 (최대 HP %)',d.useHealPct,{min:0,step:0.5,hint:'둘 다 있으면 큰 쪽'});
+  if(key==='useCure')return `<div class="f"><label class="chk"><input type="checkbox" data-fa="ifx-bool" data-k="useCure" ${d.useCure?'checked':''}> <span class="fl">${labH('전투 중 상태 이상 제거'+KSEP+'useCure')}</span></label></div>`;
+  if(key==='buff'||key==='buff2'){const b=d[key]||null;const id=fid();
+    return `<div class="f wide"><span class="fl">${labH((key==='buff'?'평소에 사용하면 (버프)':'버프 하나 더')+KSEP+key)} <small class="faint">인벤토리에서 사용 · n분 동안 능력치 +</small></span>
+      <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><select id="${id}" style="width:auto;min-width:130px" data-p="_" data-fa="ifx-buff" data-k="${key}" aria-label="버프 능력치"><option value="">없음</option>${IFX_STATS.filter(x=>x[0]!=='mov').map(([k,l])=>`<option value="${k}" ${b&&b.stat===k?'selected':''}>${l}</option>`).join('')}</select>
+      ${b?`<span class="faint small">+</span><input type="number" class="nsm" min="1" data-fa="ifx-bnum" data-k="${key}" data-f="val" value="${b.val??''}" aria-label="버프 값"><input type="number" class="nsm" min="1" data-fa="ifx-bnum" data-k="${key}" data-f="min" value="${b.min??''}" aria-label="버프 시간(분)"><span class="faint small">분</span>`:''}</div></div>`;}
+  return '';}
+(function(){const f=fAct;fAct=function(a,el,v){
+  if(a==='ifx-num'){const o=el.dataset.o,k=el.dataset.k,n=el.value===''?null:+el.value;const tgt=o?(FM.d[o]=FM.d[o]||{}):FM.d;
+    if(n==null||!isFinite(n)||n===0)delete tgt[k];else tgt[k]=n;if(o&&!Object.keys(tgt).length)delete FM.d[o];sync();return;}
+  if(a==='ifx-bool'){if(el.checked)FM.d[el.dataset.k]=true;else delete FM.d[el.dataset.k];sync();return;}
+  if(a==='ifx-buff'){const k=el.dataset.k;if(!el.value)delete FM.d[k];else FM.d[k]={stat:el.value,val:(FM.d[k]&&FM.d[k].val)||5,min:(FM.d[k]&&FM.d[k].min)||10};sync();redrawForm();return;}
+  if(a==='ifx-bnum'){const b=FM.d[el.dataset.k];if(!b)return;const n=+el.value;if(el.value!==''&&isFinite(n)&&n>0)b[el.dataset.f]=n;sync();return;}
+  return f(a,el,v);};})();

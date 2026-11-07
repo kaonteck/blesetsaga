@@ -642,7 +642,7 @@ function gfAct(b,me){
   else if(mode==='defend')body=`<div class="gact-h"><span class="hud-tag">STANDBY</span>대기</div><div class="gwait"><p>이번 턴 <b>아무것도 하지 않습니다</b>.</p><small class="faint">이동하거나 공격하지 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small></div>`;
   else if(mode==='wait')body=`<div class="gact-h"><span class="hud-tag">STANDBY</span>대기</div><div class="gwait"><p>이번 턴 <b>대기</b>하시겠습니까?</p><small class="faint">움직이지도 공격하지도 않습니다.${gi?` 선택한 아이템(${esc(ITEMS[gi.item].name)})은 함께 사용됩니다.`:''}</small>
       <div class="row"><button class="btn btn-primary" data-act="g-confirm" data-kind="wait">예, 대기합니다</button><button class="btn" data-act="g-mode" data-mode="fight">아니요</button></div></div>`;
-  else if(mode==='item'){const items=['potion','holywater','swiftdraft'].filter(k=>ITEMS[k]);
+  else if(mode==='item'){const items=battleItems().concat(ITEMS.swiftdraft?['swiftdraft']:[]);
     body=`<div class="gact-h"><span class="hud-tag">ITEM</span>아이템 <small>자신에게만 사용 · 다른 행동과 함께 · 한 턴에 하나</small></div>
       <div class="ginv">${items.map(k=>{const n=S.me.inv[k]||0;return `<button class="invcell use ${gi&&gi.item===k?'on':''}" data-act="g-item" data-item="${gi&&gi.item===k?'':k}" ${n?'':'disabled'} title="${esc(ITEMS[k].desc)}"><img src="${itemImgSrc(ITEMS[k])}" alt=""><span class="ic-n num">${n}</span><span class="ginv-l">${esc(ITEMS[k].name)}</span></button>`;}).join('')}${Array.from({length:Math.max(0,8-items.length)}).map(()=>'<span class="invcell empty"></span>').join('')}</div>
       ${gi?`<p class="gact-sum" style="font-size:13px">선택 · ${esc(ITEMS[gi.item].name)} → 나</p>`:'<p class="muted" style="font-size:12.5px">사용할 아이템을 누르세요. 다시 누르면 선택이 풀립니다. 아이템은 자신에게만 쓸 수 있습니다.</p>'}
@@ -735,7 +735,7 @@ const GCL={w:0,h:0};
   const end=()=>{if(st){st=null;const m=document.querySelector('.gfx .gf-cl .msgs');if(m)m.scrollTop=m.scrollHeight;}};
   document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);})();
 /* 만신전 퀵슬롯(PC ≥1101px): 4칸, 가로/세로, 끌어서 자유 배치, 칸마다 스킬·파티원(대상, 'pt:이름')·아이템을 지정. 저장: S.me.qslot={s:[4],dir:'h'|'v',x,y} */
-const QS_ITEMS=['potion','holywater','swiftdraft'];
+const QS_ITEMS={filter:f=>battleItems().concat(ITEMS.swiftdraft?['swiftdraft']:[]).filter(f),includes:k=>battleItems().includes(k)||k==='swiftdraft'};   /* 퀵슬롯 아이템: 전투 아이템 전부(운영 페이지 '사용 효과') + 신속의 물약 */
 function qsCfg(){const q=S.me.qslot||(S.me.qslot={s:[null,null,null,null],dir:'h',x:null,y:null});if(!Array.isArray(q.s)||q.s.length!==4)q.s=[0,1,2,3].map(i=>(q.s||[])[i]||null);return q;}
 function qsPosStyle(){const q=qsCfg();return q.x!=null&&q.y!=null?`left:${q.x}px;top:${q.y}px;right:auto;bottom:auto`:'';}
 function qsOptions(me){const sk=CLASSES[me.job].skills;const basic=basicSkill(me.job);
