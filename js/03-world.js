@@ -42,13 +42,14 @@ const EXTRA_MONSTERS=[
  soloMon({id:'st_hound',name:'안개 들개',art:'beast',kind:'story',region:'북쪽 경계',level:1,tier:'story',desc:'탐사대가 사라진 안개 속에서 튀어나온 들개.',singleName:'물어뜯기',dotName:'출혈',dotChance:0.3}),
  soloMon({id:'st_shade',name:'결정의 그림자',art:'spirit',kind:'story',region:'속삭임의 자리',level:3,tier:'story',desc:'검은 결정 조각이 엉겨 붙어 사람의 형상을 한 그림자.',singleName:'검은 손길',aoeName:'속삭임',dotName:'혼돈 침식',dotChance:0.35}),
  soloMon({id:'st_pup',name:'어린 추적자',art:'beast',kind:'story',region:'블라스파미아 경계',level:6,tier:'story',desc:'둥지를 지키려 길을 막아선 어린 추적자.',singleName:'그림자 송곳니',aoeName:'추적의 포효',dotName:'저주 출혈',dotChance:0.3}),
+ /* 밸런스 2차(2026-11-07): 만신전 = 가장 어렵게 — 봇 8인 정석 승률 약 45%(균열 체력 ×2·공격 ×2.55, 왕관 ×1.6·×4.0, 지속 피해 그대로) */
  {id:'ev_rift',kind:'event',name:'균열의 사도',art:'spirit',region:'갑자기 열린 균열',published:true,rev:1,
   desc:'하늘이 갈라진 자리에서 내려온 혼돈의 사도. 오래 머물지 않는다.',level:5,maxLevel:null,min:8,max:20,target:8,roles:{tank:2,dps:4,heal:2},
-  hp:3600,hpScale:0,atk:200,def:0,singleName:'균열의 창',singleMult:1.0,aoeName:'차원 붕괴',aoeMult:0.6,aoeEvery:3,dotName:'혼돈 낙인',dotChance:0.3,dotDmg:24,
+  hp:7200,hpScale:0,atk:510,def:0,singleName:'균열의 창',singleMult:1.0,aoeName:'차원 붕괴',aoeMult:0.6,aoeEvery:3,dotName:'혼돈 낙인',dotChance:0.3,dotDmg:24,
   exp:220,gold:110,drops:[['holywater',0.5],['staff',0.2],['cloak',0.1]]},
  {id:'ev_crown',kind:'event',name:'녹슨 왕관의 망령',art:'spirit',region:'녹투성이 호수',published:true,rev:1,
   desc:'호수 바닥에 가라앉은 옛 왕의 망령. 녹슨 왕관을 쓴 채 물 위로 떠오른다.',level:12,maxLevel:null,min:8,max:20,target:8,roles:{tank:2,dps:4,heal:2},
-  hp:6400,hpScale:0,atk:300,def:0,singleName:'녹슨 왕홀',singleMult:1.0,aoeName:'왕의 호령',aoeMult:0.6,aoeEvery:3,dotName:'녹물 저주',dotChance:0.35,dotDmg:36,
+  hp:10240,hpScale:0,atk:1200,def:0,singleName:'녹슨 왕홀',singleMult:1.0,aoeName:'왕의 호령',aoeMult:0.6,aoeEvery:3,dotName:'녹물 저주',dotChance:0.35,dotDmg:36,
   exp:480,gold:240,drops:[['amulet',0.25],['crest',0.12],['cloak',0.2]]}
 ];
 const ALL_MONSTERS=()=>[...clone(DEFAULT_MONSTERS),...clone(EXTRA_MONSTERS)];

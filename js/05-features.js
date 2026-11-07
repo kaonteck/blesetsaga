@@ -1961,8 +1961,10 @@ QCHAPTERS.push(['ch8','8장 「백야의 신전」',['E28','E29','E30','E31']]);
      초대받아 들어올 수 있는 건 E31을 받았거나 마친 블레서. 빈자리는 용병(봇)으로 채워도 된다.
    · 원래 숨무스(guardian): 이벤트 만신전으로만(8~20인).
    잡몹·아우로라(□□)는 개인 전투 그대로. */
-const SUMMUS_EV=[2.2,1.0];  /* 만신전 숨무스: 퀘스트 숨무스(4인) 대비 HP·공격 배율 — 8인 기준 */
-const R4_MUL={t_cephalo:['st_cephalo',2.4,3.4],t_janus:['st_janus',3.52,1.7],q_summus:['st_summus',1.76,4.2]};  /* 봇 4인 시뮬: 케팔로포다 95–100% · 야누스 87–100% · 숨무스 72–100%(평균 약 87%, 아이템 미사용) */
+const SUMMUS_EV=[1.833,1.316];  /* 밸런스 2차(2026-11-07): 봇 8인 정석 승률 약 45~50% (예전 2.2,1.0) */  /* 만신전 숨무스: 퀘스트 숨무스(4인) 대비 HP·공격 배율 — 8인 기준 */
+const R4_MUL={t_cephalo:['st_cephalo',2.4,3.4],t_janus:['st_janus',3.52,1.7],q_summus:['st_summus',1.76,4.2]};
+/* 밸런스 2차(2026-11-07): 토벌전은 파티 레이드보다 어렵게 — 봇 4인 정석 승률 약 65~75%. [체력, 공격] 추가 배율(지속 피해량은 그대로) */
+const R4_BAL={t_cephalo:[2.5,2.35],t_janus:[1.8,2.35],q_summus:[3,1.33]};  /* 봇 4인 시뮬: 케팔로포다 95–100% · 야누스 87–100% · 숨무스 72–100%(평균 약 87%, 아이템 미사용) */
 const R4_DEF={
  t_cephalo:{name:'지하 신전의 사제, 케팔로포다',art:'beast',region:'백야의 신전 지하 제단',level:80,story:'E28',exp:18000,gold:2600,drops:[['chaos',0.6],['potion',0.5]],
   desc:'두 팔과 여덟 개의 다리를 가진 고대 혼돈의 사제. 신과 함께 타락한 기운을 흡수하여 그 모습이 흉측하게 변했다. 물에 잠긴 제단에서 4인 토벌대를 기다린다.',
@@ -1986,7 +1988,8 @@ const R4_DEF={
    {at:60,name:'2페이즈 · 경악',say:'경악에 맞으면 회복할 수 없고, 봉인의 사슬은 스킬 하나를 2턴 봉인한다(정화의 성수·디스펠로 해제)',atkMul:1.3,pullHeal:false,noHealAoe:true,sealChance:0.4,patterns:['single','all','cross'],pats:{single:{name:'봉인의 사슬',mult:1.0},all:{name:'경악',mult:0.45},cross:{name:'심판의 십자',mult:0.8}}},
    {at:25,name:'3페이즈 · 기적의 나팔',say:'나팔 소리만 남는다',atkMul:1.6,noHealAoe:false,sealChance:0.2,patterns:['all','ring','burst2'],pats:{all:{name:'기적의 나팔',mult:0.55},ring:{name:'나팔의 메아리',mult:0.7},burst2:{name:'심판의 빛',mult:0.9}}}]}}};
 function r4Mon(id){const d=R4_DEF[id],[sid,hm,am]=R4_MUL[id];const s=STORY_MONS.find(x=>x.id===sid);
-  return {id,kind:'weekly',gridRaid:true,published:true,rev:3,maxLevel:null,min:4,max:8,target:4,roles:{tank:1,dps:2,heal:1},hp:Math.round(s.hp*hm),hpScale:0.25,atk:Math.round(s.atk*am),def:0,
+  const bal=R4_BAL[id]||[1,1];
+  return {id,kind:'weekly',gridRaid:true,published:true,rev:3,maxLevel:null,min:4,max:8,target:4,roles:{tank:1,dps:2,heal:1},hp:Math.round(s.hp*hm*bal[0]),hpScale:0.25,atk:Math.round(s.atk*am*bal[1]),def:0,
     singleName:d.mass.phases[0].pats.single.name,singleMult:1.0,aoeName:'',aoeMult:0.5,aoeEvery:99,dotDmg:Math.round(s.atk*am*0.15),...d};}
 const R4_MONS=Object.keys(R4_DEF).map(r4Mon);
 R4_MONS.forEach(m=>PARTY_BOSSES.push(m));
