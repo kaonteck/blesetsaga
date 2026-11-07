@@ -3831,3 +3831,7 @@ button.sky-n:hover,button.sky-n:focus-visible{color:var(--gold-hi);text-decorati
   --rule:#35363f; --rule-2:#494b56;
 }
 html:not([data-theme="light"]) body{background:#1a1a19!important}
+/* 기록 패널: 태그 뒤 작은 이름(만신전·던전·필드·토벌전…) · 한 줄 넘으면 말줄임(마우스 올리면 전체) */
+.rec-tag{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+.rec-sub{font-size:10.5px;color:var(--faint)}
+.rec-r .rec-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;min-width:0}
