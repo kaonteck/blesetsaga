@@ -515,13 +515,13 @@ function massTick(t){
 function massPanel(){
   const M=S.mass;const C=massCfg();
   const rules=`<div class="panel"><h3>만신전 규칙</h3><ul class="mass-rules">
-    <li>정원 ${C.minPlayers}~${C.maxPlayers}인 · 최소 구성 탱커 ${C.minRoles.tank} · 힐러 ${C.minRoles.heal} · 딜러 ${C.minRoles.dps} · 인원이 많을수록 보스 HP 증가 (1인당 +${Math.round(C.hpPerExtra*100)}%)</li>
     <li>${GRID}×${GRID} 전장 · 한 칸에 최대 ${CELL_CAP}명 · 보스는 가운데 2×2 칸</li>
-    <li>행동은 <b>이동</b>(기본 3×3) · <b>전투</b>(공격 · 스킬) · <b>대기</b> 중 하나. 이동과 전투는 함께 할 수 없고, 아이템은 다른 행동과 함께 쓸 수 있습니다.</li>
+    <li>전투가 시작되면 ${PLACE_SEC}초 동안 지도에서 설 자리를 고릅니다(먼저 고른 사람 우선).</li>
+    <li>매 턴 <b>전투</b>(공격 · 스킬) · <b>이동</b>(기본 3×3) · <b>대기</b> 중 하나를 고릅니다. 이동과 전투는 함께 할 수 없고, 아이템은 다른 행동과 함께 쓸 수 있습니다.</li>
     <li>사거리 안(3×3 · 5×5 클래스별)에 보스가 있어야 공격할 수 있습니다. 회복은 시전자 기준 5×5 칸 안의 아군에게만 닿습니다. 붉은 칸 예고를 보고 이동해서 피하세요.</li>
-    <li>모두 제출한 행동은 실시간으로 공개되고, 전원 제출 시 바로 판정합니다.</li>
-    <li>출현 ${C.gatherMinutes}분 동안 집결 · 전투 제한 ${C.battleMinutes}분 · <b>1회 도전</b>(실패하면 이벤트 종료)</li>
-    ${(()=>{const RW=massDef(S.mass?monster(S.mass.monsterId):null).reward;return `<li>보상 · 참여 EXP ${RW.join.exp} · ${RW.join.gold}골드 / 처치 시 추가 EXP ${RW.kill.exp} · ${RW.kill.gold}골드${itemsText(RW.kill.items)?' · '+itemsText(RW.kill.items):''}${(RW.kill.pick||[]).length?` · 장비 1개 (${RW.kill.pick.map(k=>ITEMS[k]?ITEMS[k].name:k).join(' / ')})`:''}</li>`;})()}</ul></div>`;
+    <li>스킬은 MP를 쓰고, MP는 매 턴 최대치의 ${Math.round(MP_REGEN*100)}%씩 회복합니다.</li>
+    <li>보스의 단일 공격은 위협이 가장 높은 블레서를 노립니다(탱커는 대미지 위협 ×${TANK_THREAT}). '시선 집중'은 위협과 상관없이 직전 턴까지 누적 대미지 1위를 노립니다.</li>
+    <li>모두 제출한 행동은 실시간으로 공개되고, 전원 제출 시 바로 판정합니다.</li></ul></div>`;
   const em=S.data.monsters.filter(m=>m.published&&mkind(m)==='event');
   const admin=isAdmin()?`<div class="panel"><h3>운영 · 만신전</h3><div class="list">${em.map(m=>`<div class="li"><div class="t"><b>${esc(m.name)}</b><small>LV${m.level}+ · 8인 기준 HP ${m.hp} · 공격력 ${m.atk}</small></div><button class="btn btn-sm" data-act="ev-spawn" data-id="${m.id}" ${S.mass?'disabled':''}>${S.mass&&S.mass.monsterId===m.id?'출현 중':`${C.gatherMinutes}분 출현`}</button></div>`).join('')||'<p class="empty">이벤트 몬스터가 없습니다. 운영 › 몬스터에서 분류를 event로 등록하세요.</p>'}</div>
     <p class="faint" style="font-size:12px;margin-top:8px">퀘스트 이름 · 몬스터 스탯 · AOE · 보상은 운영 › 만신전 탭에서 설정합니다.</p></div>`:'';
