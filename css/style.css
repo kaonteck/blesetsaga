@@ -3811,8 +3811,9 @@ body{background:transparent!important;background-image:none!important}
 button.sky-n{background:none;border:0;padding:0;font:inherit;font-size:11px;color:var(--text);cursor:pointer;text-align:left;max-width:100%}
 button.sky-n:hover,button.sky-n:focus-visible{color:var(--gold-hi);text-decoration:underline;text-underline-offset:2px;outline:none}
 @media (min-width:981px){
-  .wrap.tri[data-route="main"] .tri-l,.wrap.tri[data-route="main"] .tri-r{max-height:none;overflow:visible}
-  .wrap.tri[data-route="main"] .tri-r .panel.chat.chat-main{flex:1 1 0;height:auto;min-height:300px}
+  .wrap.tri .tri-l,.wrap.tri .tri-r{max-height:none;overflow:visible;position:sticky;top:calc(var(--top-h,64px) + 12px)}
+  .wrap.tri .tri-r .panel.chat.chat-main{flex:1 1 0;height:auto;min-height:300px}
+  .wrap.tri .tri-c>.wrap.page,.wrap.tri .tri-c>.page{padding-bottom:0}
   .wrap.tri[data-route="main"] .main-c>.rpanel .rp-list{flex:1 1 0;height:auto;min-height:calc(var(--rr-h)*4 + 8px*3)}
 }
 /* 정보 카드(동료 클릭): 이름 옆 LV · 칭호–이름 간격 절반 · 아래 버튼을 역할/상태 칩과 같은 크기 · 능력치 7칸 */

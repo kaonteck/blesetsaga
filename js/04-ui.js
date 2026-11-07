@@ -1184,7 +1184,7 @@ function vProfile(){
       <div class="panel ctop-info"><dl class="uinfo-list">
         ${row('이름',`<b style="color:var(--silver)">${esc(name)}</b>`)}${row('클래스',roleChip(p.job))}${row('칭호',tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:'<span class="faint">없음</span>')}
         ${row('레벨',`<span class="lv num">LV ${p.level}</span>`)}${row('상태',statusChip(k))}${row('한줄메모',memo?esc(memo):'<span class="faint">없음</span>')}
-        ${['maxHp',st.pk||'atk','def','luk'].map(statRow).join('')}${b?row('나와의 관계',bondChip(name)):''}</dl></div></div>
+        ${b?row('나와의 관계',bondChip(name)):''}</dl></div></div>
     <div class="bond-row"><div class="panel"><h3>${hTitle('star','관계')} <span class="faint num" style="letter-spacing:0;font-weight:400">${botBonds(name).length}</span></h3><div class="list">${botBonds(name).map(([n,t,since])=>{const q=n===S.me.name?null:bot(n);return `<div class="brow2 ro">${q?sigil(q.job,'sm'):n===S.me.name?sigil(S.me.job,'sm'):''}<span class="bt"><span class="bchip" style="--bc:${BOND[t].c}">${BOND[t].n}</span><b>${esc(n)}</b>${n===S.me.name?' <span class="chip dim">나</span>':''}</span><span class="faint num" style="margin-left:auto;font-size:11.5px">${bondDate(since)}부터</span></div>`;}).join('')||'<p class="empty">맺은 관계가 없습니다.</p>'}</div></div>
       <div class="panel"><h3>${hTitle('spark','장식장')} <span class="faint num" style="letter-spacing:0;font-weight:400">${decoN}/${SHELF_N}</span></h3><div class="shelf">${sh.map(x=>x?`<div class="sh-slot on" data-tip="${esc(ITEMS[x].name)}" tabindex="0">${ITEMS[x].icon}</div>`:'<div class="sh-slot ro"></div>').join('')}</div></div></div></div>`;
 }

@@ -3,7 +3,7 @@
    ① 바로가기(가운데 단락, 다음 목표와 모집 파티 사이): 8칸, [편집]을 누르면 칸마다 페이지를 고름(검색 + 묶음 목록).
       고를 수 있는 것 = 탭으로 나뉜 페이지(상단 메뉴 · 세계관/퀘스트/레이드/캐릭터/거래소 탭 · 공방 제작/요리/연금 · 탐색 지역 8곳).
       몬스터 상세·파티 만들기처럼 탭이 아닌 화면은 넣지 않음. 저장 S.me.scut=[8칸 id].
-   ② 화면 높이 맞춤(데스크톱 >980px, 메인 화면만): 세 칸의 아래 끝을 화면 아래(또는 가장 긴 칸)에 맞춤.
+   ② 화면 높이 맞춤(데스크톱 >980px, 3단 화면 전부 — 아래 설명): 세 칸의 아래 끝을 화면 아래(또는 가장 긴 칸)에 맞춤.
       왼쪽 캐릭터 카드·가운데 마지막 패널(모집 파티)은 빈 공간으로 늘리고, 오른쪽은 채팅이 남은 높이를 채움 →
       주간 미션·기록을 펼치면 채팅이 줄어들고, 채팅이 최소(300px)보다 작아지면 세 칸이 함께 길어짐. */
 const SC_N=8;
@@ -65,17 +65,37 @@ Object.assign(ACTS,{
 /* 메인 가운데: 다음 목표 아래 · 모집 파티 위 */
 vMain=function(){return `<div class="main-c">${ticker()}${skyBar()}${nextGoalHTML()}${scutPanel()}${recruitPanel()}</div>`;};
 
-/* ── 화면 높이 맞춤 ── */
-function fitMainCols(){const W=$('.wrap.tri'),L=$('.tri-l'),R=$('.tri-r'),C=$('.tri-c .main-c');
-  const last=C&&C.lastElementChild,card=L&&L.firstElementChild;
-  [L,R].forEach(x=>{if(x)x.style.height='';});if(last)last.style.minHeight='';if(card)card.style.minHeight='';
-  if(!W||S.route!=='main'||innerWidth<=980||!L||!R||!last)return;
-  const y=window.scrollY,top=el=>el.getBoundingClientRect().top+y,bot=el=>el.getBoundingClientRect().bottom+y;
-  const pb=parseFloat(getComputedStyle(W).paddingBottom)||0;
-  const target=Math.round(Math.max(innerHeight-pb,bot(L),bot(C),bot(R)));
-  L.style.height=(target-top(L))+'px';if(card)card.style.minHeight=(target-top(card))+'px';
-  last.style.minHeight=(target-top(last))+'px';
-  R.style.height=(target-top(R))+'px';}
+/* ── 화면 높이 맞춤 (데스크톱 >980px, 3단 화면 전부) ──
+   T = 화면 아래(첫 화면 기준). 왼쪽·오른쪽 칸은 높이 T(내용이 더 길면 그만큼) + sticky → 긴 페이지에서도 화면을 꽉 채운 채 따라옴.
+   가운데는 '각 세로줄의 맨 아래 패널'을 아래 끝까지 늘림(빈 공간). 늘렸더니 패널이 아닌 내용이 밀려나면 되돌림.
+   전투 화면(진행 중)은 건드리지 않음. */
+const FIT_SEL='.panel,.page-head,.skybar,.ticker';
+function fitClear(){$$('[data-fit]').forEach(e=>{e.style.minHeight='';e.style.height='';delete e.dataset.fit;});}
+function fitMainCols(){if(typeof getComputedStyle!=='function')return;fitClear();
+  const W=$('.wrap.tri'),L=$('.tri-l'),R=$('.tri-r'),C=$('.tri-c');const card=L&&L.firstElementChild;
+  if(!W||!L||!R||!C||innerWidth<=980)return;
+  if(S.route==='battle'&&(S.battle||S.drun))return;
+  const y=window.scrollY,R0=el=>el.getBoundingClientRect(),top=el=>R0(el).top+y,bot=el=>R0(el).bottom+y;
+  const pb=parseFloat(getComputedStyle(W).paddingBottom)||0;const T0=innerHeight-pb;
+  /* 가운데가 화면보다 조금(화면 높이 절반 이내) 길면 양옆도 그 길이까지 → 세 칸 아래 끝이 같음. 훨씬 길면 양옆은 화면 높이로 따라옴(sticky) */
+  const cb0=bot(C);const side=Math.round(Math.max(T0,bot(L),bot(R),cb0<=T0+innerHeight*.5?cb0:0));
+  const set=(el,k,v)=>{el.style[k]=Math.max(0,Math.round(v))+'px';el.dataset.fit='1';};
+  set(L,'height',side-top(L));if(card)set(card,'minHeight',side-top(card));set(R,'height',side-top(R));
+  /* 가운데: 겹치지 않는 맨 아래 패널들 */
+  const cb=cb0;const target=Math.max(side,cb);
+  const all=[...C.querySelectorAll(FIT_SEL)].filter(e=>e.offsetParent&&!e.parentElement.closest(FIT_SEL)&&R0(e).height>0);
+  /* 목록의 한 줄(접는 칸·같은 모양이 3개 이상 늘어선 것)은 늘리지 않음 — 마지막 줄만 커져 어색해짐 */
+  const rowLike=e=>e.tagName==='DETAILS'||[...e.parentElement.children].filter(x=>x.tagName===e.tagName&&x.classList[0]===e.classList[0]).length>=3;
+  const lows=all.filter(p=>{const a=R0(p);return !all.some(q=>{if(q===p)return false;const b=R0(q);return b.top>=a.bottom-2&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>8;});});
+  if(target<=cb+1||!lows.length||lows.some(rowLike))return;
+  const gap=cb-Math.max(...lows.map(bot));/* 패널 아래 여백(페이지 안쪽 여백)은 그대로 */
+  lows.forEach(p=>set(p,'minHeight',R0(p).height+(target-gap-bot(p))));
+  if(bot(C)>target+2)lows.forEach(p=>{p.style.minHeight='';delete p.dataset.fit;});}
 fitSideChat=fitMainCols;
 /* 오른쪽 칸 접기·펼치기(주간 미션·기록 등)가 끝난 뒤 한 번 더 — 채팅이 최소보다 작아지면 세 칸을 함께 늘리고, 줄어들면 다시 화면에 맞춤 */
-document.addEventListener('click',e=>{if(!S||S.route!=='main'||!e.target.closest('.tri-r,.tri-l'))return;clearTimeout(fitMainCols.t);fitMainCols.t=setTimeout(()=>{try{fitMainCols();}catch(_){}},380);});
+function fitLater(ms){clearTimeout(fitMainCols.t);fitMainCols.t=setTimeout(()=>{try{fitMainCols();}catch(_){}},ms);}
+document.addEventListener('click',e=>{if(S&&e.target.closest&&e.target.closest('#view'))fitLater(380);});
+/* 그림(월드맵·초상 등)이 늦게 뜨면 높이가 바뀌므로 다시 */
+document.addEventListener('load',e=>{if(e.target&&e.target.tagName==='IMG'&&e.target.closest&&e.target.closest('#view'))fitLater(60);},true);
+/* 팝업이 열리고 닫힐 때(스크롤바가 생기고 없어지며 폭·높이가 바뀜) 다시 맞춤 */
+(function(){const m=document.getElementById&&document.getElementById('modal');if(m&&typeof MutationObserver==='function')new MutationObserver(()=>fitLater(80)).observe(m,{childList:true});})();
