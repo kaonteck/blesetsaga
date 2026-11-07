@@ -1378,7 +1378,7 @@ const WORLD={
 };
 const REGIONS=[
   {name:'혹한의 땅',w:[['snow',-18,-6],['blizzard',-26,-12],['clear',-12,-2],['fog',-10,-3]]},
-  {name:'바위의 땅',w:[['clear',8,18],['cloud',5,14],['wind',3,12]]},
+  {name:'바위의 땅',w:[['clear',8,18],['cloud',5,14],['wind',3,12],['rain',4,12]]},
   {name:'소금의 땅',w:[['clear',24,35],['heat',32,41],['wind',20,30],['rain',18,26]]},
   {name:'초원의 땅',w:[['clear',14,24],['cloud',12,20],['rain',10,17]]},
   {name:'작열의 땅',w:[['heat',36,48],['clear',30,40],['wind',32,44]]},
@@ -1402,7 +1402,7 @@ const WICON={
 function seedRnd(str){let h=2166136261;for(const c of str){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return ()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);return ((h^=h>>>16)>>>0)/4294967296;};}
 function kstParts(t=now()){const d=new Date(t+9*3600e3);return {y:d.getUTCFullYear(),mo:d.getUTCMonth()+1,d:d.getUTCDate(),wd:'일월화수목금토'[d.getUTCDay()],h:d.getUTCHours(),mi:d.getUTCMinutes(),s:d.getUTCSeconds(),key:d.toISOString().slice(0,10)};}
 function landW(land){const w=todayWeather().find(x=>x.name===LANDS[land]);return w?w.w:'clear';}
-const GUILD_HQ={craft:'ember',cook:'sea',alch:'salt'};
+const GUILD_HQ={craft:'rock',cook:'sea',alch:'salt'};
 function isRain(w){return w==='rain'||w==='storm';}function isSnow(w){return w==='snow'||w==='blizzard';}
 function guildRain(k){return isRain(landW(GUILD_HQ[k]));}
 const FOG_LOST=0.35,RAIN_FAIL=0.05,SNOW_STUCK=0.25;
@@ -1422,7 +1422,7 @@ function skyBar(){
   return `<div class="skybar" data-sky="${p.key}"><div class="sky-l"><span class="sky-lbl">오늘의 대륙 날씨<span class="sky-help" tabindex="0" aria-label="날씨 디버프 도움말"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.7c-.5.2-.8.6-.8 1.1v.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".8" fill="currentColor"/></svg><span class="sky-tip" role="tooltip"><b>날씨 디버프</b>
 <span><i class="t-fog">안개</i> 그 지역 탐색 시 35% 확률로 길을 잃어 보상 없이 횟수만 줄어듭니다.</span>
 <span><i class="t-snow">눈 · 눈보라</i> 그 지역에 만신전이 열리면 이동 범위가 3×3으로 고정되고, 이동할 때 25% 확률로 발이 묶입니다.</span>
-<span><i class="t-rain">비 · 뇌우</i> 길드 본진에 비가 오면 그 길드의 작업 실패 확률이 5% 오릅니다. 대장장이(작열의 땅) 제작·강화 · 요리(바다의 땅) · 연금술(소금의 땅)</span></span></span></span>
+<span><i class="t-rain">비 · 뇌우</i> 길드 본진에 비가 오면 그 길드의 작업 실패 확률이 5% 오릅니다. 대장장이(바위의 땅) 제작·강화 · 요리(바다의 땅) · 연금술(소금의 땅)</span></span></span></span>
     <ul class="sky-list">${ws.map(x=>`<li class="w-${x.w}" title="${x.name} · ${WNAME[x.w]} ${x.t}°C"><svg viewBox="0 0 16 16" aria-hidden="true">${WICON[x.w]}</svg><span class="sky-n">${x.name}</span><span class="sky-t num">${WNAME[x.w]} ${x.t}°</span></li>`).join('')}</ul></div>
     <div class="sky-r"><span class="sky-date">${gameDate(p)}</span><span class="sky-clock num" data-clock>${clockText()}</span></div></div>`;
 }
