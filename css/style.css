@@ -3815,3 +3815,15 @@ button.sky-n:hover,button.sky-n:focus-visible{color:var(--gold-hi);text-decorati
   .wrap.tri[data-route="main"] .tri-r .panel.chat.chat-main{flex:1 1 0;height:auto;min-height:300px}
   .wrap.tri[data-route="main"] .main-c>.rpanel .rp-list{flex:1 1 0;height:auto;min-height:calc(var(--rr-h)*4 + 8px*3)}
 }
+/* 정보 카드(동료 클릭): 이름 옆 LV · 칭호–이름 간격 절반 · 아래 버튼을 역할/상태 칩과 같은 크기 · 능력치 7칸 */
+.uinfo .u-nm{gap:6px;align-items:baseline;flex-wrap:wrap}
+.uinfo .u-lv{font-size:11.5px;color:var(--muted)}
+.uinfo .rm-t>.tn-s{line-height:1.1;margin-bottom:-3px}
+.uinfo .u-btns{display:flex;flex-wrap:wrap;gap:4px}
+.uinfo .u-btn{background:none;font-family:inherit;line-height:inherit;cursor:pointer;color:var(--text)}
+.uinfo .u-btn.btn-primary{background:var(--steel-hi);border-color:var(--steel-hi);color:#1a1a1a;letter-spacing:0;font-weight:600}
+.uinfo .u-btn:not(.btn-primary):hover,.uinfo .u-btn:not(.btn-primary):focus-visible{border-color:var(--gold-hi);color:var(--gold-hi);outline:none}
+.uinfo .u-btn.ic{padding:1px 7px}
+.uinfo .u-btn.ic svg{width:13px;height:13px}
+.uinfo .u-stats{display:grid;grid-template-columns:repeat(4,max-content);gap:6px 14px}
+.uinfo .u-stats .si{gap:3px}

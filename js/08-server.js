@@ -552,11 +552,11 @@ if(ONLINE){
     if((S.me&&name===S.me.name)||bot(name))return _uinfo(name);
     const p=chPlayer(name);if(!p)return _uinfo(name);
     const job=isClass(p.job)?p.job:'defender',st=chOnline(p)?(STATUS[p.status]?p.status:'online'):'offline';const tt=p.title&&typeof titleById==='function'?titleById(p.title):null;
-    return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${sigil(job)}<div class="rm-t">${tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="row" style="gap:6px"><b>${esc(name)}</b><span class="chip dim">블레서</span></div>
-      <small><span class="num">LV${p.level||1}</span></small><div class="row" style="gap:4px">${roleChip(job)}${statusChip(st)}</div></div></div>
+    return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${sigil(job)}<div class="rm-t">${tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:''}<div class="row u-nm"><b>${esc(name)}</b><span class="u-lv num">LV${p.level||1}</span><span class="chip dim">블레서</span></div>
+      <div class="row" style="gap:4px">${roleChip(job)}${statusChip(st)}</div></div></div>
       ${p.memo?`<div class="u-sec u-memo">${esc(p.memo)}</div>`:''}${noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}
-      <div class="u-sec">${statLine(statsFor(job,p.level||1,{}),true)}</div>
-      <div class="u-sec row" style="gap:6px"><button class="btn btn-sm" data-act="u-dm" data-name="${esc(name)}">1:1 대화</button><button class="btn btn-sm" data-act="u-gift-srv" data-uid="${esc(p.user_id)}">선물 보내기</button></div></div>`;
+      <div class="u-sec">${uStatLine(statsFor(job,p.level||1,{}))}</div>
+      <div class="u-sec u-btns"><button class="chip u-btn" data-act="u-dm" data-name="${esc(name)}">1:1 대화</button><button class="chip u-btn" data-act="u-gift-srv" data-uid="${esc(p.user_id)}">선물 보내기</button></div></div>`;
   };
   ACTS['u-gift-srv']=d=>{closeRmem();modal('');S.sel.pop='mail';S.sel.mc={to:'@'+d.uid,text:'',items:{},gift:true};S.sel.mailView='compose';renderPop();renderTop();mlLoadPlayers().then(()=>{if(S.sel.mailView==='compose')renderPop();});};
   // 1:1: 새 대화 상대에 실제 블레서, 대화 중 머리줄에 선물 버튼

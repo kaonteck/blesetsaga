@@ -77,8 +77,10 @@ const ICON={
   def:`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l5.6 2v4.2c0 3.4-2.4 5.8-5.6 7-3.2-1.2-5.6-3.6-5.6-7V3.5z" fill="currentColor"/><path d="M8 3.6v9.2" stroke="var(--slab)" stroke-width="1.1" opacity=".55"/></svg>`,
   luk:`<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.8" y="1.8" width="12.4" height="12.4" rx="2.8" fill="currentColor"/><circle cx="5.2" cy="5.2" r="1.25" fill="var(--slab)"/><circle cx="8" cy="8" r="1.25" fill="var(--slab)"/><circle cx="10.8" cy="10.8" r="1.25" fill="var(--slab)"/><circle cx="10.8" cy="5.2" r="1.25" fill="var(--slab)"/><circle cx="5.2" cy="10.8" r="1.25" fill="var(--slab)"/></svg>`
 };
-const STAT_TIP={maxHp:'HP',atk:'공격력',mag:'마력',def:'방어력',agi:'민첩 · 몬스터 공격 회피',luk:'행운'};
+const STAT_TIP={maxHp:'HP',maxMp:'MP',atk:'공격력',mag:'마력',def:'방어력',agi:'민첩 · 몬스터 공격 회피',luk:'행운'};
 function statIcon(k,v,sm){return `<li class="si si-${k}" data-tip="${STAT_TIP[k]}" tabindex="0" aria-label="${STAT_TIP[k]} ${v}">${ICON[k]}<b>${v}</b></li>`;}
+/* 정보 카드(동료 클릭): 체력 · MP · 공격력 · 마력 · 방어력 · 민첩 · 행운 */
+function uStatLine(st){return `<ul class="statline num sm u-stats">${['maxHp','maxMp','atk','mag','def','agi','luk'].map(k=>statIcon(k,k==='atk'?(st.patk!=null&&!st.atk?st.patk:st.atk||0):(st[k]||0))).join('')}</ul>`;}
 function statLine(st,sm){return `<ul class="statline num ${sm?'sm':''}">${['maxHp',st.pk||'atk','def','luk'].map(k=>statIcon(k,st[k])).join('')}</ul>`;}
 const SKILL_FX={
   bash:[['dmg','공격력(물리)으로 계산 · MP 0']],
@@ -499,11 +501,11 @@ function uinfoHTML(name){
   if(!p)return `<div class="rmenu uinfo"><p class="empty" style="padding:10px 12px">${esc(name)}님의 정보를 찾을 수 없습니다.</p></div>`;
   const st=isMe?myStats():statsFor(p.job,p.level,{});
   const face=isMe&&S.me.portrait?`<img class="u-face" src="${S.me.portrait}" alt="">`:sigil(p.job);
-  return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${face}<div class="rm-t">${(()=>{const tt=isMe?(S.titles&&S.titles.equip&&titleById(S.titles.equip)):botTitle(name);return tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:'';})()}<div class="row" style="gap:6px"><b>${esc(name)}</b>${isMe?'<span class="chip dim">나</span>':''}</div>
-      <small><span class="num">LV${p.level}</span></small><div class="row" style="gap:4px">${roleChip(p.job)}${statusChip(isMe?myStatus():botStatus(p))}</div></div></div>
-    ${(isMe?S.me.memo:botMemo(name))?`<div class="u-sec u-memo">${esc(isMe?S.me.memo:botMemo(name))}</div>`:''}${!isMe&&noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}<div class="u-sec">${statLine(st,true)}</div>
+  return `<div class="rmenu uinfo" role="dialog" aria-label="${esc(name)} 정보"><div class="u-top">${face}<div class="rm-t">${(()=>{const tt=isMe?(S.titles&&S.titles.equip&&titleById(S.titles.equip)):botTitle(name);return tt?`<span class="tn-s tc-${tt.cat}">${esc(tt.name)}</span>`:'';})()}<div class="row u-nm"><b>${esc(name)}</b><span class="u-lv num">LV${p.level}</span>${isMe?'<span class="chip dim">나</span>':''}</div>
+      <div class="row" style="gap:4px">${roleChip(p.job)}${statusChip(isMe?myStatus():botStatus(p))}</div></div></div>
+    ${(isMe?S.me.memo:botMemo(name))?`<div class="u-sec u-memo">${esc(isMe?S.me.memo:botMemo(name))}</div>`:''}${!isMe&&noteOf(name)?`<div class="u-sec u-memo"><span class="faint" style="font-style:normal">내 메모 · </span>${esc(noteOf(name))}</div>`:''}<div class="u-sec">${uStatLine(st)}</div>
     ${!isMe&&bondOf(name)?`<div class="u-sec u-act"><span class="faint" style="font-size:11.5px">관계</span>${bondChip(name)}</div>`:''}<div class="u-sec u-act"><span class="faint" style="font-size:11.5px">현재</span>${p.online?activityHTML(p):'<span class="chip dim">오프라인</span>'}</div>
-    ${isMe?'':`<div class="u-sec row" style="gap:6px"><button class="btn btn-sm btn-primary" data-act="u-view" data-name="${esc(name)}">상세보기</button><button class="btn btn-sm" data-act="u-dm" data-name="${esc(name)}">1:1 대화</button><button class="btn btn-sm" data-act="bond-open" data-name="${esc(name)}">관계</button><button class="btn btn-sm" data-act="u-mail" data-name="${esc(name)}">${TICON.mail} 편지 보내기</button></div>`}</div>`;
+    ${isMe?'':`<div class="u-sec u-btns"><button class="chip u-btn btn-primary" data-act="u-view" data-name="${esc(name)}">상세보기</button><button class="chip u-btn" data-act="u-dm" data-name="${esc(name)}">1:1 대화</button><button class="chip u-btn" data-act="bond-open" data-name="${esc(name)}">관계</button><button class="chip u-btn ic" data-act="u-mail" data-name="${esc(name)}" title="편지 보내기" aria-label="편지 보내기">${TICON.mail}</button></div>`}</div>`;
 }
 function openUinfo(name,btn){
   const key='u:'+name;if(S.sel.rmem===key){closeRmem();return;}
