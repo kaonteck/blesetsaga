@@ -279,7 +279,7 @@ function doAdvance(job){const me=S.me;const from=me.job;if(CLASSES[from].tier!==
 /* ───────── 파티 레이드 보스 (지역별 · 용병으로 솔로 가능) ───────── */
 /* 밸런스 2차(2026-11-07): 체력 ×3 · 공격력은 보스별 배율(PB_ATK, 봇 시뮬로 정석 파티 승률 90% 안팎에 맞춤) ·
    단일 0.45 / 광역 0.8(3턴마다) · 5턴마다 대미지 1위 공격(×0.6). 지속 피해량은 배율 전 공격력 기준 */
-const PB_HP=3,PB_ATK={pb_hydra:2.75,pb_merchant:2.2,pb_captain:2.62,pb_ignis:2.95,pb_paladin:3.5,pb_herald:4.45};
+const PB_HP=3,PB_ATK={pb_hydra:2.86,pb_merchant:2.29,pb_captain:2.72,pb_ignis:3.07,pb_paladin:3.64,pb_herald:4.63};  /* 힐러 봇 개선 뒤 ×1.04 */
 const PB_PAT={singleMult:0.45,aoeMult:0.8,aoeEvery:3,topEvery:5,topMult:0.6,topName:'시선 집중'};
 function partyBoss(o){const L=o.level,big=!!o.big,g=1+(L-1)/196,hp=Math.round(760*(1+0.09*(L-1))/1.18*(big?1.8:1)*g*PB_HP),atk0=Math.round(60*(1+0.07*(L-1))/1.14*(big?1.15:1)*g),atk=Math.round(atk0*(PB_ATK[o.id]||1));
   return {kind:'party',published:true,rev:1,maxLevel:null,min:big?4:3,max:big?5:4,target:big?4:3,roles:big?{tank:1,dps:2,heal:1}:{tank:1,dps:1,heal:1},

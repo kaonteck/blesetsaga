@@ -135,14 +135,14 @@ const DEFAULT_MONSTERS=[
   {id:'forest',kind:'party',name:'변이된 숲의 파수꾼',art:'forest',region:'변이된 숲',published:true,rev:1,
    desc:'혼돈에 물든 숲을 지키던 고목이 일어섰다. 가지 끝마다 독 포자가 맺혀 있다.',
    level:3,maxLevel:null,min:3,max:4,target:3,roles:{tank:1,dps:1,heal:1},
-   hp:2280,hpScale:0.3,atk:186,def:0,  /* 밸런스 2차: 체력 ×3 · 공격 ×3.1 (지속 피해 그대로) */
+   hp:2280,hpScale:0.3,atk:193,def:0,  /* 밸런스 2차: 체력 ×3 · 공격 ×3.2 (지속 피해 그대로) */
    singleName:'가시 덩굴 휘두르기',singleMult:0.45,aoeName:'뿌리 폭풍',aoeMult:0.8,aoeEvery:3,topEvery:5,topMult:0.6,topName:'시선 집중',
    dotName:'독 포자',dotChance:0.3,dotDmg:8,
    exp:140,gold:70,drops:[['potion',0.5],['sword',0.2],['leather',0.15]]},
   {id:'tracker',kind:'party',name:'블라스파미아 추적자',art:'tracker',region:'블라스파미아 경계',published:true,rev:1,
    desc:'저주받은 땅의 냄새를 따라 탐사대를 쫓는 짐승. 무리를 지어 다닌다는 소문이 있다.',
    level:8,maxLevel:null,min:3,max:4,target:3,roles:{tank:1,dps:1,heal:1},
-   hp:3840,hpScale:0.3,atk:198,def:0,  /* 밸런스 2차: 체력 ×3 · 공격 ×1.9 */
+   hp:3840,hpScale:0.3,atk:199,def:0,  /* 밸런스 2차: 체력 ×3 · 공격 ×1.9 */
    singleName:'그림자 송곳니',singleMult:0.45,aoeName:'추적의 포효',aoeMult:0.8,aoeEvery:3,topEvery:5,topMult:0.6,topName:'시선 집중',
    dotName:'저주 출혈',dotChance:0.35,dotDmg:12,
    exp:320,gold:150,drops:[['holywater',0.4],['bow',0.15],['shield',0.15],['staff',0.15]]},
@@ -657,12 +657,15 @@ function decideBot0(b,p,rng){
     if(dead&&sk.includes('sinsayer')&&al.length>1)return A('sinsayer',{target:dead.id});
     if(has('veil')&&!b.players.some(x=>buffOn(x,'veil',T))){const tk=al.find(x=>x.role==='tank')||low;if(tk)return A('veil',{target:tk.id});}
     if(has('dispel')){const st=al.find(x=>x.charm>0)||al.find(x=>x.boundBy==='root'&&x.bound>0)||al.find(x=>x.poison&&x.hp/x.maxHp<0.7);if(st)return A('dispel',{target:st.id});}
-    const hurt=al.filter(x=>x.hp/x.maxHp<0.6).length;
+    /* 힐러 봇(밸런스 2차): 회복을 더 일찍 · 예고를 보고 미리. 75% 아래부터 회복, 이번 턴 단일 공격 대상이 맞고 40% 아래로 떨어질 것 같으면 먼저 큐어,
+       광역 예고면 전체 회복을 조금 더 일찍(80% 아래 2명) */
+    const hurt=al.filter(x=>x.hp/x.maxHp<0.75).length,aoeNow=tel.type==='aoe'||tel.type==='area';
     if(has('utopia')&&hurt>=Math.max(2,Math.ceil(al.length/2)))return A('utopia');
-    if(has('fasciation')&&hurt>=2)return A('fasciation');
+    if(has('fasciation')&&(hurt>=2||aoeNow&&al.filter(x=>x.hp/x.maxHp<0.8).length>=2))return A('fasciation');
     if(low&&low.hp/low.maxHp<0.3&&has('pray')&&p.hp>90&&low!==p)return A('pray',{target:low.id});
     if(tel.type==='aoe'&&has('vindicate'))return A('vindicate');
-    if(low&&low.hp/low.maxHp<0.62)return A('cure',{target:low.id});
+    {const tt=tel.target&&al.find(x=>x.id===tel.target);if(tt&&tt.hp-big<tt.maxHp*0.4&&tt.hp<tt.maxHp*0.95)return A('cure',{target:tt.id});}
+    if(low&&low.hp/low.maxHp<0.75)return A('cure',{target:low.id});
     if(has('downworld')&&targeted&&p.hp<big)return A('downworld');
     if(low&&low.hp/low.maxHp<0.85&&has('bless')&&!low.hot)return A('bless',{target:low.id});
     if(has('blind')&&T>=2)return A('blind');

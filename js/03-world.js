@@ -141,7 +141,7 @@ function weekly(){const k=weekKey(now()-5*3600e3);if(!S.weekly||S.weekly.wk!==k)
 function mkind(m){return (m&&m.kind)||'party';}
 const MKIND={party:'데일리 파티 레이드',weekly:'토벌전',event:'만신전',field:'필드 몬스터',dungeon:'던전 보스',story:'퀘스트 전투'};
 /* 토벌전(숨무스 폰티펙스): 8장 E31을 마친 블레서에게만 열림(유저 결정 2026-11-05). 운영자는 항상. WEEKLY_CLOSED=false면 모두에게 */
-const WEEKLY_CLOSED=true;
+const WEEKLY_CLOSED=false;  /* 2026-11-07 유저 요청으로 모두에게 열림(레벨 조건은 그대로) */
 function weeklyClosed(){if(!WEEKLY_CLOSED)return false;if(typeof isAdmin==='function'&&isAdmin())return false;return !(S&&S.qp&&S.qp.E31&&S.qp.E31.status==='done');}
 function isGroupMon(m){return !!(m&&m.published&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!weeklyClosed())));}
 function raidBlock(m){const k=mkind(m);

@@ -4,7 +4,7 @@
    땅마다 4개 + 어디서나 5개 = 37개. 이상한 사건(odd)은 약 15%. 보상은 탐색 보상 수준(exploreReward 종류), 손해는 작게(체력 −10%).
    고른 선택은 기록 S.flags['ev_<id>_<a|b>'](탐사 기록에 '탐색 · 제목 — 선택'으로 보임, {{mem:…}}·연대기에서 다시 쓸 수 있음).
    EXEV_LIVE=false 동안은 운영자(로컬 파일 모드 포함)에게만 나옴 — 유저 확인 뒤 true로. 원고: docs/drafts/explore-events-draft.md */
-const EXEV_P=0.2,EXEV_LIVE=false;
+const EXEV_P=0.2,EXEV_LIVE=true;  /* 2026-11-07 유저 결정으로 공개 · 사건마다 계정(캐릭터)당 한 번만 */
 /* 탐색 이벤트에서만 나오는 아이템 */
 Object.assign(ITEMS,{snowgem:{name:'눈 결정',type:'mat',desc:'칼리로에 여관 일꾼 캐서린이 아끼던 눈 결정. 손바닥 위에서도 녹지 않는다.',price:60}});
 /* 보상 종류: exp · gold · item(그 땅 재료) · potion · none · hurt(체력 −10%) · 'gold+hurt'처럼 둘 */
@@ -93,7 +93,8 @@ const EXEV=[
  {id:'x_window',land:'any',odd:1,t:'시스템 창',x:'눈앞에 반투명한 창이 하나 떠 있다. 「접속을 유지하시겠습니까?」 버튼이 하나뿐이다.',
   c:[{l:'「예」를 누른다',r:'창이 사라진다. 바람이 다시 분다. 아무 일도 없었다. 아무 일도.',rw:'exp'},{l:'창을 손으로 밀어낸다',r:'손이 창을 통과한다. 창은 그대로 떠 있다가, 당신이 눈을 깜빡인 사이 사라진다.',rw:'none'}]},
 ];
-function exevPool(land){const done=(S.me.exevToday&&S.me.exevToday.day===kstCycle())?S.me.exevToday.ids:[];return EXEV.filter(e=>(e.land===land||e.land==='any')&&!done.includes(e.id));}
+function exevSeen(){if(!Array.isArray(S.me.exevSeen))S.me.exevSeen=[...((S.me.exevToday&&S.me.exevToday.ids)||[])];return S.me.exevSeen;}
+function exevPool(land){const done=exevSeen();return EXEV.filter(e=>(e.land===land||e.land==='any')&&!done.includes(e.id));}
 function exevOn(){return EXEV_LIVE||(typeof isAdmin==='function'&&isAdmin());}
 function exevFlag(e,k){return `ev_${e.id}_${k}`;}
 /* 보상 표기: exp·gold·item(그 땅 재료, 가끔 음식)·potion·none · hurt=체력 −10%, hurt3·hurt5 = −3%·−5% · g10 = 골드 10 · mat1 = 그 땅 재료 1개만 · it:<아이템> = 그 아이템 1개 */
@@ -112,7 +113,7 @@ function exevModal(){const P=S.sel.exev;if(!P)return;const e=EXEV.find(x=>x.id==
   if(S.me.level<need||storyLock(r.id)||dd.explore>=EXPLORE_MAX)return f(d,...a);
   const pool=exevPool(r.id);if(!pool.length)return f(d,...a);
   const e=pick(pool);dd.explore++;bump('explores');
-  const T=S.me.exevToday&&S.me.exevToday.day===kstCycle()?S.me.exevToday:(S.me.exevToday={day:kstCycle(),ids:[]});T.ids.push(e.id);
+  exevSeen().push(e.id);
   S.sel.exev={id:e.id,land:r.id,lv:need,label:an||r.region,pop:!!d.pop,pick:null};save();render();if(d.pop)refreshMap();exevModal();};})();
 Object.assign(ACTS,{
   'exev-pick':d=>{const P=S.sel.exev;if(!P||P.pick!=null)return;const e=EXEV.find(x=>x.id===P.id);if(!e)return;const i=+d.i;const c=e.c[i];if(!c)return;
