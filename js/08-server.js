@@ -1601,7 +1601,7 @@ let GOAL=null;
 const GZ={q:{},t:null,poll:null,busy:false};
 function goalMatch(kind){const g=GOAL;if(!g||g.done||!kind)return false;return kind===g.kind||(g.kind==='kill'&&/^kill:/.test(kind));}
 function gzNotify(){try{if(typeof onGoal==='function')onGoal(GOAL);}catch(e){console.warn(e);}}
-async function gzFetch(){if(!SB||!SB_UID)return;try{const {data,error}=await SB.rpc('goal_status');if(error)throw error;GOAL=data||null;gzNotify();}catch(e){}}
+async function gzFetch(){if(!SB||!SB_UID||typeof SB.rpc!=='function')return;try{const {data,error}=await SB.rpc('goal_status');if(error)throw error;GOAL=data||null;gzNotify();}catch(e){}}
 function goalAdd(kind,n=1){
   if(!SB||!SB_UID||!goalMatch(kind))return;n=Math.max(0,Math.floor(+n||0));if(!n)return;
   GZ.q[kind]=(GZ.q[kind]||0)+n;clearTimeout(GZ.t);GZ.t=setTimeout(gzFlush,3000);
@@ -1616,6 +1616,6 @@ async function gzFlush(){
     gzNotify();
   }catch(e){console.warn('goal_add',e);}finally{GZ.busy=false;}
 }
-function gzStart(){gzFetch();SB.rpc('goal_settle').then(()=>{},()=>{});clearInterval(GZ.poll);GZ.poll=setInterval(gzFetch,60000);
+function gzStart(){if(!SB||typeof SB.rpc!=='function')return;gzFetch();SB.rpc('goal_settle').then(()=>{},()=>{});clearInterval(GZ.poll);GZ.poll=setInterval(gzFetch,60000);
   addEventListener('pagehide',()=>{if(Object.keys(GZ.q).length)gzFlush();});}
 
