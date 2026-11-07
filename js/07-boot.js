@@ -17,10 +17,16 @@ function cropHTML(){
       <label class="stack" style="gap:4px"><span class="muted" style="font-size:12px">확대 <span class="num" id="crop-zv">${Math.round(z*100)}%</span></span><input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="${z}" ${crop.img?'':'disabled'}></label>
       <button class="btn btn-sm btn-ghost" data-act="crop-center" ${crop.img?'':'disabled'}>가운데 맞춤</button>
       <div class="stack" style="gap:4px"><span class="muted" style="font-size:12px">미리보기</span><div class="crop-prev" aria-hidden="true">${crop.img?'<canvas id="crop-mini" width="192" height="256"></canvas>':''}</div></div>
+      <div class="stack" style="gap:4px"><span class="muted" style="font-size:12px">채팅창 미리보기</span><div class="crop-chat" aria-hidden="true">${cropChatHTML()}</div></div>
     </div>
   </div>
   <p class="faint" style="font-size:12px">드래그하거나 방향키로 위치를 옮기고, 확대 막대나 마우스 휠로 크기를 조절하세요. 3:4 비율로 저장됩니다.</p>
   <div class="row"><button class="btn btn-primary" data-act="crop-apply">적용</button>${S.me.portrait?'<button class="btn btn-ghost btn-danger" data-act="crop-clear">기본 이미지로</button>':''}<button class="btn btn-ghost" data-act="crop-cancel">취소</button></div>`;
+}
+function cropChatHTML(){
+  const t=now(),me=S.me,mk=(text,ts)=>({from:me.name,text,ts,ch:'lobby',id:'cprev'+ts});
+  const a=[mk('안녕하세요! 잘 부탁드려요.',t-60000),mk('파티 구해요 🙂',t-30000)];
+  return a.map((m,i)=>msgHTML(m,i,a)).join('');
 }
 function showCrop(){modal(cropHTML());const m=$('.modal');if(m)m.classList.add('wide');paintCrop();}
 function loadCropImg(src,keep){
@@ -48,6 +54,8 @@ function paintCrop(){
   Object.assign(im.style,{width:crop.w*sc+'px',height:crop.h*sc+'px',left:(W/2-crop.cx*sc)+'px',top:(H/2-crop.cy*sc)+'px'});
   const zv=$('#crop-zv');if(zv)zv.textContent=Math.round(crop.zoom*100)+'%';
   const mini=$('#crop-mini');if(mini){const ctx=mini.getContext('2d');ctx.clearRect(0,0,mini.width,mini.height);drawCrop(ctx,mini.width,mini.height);}
+  const pic=$('.crop-chat .cmsg-pic');if(pic){const c=document.createElement('canvas');c.width=72;c.height=96;drawCrop(c.getContext('2d'),72,96);
+    let im=pic.querySelector('img');if(!im){pic.innerHTML='<img alt="">';im=pic.querySelector('img');}im.src=c.toDataURL('image/jpeg',0.9);}
 }
 function cropZoom(z){crop.zoom=Math.min(3,Math.max(1,z));const zr=$('#crop-zoom');if(zr)zr.value=crop.zoom;paintCrop();}
 document.addEventListener('input',e=>{if(e.target.id==='crop-zoom'&&crop)cropZoom(+e.target.value);});

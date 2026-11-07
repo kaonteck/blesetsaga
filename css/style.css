@@ -3864,3 +3864,6 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 /* 이번 주 공동 목표 칸: 패널보다 한 톤 밝게(라이트는 생성기 tail에서 한 톤 어둡게) */
 .gq{background:#2a2a2a;border-color:#3a3a3a}
 .gq .gq-bar{background:#1c1c1c}
+/* 캐릭터 이미지 설정 — 채팅창 미리보기 */
+.crop-chat{pointer-events:none;padding:8px 10px;border:1px solid var(--rule-2);border-radius:8px;background:var(--night);max-width:260px}
+.crop-chat .rep{display:none}

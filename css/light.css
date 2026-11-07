@@ -1736,6 +1736,7 @@ html[data-theme="light"] .rec-pop p b{color:var(--xp)}
 html[data-theme="light"] .mdex .mon-img,html[data-theme="light"] .mdex .ascii,html[data-theme="light"] .mdex.unk .ascii{border:0;background:none;box-shadow:none}
 html[data-theme="light"] .gq{background:#f6f8fb;border-color:#dbdfe8}
 html[data-theme="light"] .gq .gq-bar{background:#fdfdfe}
+html[data-theme="light"] .crop-chat{border:1px solid var(--rule-2);background:var(--night)}
 
 /* 직접 지정: 바탕 · 포인트 */
 html[data-theme="light"]{color-scheme:light}
