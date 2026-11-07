@@ -50,6 +50,7 @@ function rowState(k,id){
     else s.chips.push(['서버 공개','ok']);
     if(def&&JSON.stringify(def)!==JSON.stringify(srv.data))s.chips.push(['기본값과 다름','info']);
     if(!def)s.chips.push(['새로 만듦','info']);
+    if(k==='item'&&srv.data&&srv.data.deleted)s.chips.unshift(['게임에서 삭제됨','bad']);
   }else if(def)s.chips.push(['코드 기본값','dim']);
   if(dr)s.chips.push(['초안','warn']);
   return s;
@@ -153,7 +154,8 @@ function editorHTML(k,id){
           </div>`:'<p class="faint small" style="margin:0">아직 서버에 없습니다. 공개하면 서버에 생기고, 여기서 예약 공개·기간·비공개를 정할 수 있습니다.</p>'}</div>
         ${def&&srv?`<div class="panel" style="background:var(--slab-2)"><h3>기본값과 다른 점 <span class="faint" style="font-weight:400">${diff.length}</span></h3>${diff.length?`<div class="diff">${diff.slice(0,12).map(d=>`<div><b>${esc(d.k)}</b> <span class="r">${esc(shortVal(d.before))}</span> → <span class="a">${esc(shortVal(d.after))}</span></div>`).join('')}${diff.length>12?`<div class="faint">외 ${diff.length-12}개</div>`:''}</div>`:'<p class="faint small" style="margin:0">코드 기본값과 같습니다.</p>'}</div>`:''}
         <div class="panel" style="background:var(--slab-2)"><h3>변경 기록</h3><div class="hist" id="c-hist"><p class="faint small" style="padding:0 14px">불러오는 중…</p></div></div>
-        ${srv?`<button class="btn btn-d btn-sm" id="c-del">${def?'서버 값 지우기 (코드 기본값으로 돌아감)':'서버에서 삭제'}</button>`:''}
+        ${k==='item'?(srv&&srv.data&&srv.data.deleted?`<button class="btn btn-sm" id="c-undel">아이템 되살리기</button>`:`<button class="btn btn-d btn-sm" id="c-gone">게임에서 아이템 삭제</button>`):''}
+        ${srv&&!(k==='item'&&srv.data&&srv.data.deleted)?`<button class="btn btn-d btn-sm" id="c-del">${def?'서버 값 지우기 (코드 기본값으로 돌아감)':'서버에서 삭제'}</button>`:''}
       </div>
     </div></div>`;
 }
@@ -188,6 +190,7 @@ function bindContent(){
   const td=$('#c-todef');if(td)td.onclick=()=>{ta.value=pretty(DEF[k][id]);if(FM&&k!=='setting'){FM.d=clone(DEF[k][id]);redrawForm();}showCheck(null,'양식에 코드 기본값을 불러왔습니다. 공개해야 적용됩니다.');};
   const ss=$('#s-save');if(ss)ss.onclick=()=>saveSettings(k,id);
   const del=$('#c-del');if(del)del.onclick=()=>deleteItem(k,id);
+  const gone=$('#c-gone');if(gone)gone.onclick=()=>itemGone(k,id,true);const ung=$('#c-undel');if(ung)ung.onclick=()=>itemGone(k,id,false);
   loadHistory(k,id);
 }
 const liveAll=k=>Object.fromEntries(idsOf(k).map(i=>[i,liveData(k,i)]).filter(([,d])=>d));
@@ -213,6 +216,16 @@ async function saveSettings(k,id){
   if(start&&end&&new Date(end)<=new Date(start))return toast('끝 시각이 시작 시각보다 뒤여야 합니다.','bad');
   const row={published:$('#s-pub').checked,starts_at:start,ends_at:end,sort:parseInt($('#s-sort').value,10)||0,note:$('#s-note').value.trim()||null};
   if(await q(A.sb.from('content').update(row).match({kind:k,id}),'공개 설정을 저장했습니다.')){await loadServerContent();drawContent();}
+}
+/* 아이템 삭제(2026-11-08): 서버 값에 deleted:true(+ 상점 숨김 off)를 공개 → 게임에서 더 얻을 수 없고, 가진 유저는 판매가만큼 골드로 돌려받고 빠짐. 되살리면 표시만 지움 */
+async function itemGone(k,id,on){
+  const def=(DEF[k]||{})[id],srv=(A.content[k]||{})[id],dr=(A.drafts[k]||{})[id];const cur=clone((srv&&srv.data)||(dr&&dr.data)||def||{});const nm=cur.name||id;
+  if(on&&!await ask(`「${nm}」 게임에서 삭제`,`모든 유저 게임에서 이 아이템이 사라집니다.<br>· 상점·드롭·퀘스트 보상으로 더 얻을 수 없습니다.<br>· 이미 가진 유저는 판매가(${(+cur.sell||Math.round((+cur.price||0)*0.4)).toLocaleString('ko-KR')}골드 × 개수)만큼 골드로 돌려받고, 인벤토리·장착에서 빠집니다.<br>· 이 아이템이 필요한 퀘스트 선택지는 진행할 수 없게 됩니다.<br>언제든 '아이템 되살리기'로 다시 살릴 수 있습니다(돌려준 골드·빠진 아이템은 돌아오지 않음).`,'삭제',true))return;
+  if(!on&&!await ask(`「${nm}」 되살리기`,'다시 상점·드롭·보상으로 얻을 수 있게 됩니다.','되살리기'))return;
+  if(on){cur.deleted=true;cur.off=true;}else{delete cur.deleted;delete cur.off;
+    if(def&&JSON.stringify(def)===JSON.stringify(cur)){if(await q(A.sb.from('content').delete().match({kind:k,id}),'되살렸습니다.')){await loadServerContent();drawContent();}return;}}
+  if(!await q(A.sb.from('content_drafts').upsert({kind:k,id,data:cur})))return;
+  if(await q(A.sb.rpc('admin_publish',{p_kind:k,p_id:id}),on?'게임에서 삭제했습니다.':'되살렸습니다.')){await loadServerContent();drawContent();}
 }
 async function deleteItem(k,id){
   const def=(DEF[k]||{})[id];

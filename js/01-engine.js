@@ -781,7 +781,7 @@ function gridPlace(b,rng){
    useHeal: HP 회복량(고정) · useHealPct: 최대 HP의 %(둘 다 있으면 큰 쪽) · useCure: 상태 이상 제거. 소모품(type 'use')에 하나라도 있으면 전투 아이템 목록에 나온다.
    운영 페이지에서 예전 모양으로 덮은 회복약·성수는 예전 효과 그대로 */
 function itemFx(k){const it=ITEMS[k]||{};if(k==='potion'&&it.useHeal==null&&it.useHealPct==null)return {...it,useHeal:50,useHealPct:20};if(k==='holywater'&&it.useCure==null)return {...it,useCure:true};return it;}
-function battleItem(k){const it=itemFx(k);return !!ITEMS[k]&&it.type==='use'&&(+it.useHeal>0||+it.useHealPct>0||!!it.useCure);}
+function battleItem(k){const it=itemFx(k);return !!ITEMS[k]&&!it.deleted&&it.type==='use'&&(+it.useHeal>0||+it.useHealPct>0||!!it.useCure);}
 function battleItems(){const L=Object.keys(ITEMS).filter(battleItem);return ['potion','holywater'].filter(k=>L.includes(k)).concat(L.filter(k=>k!=='potion'&&k!=='holywater'));}
 function itemHealAmt(k,p){const it=itemFx(k);return Math.max(+it.useHeal||0,Math.round(p.maxHp*(+it.useHealPct||0)/100));}
 function itemCure(p){p.poison=null;p.burnP=null;p.charm=0;p.held=0;p.frost=0;p.conf=0;if(p.boundBy==='root'||p.boundBy==='tentacle'){p.bound=0;p.boundBy=null;}p.sealed=null;p.noHeal=0;p.blind=0;p.healDown=0;}

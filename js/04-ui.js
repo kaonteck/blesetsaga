@@ -1856,7 +1856,7 @@ function capMsg(k){const it=ITEMS[k]||{name:k};return it.maxOwn&&it.maxOwn<ITEM_
 /* 우편 아이템이 상한(9,999개)을 넘게 되면 받기 전에 막는다(서버 우편은 서버에서 받음 처리 전에 확인 — 08-server) */
 function mailOver(m){const over=Object.keys((m&&m.items)||{}).filter(k=>k!=='_gold'&&ITEMS[k]&&m.items[k]>0&&itemRoom(k)<m.items[k]);
   return over.length?`${over.map(k=>`${ITEMS[k].name}(${itemRoom(k)}개만 더 가질 수 있음)`).join(', ')} — 종류마다 최대 ${ITEM_CAP}개라 받을 수 없습니다. 먼저 사용하거나 판매해 주세요.`:'';}
-function addItem(k,n){const it=ITEMS[k];if(!it)return 0;const have=S.me.inv[k]||0;const add=Math.max(0,Math.min(n,itemRoom(k)));if(add>0)S.me.inv[k]=have+add;if(add<n)toast(`${capMsg(k)} ${n-add}개는 받지 못했습니다.`,'warn');return add;}
+function addItem(k,n){const it=ITEMS[k];if(!it||it.deleted)return 0;   /* 운영 페이지에서 삭제한 아이템은 더 이상 얻지 않음 */const have=S.me.inv[k]||0;const add=Math.max(0,Math.min(n,itemRoom(k)));if(add>0)S.me.inv[k]=have+add;if(add<n)toast(`${capMsg(k)} ${n-add}개는 받지 못했습니다.`,'warn');return add;}
 function adminItems(){
   const ids=Object.keys(ITEMS);const id=S.sel.ai&&ITEMS[S.sel.ai]?S.sel.ai:ids[0];S.sel.ai=id;const it=ITEMS[id];const st=it.stats||{};const bf=it.buff||{};
   const grp=[['weapon','무기'],['armor','방어구'],['acc','장신구'],['use','소모품'],['mat','재료']];

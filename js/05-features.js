@@ -2283,3 +2283,12 @@ function chronicleHTML(){const isDone=q=>q&&QDONE.includes(questStatus(q));const
   if(sub.length)out.push(`<details class="chr-ch"><summary><span class="chr-t">곁가지 이야기</span><span class="faint num">${sub.length}</span></summary>${sub.map(chronRows).join('')}</details>`);
   return `<div class="panel chr"><h3>${hTitle('scroll','나만의 연대기')} <span class="faint" style="font-size:12px;letter-spacing:0;font-weight:400">${esc(S.me.name)}의 이야기 · 나만 볼 수 있습니다</span></h3>
     ${out.length?out.join(''):'<p class="empty" style="padding:0">아직 끝낸 이야기가 없습니다. 퀘스트를 마치면 고른 선택이 여기에 이어져 한 편의 이야기가 됩니다.</p>'}</div>`;}
+
+/* ── 운영 페이지에서 삭제한 아이템(deleted:true, 상점 숨김 off:true 같이) · 2026-11-08 ──
+   더 얻을 수 없고(04 addItem) 전투 목록에도 안 나옴(01 battleItem). 이미 가진 것은 판매가만큼 골드로 돌려주고 인벤토리·장착에서 뺀다 */
+function purgeDeletedItems(){if(!S||!S.me||!S.me.inv)return;let gold=0;const names=[];
+  for(const k of Object.keys(S.me.inv)){const it=ITEMS[k];if(!it||!it.deleted)continue;const n=S.me.inv[k]||0;
+    gold+=n*Math.max(0,Math.round(+it.sell||(+it.price||0)*0.4));names.push(`${it.name||k} ×${n}`);delete S.me.inv[k];
+    for(const sl in (S.me.equip||{}))if(S.me.equip[sl]===k)delete S.me.equip[sl];}
+  if(!names.length)return;S.me.gold+=gold;save();setTimeout(()=>toast(`운영에서 없앤 아이템을 정리했습니다 · ${names.join(', ')}${gold?` → ${gold.toLocaleString('ko-KR')}골드로 돌려받음`:''}`,'warn'),800);}
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f.apply(this,arguments);try{purgeDeletedItems();}catch(e){}};})();
