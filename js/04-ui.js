@@ -1455,7 +1455,7 @@ function finishBattle(b){
     if(ctx.type==='weekly'&&!blocked)weekly().done[b.monsterId]=true;
     if(ctx.type==='event'&&ctx.ev&&!blocked){S.eventDone=S.eventDone||{};S.eventDone[ctx.ev]=true;}
     if(ctx.type==='dungeon'){daily().dungeon[b.monsterId]=true;bump('dunClear');}
-    if(ctx.type==='quest'){const q=quest(ctx.qid),qp=S.qp[ctx.qid];const st=q&&q.steps[ctx.step];if(qp&&st&&qp.step===ctx.step){qp.history.push({step:ctx.step,text:st.text,label:`개인 레이드 · ${b.mon.name} 처치`,result:st.winText||'적을 쓰러뜨렸다.'});qp.step=st.next;qp.lost=false;}}
+    if(ctx.type==='quest'){const q=quest(ctx.qid),qp=S.qp[ctx.qid];const st=q&&q.steps[ctx.step];if(qp&&st&&qp.step===ctx.step){qp.history.push({step:ctx.step,text:memText(st.text),label:`개인 레이드 · ${b.mon.name} 처치`,result:st.winText||'적을 쓰러뜨렸다.'});qp.step=st.next;qp.lost=false;}}
   }else if(ctx.type==='quest'){const qp=S.qp[ctx.qid];if(qp){qp.lost=true;const q=quest(ctx.qid);const st=q&&q.steps[ctx.step];if(st&&st.loseTo&&q.steps[st.loseTo]&&qp.step===ctx.step)qp.step=st.loseTo;}}
   if(ctx.type==='mass'){const C={reward:b.reward||massCfg().reward},w=b.over==='win';r.eligible=me.direct>=1;r.mass=true;
     if(r.eligible){r.exp=C.reward.join.exp+(w?C.reward.kill.exp:0);r.gold=C.reward.join.gold+(w?C.reward.kill.gold:0);const it={...(C.reward.join.items||{})};
