@@ -3775,10 +3775,6 @@ html{overflow-y:scroll}
 #gcount.low b{color:#ff8a7a;filter:drop-shadow(0 0 16px rgba(255,90,70,.55)) drop-shadow(0 3px 0 rgba(0,0,0,.55))}
 #gcount em{font-size:12px;margin-top:8px;letter-spacing:.06em;color:rgba(232,238,252,.6)}
 @media (max-width:760px){#gcount{top:40%;padding:28px 44px 24px}#gcount small{font-size:13px}#gcount small::after{width:240px;height:20px}#gcount b{font-size:84px}}
-/* 배경 화면 이미지(유저 요청, 다크·라이트 공통 · 패널 색은 그대로) — 화면에 고정, 폰은 작은 이미지 */
-html{background:#07080d url("../img/bg/smoke.jpg") center/cover no-repeat fixed}
-body{background:transparent!important;background-image:none!important}
-@media (max-width:760px){html{background-image:url("../img/bg/smoke-sm.jpg");background-attachment:scroll}html::before{content:"";position:fixed;inset:0;z-index:-1;background:#07080d url("../img/bg/smoke-sm.jpg") center/cover no-repeat}}
 /* ── 메인: 바로가기 패널 · 날씨 지역 이름 링크 · 화면 높이 맞춤 (07-scut) ── */
 .scut>h3{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .scut-ed{font-size:12px;color:var(--faint);background:none;border:0;padding:2px 4px;cursor:pointer;letter-spacing:0;text-transform:none;font-weight:400}
