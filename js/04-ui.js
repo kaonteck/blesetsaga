@@ -819,7 +819,7 @@ function questDetail(q){
         <div class="row"><button class="btn btn-primary" data-act="qfight" data-id="${q.id}" ${busy||!m?'disabled':''}>${qp.lost?'다시 도전':'전투 시작'}</button>${busy?`<span class="reason">${esc(busy)}</span>`:''}</div>`;
     }else{
       const fx=typeof stepFx==='function'?stepFx(q,qp,step):null;
-      if(fx&&fx.hold)h+=fx.html;else h+=`${fx&&fx.text!=null?fx.text:qTextHTML(step.text)}${fx?fx.html:''}<div class="stack" style="gap:8px">${step.choices.map((c,i)=>{const r=choiceReason(c);return `<button class="choice" data-act="chooseq" data-id="${q.id}" data-i="${i}" ${r?'disabled':''}><span>${esc(c.label)}</span>${r?`<small>${esc(r)}</small>`:''}</button>`;}).join('')}</div>`;
+      if(fx&&fx.hold)h+=fx.html;else h+=`${fx&&fx.text!=null?fx.text:qTextHTML(step.text)}${fx?fx.html:''}<div class="stack" style="gap:8px">${step.choices.map((c,i)=>{if(typeof choiceOnly==='function'&&!choiceOnly(c))return '';const r=choiceReason(c);return `<button class="choice" data-act="chooseq" data-id="${q.id}" data-i="${i}" ${r?'disabled':''}><span>${esc(c.label)}</span>${r?`<small>${esc(r)}</small>`:''}</button>`;}).join('')}</div>`;
     }
     if(st==='active')h+=`<div><button class="btn btn-sm btn-ghost" data-act="abandonq" data-id="${q.id}">퀘스트 포기</button></div>`;
   }

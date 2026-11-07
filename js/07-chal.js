@@ -10,7 +10,7 @@
 const CHAL_BOSS={
   st_witch:{q:'E4',turns:7},st_monk:{q:'E7',turns:9},st_serpent:{q:'E11',turns:9},st_saltlord:{q:'E15',turns:10},
   st_siren:{q:'E19',turns:11},st_rootguard:{q:'E23',turns:12},st_prisoner:{q:'E27',turns:11},
-  t_cephalo:{q:'E28',turns:20,grid:1},t_janus:{q:'E29',turns:20,grid:1},q_summus:{q:'E31',turns:25,grid:1}
+  t_cephalo:{q:'E28d',turns:20,grid:1},t_inquis:{q:'E29',turns:20,grid:1},t_janus:{q:'E29d',turns:20,grid:1},q_summus:{q:'E31d',turns:25,grid:1}
 };
 const CHAL_BY_Q=Object.fromEntries(Object.entries(CHAL_BOSS).map(([k,v])=>[v.q,k]));
 function chalRec(id){return ((S.me&&S.me.chal)||{})[id];}
@@ -46,7 +46,7 @@ Object.assign(ACTS,{
 (function(){const f=startBattle;startBattle=function(...a){f(...a);const b=S.battle,C=S.sel.chal;
   if(b&&C&&b.monsterId===C.id&&now()-C.at<1800e3&&!b.chal){chalAttach(b,C.id);S.sel.chal=null;save();}};})();
 /* 숨무스는 퀘스트를 마친 뒤엔 파티를 만들 수 없으므로 도전 중에만 허용 */
-function chalSummus(m){const C=S.sel.chal;return m&&m.id==='q_summus'&&C&&C.id==='q_summus'&&now()-C.at<1800e3&&S.qp.E31&&S.qp.E31.status==='done';}
+function chalSummus(m){const C=S.sel.chal;return m&&m.id==='q_summus'&&C&&C.id==='q_summus'&&now()-C.at<1800e3&&S.qp.E31d&&S.qp.E31d.status==='done';}
 (function(){const f=vMonster;vMonster=function(m){if(!chalSummus(m))return f(m);const o=r4Pending;r4Pending=()=>true;try{return f(m);}finally{r4Pending=o;}};})();
 (function(){const f=ACTS.createparty;ACTS.createparty=function(d,...a){if(!chalSummus(monster(d.id)))return f(d,...a);const o=r4Pending;r4Pending=()=>true;try{return f(d,...a);}finally{r4Pending=o;}};})();
 /* 회복약 금지(혼자 도전) */

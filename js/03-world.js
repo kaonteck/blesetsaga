@@ -142,7 +142,7 @@ function mkind(m){return (m&&m.kind)||'party';}
 const MKIND={party:'데일리 파티 레이드',weekly:'토벌전',event:'만신전',field:'필드 몬스터',dungeon:'던전 보스',story:'퀘스트 전투'};
 /* 토벌전(숨무스 폰티펙스): 8장 E31을 마친 블레서에게만 열림(유저 결정 2026-11-05). 운영자는 항상. WEEKLY_CLOSED=false면 모두에게 */
 const WEEKLY_CLOSED=false;  /* 2026-11-07 유저 요청으로 모두에게 열림(레벨 조건은 그대로) */
-function weeklyClosed(){if(!WEEKLY_CLOSED)return false;if(typeof isAdmin==='function'&&isAdmin())return false;return !(S&&S.qp&&S.qp.E31&&S.qp.E31.status==='done');}
+function weeklyClosed(){if(!WEEKLY_CLOSED)return false;if(typeof isAdmin==='function'&&isAdmin())return false;return !(S&&S.qp&&S.qp.E31d&&S.qp.E31d.status==='done');}
 function isGroupMon(m){return !!(m&&m.published&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!weeklyClosed())));}
 function raidBlock(m){const k=mkind(m);
   if(k==='weekly'&&weeklyClosed())return '백야의 신전 이야기를 끝까지 마치면 열립니다';
@@ -1038,7 +1038,9 @@ function memText(t){return String(t==null?'':t).replace(/\{\{mem:([^|}]+)\|([^}]
 function qTextHTML(t){t=memText(t);const m=/\s*\((탐색 › [^)]+)\)\s*$/.exec(t||'');const body=m?t.slice(0,m.index):t;
   return `<p class="qtext">${eraseHTML(esc(body))}</p>${m?`<p class="qroute"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 2v10.5M10.5 3.5V14" stroke="currentColor" stroke-width="1.3"/></svg><span>${esc(m[1])}</span></p>`:''}`;}
 const QSTAT={hidden:['오늘 목록 아님','dim'],locked:['잠김','dim'],available:['수락 가능','ok'],active:['진행 중','warn'],claim:['보상 대기','warn'],done:['완료','dim'],doneToday:['오늘 완료','dim']};
+function choiceOnly(c){const f=c&&c.onlyIf;if(!f)return true;return f[0]==='!'?!S.flags[f.slice(1)]:!!S.flags[f];}   /* onlyIf:'기록'/'!기록' — 맞지 않으면 선택지를 아예 숨김 */
 function choiceReason(c){
+  if(!choiceOnly(c))return '숨김';
   const r=c.req;if(!r)return null;
   if(r.flag&&!S.flags[r.flag])return `필요한 기록: ${FLAG_NAMES[r.flag]||r.flag}`;
   if(r.level&&S.me.level<r.level)return `LV${r.level} 이상 필요`;

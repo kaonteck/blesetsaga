@@ -1778,7 +1778,14 @@ STORY_QUESTS.push(
    표기: 문서·기록(일지·명부·탐사 기록·편지)은 AURORA, 몬스터 이름·대사처럼 보이는 이름은 아우로라. */
 Object.assign(ITEMS,{
   q_bits:{name:'블레서 장비 조각',type:'mat',tag:'기념품',desc:'지하 제단 구석에 쌓여 있던 장비 조각들. 사용하면 읽는다.',price:0,readText:'(장비 조각 여러 개. 클래스도 레벨도 제각각이다. 이름은 남아 있다.)\n\n착용자: (빈칸)\n착용자: (빈칸)\n착용자: (빈칸)\n착용자: (빈칸)'},
-  d_clock:{name:'멈춘 시계 그림',type:'deco',tag:'장식품',desc:'이 세계의 글자로 그린 시계. 바늘이 9시에 멈춰 있다.',price:0}});
+  d_clock:{name:'멈춘 시계 그림',type:'deco',tag:'장식품',desc:'이 세계의 글자로 그린 시계. 바늘이 9시에 멈춰 있다.',price:0},
+  /* 8장 볼륨 확장(2026-11-08, 기획 claude/chapter8-expansion-draft.md v2) */
+  q_prayer:{name:'젖은 기도문 조각',type:'mat',tag:'퀘스트 아이템',desc:'지하 1층 물살에 실려 신전 밖까지 흘러나온 기도문 조각. 같은 기도문의 다른 쪽이다.',price:0},
+  q_verdict:{name:'타다 남은 판결문 조각',type:'mat',tag:'퀘스트 아이템',desc:'지하 2층 재와 함께 날아온 판결문의 그을린 조각.',price:0},
+  q_tag8:{name:'깨진 이름표 조각',type:'mat',tag:'기념품',desc:'대주교의 서고 상자에 들어 있던 이름표 조각. 「아□로□」. 교황 옷의 금실이 붙어 있다. 사용하면 읽는다.',price:0,readText:'(깨진 이름표. 글자가 반쯤 지워져 있다.)\n\n아□로□\n\n(손바닥 위에서 아주 조금 따뜻하다.)'},
+  q_mark8:{name:'길잡이의 표식',type:'mat',tag:'퀘스트 아이템',desc:'신전 곳곳에 새겨져 있던 작은 표식. 오르소의 지팡이 눈금과 모양이 같다.',price:0},
+  d_verdict:{name:'재의 판결문',type:'deco',tag:'장식품',desc:'「피고: 이방인. 죄목: 돌아가려 한 죄.」 집행 칸은 비어 있다.',price:0},
+  d_staff:{name:'길잡이의 지팡이',type:'deco',tag:'장식품',desc:'층마다 눈금이 새겨진 늙은 길잡이의 지팡이. 맨 위 눈금은 비어 있다.',price:0}});
 STORY_MONS.push(
   soloMon({id:'st_drowned',name:'지하의 익사한 신도들',art:'spirit',kind:'story',region:'백야의 신전 지하 제단',level:80,statLevel:81,tier:'story',desc:'물에 잠긴 지하 제단에서 기도문을 외던 신도들. 쓰러뜨려도 사라지지 않는다.',singleName:'젖은 손',aoeName:'기도문',dotName:'한기',dotChance:0.2}),
   soloMon({id:'st_cephalo',name:'지하 신전의 사제, 케팔로포다',art:'beast',kind:'story',region:'백야의 신전 지하 제단',level:82,statLevel:83,tier:'story',desc:'두 팔과 여덟 개의 다리를 가진 고대 혼돈의 사제. 신과 함께 타락한 기운을 흡수하여 그 모습이 흉측하게 변했다. [8장 서장 보스]',singleName:'두 팔 내려치기',aoeName:'먹물 물결',dotName:'먹물',dotChance:0.15,
@@ -1790,6 +1797,10 @@ STORY_MONS.push(
     sphases:[{at:100,name:'1페이즈 · 망설임'},{at:50,name:'2페이즈 · 개입',say:'"…아우로라. 그거, 제 닉네임이었어요. 이름은 따로 있었는데, 그건 기억이 안 나요." 그녀의 말투가 기도문으로 바뀐다',atkMul:1.6,pacify:false,wipeIn:3,aoeName:'백광',aoeEvery:2}]}),
   soloMon({id:'st_summus',name:'숨무스 폰티펙스',art:'spirit',kind:'story',region:'교황의 제단',level:95,statLevel:96,tier:'story',desc:'고대 혼돈의 신전의 교황이었던 자. 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 고통 받고 있다. [8장 종장 보스]',singleName:'심판의 빛',aoeName:'왕좌 앞으로',dotName:'심판',dotChance:0,fx:{journal:'ignore',pullHeal:true},
     sphases:[{at:100,name:'1페이즈'},{at:60,name:'2페이즈 · 경악',say:'경악에 맞으면 회복할 수 없고, 봉인의 사슬에 맞으면 스킬 하나가 2턴 봉인된다(정화의 성수·디스펠로 해제)',atkMul:1.3,pullHeal:false,noHealAoe:true,singleName:'봉인의 사슬',sealChance:0.4,aoeName:'경악',aoeEvery:3},{at:25,name:'3페이즈 · 기적의 나팔',say:'나팔 소리만 남는다',atkMul:1.6,noHealAoe:false,sealChance:0.2,aoeName:'기적의 나팔',aoeMult:0.8,aoeEvery:2}]}));
+STORY_MONS.push(
+  soloMon({id:'st_tentacle',name:'수로의 촉수',art:'beast',kind:'story',region:'백야의 신전 지하 수로',level:83,statLevel:83,tier:'story',desc:'지하 3층 제단에서 수로까지 뻗어 나온 굵은 촉수. 끝에 낡은 사제복 소매가 감겨 있다.',singleName:'휘감기',aoeName:'물보라',dotName:'먹물',dotChance:0.2}),
+  soloMon({id:'st_bookshade',name:'책 속의 그림자',art:'spirit',kind:'story',region:'대주교의 서고',level:88,statLevel:88,tier:'story',desc:'같은 날의 일기를 끝없이 되풀이해 쓰는 그림자. 책장 사이에서 일어선다.',singleName:'넘기는 손',aoeName:'반복되는 문장',dotName:'잉크',dotChance:0.2}),
+  soloMon({id:'st_angel',name:'나팔을 부는 천사상',art:'golem',kind:'story',region:'백야의 신전 종탑',level:96,statLevel:96,tier:'story',desc:'종탑 꼭대기 아래에서 금빛 나팔을 입에 대고 선 돌 천사. 기적의 나팔을 부는 것은 사람이 아니었다.',singleName:'돌 날개',aoeName:'나팔의 울림',dotName:'울림',dotChance:0.2}));
 var CE_HP=1.8*1.3,CE_ATK=1.3*1.15,JA_HP=1.9*1.3,JA_ATK=1.35*1.15,AU_HP=1.2,SU_HP=2.2*1.6,SU_ATK=1.4*1.45;
 [['st_cephalo',CE_HP,CE_ATK],['st_janus',JA_HP,JA_ATK],['st_aurora',AU_HP,1],['st_summus',SU_HP,SU_ATK]].forEach(([id,h,a])=>{const m=STORY_MONS.find(x=>x.id===id);m.hp=Math.round(m.hp*h);m.atk=Math.round(m.atk*a);m.dotDmg=Math.round(m.atk*0.15);});
 /* 8장 지하 2층 · 이단 심문관 인퀴시토르(유저 요청 2026-11-08) — 케팔로포다와 야누스 사이. 퀘스트에서는 토벌전(그리드)만 쓰고, 이 스토리 몬스터는 토벌 수치의 바탕 */
@@ -1804,11 +1815,11 @@ Object.assign(HERO_LINES,{
 const AURORA_PRAY=['기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니, 모두가 왕좌 앞으로 모으리라.','심판에 응하기 위하여 모든 피조물들이 소생할 때 죽음과 자연은 경악할 지어다.'];
 (function(){const f=heroLinesOf;heroLinesOf=function(b){if(b&&b.monsterId==='st_aurora'&&b.mon&&(b.mon.sph||0)>=1)return {say:AURORA_PRAY,last:''};return f(b);};})();
 /* 신전 안 PART: 8장 퀘스트를 진행 중이고, 그 퀘스트 화면이나 8장 전투 화면을 보고 있을 때만(밖으로 나가면 평소 UI) */
-const T8=['E28','E29','E30','E31'],T8_NAME=['서장','중장','□□','종장'];
-function templePart(){if(typeof S==='undefined'||!S||!S.qp||!S.me)return 0;const i=T8.findIndex(id=>S.qp[id]&&['active','claim'].includes(S.qp[id].status));if(i<0)return 0;
+const PART_OF={E28:1,E28b:1,E28c:1,E28d:1,E29:2,E29b:2,E29c:2,E29d:2,E30:3,E31:4,E31b:4,E31c:4,E31d:4},T8=Object.keys(PART_OF),T8_NAME=['서장','중장','□□','종장'];   /* 8장 확장(2026-11-08): PART마다 퀘스트 4개 */
+function templePart(){if(typeof S==='undefined'||!S||!S.qp||!S.me)return 0;const a=T8.find(id=>S.qp[id]&&['active','claim'].includes(S.qp[id].status));if(!a)return 0;const i=PART_OF[a]-1;
   const bm=S.battle&&typeof monster==='function'?monster(S.battle.monsterId):null;const view=(S.route==='quest'&&T8.includes(S.sel.quest))||(S.route==='battle'&&S.battle&&(S.battle.ctx&&T8.includes(S.battle.ctx.qid)||bm&&bm.gridRaid&&T8.includes(bm.story)&&S.qp[bm.story]&&['active','claim'].includes(S.qp[bm.story].status)));return view?i+1:0;}
 function templeClockHTML(){const part=templePart();if(!part)return '';if(!S.me.templeT){S.me.templeT=now();save();}
-  const p2=n=>String(n).padStart(2,'0');const plus=(S.qp.E31&&(S.qp.E31.step==='s4'||S.qp.E31.status!=='active'))?60000:0;const d=new Date(S.me.templeT+plus);
+  const p2=n=>String(n).padStart(2,'0');const plus=(S.qp.E31d&&(S.qp.E31d.step==='s4'||S.qp.E31d.status!=='active'))?60000:0;const d=new Date(S.me.templeT+plus);
   const b=S.battle;const face=S.route==='battle'&&b&&!b.over&&b.mon.janus&&b.face?(b.face==='dawn'?'여명':'황혼'):null;
   return `<div class="tclock" aria-label="신전 시각"><b>${T8_NAME[part-1]}</b><span class="num">${face?`<em class="tc-face ${b.face}">${face}</em>`:`백야 · ${p2(d.getHours())}:${p2(d.getMinutes())}`}</span></div>`;}
 /* 심박(bpm): 체력이 줄수록 빨라진다 */
@@ -1831,7 +1842,7 @@ function restoreAurora(s){if(!s||!(S&&S.flags&&S.flags.ch8_clear))return s;retur
   const corpses=part===1&&(S.me.corpses||[]).length?`<div class="corpses" aria-label="쓰러진 채 남아 있는 것">${S.me.corpses.map(n=>`<span>${esc(n)}</span>`).join('')}</div>`:'';
   const i=h.indexOf('>');return h.slice(0,i+1)+templeClockHTML()+corpses+h.slice(i+1);};})();
 (function(){const f=outcomeHTML;outcomeHTML=function(b){let h=f(b);const ctx=b.ctx||{};const part=templePart();
-  if(b.over==='win'&&ctx.qid==='E28'&&!b.corpseRec){b.corpseRec=1;S.me.corpses=S.me.corpses||[];if(!S.me.corpses.includes(b.mon.name))S.me.corpses.push(b.mon.name);save();}
+  if(b.over==='win'&&PART_OF[ctx.qid]===1&&!b.corpseRec){b.corpseRec=1;S.me.corpses=S.me.corpses||[];if(!S.me.corpses.includes(b.mon.name))S.me.corpses.push(b.mon.name);save();}
   if(b.over==='lose'&&ctx.type==='quest'&&part>=2){
     if(b.monsterId==='st_aurora'){h=h.replace(/<h2>패배<\/h2>\s*<p class="muted">[^<]*<\/p>/,'<h2>사망하였습니다.</h2><p class="muted">…</p>');if(!b.flatPlayed){b.flatPlayed=1;flatline();if(navigator.vibrate){try{navigator.vibrate(0);}catch(e){}}}}
     else{h=h.replace(/<h2>패배<\/h2>\s*<p class="muted">[^<]*<\/p>/,'<h2>사망하였습니다.</h2><p class="revive">부활합니다.</p>');if(!b.revBuzz){b.revBuzz=1;if(navigator.vibrate){try{navigator.vibrate(60);}catch(e){}}}}}
@@ -1898,7 +1909,7 @@ const SEQ_FN={e30:d=>seqE30(d),e28:d=>seqE28(d),inq:d=>seqInq(d),inqDie:d=>seqIn
 function questAcceptFx(id){if(id==='E28')seqE28();}
 /* 보상 받을 때: E31 → AURORA 편지(보관 가능), S8b → 멈춘 시계 그림(획득 경로: AURORA) */
 (function(){const f=storyClaimFx;storyClaimFx=function(id){f(id);
-  if(id==='E31')setTimeout(()=>{deliverMail('AURORA','[다음에 오는 블레서에게]\n\n이 편지가 닿았다면, 저는 이제 저를 기억하지 못하겠죠.\n여긴 게임이 아니에요. 아픈 건 진짜 아프고, 죽는 것도 진짜예요. 처음엔 저도 몰랐어요.\n소원은 꼭, 소원 그대로 이루어져요. 그러니까 잘 골라요.',{},{});save();},1500);
+  if(id==='E31d')setTimeout(()=>{deliverMail('AURORA','[다음에 오는 블레서에게]\n\n이 편지가 닿았다면, 저는 이제 저를 기억하지 못하겠죠.\n여긴 게임이 아니에요. 아픈 건 진짜 아프고, 죽는 것도 진짜예요. 처음엔 저도 몰랐어요.\n소원은 꼭, 소원 그대로 이루어져요. 그러니까 잘 골라요.',{},{});save();},1500);
   if(id==='S8b'){try{noteDeco('d_clock',{t:'etc',v:'AURORA'});}catch(e){}}};})();
 /* 8장 소리·심박 루프 */
 const T8FX={turn:-1,ph:-1,buzz:0,flick:0};
@@ -1918,37 +1929,100 @@ setInterval(()=>{if(typeof document==='undefined'||!S||!S.me)return;const b=S.ba
   const n3=(S.data.notices||[]).find(n=>n.id==='n3');if(n3&&/봉인 수호자/.test(n3.title)){Object.assign(n3,DEFAULT_NOTICES.find(n=>n.id==='n3'));ch=true;}
   if(ch)save();}catch(e){}};})();
 STORY_QUESTS.push(
- {id:'E28',cat:'epic',title:'서장 · 지하 신전',published:true,level:80,prereq:'E27',repeat:null,cond:{},
+ /* ── 서장 (지하 1층 → 지하 3층 제단) ── */
+ {id:'E28',cat:'epic',title:'서장 · 정문 없는 신전',published:true,level:80,prereq:'E27',repeat:null,cond:{},
   desc:'7장 일지 뒤의 녹지 않는 눈송이를 들고 블라스파미아로 간다. 해가 지지 않는 언덕 꼭대기에 백야의 신전이 있다. [8장 「백야의 신전」]',start:'s1',steps:{
-  s1:{text:'블라스파미아. 해가 지지 않는다. 언덕 꼭대기, 백야의 신전 정문은 닫혀 있다. 손바닥 위의 눈송이가 처음으로 녹아 물이 된다. 정문 옆으로 난 계단이 지하로 이어진다. {{mem:e20_steps|계단 첫 칸에 붉은 모래가 묻어 있다. 사막에서 앞서가던 그 발자국과 같은 크기다.}}',choices:[
-    {label:'지하로 내려간다',result:'계단을 내려갈수록 물소리가 커진다. 문득 메뉴를 열어 본다. …로그아웃 버튼이 어디 있더라?',next:'s2'}]},
-  s2:{text:'지하 제단 앞. 무릎까지 물이 차 있다. 물속에서 익사한 신도들이 일어선다.',battle:'st_drowned',next:'s3',winText:'신도들이 물 위에 쓰러진다. 시체는 사라지지 않는다. 물 위에 떠서, 그대로 있다.'},
-  s3:{text:'제단 한가운데에서 무언가가 기도문을 왼다. 두 팔과 여덟 개의 다리. 지하 신전의 사제, 케팔로포다. (권장 LV82 · 토벌전 4~8인 · 회복약 3개, 정화의 성수 2개 이상)',choices:[
-    {label:'물을 헤치고 다가간다',result:'기도문이 멈춘다. 여덟 개의 다리가 물 위로 올라온다.',next:'s4'},
-    {label:'물러나 준비한다',result:'물에 뜬 시체들이 당신이 돌아올 때까지 그대로 떠 있다.',next:'s3'}]},
-  s4:{text:'"나팔이 울리기 전에, 제물은 제단으로." 혼자서는 상대할 수 없다. 토벌대(4~8인)를 꾸려 제단으로 간다. 체력이 줄면 다리로 휘감고 먹물을 뿜으며(60%), 끝에는 혼돈의 기도를 왼다(25%).',raid:'t_cephalo',next:'s5',winText:'케팔로포다가 물 위로 쓰러진다. 시체는 제단 물 위에 떠 있다.'},
-  s5:{text:'제단 뒤로 위층으로 이어지는 문이 열린다. 물에 뜬 시체들 사이로 길이 나 있다.',choices:[
-    {label:'위층으로 올라간다',result:'뒤를 돌아본다. 시체들은 그대로 있다. 사라지지 않는다.',next:'end',flag:'e28_under'}]},
-  end:{end:true,text:'물에 잠긴 지하 제단',reward:{exp:20000,gold:3200,items:{potion:2,holywater:1}}}}},
- {id:'E29',cat:'epic',title:'중장 · 여명과 황혼 사이',published:true,level:86,prereq:'E28',repeat:null,cond:{},
-  desc:'지하 제단에서 올라오면 모두 타 버린 지하 2층, 그 위로 끝없이 긴 회랑. 회랑 끝 대주교의 문 앞에서 누군가 기다린다. [8장 「백야의 신전」]',start:'i1',steps:{
+  s1:{text:'블라스파미아. 해가 지지 않는다. 언덕 꼭대기에 백야의 신전이 서 있다. 손바닥 위의 눈송이가 처음으로 녹아 물이 된다. {{mem:e20_steps|언덕길 첫머리에 붉은 모래가 묻어 있다. 사막에서 앞서가던 그 발자국과 같은 크기다.}}',choices:[
+    {label:'언덕을 오른다',result:'언덕 중턱에 천막이 여러 채 모여 있다. 연기가 피어오른다.',next:'s2'}]},
+  s2:{text:'순례자들의 천막. 정문이 열리길 몇 년째 기다리는 사람들이다. 지팡이를 짚은 늙은 길잡이가 다가온다. "오르소요. 신전 길을 안내하오. …다들 소원이 하나씩 있어서 여기 왔지. 당신은 무엇을 빌러 왔소?"',choices:[
+    {label:'"다시는 부족하지 않게."',result:'"흔한 소원이오. 그래서 여기 제일 많지." 오르소가 천막들을 둘러본다.',next:'s3',flag:'e28_wish_rich'},
+    {label:'"잊은 것을 되찾고 싶다."',result:'"…기억 말이오? 신전 안에선 그게 제일 비싸다고들 하오."',next:'s3',flag:'e28_wish_mem'},
+    {label:'"돌아가는 길을 찾으러 왔다."',result:'오르소가 한참 당신을 본다. "그런 사람은 처음이오. 다들 여기 남으려고 오지."',next:'s3',flag:'e28_wish_home'}]},
+  s3:{text:'신전 정문. 문고리도, 열쇠 구멍도 없다. 손을 대자 차갑다. 습관처럼 메뉴를 연다. …로그아웃 버튼이 있던 자리가 비어 있다. 회색도 아니다. 그냥 없다.',choices:[
+    {label:'정문을 밀어 본다',result:'꿈쩍도 않는다. 정문 옆으로 지하로 내려가는 좁은 계단이 보인다.',next:'s4'},
+    {label:'메뉴를 다시 연다',result:'칸이 하나 줄어 있다. 다시 열어도 마찬가지다.',next:'s4'}]},
+  s4:{text:'계단 입구에서 오르소가 멈춘다. "여기까지가 내가 아는 길이오. 지하 1층은 물이 찼소. 물속에서 기도하는 소리가 들린다던데, 대답하지 마시오. 회복약하고 성수는 넉넉히 챙기시오." 오르소는 따라 내려오지 않는다.',choices:[
+    {label:'혼자 내려간다',result:'계단을 내려갈수록 물소리가 커진다. 무릎까지 차가운 물이 찬다.',next:'s5'},
+    {label:'천막으로 돌아가 준비한다',result:'오르소가 고개를 끄덕인다. "서두를 것 없소. 정문은 몇 년째 닫혀 있었으니."',next:'s4'}]},
+  s5:{text:'지하 1층. 물속에서 익사한 신도들이 일어선다. 기도문을 외면서.',battle:'st_drowned',next:'end',winText:'신도들이 물 위에 쓰러진다. 시체는 사라지지 않는다. 물 위에 떠서, 그대로 있다.'},
+  end:{end:true,text:'정문 없는 신전',reward:{exp:9000,gold:1200,items:{potion:1}}}}},
+ {id:'E28b',cat:'epic',title:'서장 · 물에 잠긴 기도문',published:true,level:81,prereq:'E28',repeat:null,cond:{},
+  desc:'지하 1층 기도실. 물 위에 젖은 종이들이 떠 있다. 더 아래로 내려가는 길을 스스로 찾아야 한다. [8장 「백야의 신전」]',start:'s1',steps:{
+  s1:{text:'지하 1층 기도실. 물길이 세 갈래로 갈라진다. 벽에 누군가 긁어 놓은 화살표가 있다. 앞서간 블레서의 낙서다.',choices:[
+    {label:'화살표를 따라 왼쪽 물길로',result:'물이 가슴까지 차오르다가 벽에 막힌다. 벽에 같은 손으로 쓴 낙서: "여기 아님." 돌아 나온다.',next:'s1'},
+    {label:'물이 흘러가는 쪽으로',result:'물이 한쪽으로 빨려 들어간다. 그 끝에 물에 잠긴 계단이 있다. 아래로.',next:'s2'},
+    {label:'기도 소리가 나는 쪽으로',result:'소리가 가까워질수록 물이 차가워진다. 젖은 손 하나가 발목을 잡았다가 놓는다. 다시 갈림길이다.',next:'s1'}]},
+  s2:{text:'계단 앞 물 위에 젖은 기도문 조각들이 떠다닌다. 같은 기도문의 다른 쪽들이다. 몇 장은 물살에 실려 신전 밖까지 흘러간 것 같다. (탐색 › 블라스파미아 탐색에서 「젖은 기도문 조각」 5개)',exDrop:{land:'chaos',item:'q_prayer',n:5,chance:0.6},choices:[
+    {label:'조각을 맞춰 본다',req:{items:{q_prayer:5}},take:{q_prayer:5},result:'젖은 종이가 한 장으로 이어진다. 처음 보는 기도문인데, 이상하게 다음 줄을 알 것 같다.',next:'s3'},
+    {label:'일단 더 찾아본다',result:'물살은 계속 신전 밖으로 흐른다.',next:'s2'}]},
+  s3:{text:'"나팔이 울리기 전에, 제물은 제단으로. 부활은 축복이다. 축복은 거절할 수 없다." 기도문 끝에 서명이 있다. 「케팔로포다 · 두 팔로 쓰다.」',choices:[
+    {label:'기도문을 접어 넣는다',result:'계단 아래에서 같은 기도문이 들린다. 누군가 지금도 외고 있다.',next:'end',flag:'e28_prayer'}]},
+  end:{end:true,text:'물에 잠긴 기도문',reward:{exp:9000,gold:1200,items:{holywater:1}}}}},
+ {id:'E28c',cat:'epic',title:'서장 · 사제의 제물 명부',published:true,level:83,prereq:'E28b',repeat:null,cond:{},
+  desc:'더 아래로. 지하 2층 문은 불에 타 막혀 있다. 제단으로 가는 다른 길을 찾는다. [8장 「백야의 신전」]',start:'s1',steps:{
+  s1:{text:'계단 끝, 지하 2층으로 이어지는 문은 불에 타 녹아 붙어 있다. 문틈에서 아직 열기가 새어 나온다. 문에 긁힌 낙서: "뜨거움. 돌아감." 옆으로 물이 빠져나가는 수로가 있다.',choices:[
+    {label:'문을 억지로 연다',result:'손바닥이 데일 듯 뜨겁다. 문은 꿈쩍도 하지 않는다. 안쪽에서 무언가 타오르는 소리가 난다.',next:'s1'},
+    {label:'수로를 따라 내려간다',result:'수로는 더 깊은 아래, 지하 3층으로 이어진다. 물속에서 무언가 길고 미끄러운 것이 움직인다.',next:'s2'}]},
+  s2:{text:'좁은 수로. 물속에서 굵은 촉수 하나가 솟아오른다. 끝에 낡은 사제복 소매가 감겨 있다.',battle:'st_tentacle',next:'s3',winText:'촉수가 물속으로 물러난다. 아래쪽 어딘가로, 몸통이 있는 쪽으로.'},
+  s3:{text:'지하 3층 제단 앞 돌판. 신전이 바친 제물의 이름이 빽빽이 새겨져 있다. 앞쪽은 이 세계의 이름이다. 뒤로 갈수록 이름이 이상해진다. 닉네임 같은 이름들. 마지막 칸은 비어 있고, 돌판 옆에 깃털 펜이 놓여 있다.',choices:[
+    {label:'펜을 내려놓는다',result:'펜이 돌판 위로 굴러간다. 빈칸은 그대로 비어 있다.',next:'s4'},
+    {label:'빈칸에 이름을 적는다',result:'펜이 저절로 움직이듯 손이 간다. 내 캐릭터 이름이 돌판에 새겨진다. 잉크가 아니라, 돌이 파인다.',next:'s4',flag:'e28_name'}]},
+  s4:{text:'명부 맨 아래, 작은 글씨로 기도문 한 줄. 「이방인이 오면, 제물이 된다.」 제단 안쪽에서 물이 크게 출렁인다.',choices:[
+    {label:'제단 쪽을 본다',result:'물 위로 무언가가 올라온다. 두 팔과, 여덟 개의 다리.',next:'end',flag:'e28_ledger'}]},
+  end:{end:true,text:'사제의 제물 명부',reward:{exp:11000,gold:1400,items:{potion:1}}}}},
+ {id:'E28d',cat:'epic',title:'서장 · 지하 신전의 사제',published:true,level:84,prereq:'E28c',repeat:null,cond:{},
+  desc:'지하 3층, 물에 잠긴 제단. 기도문에 서명을 남긴 사제가 기다린다. [8장 「백야의 신전」 서장 마지막]',start:'s1',steps:{
+  s1:{text:'제단 한가운데에서 무언가가 기도문을 왼다. 두 팔과 여덟 개의 다리. 지하 신전의 사제, 케팔로포다. {{mem:e28_prayer|기도문의 서명이 떠오른다. 「두 팔로 쓰다.」}} (권장 LV85 · 토벌전 4~8인 · 회복약 3개, 정화의 성수 2개 이상)',choices:[
+    {label:'물을 헤치고 다가간다',result:'기도문이 멈춘다. 여덟 개의 다리가 물 위로 올라온다.',next:'s2'},
+    {label:'물러나 준비한다',result:'물에 뜬 시체들이 당신이 돌아올 때까지 그대로 떠 있다.',next:'s1'}]},
+  s2:{text:'"나팔이 울리기 전에, 제물은 제단으로." 혼자서는 상대할 수 없다. 토벌대(4~8인)를 꾸려 제단으로 간다. 체력이 줄면 다리로 휘감고 먹물을 뿜으며(60%), 끝에는 혼돈의 기도를 왼다(25%).',raid:'t_cephalo',next:'s3',winText:'케팔로포다가 물 위로 쓰러진다. 시체는 제단 물 위에 떠 있다.'},
+  s3:{text:'물 위에 떠 있는 사제의 시체. 두 손 중 하나에 젖은 종이가 쥐어져 있다. 기도문의 마지막 장이다. 「…부디, 다음 이방인은 제물이 되지 않기를.」 제단 뒤로 위층으로 이어지는 계단이 드러난다.',choices:[
+    {label:'위층으로 올라간다',result:'뒤를 돌아본다. 시체들은 그대로 있다. 사라지지 않는다. 계단 위쪽에서 뜨거운 바람이 내려온다.',next:'end',flag:'e28_under'}]},
+  end:{end:true,text:'물에 잠긴 지하 제단',reward:{exp:14000,gold:2000,items:{potion:2,holywater:1}}}}},
+ /* ── 중장 (지하 2층 → 회랑 → 서고 → 대주교의 문) ── */
+ {id:'E29',cat:'epic',title:'중장 · 불타 버린 아래층',published:true,level:86,prereq:'E28d',repeat:null,cond:{},
+  desc:'제단에서 올라오면 모두 타 버린 지하 2층. 불에 녹아 붙어 있던 그 문의 안쪽이다. [8장 「백야의 신전」]',start:'i1',steps:{
   i1:{text:'백야의 신전 지하 2층. 모두 타 버린 뒤 그을음만 남은 넓고 검은 홀. 가운데에서 붉은 형태가 끝없이 타오른다. 지하신전의 이단 심문관, 인퀴시토르. (권장 LV86 · 토벌전 4~8인 · 회복약 3개, 정화의 성수 2개 이상)',seq:'inq',choices:[
     {label:'홀 가운데로 걸어간다',result:'열기가 얼굴을 덮친다. 불꽃 사이에서 하얀 가면 같은 얼굴이 이쪽을 본다. "이단이다."',next:'i2'},
     {label:'물러나 준비한다',result:'재가 천천히 내려앉는다. 불꽃은 꺼지지 않는다.',next:'i1'}]},
   i2:{text:'"불은 죄를 태운다. 남는 것은 재뿐이다." 혼자서는 상대할 수 없다. 토벌대(4~8인)를 꾸려 홀로 간다. 낙인과 불길에 맞으면 화상을 입고(정화의 성수로 해제), 체력이 줄면 이단 심문(60%) · 영원한 형벌(25%)이 시작된다.',raid:'t_inquis',next:'i3',winText:'인퀴시토르가 구슬픈 비명과 함께 폭발한다.'},
-  i3:{text:'불꽃이 사그라든다. 홀 가운데에는 재와, 아직 따뜻한 그을음만 남았다. 재 속에서 무언가가 반짝인다. 위층으로 이어지는 계단이 드러난다.',seq:'inqDie',choices:[
-    {label:'계단을 오른다',result:'뒤를 돌아본다. 재는 그대로 있다. 바람이 없는데도 조금씩 흩어진다.',next:'s1',flag:'e29_inquis'}]},
+  i3:{text:'불꽃이 사그라든다. 홀 가운데에는 재와, 아직 따뜻한 그을음만 남았다. 재 속에서 반쯤 탄 종이 한 장이 반짝인다. 판결문이다.',seq:'inqDie',choices:[
+    {label:'판결문을 줍는다',result:'가장자리가 타 버려 절반만 읽힌다. 「피고: 이방인」.',next:'i4'}]},
+  i4:{text:'홀 벽에 그을린 재판 명단. 이단 판결을 받은 이름들이 길게 이어진다. 대부분 이 세계의 이름이 아니다. 명단 맨 끝은 판결 칸이 비어 있다. 그 위에 위층으로 오르는 계단.',choices:[
+    {label:'계단을 오른다',result:'뒤를 돌아본다. 재는 그대로 있다. 바람이 없는데도 조금씩 흩어진다.',next:'end',flag:'e29_inquis'}]},
+  end:{end:true,text:'불타 버린 아래층',reward:{exp:14000,gold:1800,items:{potion:1}}}}},
+ {id:'E29b',cat:'epic',title:'중장 · 끝없는 회랑',published:true,level:87,prereq:'E29',repeat:null,cond:{},
+  desc:'지하에서 올라오면 끝없이 긴 회랑. 벽 가득 문장이 새겨져 있다. [8장 「백야의 신전」]',start:'s1',steps:{
   s1:{text:'끝없이 긴 회랑. 벽 가득 문장이 새겨져 있다. 회랑의 그림자 속에서 신관들이 걸어 나온다.',battle:'st_shadowpriest',next:'s2',winText:'그림자 신관들이 벽 속으로 스며든다. 벽의 문장들이 드러난다.'},
-  s2:{text:'소원의 벽. 새겨진 문장들이 낯익다. 소원과, 그 소원이 이루어진 모양. 맨 아래 줄은 비어 있고, 그 칸에 커서가 깜빡인다.',wishWall:true,choices:[
-    {label:'회랑 끝으로 걷는다',result:'회랑은 끝이 없을 것처럼 길다. 창밖은 여명이었다가, 황혼이었다가, 다시 여명이다. 내일은 오지 않는다.',next:'s3',flag:'e29_wall'}]},
-  s3:{text:'회랑 끝, 대주교의 문. 두 얼굴을 가진 주교가 기다린다. 한쪽은 여명, 한쪽은 황혼이다. (권장 LV88 · 토벌전 4~8인 · 회복약 3개 이상)',choices:[
-    {label:'문 앞으로 간다',result:'"오늘이 끝나면 내일이 온다고, 다들 그렇게 믿고 들어왔지."',next:'s4'},
-    {label:'물러나 준비한다',result:'창밖이 여명에서 황혼으로 바뀐다. 다시 여명으로.',next:'s3'}]},
-  s4:{text:'야누스가 얼굴을 바꾼다. 여명의 얼굴일 때는 스스로 회복하며 약하게 치고, 황혼의 얼굴일 때는 강하게 친다. 위쪽 예고 이름을 보면 이번 턴의 얼굴을 알 수 있다. 끝에는 12턴이 지나면 하루가 처음으로 돌아간다(25%). 토벌대(4~8인)로 상대한다.',raid:'t_janus',next:'s5',winText:'야누스가 무릎을 꿇는다. "…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다."'},
-  s5:{text:'대주교의 문 너머, 신전 가장 안쪽으로 이어지는 계단.',choices:[
+  s2:{text:'회랑은 끝이 보이지 않는다. 걸어도 걸어도 같은 기둥, 같은 창. 창밖은 여명이었다가, 황혼이었다가, 다시 여명이다.',walk:3,choices:[
+    {label:'벽의 문장을 들여다본다',result:'세 번을 지나온 자리인데, 문장 한 줄이 바뀌어 있다. 맨 아래 줄이 비어 있다. 처음부터 비어 있었는지는 모르겠다.',next:'s3'}]},
+  s3:{text:'소원의 벽. 새겨진 문장들이 낯익다. 소원과, 그 소원이 이루어진 모양. {{mem:e28_wish_rich|순례자 천막에서 말한 소원과 같은 문장이 여기에도 있다.}}{{mem:e28_wish_mem|잊은 것을 되찾고 싶다는 문장이 세 줄이나 있다. 셋 다 다른 글씨다.}}{{mem:e28_wish_home|돌아가는 길을 빈 문장은 하나도 없다.}} 맨 아래 줄은 비어 있고, 그 칸에 커서가 깜빡인다.',wishWall:true,choices:[
+    {label:'회랑 끝으로 걷는다',result:'회랑 옆으로 좁은 문이 하나 보인다. 아까는 없었다. 창밖이 황혼일 때만 보이는 것 같다.',next:'end',flag:'e29_wall'}]},
+  end:{end:true,text:'끝없는 회랑',reward:{exp:14000,gold:1800,items:{}}}}},
+ {id:'E29c',cat:'epic',title:'중장 · 대주교의 서고',published:true,level:88,prereq:'E29b',repeat:null,cond:{},
+  desc:'황혼일 때만 보이는 회랑 옆 문. 대주교의 기록이 남아 있다. [8장 「백야의 신전」]',start:'s1',steps:{
+  s1:{text:'회랑 입구로 돌아가 보니 오르소가 벽에 기대어 있다. 숨이 차 보인다. "여기까지 올라온 건 나도 처음이오. …회랑은 끝이 없다고들 하지. 서고를 찾으면 길이 있을 거요. 이게 내가 해 줄 수 있는 마지막 안내요." 오르소는 계단을 다시 내려간다.',choices:[
+    {label:'창밖이 황혼일 때까지 기다린다',result:'창밖이 붉게 물든다. 기둥 사이에 좁은 문이 드러난다.',next:'s2'},
+    {label:'여명일 때 문을 찾는다',result:'기둥, 기둥, 기둥. 문은 보이지 않는다. 창밖이 다시 바뀌기를 기다려야 한다.',next:'s1'}]},
+  s2:{text:'서고. 책장마다 같은 제목의 책이 꽂혀 있다. 「오늘의 기록 · 야누스」. 책상 위에 펼쳐진 일기.',choices:[
+    {label:'첫 쪽을 읽는다',result:'「아침. 내일 교황 성하께 말씀드리겠다. 저녁이 오면 마음을 정하겠다.」 날짜가 없다.',next:'s3'}]},
+  s3:{text:'일기를 넘긴다. 창밖이 여명에서 황혼으로 바뀐다.',choices:[
+    {label:'다음 쪽',result:'「아침. 내일 교황 성하께 말씀드리겠다. 저녁이 오면 마음을 정하겠다.」 똑같은 문장이다. 그다음 쪽도, 그다음 쪽도.',next:'s4'}]},
+  s4:{text:'마지막 쪽만 글씨가 떨린다. 「성하께서 이방인이셨다는 것을, 오늘도 말씀드리지 못했다. 성하는 아직 모르신다. 모르시는 편이 나을지도 모른다.」 책장 뒤에서 책 속의 그림자가 일어선다.',battle:'st_bookshade',next:'s5',winText:'그림자가 일기 속으로 빨려 들어간다. 일기가 저절로 덮인다.'},
+  s5:{text:'서고 구석 작은 상자. 안에 깨진 이름표 조각이 들어 있다. 「아□로□」. 교황 옷의 금실이 아직 붙어 있다. 상자 뒤로 대주교의 문으로 이어지는 통로.',choices:[
+    {label:'이름표 조각을 챙긴다',result:'조각이 손바닥 위에서 아주 조금 따뜻하다.',next:'end',flag:'e29_tag'}]},
+  end:{end:true,text:'대주교의 서고',reward:{exp:15000,gold:2000,items:{holywater:1,q_tag8:1}}}}},
+ {id:'E29d',cat:'epic',title:'중장 · 여명과 황혼 사이',published:true,level:89,prereq:'E29c',repeat:null,cond:{},
+  desc:'회랑 끝, 대주교의 문. 일기를 쓴 사람이 기다린다. [8장 「백야의 신전」 중장 마지막]',start:'s1',steps:{
+  s1:{text:'회랑 끝, 대주교의 문. 두 얼굴을 가진 주교가 기다린다. 한쪽은 여명, 한쪽은 황혼이다. {{mem:e29_tag|품 안의 이름표 조각이 조금 더 따뜻해진다.}} (권장 LV89 · 토벌전 4~8인 · 회복약 3개 이상)',choices:[
+    {label:'문 앞으로 간다',result:'"오늘이 끝나면 내일이 온다고, 다들 그렇게 믿고 들어왔지."',next:'s2'},
+    {label:'물러나 준비한다',result:'창밖이 여명에서 황혼으로 바뀐다. 다시 여명으로.',next:'s1'}]},
+  s2:{text:'야누스가 얼굴을 바꾼다. 여명의 얼굴일 때는 스스로 회복하며 약하게 치고, 황혼의 얼굴일 때는 강하게 친다. 위쪽 예고 이름을 보면 이번 턴의 얼굴을 알 수 있다. 끝에는 12턴이 지나면 하루가 처음으로 돌아간다(25%). 토벌대(4~8인)로 상대한다.',raid:'t_janus',next:'s3',winText:'야누스가 무릎을 꿇는다. "…교황 성하를, 깨우지 마라. 그분은 아직, 기억하신다."'},
+  s3:{text:'대주교의 문 너머, 신전 가장 안쪽으로 이어지는 계단. 계단 아래를 돌아보지만 오르소는 없다. 여기서부터는 안내가 없다.',choices:[
     {label:'계단을 오른다',result:'계단 끝에서 따뜻한 빛이 새어 나온다.',next:'end',flag:'e29_janus'}]},
-  end:{end:true,text:'여명과 황혼 사이',reward:{exp:24000,gold:3800,items:{potion:3},gearTier:8}}}},
- {id:'E30',cat:'epic',title:'□□',published:true,level:92,prereq:'E29',repeat:null,cond:{},
+  end:{end:true,text:'여명과 황혼 사이',reward:{exp:19500,gold:3800,items:{potion:3},gearTier:8}}}},
+ /* ── □□ ── */
+ {id:'E30',cat:'epic',title:'□□',published:true,level:92,prereq:'E29d',repeat:null,cond:{},
   desc:'신전 가장 안쪽, 교황의 제단. [8장 「백야의 신전」]',start:'s1',steps:{
   s1:{text:'교황의 제단. 교황 옷을 입은 사람이 등을 돌리고 서 있다. 눈송이 속에서 본 그 뒷모습이다. 그녀가 천천히 돌아본다. 얼굴이 다정하다. "어서 오세요, 블레서님. 이곳까지 오시느라 힘드셨죠." {{mem:e1_rescue|"풀숲에서 정찰병을 먼저 구하셨죠. 그때부터 알았어요. 당신은 끝까지 올 거라는 걸."}}',choices:[
     {label:'"…당신은?"',result:'"…블레서. 이상하죠, 저도 그렇게 불렸던 것 같아요." 그녀의 이름표가 깨져 있다. <여?일??? 아□로□>',next:'s2'}]},
@@ -1956,28 +2030,91 @@ STORY_QUESTS.push(
   s3:{text:'…눈을 뜬다. 신전 가장 안쪽, 그녀를 만나기 직전의 자리다. 모든 게 그대로다. 그런데 캐릭터 카드의 탐사 기록 맨 아래에 한 줄이 남아 있다. 「사망 1회」.',seq:'e30',choices:[
     {label:'일어선다',result:'제단 쪽에서 나팔 소리가 아주 멀리 한 번 울린다.',next:'end',flag:'death1'}]},
   end:{end:true,text:'□□',reward:{exp:15000,gold:0,items:{}}}}},
- {id:'E31',cat:'epic',title:'종장 · 숨무스 폰티펙스',published:true,level:95,prereq:'E30',repeat:null,cond:{},
-  desc:'같은 제단, 같은 자리. 권장 LV97 · 회복약 5개, 정화의 성수 3개 이상 준비. [8장 「백야의 신전」 마지막 이야기]',start:'s1',steps:{
-  s1:{text:'같은 제단, 같은 자리. 그러나 제단 앞에 서 있는 것은 더 이상 그녀가 아니다. 이름표가 깨끗하다. <숨무스 폰티펙스>. 다정함도, 존댓말도 없다. (권장 LV97 · 퀘스트 전용 토벌 · 회복약 5개, 정화의 성수 3개 이상)',choices:[
+ /* ── 종장 (제단 → 천막 → 종탑 → 제단) ── */
+ {id:'E31',cat:'epic',title:'종장 · 깨끗한 이름',published:true,level:95,prereq:'E30',repeat:null,cond:{},
+  desc:'같은 제단, 같은 자리. 이름표가 깨끗하다. [8장 「백야의 신전」 종장]',start:'s1',steps:{
+  s1:{text:'같은 제단, 같은 자리. 그러나 제단 앞에 서 있는 것은 더 이상 그녀가 아니다. 이름표가 깨끗하다. <숨무스 폰티펙스>. 기도문만 외고, 움직이지 않는다. 아직 깨어나지 않았다.',choices:[
+    {label:'다가간다',result:'기도문은 멈추지 않는다. 당신을 보지 않는다. 다정함도, 존댓말도 없다.',next:'s2'}]},
+  s2:{text:'신전을 내려와 순례자 천막으로 간다. 오르소의 천막이 비어 있다. 지팡이 하나만 기대어 서 있다. 순례자에게 묻는다. "오르소요? …그런 길잡이는 없었는데요. 이 천막은 처음부터 비어 있었어요."',choices:[
+    {label:'지팡이를 본다',result:'지팡이에 층마다 눈금이 새겨져 있다. 맨 위 눈금은 아직 새겨지지 않았다.',next:'s3'},
+    {label:'"…그래요."',result:'순례자가 고개를 갸웃하고 천막으로 돌아간다.',next:'s3'}]},
+  s3:{text:'탐사 기록을 연다. 「사망 1회」는 그대로 있다. 신전 위쪽, 종탑에서 금속이 울리는 소리가 들린다.',choices:[
+    {label:'종탑을 올려다본다',result:'나팔이다. 아직 불리지 않았는데, 바람만으로 낮게 운다.',next:'end',flag:'e31_clean'}]},
+  end:{end:true,text:'깨끗한 이름',reward:{exp:8000,gold:1200,items:{}}}}},
+ {id:'E31b',cat:'epic',title:'종장 · 나팔의 종탑',published:true,level:96,prereq:'E31',repeat:null,cond:{},
+  desc:'숨무스를 깨우는 것은 나팔이다. 신전 종탑으로 올라간다. [8장 「백야의 신전」 종장]',start:'s1',steps:{
+  s1:{text:'종탑 아래. 계단이 위로 끝없이 돈다. 층마다 창이 하나씩 있고, 창마다 해가 같은 자리에 걸려 있다. 계단이 두 갈래로 나뉜다.',choices:[
+    {label:'바람이 들어오는 쪽',result:'창이 깨진 층. 바람이 거세다. 위로 가는 계단이 무너져 있다. 돌아온다.',next:'s1'},
+    {label:'나팔 소리가 큰 쪽',result:'한 층 오를 때마다 소리가 커진다. 맥박이 소리를 따라 빨라진다.',next:'s2'}]},
+  s2:{text:'꼭대기 바로 아래. 커다란 천사상이 금빛 나팔을 입에 대고 서 있다. 돌로 된 날개가 천천히 펼쳐진다. 나팔을 부는 것은 사람이 아니었다.',battle:'st_angel',next:'s3',winText:'천사상이 무너진다. 나팔에 길게 금이 간다. 소리가 갈라진다.'},
+  s3:{text:'종탑 꼭대기. 블라스파미아 전체가 내려다보인다. 해가 처음으로 아주 조금, 기울어 있다. 바닥에 낡은 돌판이 옮겨져 있다. 지하 3층에서 본 그 제물 명부다.',choices:[
+    {label:'명부 앞으로 간다',result:'누가 언제 이걸 여기까지 옮겼는지 모르겠다. 이름들이 바람에 떨리는 것처럼 보인다.',next:'end',flag:'e31_tower'}]},
+  end:{end:true,text:'나팔의 종탑',reward:{exp:11000,gold:1500,items:{potion:1}}}}},
+ {id:'E31c',cat:'epic',title:'종장 · 타지 않는 장',published:true,level:97,prereq:'E31b',repeat:null,cond:{},
+  desc:'종탑 꼭대기의 제물 명부. 신전이 바친 이름들. [8장 「백야의 신전」 종장]',start:'s1',steps:{
+  s1:{text:'제물 명부. 앞쪽은 이 세계의 이름, 뒤쪽은 닉네임 같은 이름들. 종탑 화로에 아직 불씨가 남아 있다. 명부가 남아 있는 한, 나팔은 다음 제물을 부른다.',choices:[
+    {label:'명부를 태운다',result:'불이 옮겨붙는다. 이름이 한 줄씩 재가 되어 날아간다. 나팔 소리가 한 번, 뚝 끊긴다.',next:'s2'},
+    {label:'아직은 그대로 둔다',result:'바람이 명부를 넘긴다. 마지막 장에서 멈춘다.',next:'s1'}]},
+  s2:{text:'{{mem:e28_name|그런데 한 장이 타지 않는다. 불길이 피해 간다. 당신의 이름이 새겨진 장이다. 돌에 파인 글자 위로 재가 내려앉았다가 미끄러진다.}}{{mem:!e28_name|명부가 끝까지 탄다. 마지막 빈칸까지, 깨끗하게. 재가 종탑 밖으로 날아간다.}}',choices:[
+    {label:'손으로 찢는다',onlyIf:'e28_name',result:'돌인데 종이처럼 찢긴다. 손끝이 아프다. 진짜로 아프다. 찢긴 장은 불 속에서 그제야 탄다.',next:'s3',flag:'e31_tear'},
+    {label:'그대로 둔다',onlyIf:'e28_name',result:'타지 않는 장을 화로 옆에 내려놓는다. 이름은 거기 남는다. 언젠가 다시 이 장을 보게 될 것 같다.',next:'s3',flag:'e31_keep'},
+    {label:'재가 날아가는 쪽을 본다',onlyIf:'!e28_name',result:'재는 제단 쪽으로 날아간다.',next:'s3'}]},
+  s3:{text:'나팔이 다시 운다. 이번엔 갈라진 소리다. 아래, 제단에서 무언가가 깨어난다.',choices:[
+    {label:'제단으로 내려간다',result:'계단을 내려가는 동안 맥박이 나팔 소리에 맞춰 뛴다.',next:'end',flag:'e31_burn'}]},
+  end:{end:true,text:'타지 않는 장',reward:{exp:11000,gold:1500,items:{}}}}},
+ {id:'E31d',cat:'epic',title:'종장 · 숨무스 폰티펙스',published:true,level:98,prereq:'E31c',repeat:null,cond:{},
+  desc:'같은 제단, 같은 자리. 권장 LV98 · 회복약 5개, 정화의 성수 3개 이상 준비. [8장 「백야의 신전」 마지막 이야기]',start:'s1',steps:{
+  s1:{text:'같은 제단, 같은 자리. 갈라진 나팔 소리에 숨무스 폰티펙스가 눈을 뜬다. 이름표가 깨끗하다. 다정함도, 존댓말도 없다. (권장 LV98 · 퀘스트 전용 토벌 · 회복약 5개, 정화의 성수 3개 이상)',choices:[
     {label:'제단 앞으로 나선다',result:'"기적의 나팔소리가 대지의 무덤 곳곳 울려퍼지니."',next:'s2'},
     {label:'물러나 준비한다',result:'기도문은 멈추지 않는다.',next:'s1'}]},
-  s2:{text:'숨무스 폰티펙스가 왕좌 앞으로 끌어당긴다. 체력이 줄면 회복을 막고 스킬을 봉인하며(60%), 끝에는 기적의 나팔을 분다(25%). 일지는 펼쳐도 소용이 없다. 퀘스트 전용 토벌대로 상대한다. 함께할 블레서를 초대하거나 용병을 데려간다.',raid:'q_summus',next:'s3',winText:'숨무스 폰티펙스가 무너진다. 나팔이 마지막으로 한 번, 아주 작게 울린다.'},
+  s2:{text:'숨무스 폰티펙스가 왕좌 앞으로 끌어당긴다. 체력이 줄면 회복을 막고 스킬을 봉인하며(60%), 끝에는 기적의 나팔을 분다(25%). 금 간 나팔이라 □□ 때만큼 크지는 않다. 일지는 펼쳐도 소용이 없다. 퀘스트 전용 토벌대로 상대한다. 함께할 블레서를 초대하거나 용병을 데려간다.',raid:'q_summus',next:'s3',winText:'숨무스 폰티펙스가 무너진다. 나팔이 마지막으로 한 번, 아주 작게 울린다.'},
   s3:{text:'이름표가 1초 동안 다시 깨진다. <여?일??? 아□로□>. 대사 창에 이름 없이 한 줄이 떠오른다. "…출근, 늦겠다."',choices:[
     {label:'…',result:'탐사 기록에 한 이름이 깨지지 않고 남는다. 「AURORA」.',next:'s4'}]},
   s4:{text:'아무 메시지도 없다. 신전 시각 칸의 숫자가 처음으로 1분 넘어간다.',clockPlus:true,choices:[
-    {label:'제단을 바라본다',result:'해가 아주 조금 기운다.',next:'end',flag:'ch8_clear'}]},
-  end:{end:true,text:'8장 「백야의 신전」 완료',reward:{exp:45000,gold:6500,items:{potion:3}}}}},
- {id:'S8a',cat:'sub',title:'시체가 있던 자리',published:true,level:82,prereq:null,repeat:null,cond:{quests:['E28']},
-  desc:'지하 제단의 시체들이 아직 물 위에 떠 있다.',start:'s1',steps:{
-  s1:{text:'서장에서 쓰러뜨린 신도들의 시체가 아직 물 위에 떠 있다. 시체가 흘러가는 쪽을 따라가면 제단 구석에 무언가가 쌓여 있다.',choices:[
+    {label:'제단을 바라본다',result:'해가 아주 조금 기운다. 언덕 아래, 비어 있던 오르소의 천막에 작은 등불 하나가 켜진다. 누가 켰는지는 알 수 없다.',next:'end',flag:'ch8_clear'}]},
+  end:{end:true,text:'8장 「백야의 신전」 완료',reward:{exp:15000,gold:6500,items:{potion:3}}}}},
+ /* ── 서브 ── */
+ {id:'S8a',cat:'sub',title:'시체가 있던 자리',published:true,level:82,prereq:null,repeat:null,cond:{quests:['E28b']},
+  desc:'지하 1층의 시체들이 아직 물 위에 떠 있다.',start:'s1',steps:{
+  s1:{text:'지하 1층에서 쓰러뜨린 신도들의 시체가 아직 물 위에 떠 있다. 시체가 흘러가는 쪽을 따라가면 기도실 구석에 무언가가 쌓여 있다.',choices:[
     {label:'다가간다',result:'블레서 장비 조각들이다. 클래스도 레벨도 제각각. 장비 이름 옆 착용자 칸은 모두 비어 있다.',next:'end',flag:'s8a_bits'}]},
   end:{end:true,text:'시체가 있던 자리',reward:{exp:6400,gold:600,items:{chaos:3,q_bits:1}}}}},
- {id:'S8b',cat:'sub',title:'아홉 시',published:true,level:96,prereq:null,repeat:null,cond:{quests:['E31']},
+ {id:'S8c',cat:'sub',title:'재의 판결문',published:true,level:87,prereq:null,repeat:null,cond:{quests:['E29']},
+  desc:'지하 2층에서 주운 반쯤 탄 판결문. 나머지 조각은 재와 함께 신전 밖으로 날아갔다.',start:'s1',steps:{
+  s1:{text:'반쯤 탄 판결문. 「피고: 이방인」까지만 읽힌다. 타다 남은 조각들이 바람을 타고 블라스파미아 곳곳에 떨어졌을 것이다. (탐색 › 블라스파미아 탐색에서 「타다 남은 판결문 조각」 3개)',exDrop:{land:'chaos',item:'q_verdict',n:3,chance:0.5},choices:[
+    {label:'조각을 맞춘다',req:{items:{q_verdict:3}},take:{q_verdict:3},result:'그을린 가장자리가 맞물린다. 판결문이 이어진다.',next:'s2'},
+    {label:'더 찾아본다',result:'재가 바람에 날린다.',next:'s1'}]},
+  s2:{text:'「피고: 이방인. 죄목: 돌아가려 한 죄. 판결: 화형. 집행: 」 집행 칸이 비어 있다. 판결문 뒷면에 급하게 쓴 글씨. 「이 사람은 태우지 않겠다. 대신 이 사람을 이단이라 부른 자들을 태우겠다. — 심문관」',choices:[
+    {label:'판결문을 접는다',result:'인퀴시토르는 이방인을 태우지 않았다. 대신 신도들을 태웠다. 그 이방인이 어디로 갔는지는 적혀 있지 않다.',next:'end',flag:'s8c_verdict'}]},
+  end:{end:true,text:'재의 판결문',reward:{exp:7000,gold:700,items:{d_verdict:1}}}}},
+ {id:'S8d',cat:'sub',title:'길잡이의 지팡이',published:true,level:95,prereq:null,repeat:null,cond:{quests:['E31']},
+  desc:'비어 있는 천막의 지팡이. 층마다 새겨진 눈금.',start:'s1',steps:{
+  s1:{text:'오르소의 지팡이. 층마다 눈금이 있고, 눈금 옆에 작은 표식이 새겨져 있다. 지나온 층 어딘가에 같은 표식이 남아 있을 것이다. (탐색 › 블라스파미아 탐색에서 「길잡이의 표식」 3개)',exDrop:{land:'chaos',item:'q_mark8',n:3,chance:0.5},choices:[
+    {label:'표식을 지팡이에 대 본다',req:{items:{q_mark8:3}},take:{q_mark8:3},result:'표식 세 개가 눈금에 하나씩 맞아 들어간다. 지팡이가 아주 조금 따뜻해진다.',next:'s2'},
+    {label:'더 찾아본다',result:'순례자들은 오르소를 기억하지 못한다. 표식만 남아 있다.',next:'s1'}]},
+  s2:{text:'가장 아래 눈금 옆, 다른 것들과 다른 글씨가 한 줄 새겨져 있다. 이 세계의 글씨가 아니다. 읽을 수는 없는데, 어딘가 익숙한 모양이다.',choices:[
+    {label:'지팡이를 천막에 세워 둔다',result:'오르소도 한때는, 정문 앞에서 무언가를 빌던 사람이었을지 모른다.',next:'end',flag:'s8d_staff'}]},
+  end:{end:true,text:'길잡이의 지팡이',reward:{exp:9000,gold:900,items:{d_staff:1}}}}},
+ {id:'S8b',cat:'sub',title:'아홉 시',published:true,level:96,prereq:null,repeat:null,cond:{quests:['E31d']},
   desc:'교황의 제단 뒤에 작은 문이 있다.',start:'s1',steps:{
   s1:{text:'제단 뒤 작은 방. 교황의 침실이다. 벽에 이 세계의 글자로 시계가 그려져 있고, 바늘은 9시에 멈춰 있다.',choices:[
     {label:'침대 밑을 본다',result:'접힌 종이 한 장. 이 세계의 글자가 아닌 글씨로 한 줄이 적혀 있다. 읽을 수 없다. 그런데 어딘가 익숙한 모양이다.',next:'end',flag:'s8b_nine'}]},
   end:{end:true,text:'아홉 시',reward:{exp:8000,gold:800,items:{d_clock:1}}}}});
-QCHAPTERS.push(['ch8','8장 「백야의 신전」',['E28','E29','E30','E31']]);
+QCHAPTERS.push(['ch8','8장 「백야의 신전」',['E28','E28b','E28c','E28d','E29','E29b','E29c','E29d','E30','E31','E31b','E31c','E31d']]);
+/* 8장 확장 전 세이브 1회 보정(2026-11-08): 보스 단계가 다른 퀘스트로 옮겨 감 — E28(케팔로포다)→E28d, E29(회랑·야누스)→E29b·E29d, E31(숨무스)→E31d.
+   이미 지나온 새 퀘스트는 완료로 처리(되돌아가 다시 하라고 하지 않음) */
+(function(){const f=ensureVilQuest;ensureVilQuest=function(){f();try{if(!S.me||S.me.ch8v3)return;S.me.ch8v3=1;const Q=S.qp||{};
+  const D=()=>({status:'done',step:'end',history:[],pending:null,flagsSet:[],cycle:kstCycle()});
+  const fin=(ids)=>ids.forEach(id=>{if(!Q[id]||Q[id].status!=='done')Q[id]=D();});
+  const mv=(from,to,map,before)=>{const o=Q[from];if(!o)return;
+    if(o.status==='done'){fin([...before,to]);return;}
+    if(o.status!=='active')return;const ns=map[o.step];if(!ns)return;   /* map에 없는 단계(새 구조에도 있는 앞 단계)는 그대로 */
+    Q[to]={...o,step:ns,pending:null};fin(before);};
+  mv('E28','E28d',{s3:'s1',s4:'s2',s5:'s3',end:'end'},['E28','E28b','E28c']);
+  mv('E29','E29d',{s3:'s1',s4:'s2',s5:'s3',end:'end'},['E29','E29b','E29c']);
+  {const o=Q.E29;if(o&&o.status==='active'&&(o.step==='s1'||o.step==='s2')){Q.E29b={...o,step:o.step==='s1'?'s1':'s3',pending:null};fin(['E29']);}}
+  mv('E31','E31d',{s1:'s1',s2:'s2',s3:'s3',s4:'s4',end:'end'},['E31','E31b','E31c']);
+  S.qp=Q;save();}catch(e){console.error(e);}};})();
 
 /* ───────── 8장 보스 토벌(유저 결정 2026-11-05 · 2차) ─────────
    · 케팔로포다(t_cephalo) · 야누스(t_janus): 토벌전 탭의 4~8인 파티 레이드. 전투는 만신전과 같은 10×10 그리드.
@@ -1991,7 +2128,7 @@ const R4_MUL={t_cephalo:['st_cephalo',2.4,3.4],t_inquis:['st_inquis',2.4,3.4],t_
 /* 밸런스 2차(2026-11-07): 토벌전은 파티 레이드보다 어렵게 — 봇 4인 정석 승률 약 65~75%. [체력, 공격] 추가 배율(지속 피해량은 그대로) */
 const R4_BAL={t_cephalo:[2.5,2.35],t_inquis:[2.2,2.35],t_janus:[1.8,2.35],q_summus:[3,1.33]};  /* 봇 4인 시뮬: 케팔로포다 95–100% · 야누스 87–100% · 숨무스 72–100%(평균 약 87%, 아이템 미사용) */
 const R4_DEF={
- t_cephalo:{name:'지하 신전의 사제, 케팔로포다',art:'beast',region:'백야의 신전 지하 제단',level:80,story:'E28',exp:18000,gold:2600,drops:[['chaos',0.6],['potion',0.5]],
+ t_cephalo:{name:'지하 신전의 사제, 케팔로포다',art:'beast',region:'백야의 신전 지하 제단',level:80,story:'E28d',exp:18000,gold:2600,drops:[['chaos',0.6],['potion',0.5]],
   desc:'두 팔과 여덟 개의 다리를 가진 고대 혼돈의 사제. 신과 함께 타락한 기운을 흡수하여 그 모습이 흉측하게 변했다. 물에 잠긴 제단에서 4인 토벌대를 기다린다.',
   dotName:'먹물',dotChance:0.15,fx:{},
   mass:{title:'백야의 신전 · 서장',lines:{single:'두 팔이 내려온다. 제물은 제단으로.',dot:'먹물에 젖어라.',burst:'물보라에 잠겨라.',burst2:'여덟 다리가 둘을 고른다.',cross:'먹물이 물길을 따라 흐른다.',quake:'제단 곁의 것들은 물속으로.',all:'나팔이 울리기 전에, 모두 제물로.'},phases:[
@@ -2005,14 +2142,14 @@ const R4_DEF={
    {at:100,name:'1페이즈',atkMul:1,patterns:['single','single','burst'],pats:{single:{name:'화형 선고',mult:1.1},burst:{name:'불씨 낙인',mult:0.85,fx:{burn:{t:3,d:70}}}}},
    {at:60,name:'2페이즈 · 이단 심문',say:'불씨 낙인·정화의 불길에 맞으면 3턴 화상(정화의 성수로 해제) · 재의 낙인은 다음 턴에 터진다',atkMul:1.3,patterns:['single','cross','burst2','ring'],pats:{cross:{name:'정화의 불길',mult:0.8,fx:{burn:{t:3,d:70}}},burst2:{name:'재의 낙인',mult:0.9,fx:{delay:{}}},ring:{name:'불타는 홀',mult:0.7}}},
    {at:25,name:'3페이즈 · 영원한 형벌',say:'홀 전체가 타오른다',atkMul:1.6,patterns:['all','quake','burst2'],pats:{all:{name:'형벌의 불꽃',mult:0.45,fx:{burn:{t:2,d:60}}},quake:{name:'타오르는 덩어리',mult:1.0},burst2:{name:'재의 낙인',mult:0.9}}}]}},
- t_janus:{name:'타락한 신의 힘을 흡수한 주교, 야누스',art:'golem',region:'대주교의 문 앞',level:86,story:'E29',exp:22000,gold:3000,drops:[['chaos',0.6],['potion',0.5]],
+ t_janus:{name:'타락한 신의 힘을 흡수한 주교, 야누스',art:'golem',region:'대주교의 문 앞',level:86,story:'E29d',exp:22000,gold:3000,drops:[['chaos',0.6],['potion',0.5]],
   desc:'제사를 관장하던 고대 혼돈의 신전의 대주교. 여명과 황혼 사이에 갇혀 내일을 맞이하지 못하고 있다. 여명의 얼굴은 스스로 회복하며 약하게, 황혼의 얼굴은 강하게 친다.',
   dotName:'저녁 그림자',dotChance:0.15,fx:{janus:true},
   mass:{title:'백야의 신전 · 중장',lines:{single:'황혼의 낫은 하나만 거둔다.',dot:'저녁 그림자가 스민다.',ring:'해가 진다. 멀리 있는 것부터.',burst:'새벽이 한 자리를 태운다.',burst2:'새벽은 둘을 깨운다.',cross:'여명의 기도가 길을 가른다.',all:'내일은 오지 않는다.'},phases:[
    {at:100,name:'1페이즈',atkMul:1,patterns:['single','ring','burst'],pats:{single:{name:'황혼의 낫',mult:1.1},ring:{name:'지는 해',mult:0.7},burst:{name:'새벽 낙인',mult:0.9}}},
    {at:60,name:'2페이즈 · 여명과 황혼',say:'얼굴이 바뀌는 소리: 아침 새소리 ↔ 저녁 종소리',atkMul:1.3,patterns:['single','cross','ring','burst2'],pats:{cross:{name:'여명의 기도',mult:0.8},burst2:{name:'새벽 낙인',mult:0.9}}},
    {at:25,name:'3페이즈 · 내일 없음',say:'12턴이 지나면 하루가 처음으로 돌아간다',atkMul:1.6,loop12:true,patterns:['all','cross','burst2'],pats:{all:{name:'영원한 황혼',mult:0.45}}}]}},
- q_summus:{name:'숨무스 폰티펙스',art:'guardian',region:'교황의 제단',level:95,story:'E31',questOnly:true,exp:40000,gold:6000,drops:[['chaos',0.8],['cloak',0.25],['amulet',0.2],['crest',0.1]],
+ q_summus:{name:'숨무스 폰티펙스',art:'guardian',region:'교황의 제단',level:95,story:'E31d',questOnly:true,exp:40000,gold:6000,drops:[['chaos',0.8],['cloak',0.25],['amulet',0.2],['crest',0.1]],
   desc:'고대 혼돈의 신전의 교황이었던 자. 타락한 힘에 오염되어, 혼돈과 타락의 신 그 자체가 되고 영원의 굴레에서 고통 받고 있다. 매주 월요일 05:00, 다시 깨어난다.',
   dotName:'심판',dotChance:0,fx:{journal:'ignore'},
   mass:{title:'백야의 신전 · 종장',lines:{single:'심판의 빛이 내린다.',all:'모두가 왕좌 앞으로 모으리라.',cross:'죽음과 자연은 경악할 지어다.',ring:'나팔소리가 대지의 무덤 곳곳 울려퍼지니.',burst2:'심판에 응하기 위하여.'},phases:[
@@ -2035,14 +2172,14 @@ Object.assign(HERO_LINES,{t_cephalo:HERO_LINES.st_cephalo,t_inquis:HERO_LINES.st
 function r4Step(m){const q=quest(m.story);if(!q)return null;return Object.keys(q.steps).find(k=>q.steps[k].raid===m.id)||null;}
 function r4Open(m){if(typeof isAdmin==='function'&&isAdmin())return true;if(!m||!m.story)return false;const qp=S.qp&&S.qp[m.story];return !!qp&&['active','claim','done'].includes(qp.status);}
 function r4Pending(m){const qp=S.qp&&S.qp[m.story];const k=r4Step(m);return !!(qp&&qp.status==='active'&&k&&qp.step===k);}
-weeklyClosed=function(m){if(!WEEKLY_CLOSED)return false;if(m)return m.gridRaid?!r4Open(m):!(typeof isAdmin==='function'&&isAdmin()||S.qp&&S.qp.E31&&S.qp.E31.status==='done');
+weeklyClosed=function(m){if(!WEEKLY_CLOSED)return false;if(m)return m.gridRaid?!r4Open(m):!(typeof isAdmin==='function'&&isAdmin()||S.qp&&S.qp.E31d&&S.qp.E31d.status==='done');
   return !(S&&S.data&&S.data.monsters||[]).some(x=>x.published&&mkind(x)==='weekly'&&!x.questOnly&&!weeklyClosed(x));};
 isGroupMon=function(m){return !!(m&&m.published&&!m.questOnly&&(mkind(m)==='party'||(mkind(m)==='weekly'&&!weeklyClosed(m))));};
 (function(){const f=raidBlock;raidBlock=function(m){
   if(m&&m.gridRaid&&weeklyClosed(m))return m.questOnly?'「종장 · 숨무스 폰티펙스」를 받았거나 마친 블레서만 함께할 수 있습니다':`「${(quest(m.story)||{}).title||m.story}」을(를) 받았거나 마친 블레서만 참가할 수 있습니다`;
   if(m&&m.id==='guardian'&&mkind(m)==='event'){const l=summusLock();if(l)return l;}
   return f(m);};})();
-function summusLock(){return (typeof isAdmin==='function'&&isAdmin())||S.qp&&S.qp.E31&&S.qp.E31.status==='done'?'':'백야의 신전 이야기를 끝까지 마치면 참가할 수 있습니다';}
+function summusLock(){return (typeof isAdmin==='function'&&isAdmin())||S.qp&&S.qp.E31d&&S.qp.E31d.status==='done'?'':'백야의 신전 이야기를 끝까지 마치면 참가할 수 있습니다';}
 /* 그리드 전투로 시작(파티장 화면에서 만든 뒤 08이 파티원에게 공유) */
 function r4Grid(b,m){const MD=massDef(m);b.grid=true;b.pats=MD.patterns;b.massTitle=MD.title;b.phases=clone(MD.phases).sort((a,c)=>c.at-a.at);b.phase=0;b.baseAtk=m.atk;b.mon.atk=m.atk;
   gridPlace(b,Math.random);b.turn=0;b.log=b.log.slice(0,1);b.log.push({t:'sys',text:`토벌전 · ${b.players.length}인 · 10×10 전장 · 제한 20분 · 붉은 칸 예고를 보고 이동해서 피하세요`});startTurn(b,Math.random);b.endsAt=now()+20*60000;}
@@ -2126,7 +2263,7 @@ const XP_CUT=0.4,XP_CUT_LV=60;
 function xpCut(){return S&&S.me&&S.me.level>=XP_CUT_LV?XP_CUT:1;}
 (function(){const f=finishBattle;finishBattle=function(b){const t=((b&&b.ctx)||{}).type;
   if(b&&b.rules&&!S.claimedB[b.id]&&!['quest','mass','chal'].includes(t)&&xpCut()!==1)b.rules.exp=Math.round((b.rules.exp||0)*xpCut());return f(b);};})();
-const STORY_EXP_MUL={E23:0.8,E24:0.2,E25:0.52,E26:0.44,E27:0.74,E28:2.15,E29:2.6,E30:0.57};
+const STORY_EXP_MUL={E23:0.8,E24:0.2,E25:0.52,E26:0.44,E27:0.74,E30:0.57};   /* E28·E29 배율은 8장 확장(2026-11-08)으로 퀘스트 12개에 나눠 넣음 */
 function storyExpTune(){if(!S||!S.data||!S.data.quests)return;const srv=(S.data._srv&&S.data._srv.quest)||{};
   for(const q of S.data.quests){const f=STORY_EXP_MUL[q.id];if(!f||srv[q.id])continue;const seen=new Set();
     const walk=o=>{if(!o||typeof o!=='object'||seen.has(o))return;seen.add(o);if(o.reward&&typeof o.reward.exp==='number'){if(o.reward._exp0==null)o.reward._exp0=o.reward.exp;o.reward.exp=Math.round(o.reward._exp0*f/500)*500;}for(const k in o)walk(o[k]);};walk(q.steps);}}

@@ -128,3 +128,10 @@ Object.assign(ACTS,{
 });
 /* 탐사 기록에서 이벤트 기록 이름 보이게(새로고침 뒤에도) */
 EXEV.forEach(e=>e.c.forEach((c,i)=>{FLAG_NAMES[exevFlag(e,i?'b':'a')]=`탐색 · ${e.t} — ${c.l}`;}));
+
+/* ── 퀘스트 단계의 탐색 드롭(exDrop:{land,item,n,chance}) · 8장 확장(2026-11-08) ──
+   진행 중인 퀘스트 단계에 exDrop이 있고 그 땅을 탐색하면(선택 이벤트 포함) 확률로 퀘스트 아이템 1개, n개까지 */
+function exQuestDrop(land){(S.data.quests||[]).forEach(q=>{const qp=S.qp&&S.qp[q.id];if(!qp||questStatus(q)!=='active')return;const st=q.steps&&q.steps[qp.step];const g=st&&st.exDrop;
+  if(!g||g.land!==land)return;const have=S.me.inv[g.item]||0;if(have>=g.n||Math.random()>=(g.chance||0.5))return;
+  addItem(g.item,1);save();setTimeout(()=>toast(`퀘스트 아이템 · ${ITEMS[g.item]?ITEMS[g.item].name:g.item} (${have+1}/${g.n})`,'good'),500);});}
+(function(){const f=ACTS['ex-go'];ACTS['ex-go']=function(d,...a){const n0=daily().explore||0;const r=f(d,...a);try{if((daily().explore||0)>n0&&d&&d.id)exQuestDrop(d.id);}catch(e){}return r;};})();
