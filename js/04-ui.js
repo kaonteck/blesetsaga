@@ -1470,7 +1470,7 @@ function finishBattle(b){
   }
   if(me.direct>=1){bump('damage',me.dealt||0);bump('crits',me.crits||0);bump('healing',me.healed||0);bump('revives',me.revives||0);
     if(b.over==='win'){bump('raidsWon');const k=S.stats.kills=S.stats.kills||{};k[b.monsterId]=(k[b.monsterId]||0)+1;if(b.eventBonus)bump('bossWins');if(me.dead)bump('fallenWins');}else bump('raidsLost');}
-  {const H=heroLinesOf(b);if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);rec({drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type]||'raid',`${b.mon.name}의 마지막 말 · “${H.last}”`);}}
+  {const H=heroLinesOf(b);if(H&&b.over==='win'){b.log.push({t:'warn',text:`${b.mon.name}의 마지막 말 · “${H.last}”`});S.me.exLog=[{ts:now(),region:b.mon.region||'개인 레이드',land:'',text:`${b.mon.name}이(가) 쓰러지며 남긴 말 · “${H.last}”`,got:''},...(S.me.exLog||[])].slice(0,12);{const rc={drun:'dungeon',dungeon:'dungeon',field:'explore',quest:'quest'}[(b.ctx||{}).type];if(rc)rec(rc,`${b.mon.name}의 마지막 말 · “${H.last}”`);}}}  /* 레이드는 마지막 말 대신 '토벌 완료, 보상'(05 recFromGrant) */
   b.result=r;
   if(ctx.drun)drunAfter(b,me);
   sysParty(b.over==='win'?'승리! 보상은 각자 지급됩니다.':'전투가 끝났습니다.');

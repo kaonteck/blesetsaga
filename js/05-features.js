@@ -1500,7 +1500,9 @@ document.addEventListener('input',e=>{const t=e.target;if(!t||!t.matches||!t.mat
 function recFromGrant(reward,source,meta){if(meta&&meta.noRec)return;
   let cat={quest:'quest',dungeon:'dungeon',mass:'raid',mail:'mail'}[source];
   if(!cat&&meta&&meta.battleId&&S.battle&&S.battle.id===meta.battleId){const t=(S.battle.ctx||{}).type;cat=t==='field'?'explore':t==='quest'?'quest':(t==='drun'||t==='dungeon')?'dungeon':'raid';}
-  if(!cat)return;const g=gotText(reward);rec(cat,((meta&&meta.label)||'보상')+(meta&&meta.battleId?' 처치':''),g?g:'');}
+  if(!cat)return;const g=gotText(reward);
+  if(cat==='raid'&&meta&&meta.battleId){rec(cat,`${meta.label||'레이드'} 토벌 완료${g?',':''}`,g||'');return;}   /* 레이드: '{몬스터} 토벌 완료, {보상}' */
+  rec(cat,((meta&&meta.label)||'보상')+(meta&&meta.battleId?' 처치':''),g?g:'');}
 
 /* ───────── 캐릭터 › 도감 탭: 물고기 · 생물 · 던전 ───────── */
 function dexTab(){const t=['fish','mon','dun'].includes(S.sel.dexTab)?S.sel.dexTab:'fish';
