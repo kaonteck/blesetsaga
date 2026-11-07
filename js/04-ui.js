@@ -25,9 +25,9 @@ const MON_IMG_BASE='https://ktuhkiihrnawcpwpqwdl.supabase.co/storage/v1/object/p
 /* 아이템·퀘스트 장면 그림도 같은 버킷(monster-art)에 올린 주소만 씀 · 상점은 같은 id 아이템 그림을 그대로 */
 const artUrl=u=>typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';
 const itemImgSrc=it=>artUrl(it&&it.img)||ITEM_IMG;
-function monImg(m){const u=m&&m.img;return typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';}
+function monImg(m){if(m&&m.noImg)return '';const u=m&&m.img;return typeof u==='string'&&u.startsWith(MON_IMG_BASE)&&!/["'<>\s]/.test(u)?u:'';}
 const MON_PH='img/mon-placeholder.png';   // 그림을 올리지 않은 몬스터의 임시 이미지(예전 글자 그림 대신)
-function monPic(m,cls,extra){const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<img class="mon-img mon-ph ${cls||''}" src="${MON_PH}" alt="${esc((m&&m.name)||'')}" loading="lazy" ${extra||''}>`;}
+function monPic(m,cls,extra){if(m&&m.noImg)return '';const u=monImg(m);return u?`<img class="mon-img ${cls||''}" src="${esc(u)}" alt="${esc(m.name||'')}" loading="lazy" ${extra||''}>`:`<img class="mon-img mon-ph ${cls||''}" src="${MON_PH}" alt="${esc((m&&m.name)||'')}" loading="lazy" ${extra||''}>`;}
 function openLink(l){
   if(!l)return;const [k,v]=l.split(':');
   if(k==='monster')go('battle',{monster:v});else if(k==='quest')go('quest',{quest:v});else go(k);
@@ -938,7 +938,7 @@ function monSayText(b){const H=heroLinesOf(b);if(!H)return '';
   if(b.over)return b.over==='win'?H.last:'';if(b.heroSay&&b.heroSay.turn===b.turn)return b.heroSay.text;return b.turn===1?H.say[0]:'';}
 function monSayHTML(b){const t=(monSayText(b)||'').trim();if(!t)return '';const paren=/^\(.*\)$/s.test(t);  /* (지문)은 따옴표 없이 */
   return `<div class="tele say" role="status">${esc(paren?t:`“${t}”`)}</div>`;}
-function monArtHTML(b,win){const mm=(typeof monster==='function'&&monster(b.monsterId))||{art:b.mon.art,name:b.mon.name};return `<div class="mon-art">${monPic({...mm,art:b.mon.art},'',b.over?`style="opacity:${win?.35:1}"`:'')}</div>`;}
+function monArtHTML(b,win){const mm=(typeof monster==='function'&&monster(b.monsterId))||{art:b.mon.art,name:b.mon.name};const pic=monPic({...mm,art:b.mon.art},'',b.over?`style="opacity:${win?.35:1}"`:'');return pic?`<div class="mon-art">${pic}</div>`:'';}
 function fightMain(){
   const b=S.battle,m=b.mon,me=b.players.find(p=>p.isMe);
   if(b.over)return outcomeHTML(b)+flogHTML();

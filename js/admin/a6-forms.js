@@ -184,6 +184,7 @@ function genericForm(k,d){
       if(key==='drops')return dropsRows();
       if(key==='art')return '';   // 예전 글자 그림 고르기 — 이제 게임에서 안 씀(그림이 없으면 임시 이미지)
       if(key==='img')return monImgRow();
+      if(key==='noImg')return '';   // '이미지 없이 보이기' — 이미지 칸 안의 체크로 다룸
       if(key==='sphases')return phasesForm();
       if(key==='mass')return massForm();}
     if(k==='item'&&key==='img')return imgRow('img','이미지','상점에서 같은 아이템에도 그대로 · 긴 변 512px로 줄여 저장','item/');
@@ -341,13 +342,15 @@ function codeToForm(){const d=parseEditor();if(!d)return;FM.d=d;redrawForm();sho
    PNG·JPG·WEBP·GIF, 긴 변 512px로 줄여 WEBP로 저장(GIF는 움직임 유지를 위해 그대로, 2MB 이하). 지우면 게임은 임시 이미지(img/mon-placeholder.png)로 돌아감 */
 const MONART_BUCKET='monster-art';
 function monImgRow(){return imgRow('img','이미지','비우면 게임에 임시 이미지 · 긴 변 512px로 줄여 저장','');}
+/* 몬스터 '이미지 없이 보이기'(noImg): 켜면 게임에서 그림 칸 자체를 안 그림(올린 이미지·임시 이미지 모두) · 메인 2026-11-07 */
 /* 이미지 칸(몬스터·아이템·퀘스트 장면 공통): p = 값 경로, pre = 버킷 안 폴더 */
 function imgRow(p,label,hint,pre){const u=pget(FM.d,p)||'';const sid=('imgst-'+p).replace(/[^\w-]/g,'_');
   return `<div class="f wide monimg"><span class="fl">${labH(label+KSEP+p.split('.').pop())} <small class="faint">${esc(hint)}</small></span>
     <div class="row" style="gap:12px;align-items:flex-start">
-      <div class="monimg-pv">${u?`<img src="${esc(u)}" alt="미리보기">`:pre===''?'<img class="ph" src="img/mon-placeholder.png" alt="임시 이미지"><span class="ph-l">임시 이미지</span>':'<span class="faint small">이미지 없음</span>'}</div>
+      <div class="monimg-pv">${pre===''&&FM.d.noImg?'<span class="faint small">이미지 없이 보임</span>':u?`<img src="${esc(u)}" alt="미리보기">`:pre===''?'<img class="ph" src="img/mon-placeholder.png" alt="임시 이미지"><span class="ph-l">임시 이미지</span>':'<span class="faint small">이미지 없음</span>'}</div>
       <div class="stack" style="gap:6px"><label class="btn btn-sm">이미지 올리기<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hide" data-fimg="${esc(p)}" data-fpre="${esc(pre)}" data-fst="${sid}"></label>
-        ${u?`<button type="button" class="btn btn-g btn-sm" data-fa="img-clear" data-ip="${esc(p)}">이미지 빼기</button>`:''}<small class="faint" id="${sid}"></small></div></div></div>`;}
+        ${u?`<button type="button" class="btn btn-g btn-sm" data-fa="img-clear" data-ip="${esc(p)}">이미지 빼기</button>`:''}<small class="faint" id="${sid}"></small>
+        ${pre===''&&p==='img'?`<label class="row" style="gap:6px;align-items:center;font-size:13px"><input type="checkbox" data-fa="img-none" ${FM.d.noImg?'checked':''}> 이미지 없이 보이기 <small class="faint">(임시 이미지도 안 나옴)</small></label>`:''}</div></div></div>`;}
 function monImgResize(file){return new Promise((res,rej)=>{if(file.type==='image/gif'){if(file.size>2097152)rej(new Error('GIF는 2MB 이하만 올릴 수 있습니다'));else res(file);return;}
   const url=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const k=Math.min(1,512/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
     c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);c.toBlob(b=>b?res(b):rej(new Error('이미지를 변환하지 못했습니다')),'image/webp',0.9);};
@@ -361,7 +364,7 @@ async function monImgUpload(file,p,pre,sid){p=p&&p!=='1'?p:'img';pre=pre||'';con
   catch(e){if(st)st.textContent='';if(e&&e.message==='cancel')return;toast('이미지 올리기 실패 · '+((e&&e.message)||e),'bad');}}
 (function(){const f=bindForm;bindForm=function(){f();const box=$('#fm-box');if(!box)return;
   $$('input[data-fimg]',box).forEach(el=>el.onchange=()=>{const fl=el.files&&el.files[0];if(fl)monImgUpload(fl,el.dataset.fimg,el.dataset.fpre,el.dataset.fst);el.value='';});};})();
-(function(){const f=fAct;fAct=function(a,el,v){if(a==='img-clear'){pset(FM.d,el.dataset.ip||'img',undefined);sync();redrawForm();return;}return f(a,el,v);};})();
+(function(){const f=fAct;fAct=function(a,el,v){if(a==='img-none'){const on=el.checked;if(on)FM.d.noImg=true;else delete FM.d.noImg;sync();redrawForm();return;}if(a==='img-clear'){pset(FM.d,el.dataset.ip||'img',undefined);sync();redrawForm();return;}return f(a,el,v);};})();
 
 /* ── 만신전: 칸을 찍어 만드는 광역 패턴(mass.patterns.cN = {name,mult,custom,aim,cells|offs}) · 메인 2026-11-05 ──
    고정 위치: 10×10 전장에서 맞을 칸을 찍는다(가운데 2×2는 보스). 대상 기준: 무작위 1명(★)을 가운데 둔 7×7에서 찍는다 → 그 사람이 선 자리 기준으로 떨어진다. */

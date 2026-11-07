@@ -3867,3 +3867,5 @@ html:not([data-theme="light"]) body{background:#1a1a19!important}
 /* 캐릭터 이미지 설정 — 채팅창 미리보기 */
 .crop-chat{pointer-events:none;padding:8px 10px;border:1px solid var(--rule-2);border-radius:8px;background:var(--night);max-width:260px}
 .crop-chat .rep{display:none}
+/* 몬스터 '이미지 없이 보이기'(noImg) — 그림 칸이 빠지면 내용이 줄 전체를 씀 */
+.boss>:first-child:not(.mon-img):not(.mon-art){grid-column:1/-1}
