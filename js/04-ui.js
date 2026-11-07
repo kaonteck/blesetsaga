@@ -1135,7 +1135,7 @@ function skillTabs(){
     <p class="sk-note faint">${note}</p><div class="sklist ${sel!==cur&&c.tier===1&&sel!==base?'locked':''}" role="list">${list.map(k=>skillRow(k)).join('')}</div>`;
 }
 function skillRow(k){const sk=SKILLS[k];
-  return `<div class="invd skd ${sk.special?'sp':''}" role="listitem"><img src="${skillImg(k)}" alt=""><div class="invd-t"><div class="row" style="gap:6px"><b>${esc(sk.name)}</b><span class="faint" style="font-size:12px">(${esc(sk.en)})</span></div>
+  return `<div class="invd skd ${sk.special?'sp':''}" role="listitem"><img src="${skillImg(k)}" alt=""><div class="invd-t"><div class="row" style="gap:6px"><b>${esc(sk.name)}</b><span class="faint" style="font-size:12px">${esc(sk.en)}</span></div>
     <div class="row" style="gap:4px">${skillBadges(k)}</div>
     <p>${esc(sk.desc)}</p>
     ${sk.cond?`<div class="skcond"><span class="skcond-l">조건</span><ol>${sk.cond.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`:''}</div></div>`;}
@@ -1143,7 +1143,7 @@ function skillDetail(c){
   const k=c.skills.includes(S.sel.skSel)?S.sel.skSel:null;
   if(!k)return `<p class="inv-hint faint">스킬을 누르면 설명이 여기에 나옵니다.</p>`;
   const sk=SKILLS[k];
-  return `<div class="invd skd"><img src="${skillImg(k)}" alt=""><div class="invd-t"><div class="row" style="gap:6px"><b>${esc(sk.name)}</b><span class="faint" style="font-size:12px">(${esc(sk.en)})</span></div>
+  return `<div class="invd skd"><img src="${skillImg(k)}" alt=""><div class="invd-t"><div class="row" style="gap:6px"><b>${esc(sk.name)}</b><span class="faint" style="font-size:12px">${esc(sk.en)}</span></div>
     <div class="row" style="gap:4px">${skillBadges(k)}</div>
     <p>${esc(sk.desc)}</p>
     ${sk.cond?`<div class="skcond"><span class="skcond-l">조건</span><ol>${sk.cond.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`:''}</div></div>`;
