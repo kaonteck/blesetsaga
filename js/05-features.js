@@ -2069,7 +2069,13 @@ function rnForm(done){if(document.getElementById('rn-gate'))return;
 /* ── 후반 이야기 사이 사냥 판수 줄이기(2026-11-07) ──
    LV60+ 필드 경험치(03 hiExpMul)와 함께, 다음 이야기까지 필드 약 22판이 되게 6·7·8장 일부 퀘스트 완료 경험치를 올림.
    (시뮬: 예전 27~69판 → 22~23판) 퀘스트 안 모든 보상 exp에 배율, 원래 값은 _exp0에 두고 다시 돌아도 겹치지 않음. 운영 페이지에서 공개한 퀘스트는 건드리지 않음. */
-const STORY_EXP_MUL={E23:1.25,E26:1.1,E28:2.15,E29:2.1,E30:1.05};
+/* (11-07 유저 결정) LV60 이후 구간 = 자동 사냥 8시간 2번(직접 사냥 약 96판) + 서브 + 데일리 3개 하루치.
+   LV60+ 블레서의 사냥 경험치(필드·자동·던전·파티 레이드·토벌·탐색) × XP_CUT, 스토리 퀘스트 경험치는 아래 배율. 만신전·퀘스트·주간 미션 보상은 그대로. */
+const XP_CUT=0.4,XP_CUT_LV=60;
+function xpCut(){return S&&S.me&&S.me.level>=XP_CUT_LV?XP_CUT:1;}
+(function(){const f=finishBattle;finishBattle=function(b){const t=((b&&b.ctx)||{}).type;
+  if(b&&b.rules&&!S.claimedB[b.id]&&!['quest','mass','chal'].includes(t)&&xpCut()!==1)b.rules.exp=Math.round((b.rules.exp||0)*xpCut());return f(b);};})();
+const STORY_EXP_MUL={E23:0.8,E24:0.2,E25:0.52,E26:0.44,E27:0.74,E28:2.15,E29:2.6,E30:0.57};
 function storyExpTune(){if(!S||!S.data||!S.data.quests)return;const srv=(S.data._srv&&S.data._srv.quest)||{};
   for(const q of S.data.quests){const f=STORY_EXP_MUL[q.id];if(!f||srv[q.id])continue;const seen=new Set();
     const walk=o=>{if(!o||typeof o!=='object'||seen.has(o))return;seen.add(o);if(o.reward&&typeof o.reward.exp==='number'){if(o.reward._exp0==null)o.reward._exp0=o.reward.exp;o.reward.exp=Math.round(o.reward._exp0*f/500)*500;}for(const k in o)walk(o[k]);};walk(q.steps);}}

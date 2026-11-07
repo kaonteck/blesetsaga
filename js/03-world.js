@@ -11,7 +11,7 @@ function soloMon(o){const L=o.statLevel||o.level;const s=soloStats(o.tier,L);con
 const LAND_BAND={meadow:[1,9],rock:[10,19],swamp:[20,29],salt:[30,39],sea:[40,49],ember:[50,64],frost:[65,79],chaos:[80,99]};
 const needOf=L=>Math.round(100+50*(L-1)+2*(L-1)*(L-1));
 /* LV60부터 필드 경험치를 조금씩 더(+10%/레벨, LV64 이상 ×1.5) — 후반 이야기 사이 사냥 판수 줄이기(2026-11-07) */
-function hiExpMul(L){return L<60?1:1+Math.min(0.5,(L-59)*0.1);}
+function hiExpMul(L){return 1;}  /* (11-07) LV60 필드 보너스 폐지 → 대신 05 끝 xpCut(LV60+ 사냥 경험치 배율) */
 const fieldExp=L=>Math.round(needOf(L)/(4+L*0.12)*hiExpMul(L));
 const fieldGold=L=>Math.round(10+L*4);
 const fieldLv=(land,i)=>{const b=LAND_BAND[land];return b?(i===0?b[0]:Math.round((b[0]+b[1])/2)):1;};
@@ -130,7 +130,7 @@ const EXPLORE=[
   ['녹물 냄새가 너무 짙다. 오늘은 더 들어가지 않기로 했다.','none']]}
 ];
 function exploreReward(r,type){const L=r.lv,j=0.8+Math.random()*0.4;
-  if(type==='exp')return {exp:Math.round(fieldExp(L)*0.8*j),gold:0,items:{}};
+  if(type==='exp')return {exp:Math.round(fieldExp(L)*0.8*j*xpCut()),gold:0,items:{}};
   if(type==='item'){const it={[r.mat]:Math.random()<0.3?2:1};const f=FOOD_BY_LAND[r.id];if(f&&Math.random()<0.6)it[f]=(it[f]||0)+1;return {exp:0,gold:0,items:it};}
   if(type==='gold')return {exp:0,gold:Math.round(fieldGold(L)*0.8*j),items:{}};
   if(type==='potion')return {exp:0,gold:0,items:{potion:1}};
@@ -947,7 +947,7 @@ function durLabel(m){return m<60?`${m}분`:`${m/60}시간`;}
 function autoOn(){return !!(S.auto&&now()<S.auto.end);}
 function autoKills(a,t){return Math.floor((Math.min(t,a.end)-a.start)/(AUTO_EVERY*60000));}
 function autoEst(mons,min){const ms=mons.map(id=>monster(id)).filter(Boolean);if(!ms.length)return {k:0,exp:0,gold:0};const k=Math.floor(min/AUTO_EVERY);
-  const ex=ms.reduce((a,m)=>a+m.exp,0)/ms.length,gd=ms.reduce((a,m)=>a+m.gold,0)/ms.length;return {k,exp:Math.round(k*ex*AUTO_EFF),gold:Math.round(k*gd*AUTO_EFF)};}
+  const ex=ms.reduce((a,m)=>a+m.exp,0)/ms.length,gd=ms.reduce((a,m)=>a+m.gold,0)/ms.length;return {k,exp:Math.round(k*ex*AUTO_EFF*xpCut()),gold:Math.round(k*gd*AUTO_EFF)};}
 function huntMons(r){return S.sel.huntArea?areaMons(S.sel.huntArea):S.data.monsters.filter(m=>m.published&&mkind(m)==='field'&&m.region===r.region);}
 function huntDlg(id){
   const r=EXPLORE.find(x=>x.id===id);const fm=huntMons(r);const mode=S.sel.huntMode||'manual',dur=S.sel.huntDur||30;const d=daily();
@@ -964,12 +964,12 @@ function autoClaim(stop){
   const a=S.auto;if(!a)return;const t=now();if(!stop&&t<a.end)return;
   const k=autoKills(a,t);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const R={exp:0,gold:0,items:{}};
   {const KS=S.stats.kills=S.stats.kills||{};for(let i=0;i<k&&ms.length;i++){const m=ms[i%ms.length];R.exp+=m.exp*AUTO_EFF;R.gold+=m.gold*AUTO_EFF;KS[m.id]=(KS[m.id]||0)+1;}}
-  R.exp=Math.round(R.exp);R.gold=Math.round(R.gold);S.auto=null;
+  R.exp=Math.round(R.exp*xpCut());R.gold=Math.round(R.gold);S.auto=null;
   const label=`${a.region} 자동 사냥`;const ups=grant(R,'field',{label,region:a.region});
   const got=gotText(R);S.me.exLog=[{ts:t,region:label,land:a.land,text:`${stop?'자동 사냥을 중단했다. ':''}${durLabel(a.min)} 동안 몬스터 ${k}마리를 처치했다.`,got},...(S.me.exLog||[])].slice(0,12);rec('explore',`${label} · 자동 사냥 ${durLabel(a.min)} · ${k}마리 처치`,got);
   save();render();toast(`${label} 보상 · ${k}마리${got?' · '+got:''}${ups?` · 레벨 업!`:''}`,'good');
 }
-function autoGain(a,t){const e=autoEst(a.mons,0);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const k=autoKills(a,t);if(!ms.length)return {exp:0,gold:0};let ex=0,gd=0;for(let i=0;i<k;i++){const m=ms[i%ms.length];ex+=m.exp*AUTO_EFF;gd+=m.gold*AUTO_EFF;}return {exp:Math.round(ex),gold:Math.round(gd)};}
+function autoGain(a,t){const e=autoEst(a.mons,0);const ms=a.mons.map(id=>monster(id)).filter(Boolean);const k=autoKills(a,t);if(!ms.length)return {exp:0,gold:0};let ex=0,gd=0;for(let i=0;i<k;i++){const m=ms[i%ms.length];ex+=m.exp*AUTO_EFF;gd+=m.gold*AUTO_EFF;}return {exp:Math.round(ex*xpCut()),gold:Math.round(gd)};}
 /* 자동 사냥 진행 막대는 그 사냥을 시작한 지역(또는 탐험 지역) 칸 안, 설명 아래·탐색 버튼 위에 표시 */
 function autoHere(land,area){const a=S.auto;if(!a||a.land!==land)return false;if('area' in a)return (a.area||'')===(area||'');const r=EXPLORE.find(x=>x.id===land);return area?((areaMons(area)[0]||{}).region===a.region):(r&&r.region===a.region);}
 function autoBar(){
