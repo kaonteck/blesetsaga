@@ -52,6 +52,13 @@ class QB{
 }
 window.__WK=()=>{const d=new Date(Date.now()+9*3600e3);const back=(d.getUTCDay()+6)%7;return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back)).toISOString().slice(0,10);};
 const RPC={
+  goal_status(){const db=load();const g=db.goal||(db.goal={kind:'kill',name:'몬스터 10마리',target:10,total:0,mine:{},paid:false});store(db);
+    return {week:window.__WK(),kind:g.kind,name:g.name,descr:'',target:g.target,total:g.total,mine:g.mine[UID]||0,done:g.total>=g.target,gold:100,items:{},prev:null};},
+  goal_add(a){const db=load();const g=db.goal;window.__GOAL_ADDS=(window.__GOAL_ADDS||[]).concat([[a.p_kind,a.p_n]]);
+    if(!(a.p_kind===g.kind||(g.kind==='kill'&&/^kill:/.test(a.p_kind))))return {ok:false,reason:'OTHER_KIND'};
+    if(g.total>=g.target)return {ok:false,reason:'DONE',total:g.total,target:g.target,done:true};
+    g.total+=a.p_n;g.mine[UID]=(g.mine[UID]||0)+a.p_n;store(db);return {ok:true,added:a.p_n,mine:g.mine[UID],total:g.total,target:g.target,done:g.total>=g.target};},
+  goal_settle(){return 0;},
   fish_settle(){const db=load();let n=0;const cur=window.__WK();const best={};
     db.fish_catches.filter(f=>f.week<cur).forEach(f=>{const k=f.week+'|'+f.land;const b=best[k];if(!b||f.size_cm>b.size_cm||(f.size_cm===b.size_cm&&f.created_at<b.created_at))best[k]=f;});
     Object.values(best).forEach(f=>{if(db.fish_awards.some(a=>a.week===f.week&&a.land===f.land))return;db.fish_awards.push({week:f.week,land:f.land,user_id:f.user_id,species:f.species,size_cm:f.size_cm});

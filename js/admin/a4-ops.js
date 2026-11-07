@@ -297,6 +297,55 @@ VIEWS.fish=async(el)=>{
   $('#fs-settle').onclick=async()=>{const n=await q(A.sb.rpc('fish_settle'));if(n!=null){toast(n?`${n}곳 정산했습니다(1위에게 우편 발송).`:'정산할 지난 주 기록이 없습니다.','good');go('fish');}};
 };
 
+/* ── 공동 목표 (031: 한 주에 하나, 모든 블레서가 함께 · 기여한 사람에게만 우편) ── */
+const GOAL_KIND={kill:'몬스터 처치(아무 몬스터)',killid:'몬스터 처치(한 종류)',explore:'탐색',fish:'낚시 성공',dungeon:'던전 공략',raid:'파티 레이드·토벌전 승리'};
+function goalWeek(t){const d=new Date((t||Date.now())+9*3600e3-5*3600e3);const back=(d.getUTCDay()+6)%7;return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-back)).toISOString().slice(0,10);}
+const goalKindLabel=k=>/^kill:/.test(k)?`처치 · ${k.slice(5)}`:(GOAL_KIND[k]||k);
+const goalItems=o=>Object.entries(o||{}).map(([k,n])=>`${k}×${n}`).join(', ');
+VIEWS.goals=async(el)=>{
+  const rows=await q(A.sb.rpc('admin_goals',{p_weeks:12}));
+  if(!rows){el.innerHTML='<div class="msg bad">공동 목표를 불러오지 못했습니다(031 적용 전이면 SQL을 먼저 적용).</div>';return;}
+  const now=goalWeek(),next=goalWeek(Date.now()+7*864e5);
+  const cur=rows.find(r=>r.week===now);
+  const pick=A.goalWk||now, g=rows.find(r=>r.week===pick)||{};
+  const isId=/^kill:/.test(g.kind||'');
+  el.innerHTML=`<div class="two">
+    <div class="panel"><h3>이번 주 <span class="faint" style="font-weight:400">${now} 주간 · 월요일 05:00 바뀜</span></h3>
+      ${cur?`<p style="margin:0 0 6px"><b>${esc(cur.name)}</b> <span class="faint small">${esc(goalKindLabel(cur.kind))}${cur.auto?' · 기본 목록':''}</span></p>
+      <div class="bar" style="height:10px;background:var(--line);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${Math.min(100,cur.total/cur.target*100).toFixed(1)}%;background:var(--accent,#5577bf)"></i></div>
+      <p class="small" style="margin:6px 0 0"><span class="num">${cur.total.toLocaleString()}</span> / <span class="num">${cur.target.toLocaleString()}</span> · 기여 ${cur.people}명 · ${cur.paid_at?`<b>달성 · 우편 ${cur.paid_n}통 보냄</b>`:cur.done_at?'달성(보내는 중)':'진행 중'}</p>
+      <p class="faint small" style="margin:4px 0 0">보상: ${cur.gold?cur.gold.toLocaleString()+'골드':''}${cur.gold&&goalItems(cur.items)?' · ':''}${esc(goalItems(cur.items))||(cur.gold?'':'없음')}</p>`:'<p class="faint">없음</p>'}
+      <div class="row" style="gap:6px;margin-top:10px"><button class="btn btn-sm" id="gl-settle">지급 누락 확인</button><button class="btn btn-sm" id="gl-reload">새로고침</button></div></div>
+    <div class="panel"><h3>목표 정하기</h3>
+      <form id="gl-form" class="stack" style="gap:8px">
+        <label class="f">주간<select id="gl-wk"><option value="${now}" ${pick===now?'selected':''}>이번 주 (${now})</option><option value="${next}" ${pick===next?'selected':''}>다음 주 (${next})</option></select></label>
+        <label class="f">종류<select id="gl-kind">${Object.entries(GOAL_KIND).map(([k,l])=>`<option value="${k}" ${(isId?'killid':g.kind)===k?'selected':''}>${l}</option>`).join('')}</select></label>
+        <label class="f" id="gl-mon-f" ${isId?'':'hidden'}>몬스터 id<input id="gl-mon" maxlength="40" pattern="[a-z0-9_]+" value="${esc(isId?g.kind.slice(5):'')}" placeholder="예) m_dog"></label>
+        <label class="f">목표 수<input type="number" id="gl-target" min="1" max="10000000" required value="${g.target||''}"></label>
+        <label class="f">이름 (40자)<input id="gl-name" maxlength="40" required value="${esc(g.name||'')}" placeholder="예) 들개 1만 마리"></label>
+        <label class="f">설명 (200자)<input id="gl-descr" maxlength="200" value="${esc(g.descr||'')}"></label>
+        <label class="f">보상 골드 (0~100,000)<input type="number" id="gl-gold" min="0" max="100000" value="${g.gold??1000}"></label>
+        <label class="f">보상 아이템 <span class="faint small">id:개수, 쉼표로</span><input id="gl-items" value="${esc(Object.entries(g.items||{}).map(([k,n])=>k+':'+n).join(', '))}" placeholder="예) potion:3, elixir:1"></label>
+        <div class="row" style="gap:6px"><button class="btn btn-primary btn-sm" type="submit">${g.week?'고치기':'만들기'}</button>${g.week&&!g.paid_at?'<button class="btn btn-sm" type="button" id="gl-del">지우기(기본 목록으로)</button>':''}</div>
+        <p class="faint small" style="margin:0">${g.paid_at?'이 주는 이미 보상을 보내서 이름·설명만 고칠 수 있습니다.':'목표를 안 정한 주는 기본 순환 목록(몬스터·탐색·던전·낚시·레이드)에서 저절로 정해집니다. 합계는 운영자도 바꿀 수 없습니다.'}</p>
+      </form></div>
+    <div class="panel" style="grid-column:1/-1"><h3>지난 기록</h3>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>주간</th><th>목표</th><th>종류</th><th>진행</th><th>기여</th><th>보상</th><th>달성</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td class="small">${esc(r.week)}</td><td>${esc(r.name)}${r.auto?' <span class="faint small">(기본)</span>':''}</td><td class="small">${esc(goalKindLabel(r.kind))}</td><td class="num">${r.total.toLocaleString()} / ${r.target.toLocaleString()}</td><td class="num">${r.people}</td><td class="small">${r.gold?r.gold.toLocaleString()+'G ':''}${esc(goalItems(r.items))}</td><td class="small faint">${r.paid_at?`${fmtTime(r.paid_at)} · ${r.paid_n}통`:'—'}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">기록 없음</td></tr>'}
+      </tbody></table></div></div></div>`;
+  $('#gl-reload').onclick=()=>go('goals');
+  $('#gl-settle').onclick=async()=>{const n=await q(A.sb.rpc('goal_settle'));if(n!=null){toast(n?`${n}통 보냈습니다.`:'보낼 우편이 없습니다.','good');go('goals');}};
+  $('#gl-wk').onchange=e=>{A.goalWk=e.target.value;go('goals');};
+  $('#gl-kind').onchange=e=>{$('#gl-mon-f').hidden=e.target.value!=='killid';};
+  const del=$('#gl-del');if(del)del.onclick=async()=>{if(!confirm('이 주 목표를 지울까요? 기여 기록도 함께 지워집니다.'))return;if(await q(A.sb.from('weekly_goals').delete().eq('week',pick),'지웠습니다.'))go('goals');};
+  $('#gl-form').onsubmit=async e=>{e.preventDefault();
+    const kv=$('#gl-kind').value,mon=$('#gl-mon').value.trim();
+    if(kv==='killid'&&!/^[a-z0-9_]{1,40}$/.test(mon)){toast('몬스터 id를 적어 주세요(영문 소문자·숫자·_).','bad');return;}
+    const items={};for(const part of $('#gl-items').value.split(',').map(x=>x.trim()).filter(Boolean)){const m=part.match(/^([a-z0-9_]+)\s*[:×x]\s*(\d+)$/i);if(!m){toast(`아이템 형식: ${part}`,'bad');return;}items[m[1]]=+m[2];}
+    const row={week:pick,kind:kv==='killid'?'kill:'+mon:kv,target:+$('#gl-target').value,name:$('#gl-name').value.trim(),descr:$('#gl-descr').value.trim(),gold:+$('#gl-gold').value||0,items};
+    if(await q(A.sb.from('weekly_goals').upsert(row,{onConflict:'week'}),'저장했습니다.'))go('goals');};
+};
+
 // ───────── 부정 의심 (016 세이브 검사) ─────────
 // 서버가 세이브를 검사하다 레벨·골드·인벤토리를 허용치까지만 남긴 기록. 값은 이미 잘렸으니 여기서는 확인·정리만 한다.
 const GUARD_K={level:'레벨',gold:'골드',inv:'아이템 개수',first:'첫 업로드',items:'아이템 급증',item_unknown:'없는 아이템',gear:'높은 장비'};
