@@ -177,7 +177,7 @@ function genericForm(k,d){
   const keys=Object.keys(d);const P=FPICK[k]||{};
   const isMass=k==='monster'&&d.kind==='event';
   if(k==='monster')(isMass?['drops','mass']:['drops','sphases']).forEach(x=>{if(!keys.includes(x))keys.push(x);});
-  if(k==='item'){const add=d.type==='equip'?['stats']:d.type==='use'?['useHeal','useHealPct','useCure','buff','buff2']:[];add.forEach(x=>{if(!keys.includes(x))keys.push(x);});}
+  if(k==='item'){const add=d.type==='equip'?['stats','classReq',...(d.slot==='weapon'?['wtype']:[])]:d.type==='use'?['useHeal','useHealPct','useCure','buff','buff2']:[];add.forEach(x=>{if(!keys.includes(x))keys.push(x);});}
   if((k==='monster'||k==='item')&&!keys.includes('img'))keys.splice(Math.max(0,keys.indexOf(k==='item'?'desc':'art')+1),0,'img');
   const row=key=>{const v=d[key];const lab=FLABEL[key]?FLABEL[key]+KSEP+key:key;
     if(k==='monster'){
@@ -441,10 +441,21 @@ function imgCrop(file,pre){return new Promise((res,rej)=>{const url=URL.createOb
 
 /* ── 아이템 능력치 · 사용 효과를 칸으로(유저 요청 2026-11-08) ──
    stats(착용 능력치) · useHeal/useHealPct/useCure(전투 중 사용 효과, 01 battleItem) · buff/buff2(평소에 사용하면 n분 동안). 비우거나 0이면 그 값을 지움 */
-const IFX_KEYS=['stats','useHeal','useHealPct','useCure','buff','buff2'];
+const IFX_KEYS=['stats','useHeal','useHealPct','useCure','buff','buff2','classReq','wtype'];
 const IFX_STATS=[['maxHp','체력'],['atk','공격력'],['mag','마력'],['def','방어력'],['agi','민첩'],['luk','행운'],['mov','이동']];
 function ifxNum(o,k,label,v,o2={}){const id=fid();return `<label class="f" for="${id}"><span class="fl">${labH(label+KSEP+(o?o+'.':'')+k)}${o2.hint?` <small class="faint">${esc(o2.hint)}</small>`:''}</span><input id="${id}" type="number" ${o2.min!=null?`min="${o2.min}"`:''} step="${o2.step||1}" data-fa="ifx-num" data-o="${o||''}" data-k="${k}" value="${v??''}" placeholder="${esc(o2.ph||'없음')}"></label>`;}
 function itemFxRow(key,d){
+  const W=fw(),G=n=>{try{return W.eval?W.eval(n):null;}catch(e){return null;}},CL=G('CLASSES')||{},WT=G('WTYPE')||{},CW=G('CLASS_WEAPON')||{};   /* 게임 프레임의 const 전역은 window 속성이 아니라 eval로 */
+  if(key==='wtype'){if(d.type!=='equip'||d.slot!=='weapon')return '';const id=fid();
+    return `<label class="f" for="${id}"><span class="fl">${labH('무기 종류'+KSEP+'wtype')}</span><select id="${id}" data-p="_" data-fa="ifx-wtype"><option value="">없음</option>${Object.entries(WT).map(([k,l])=>`<option value="${k}" ${d.wtype===k?'selected':''}>${esc(l)}</option>`).join('')}</select></label>`;}
+  if(key==='classReq'){if(d.type!=='equip')return '';const on=new Set(d.classReq||[]);
+    const base=Object.keys(CL).filter(c=>!CL[c].base),kids=b=>Object.keys(CL).filter(c=>CL[c].base===b);
+    const btn=c=>`<button type="button" class="sg ifx-cls" role="checkbox" data-fa="ifx-cls" data-v="${c}" aria-checked="${on.has(c)}">${esc(CL[c].name||c)}</button>`;
+    const wtCls=d.wtype?Object.keys(CW).filter(c=>(CW[c]||[]).includes(d.wtype)).map(c=>(CL[c]||{}).name||c):null;
+    const hint=on.size?'고른 클래스(와 그 상위 클래스)만 착용 · 무기 종류보다 우선':wtCls?`비우면 무기 종류 「${WT[d.wtype]||d.wtype}」 기준 · ${wtCls.join('·')||'없음'}`:'비우면 모든 클래스';
+    return `<div class="f wide"><span class="fl">${labH('착용 가능 클래스'+KSEP+'classReq')} <small class="faint">${esc(hint)}</small></span>
+      <div class="stack" style="gap:6px">${base.map(b=>`<div class="seg ifx-cls-row">${btn(b)}${kids(b).map(btn).join('')}</div>`).join('')}
+      ${on.size?`<div><button type="button" class="btn btn-g btn-sm" data-fa="ifx-cls-clear">모두 해제</button></div>`:''}</div></div>`;}
   if(key==='stats'){const st=d.stats||{};return `<div class="f wide"><span class="fl">${labH('착용 능력치'+KSEP+'stats')} <small class="faint">장착하면 더해지는 값 · 비우면 없음</small></span><div class="fgrid">${IFX_STATS.map(([k,l])=>ifxNum('stats',k,l,st[k])).join('')}</div></div>`;}
   if(key==='useHeal')return ifxNum('','useHeal','전투 중 HP 회복량',d.useHeal,{min:0,hint:'고정 값'});
   if(key==='useHealPct')return ifxNum('','useHealPct','전투 중 HP 회복 (최대 HP %)',d.useHealPct,{min:0,step:0.5,hint:'둘 다 있으면 큰 쪽'});
@@ -457,6 +468,9 @@ function itemFxRow(key,d){
 (function(){const f=fAct;fAct=function(a,el,v){
   if(a==='ifx-num'){const o=el.dataset.o,k=el.dataset.k,n=el.value===''?null:+el.value;const tgt=o?(FM.d[o]=FM.d[o]||{}):FM.d;
     if(n==null||!isFinite(n)||n===0)delete tgt[k];else tgt[k]=n;if(o&&!Object.keys(tgt).length)delete FM.d[o];sync();return;}
+  if(a==='ifx-wtype'){if(el.value)FM.d.wtype=el.value;else delete FM.d.wtype;sync();redrawForm();return;}
+  if(a==='ifx-cls'){const c=v||el.dataset.v;const L=new Set(FM.d.classReq||[]);if(L.has(c))L.delete(c);else L.add(c);let CL={};try{CL=fw().eval('CLASSES')||{};}catch(e){}const arr=Object.keys(CL).filter(x=>L.has(x));if(arr.length)FM.d.classReq=arr;else delete FM.d.classReq;sync();redrawForm();return;}
+  if(a==='ifx-cls-clear'){delete FM.d.classReq;sync();redrawForm();return;}
   if(a==='ifx-bool'){if(el.checked)FM.d[el.dataset.k]=true;else delete FM.d[el.dataset.k];sync();return;}
   if(a==='ifx-buff'){const k=el.dataset.k;if(!el.value)delete FM.d[k];else FM.d[k]={stat:el.value,val:(FM.d[k]&&FM.d[k].val)||5,min:(FM.d[k]&&FM.d[k].min)||10};sync();redrawForm();return;}
   if(a==='ifx-bnum'){const b=FM.d[el.dataset.k];if(!b)return;const n=+el.value;if(el.value!==''&&isFinite(n)&&n>0)b[el.dataset.f]=n;sync();return;}
