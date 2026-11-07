@@ -3828,3 +3828,10 @@ button.sky-n:hover,button.sky-n:focus-visible{color:var(--gold-hi);text-decorati
 .uinfo .u-btn.ic svg{width:13px;height:13px}
 .uinfo .u-stats{display:grid;grid-template-columns:repeat(4,max-content);gap:6px 14px}
 .uinfo .u-stats .si{gap:3px}
+
+/* 다크 테마 바탕·패널 색을 Claude 앱 다크 모드에 맞춤(유저 요청) — 따뜻한 짙은 회색. 라이트는 그대로 */
+:root:not([data-theme="light"]){
+  --void:#1a1a19; --night:#161615; --slab:#222329; --slab-2:#2a2b32; --slab-3:#34353d;
+  --rule:#35363f; --rule-2:#494b56;
+}
+html:not([data-theme="light"]) body{background:#1a1a19!important}
