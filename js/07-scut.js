@@ -66,33 +66,43 @@ Object.assign(ACTS,{
 vMain=function(){return `<div class="main-c">${ticker()}${skyBar()}${nextGoalHTML()}${scutPanel()}${recruitPanel()}</div>`;};
 
 /* ── 화면 높이 맞춤 (데스크톱 >980px, 3단 화면 전부) ──
-   T = 화면 아래(첫 화면 기준). 왼쪽·오른쪽 칸은 높이 T(내용이 더 길면 그만큼) + sticky → 긴 페이지에서도 화면을 꽉 채운 채 따라옴.
-   가운데는 '각 세로줄의 맨 아래 패널'을 아래 끝까지 늘림(빈 공간). 늘렸더니 패널이 아닌 내용이 밀려나면 되돌림.
+   3단은 CSS가 화면 높이에 고정(양옆 칸 고정 · 가운데 .tri-c만 스크롤).
+   가운데 내용이 칸보다 짧으면 '각 세로줄의 맨 아래 패널'을 칸 아래 끝까지 늘림(빈 공간). 늘렸더니 패널이 아닌 내용이 밀려나면 되돌림.
    전투 화면(진행 중)은 건드리지 않음. */
 const FIT_SEL='.panel,.page-head,.skybar,.ticker';
 function fitClear(){$$('[data-fit]').forEach(e=>{e.style.minHeight='';e.style.height='';delete e.dataset.fit;});}
+function triFixed(){return typeof innerWidth==='number'&&innerWidth>980&&!!$('.wrap.tri');}
 function fitMainCols(){if(typeof getComputedStyle!=='function')return;fitClear();
-  const W=$('.wrap.tri'),L=$('.tri-l'),R=$('.tri-r'),C=$('.tri-c');const card=L&&L.firstElementChild;
-  if(!W||!L||!R||!C||innerWidth<=980)return;
+  const C=$('.wrap.tri .tri-c');
+  if(!C||innerWidth<=980)return;
   if(S.route==='battle'&&(S.battle||S.drun))return;
-  const y=window.scrollY,R0=el=>el.getBoundingClientRect(),top=el=>R0(el).top+y,bot=el=>R0(el).bottom+y;
-  const pb=parseFloat(getComputedStyle(W).paddingBottom)||0;const T0=innerHeight-pb;
-  /* 가운데가 화면보다 조금(화면 높이 절반 이내) 길면 양옆도 그 길이까지 → 세 칸 아래 끝이 같음. 훨씬 길면 양옆은 화면 높이로 따라옴(sticky) */
-  const cb0=bot(C);const side=Math.round(Math.max(T0,bot(L),bot(R),cb0<=T0+innerHeight*.5?cb0:0));
+  const R0=el=>el.getBoundingClientRect(),c0=R0(C).top-C.scrollTop,bot=el=>R0(el).bottom-c0;
+  const H=C.clientHeight;
+  const cb=Math.max(0,...[...C.children].map(bot));
   const set=(el,k,v)=>{el.style[k]=Math.max(0,Math.round(v))+'px';el.dataset.fit='1';};
-  set(L,'height',side-top(L));if(card)set(card,'minHeight',side-top(card));set(R,'height',side-top(R));
-  /* 가운데: 겹치지 않는 맨 아래 패널들 */
-  const cb=cb0;const target=Math.max(side,cb);
   const all=[...C.querySelectorAll(FIT_SEL)].filter(e=>e.offsetParent&&!e.parentElement.closest(FIT_SEL)&&R0(e).height>0);
   /* 목록의 한 줄(접는 칸·같은 모양이 3개 이상 늘어선 것)은 늘리지 않음 — 마지막 줄만 커져 어색해짐 */
   const sibs3=e=>[...e.parentElement.children].filter(x=>x.tagName===e.tagName&&x.classList[0]===e.classList[0]).length>=3;
   /* 한 겹 감싼 목록(.mgrp 안의 .mcard 등)도 줄로 봄 — 가운데 칸까지 올라가며 확인 */
   const rowLike=e=>{if(e.tagName==='DETAILS')return true;for(let n=e;n&&n!==C&&n.parentElement;n=n.parentElement)if(sibs3(n))return true;return false;};
   const lows=all.filter(p=>{const a=R0(p);return !all.some(q=>{if(q===p)return false;const b=R0(q);return b.top>=a.bottom-2&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>8;});});
-  if(target<=cb+1||!lows.length||lows.some(rowLike))return;
+  if(H<=cb+1||!lows.length||lows.some(rowLike))return;
   const gap=cb-Math.max(...lows.map(bot));/* 패널 아래 여백(페이지 안쪽 여백)은 그대로 */
-  lows.forEach(p=>set(p,'minHeight',R0(p).height+(target-gap-bot(p))));
-  if(bot(C)>target+2)lows.forEach(p=>{p.style.minHeight='';delete p.dataset.fit;});}
+  lows.forEach(p=>set(p,'minHeight',R0(p).height+(H-gap-bot(p))));
+  if(C.scrollHeight>H+2)lows.forEach(p=>{p.style.minHeight='';delete p.dataset.fit;});}
+/* 가운데 칸 스크롤 위치: 다시 그려도(같은 화면이면) 그대로. scrollTo(맨 위로 등)는 가운데 칸에도 적용 */
+let TRI_WANT=null,TRI_RT=0;
+(function(){if(typeof window==='undefined'||typeof window.scrollTo!=='function')return;const o=window.scrollTo;
+  window.scrollTo=function(a,b){try{o.apply(window,arguments);}catch(_){}
+    const c=triFixed()&&$('.tri-c');if(!c)return;const t=(a&&typeof a==='object')?a.top:b;if(typeof t==='number'){c.scrollTop=t;TRI_WANT=t;}};})();
+(function(){const f=render;render=function(){const c=$('.tri-c'),st=c?c.scrollTop:0,rt=S&&S.route;TRI_WANT=null;
+  const out=f.apply(this,arguments);
+  const n=$('.tri-c');if(n&&triFixed()){const t=TRI_WANT!=null?TRI_WANT:(rt===(S&&S.route)?st:0);if(t){n.scrollTop=t;TRI_RT=Date.now();}}
+  TRI_WANT=null;return out;};})();
+/* 가운데 칸을 스크롤하면 떠 있는 작은 창(기록 펼침·정보 카드 등)은 닫음 — 누른 줄에서 떨어져 보이지 않게 */
+document.addEventListener('scroll',e=>{const t=e.target;if(t&&t.classList&&t.classList.contains('tri-c')&&Date.now()-TRI_RT>200)closeRmem();},{capture:true,passive:true});
+/* 레이드 › 던전: 지역 묶음(<details>)은 하나만 펼침 — 파티 레이드·토벌전처럼 다른 것은 자동으로 닫힘 */
+document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.classList||!d.classList.contains('dun-dd')||!d.open)return;$$('details.dun-dd[open]').forEach(x=>{if(x!==d)x.open=false;});},true);
 fitSideChat=fitMainCols;
 /* 오른쪽 칸 접기·펼치기(주간 미션·기록 등)가 끝난 뒤 한 번 더 — 채팅이 최소보다 작아지면 세 칸을 함께 늘리고, 줄어들면 다시 화면에 맞춤 */
 function fitLater(ms){clearTimeout(fitMainCols.t);fitMainCols.t=setTimeout(()=>{try{fitMainCols();}catch(_){}},ms);}

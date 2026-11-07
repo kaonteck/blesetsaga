@@ -823,7 +823,7 @@ function dungeonTab(){
   const d=daily();const busy=busyReason();const lvOf=id=>{const I=MAP_INFO[id]||{};const m=monster(id);return I.lv||(m?m.level:999);};
   const focusLand=S.sel.dfocus&&landOfSpot(S.sel.dfocus);
   const secs=landOrder().map(land=>{const ds=MAP_SPOTS.filter(x=>x[3]===land&&x[1]==='dungeon').sort((a,b)=>lvOf(a[0])-lvOf(b[0]));if(!ds.length)return '';
-    return `<details class="dun-dd panel" ${focusLand===land?'open':''}><summary><b>${esc(LANDS[land])}</b><span class="faint">${ds.length}곳 · LV${ds.map(x=>lvOf(x[0])).join(' / ')}</span></summary><div class="dun-list">${ds.map(([id,,n])=>{
+    return `<details class="dun-dd panel" name="dun-dd" ${focusLand===land?'open':''}><summary><b>${esc(LANDS[land])}</b><span class="faint">${ds.length}곳 · LV${ds.map(x=>lvOf(x[0])).join(' / ')}</span></summary><div class="dun-list">${ds.map(([id,,n])=>{
       const I=MAP_INFO[id]||{};const m=monster(id);
       let act='';
       if(id==='temple'){act=weeklyClosed()?`<p class="faint" style="font-size:12px">백야의 신전은 지금 닫혀 있습니다.</p>`:`<div class="row cj-act"><button class="btn btn-sm btn-primary" data-act="rtab" data-tab="weekly">토벌전으로</button></div>`;}

@@ -3807,7 +3807,18 @@ html{overflow-y:scroll}
 button.sky-n{background:none;border:0;padding:0;font:inherit;font-size:11px;color:var(--text);cursor:pointer;text-align:left;max-width:100%}
 button.sky-n:hover,button.sky-n:focus-visible{color:var(--gold-hi);text-decoration:underline;text-underline-offset:2px;outline:none}
 @media (min-width:981px){
-  .wrap.tri .tri-l,.wrap.tri .tri-r{max-height:none;overflow:visible;position:sticky;top:calc(var(--top-h,64px) + 12px)}
+  /* 양옆 칸 고정 · 가운데만 스크롤: 화면(상단 바 아래) 높이에 3단을 꽉 맞추고 페이지 자체는 스크롤하지 않음 */
+  html:has(.wrap.tri){overflow:hidden}
+  .wrap.tri{height:calc(100vh - var(--top-h,64px));height:calc(100dvh - var(--top-h,64px));box-sizing:border-box;grid-template-rows:minmax(0,1fr);align-items:stretch;padding-bottom:16px}
+  .wrap.tri .tri-l,.wrap.tri .tri-r{position:static;top:auto;height:auto;max-height:none;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+  .wrap.tri .tri-l::-webkit-scrollbar,.wrap.tri .tri-r::-webkit-scrollbar{display:none}
+  .wrap.tri .tri-l>:first-child{flex:1 0 auto}
+  /* 가운데 칸: 스크롤바는 칸 사이 여백(gap) 안에 — 내용 폭은 그대로, 패널 테두리·빛이 잘리지 않게 왼쪽도 조금 */
+  .wrap.tri .tri-c{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;margin:0 -10px 0 -4px;padding:0 4px 0 4px;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--rule-2) transparent}
+  .wrap.tri .tri-c::-webkit-scrollbar{width:6px}
+  .wrap.tri .tri-c::-webkit-scrollbar-track{background:transparent}
+  .wrap.tri .tri-c::-webkit-scrollbar-thumb{background:var(--rule-2);border-radius:3px}
+  .wrap.tri .tri-c::-webkit-scrollbar-thumb:hover{background:var(--faint)}
   .wrap.tri .tri-r .panel.chat.chat-main{flex:1 1 0;height:auto;min-height:300px}
   .wrap.tri .tri-c>.wrap.page,.wrap.tri .tri-c>.page{padding-bottom:0}
   .wrap.tri[data-route="main"] .main-c>.rpanel .rp-list{flex:1 1 0;height:auto;min-height:calc(var(--rr-h)*4 + 8px*3)}

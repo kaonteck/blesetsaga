@@ -1720,6 +1720,9 @@ html[data-theme="light"] .sc-opt:hover,html[data-theme="light"] .sc-opt:focus-vi
 html[data-theme="light"] .sc-opt.on{border-color:var(--gold-hi);color:var(--gold-hi)}
 html[data-theme="light"] button.sky-n{background:none;border:0;color:var(--text)}
 html[data-theme="light"] button.sky-n:hover,html[data-theme="light"] button.sky-n:focus-visible{color:var(--gold-hi);outline:none}
+@media (min-width:981px){html[data-theme="light"] .wrap.tri .tri-c::-webkit-scrollbar-track{background:transparent}
+html[data-theme="light"] .wrap.tri .tri-c::-webkit-scrollbar-thumb{background:var(--rule-2)}
+html[data-theme="light"] .wrap.tri .tri-c::-webkit-scrollbar-thumb:hover{background:var(--faint)}}
 html[data-theme="light"] .uinfo .u-lv{color:var(--muted)}
 html[data-theme="light"] .uinfo .u-btn{background:none;color:var(--text)}
 html[data-theme="light"] .uinfo .u-btn.btn-primary{background:#95afe3;border-color:var(--steel-hi);color:#ebeef4}
