@@ -1599,7 +1599,7 @@ if(ONLINE){
      goalMatch(kind) → 지금 목표에 셀 행동인지(true/false)
    서버: 1분마다 다시 읽음. 한 블레서가 올릴 수 있는 양은 서버가 1분 단위로 제한(처치 1분 6마리·최대 300 쌓임 등),
    넘친 양은 버리지 않고 대기분으로 미뤄 두었다가 나중에 넣음(032, 대기분 상한 처치 2,000·탐색·낚시 50·던전·레이드 30). */
-let GOAL=null;
+var GOAL=null;   /* var: 07-goal의 typeof GOAL이 08 실행 전에 불려도 오류 없게 */
 const GZ={q:{},t:null,poll:null,busy:false};
 function goalMatch(kind){const g=GOAL;if(!g||g.done||!kind)return false;return kind===g.kind||(g.kind==='kill'&&/^kill:/.test(kind));}
 function gzNotify(){try{if(typeof onGoal==='function')onGoal(GOAL);}catch(e){console.warn(e);}}
