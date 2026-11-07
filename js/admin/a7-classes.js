@@ -67,19 +67,25 @@ function skPayload(k){const c=skCur(k),D=skFlat(k),o={};
   if(!skSame(c.fx,D.fx))o.fx=(c.fx||[]).filter(x=>x[1]&&x[1].trim()).map(x=>[x[0],x[1].trim()]);
   return o;}
 
-/* ── 목록 ── */
-function clsList(){const ids=Object.keys(clsDef());if(!ids.length)return '<p class="msg bad">게임 기본값을 읽지 못했습니다. 새로고침해 주세요.</p>';
-  const base=ids.filter(i=>!clsDef()[i].base);
-  const card=id=>{const D=clsDef()[id],v=clsCur(id);const nOv=(D.skills||[]).filter(k=>skSrv(k)).length;
-    return `<button type="button" class="cl-card ${D.base?'adv':''}" data-clopen="${esc(id)}"><span class="cl-cn"><b>${esc(D.name)}</b><small class="faint">${esc(D.en||id)} · ${ROLE_KO[D.role]||''}${D.base?'':' · 1차'}</small></span>
-      <span class="cl-cs num"><span>LV99 HP ${nfmt(clsAt(v,'hp',99))}</span><span>MP ${nfmt(clsAt(v,'mp',99))}</span><span>${D.magic?'마력 '+nfmt(clsAt(v,'mag',99)):'공격력 '+nfmt(clsAt(v,'atk',99))}</span></span>
-      <span class="cl-cc">${srcChip(id)}<span class="chip dim">스킬 ${(D.skills||[]).length}${nOv?` · 서버 값 ${nOv}`:''}</span></span><span class="cl-go" aria-hidden="true">›</span></button>`;};
-  return `<div class="panel"><p class="small muted" style="margin:0 0 10px">클래스를 누르면 레벨별 성장과 스킬을 따로 고칠 수 있습니다. 상위 클래스는 값을 따로 두지 않으면 기본 클래스 값을 따라갑니다.</p>
-    ${base.map(b=>`<div class="cl-grp">${[b,...ids.filter(i=>clsDef()[i].base===b)].map(card).join('')}</div>`).join('')}</div>`;}
+/* ── 목록 ── (콘텐츠 편집과 같은 왼쪽 목록 패널) */
+CLS.q='';
+function clsOrder(){const ids=Object.keys(clsDef());const out=[];ids.filter(i=>!clsDef()[i].base).forEach(b=>{out.push(b);ids.filter(i=>clsDef()[i].base===b).forEach(x=>out.push(x));});
+  ids.forEach(i=>{if(!out.includes(i))out.push(i);});return out;}
+function clsMatch(id){const t=CLS.q.trim().toLowerCase();if(!t)return true;const D=clsDef()[id]||{};
+  return [id,D.name,D.en,ROLE_KO[D.role]].some(x=>String(x||'').toLowerCase().includes(t))||(D.skills||[]).some(k=>{const c=skCur(k);return [k,c.name,c.en].some(x=>String(x||'').toLowerCase().includes(t));});}
+function clsLi(id){const D=clsDef()[id];const nOv=(D.skills||[]).filter(k=>skSrv(k)).length;const nd=(D.skills||[]).filter(skDirty).length;
+  return `<div class="li ${D.base?'adv':''}" data-clopen="${esc(id)}" aria-current="${id===CLS.sel}" tabindex="0" ${clsMatch(id)?'':'hidden'}>
+    <div class="t"><b>${esc(D.name)}</b><small>${esc(D.en||id)} · ${ROLE_KO[D.role]||''} · ${D.base?'상위':'1차'} · 스킬 ${(D.skills||[]).length}</small></div>
+    <div class="chips">${srcChip(id)}${nd?`<span class="chip warn">스킬 고침 ${nd}</span>`:nOv?`<span class="chip ok">스킬 서버 값 ${nOv}</span>`:''}</div></div>`;}
+function clsList(){const ids=Object.keys(clsDef());
+  return `<div class="panel list-p"><h3><span>클래스 <span class="faint" style="font-weight:400">${ids.length}</span></span></h3>
+    <div class="stack" style="gap:6px;margin-bottom:10px"><input type="search" id="cl-search" placeholder="클래스·스킬 이름 검색" value="${esc(CLS.q)}"></div>
+    <div class="list">${ids.length?clsOrder().map(clsLi).join(''):'<p class="msg bad">게임 기본값을 읽지 못했습니다. 새로고침해 주세요.</p>'}</div>
+    <p class="small muted" style="margin:10px 0 0">상위 클래스는 값을 따로 두지 않으면 기본 클래스 값을 따라갑니다.</p></div>`;}
 
 /* ── 클래스 페이지 ── */
 function growthHTML(id){const D=clsDef()[id]||{},v=clsCur(id),dirty=clsDirty(id),{src}=clsLive(id);
-  return `<div class="panel"><div class="ph-row"><h3>레벨별 성장</h3><span class="cl-hact">${srcChip(id)}
+  return `<section class="cl-sec"><div class="ph-row"><h3>레벨별 성장</h3><span class="cl-hact">${srcChip(id)}
       <button class="btn btn-sm btn-g" data-cg="undo" ${dirty?'':'hidden'}>되돌리기</button>${src==='own'?'<button class="btn btn-sm btn-g" data-cg="reset">기본값으로</button>':''}<button class="btn btn-sm btn-primary" data-cg="pub" ${dirty?'':'disabled'}>성장 공개</button></span></div>
     <p class="small muted" style="margin:0 0 10px">값 = 최초 값 × (1 + 상승% ÷ 100 × 레벨 계수) · 레벨 계수 = (LV−1) × (1 + (LV−1) ÷ 196). 장비·아이템 능력치는 이 위에 더해집니다.${D.magic?' 이 클래스는 마법 계열이라 <b>마력</b>이 주 공격·회복 계수이고, 공격력은 무기 공격(물리)에만 씁니다.':' 이 클래스는 물리 계열이라 <b>공격력</b>이 주 공격 계수입니다(마력은 보통 0).'}</p>
     <div class="cl-wrap"><table class="cl-t"><thead><tr><th>능력치</th><th>최초 값(LV1)</th><th>레벨당 상승 %</th>${CLS_PV.map(l=>`<th class="num">LV${l}</th>`).join('')}</tr></thead><tbody>
@@ -87,7 +93,7 @@ function growthHTML(id){const D=clsDef()[id]||{},v=clsCur(id),dirty=clsDirty(id)
       <td><input type="number" class="cl-in" data-k="${k}" min="${min}" step="0.01" value="${v[k]??''}" aria-label="${l} 최초 값"></td>
       <td><input type="number" class="cl-in" data-k="${k}Pct" min="0" step="0.01" value="${v[k+'Pct']??''}" aria-label="${l} 상승 %"></td>
       ${CLS_PV.map(lv=>`<td class="num cl-pvc" data-lv="${lv}">${nfmt(clsAt(v,k,lv))}</td>`).join('')}</tr>`).join('')}
-    </tbody></table></div></div>`;}
+    </tbody></table></div></section>`;}
 function skCard(k,cid){const D=skDef()[k];if(!D)return '';const c=skCur(k),dirty=skDirty(k),srv=!!skSrv(k),open=CLS.open.has(k);
   const shared=(D.classes||[]).filter(x=>x!==cid).map(x=>(clsDef()[x]||{}).name||x);
   const num=(f,l,v,step,hint)=>`<label class="f"><span class="fl">${l}${hint?` <small class="faint">${esc(hint)}</small>`:''}</span><input type="number" min="0" step="${step||1}" data-sf="${f}" value="${v??''}"></label>`;
@@ -123,15 +129,16 @@ function skCard(k,cid){const D=skDef()[k];if(!D)return '';const c=skCur(k),dirty
       </div>
       <div class="row sk-act"><button class="btn btn-sm btn-g" data-sa="undo" ${dirty?'':'hidden'}>되돌리기</button>${srv?'<button class="btn btn-sm btn-g" data-sa="reset">기본값으로</button>':''}<button class="btn btn-sm btn-primary" data-sa="pub" ${dirty?'':'disabled'}>스킬 공개</button></div>
     </div></details>`;}
-function clsPage(id){const D=clsDef()[id];if(!D)return clsList();
+function clsPage(id){const D=clsDef()[id];if(!D)return clsEmpty();
   const nd=(D.skills||[]).filter(skDirty).length;
-  return `<div class="cl-top"><button class="btn btn-sm btn-g" data-clback>‹ 클래스 목록</button>
-      <h2>${esc(D.name)} <small class="faint">${esc(D.en||'')} · ${esc(id)}</small></h2>
-      <span class="chip">${ROLE_KO[D.role]||''}</span><span class="chip dim">${D.base?`${esc((clsDef()[D.base]||{}).name)} 상위 클래스`:'1차 클래스'}</span><span class="chip dim">${D.magic?'마법 계열':'물리 계열'}</span></div>
+  return `<div class="panel"><div class="ed-head stick"><div><button class="btn btn-g btn-sm back" data-clback style="margin-bottom:6px">‹ 목록</button>
+      <h2>${esc(D.name)}</h2><div class="id">${esc(D.en||'')} · ${esc(id)}</div></div>
+      <div class="cl-hchips"><span class="chip">${ROLE_KO[D.role]||''}</span><span class="chip dim">${D.base?`${esc((clsDef()[D.base]||{}).name)} 상위 클래스`:'1차 클래스'}</span><span class="chip dim">${D.magic?'마법 계열':'물리 계열'}</span></div></div>
     ${growthHTML(id)}
-    <div class="panel"><div class="ph-row"><h3>스킬 <small class="faint">${(D.skills||[]).length}개</small></h3><span class="cl-hact"><button class="btn btn-sm btn-primary" data-skall ${nd?'':'disabled'}>바뀐 스킬 모두 공개${nd?` (${nd})`:''}</button></span></div>
+    <section class="cl-sec"><div class="ph-row"><h3>스킬 <small class="faint">${(D.skills||[]).length}개</small></h3><span class="cl-hact"><button class="btn btn-sm btn-primary" data-skall ${nd?'':'disabled'}>바뀐 스킬 모두 공개${nd?` (${nd})`:''}</button></span></div>
       <p class="small muted" style="margin:0 0 10px">스킬 종류·대상(공격·회복·보조 등)은 전투 규칙이라 고정입니다. 숫자와 글자·아이콘을 바꿀 수 있고, 저장되는 건 게임 기본값과 다른 칸뿐입니다.</p>
-      <div class="sk-list">${(D.skills||[]).map(k=>skCard(k,id)).join('')}</div></div>`;}
+      <div class="sk-list">${(D.skills||[]).map(k=>skCard(k,id)).join('')}</div></section></div>`;}
+const clsEmpty=()=>`<div class="panel"><p class="empty">왼쪽 목록에서 고칠 클래스를 고르세요.<br>레벨별 성장(HP·MP·능력치)과 스킬을 고칠 수 있습니다.</p></div>`;
 
 /* ── 공개 ── */
 async function clsPublish(id){const data={};CLS_KEYS.forEach(k=>{const n=Number(clsCur(id)[k]);if(isFinite(n))data[k]=n;});
@@ -157,14 +164,18 @@ async function skUpload(k,file,st){if(st)st.textContent='올리는 중…';
 /* ── 그리기 · 연결 ── */
 function clsDraw(){const box=$('#cl-box');if(!box)return;const y=window.scrollY;
   box.querySelectorAll('details.sk-card').forEach(d=>{if(d.open)CLS.open.add(d.dataset.sk);else CLS.open.delete(d.dataset.sk);});
-  box.innerHTML=CLS.sel&&clsDef()[CLS.sel]?clsPage(CLS.sel):clsList();clsBind();window.scrollTo(0,y);}
-function growthRefresh(id){const box=$('#cl-box');const v=clsCur(id);
+  const sel=CLS.sel&&clsDef()[CLS.sel];
+  box.innerHTML=`<div class="cgrid clg pick-${sel?'ed':'list'}">${clsList()}<div class="ed">${sel?clsPage(CLS.sel):clsEmpty()}</div></div>`;clsBind();window.scrollTo(0,y);}
+function liRefresh(id){const li=$(`#cl-box .li[data-clopen="${id}"]`);if(!li)return;const t=document.createElement('div');t.innerHTML=clsLi(id);const c=t.querySelector('.chips');if(c)li.querySelector('.chips').innerHTML=c.innerHTML;}
+function growthRefresh(id){const box=$('#cl-box');const v=clsCur(id);liRefresh(id);
   $$('tr[data-gk]',box).forEach(tr=>{const k=tr.dataset.gk;$$('.cl-pvc',tr).forEach(td=>td.textContent=nfmt(clsAt(v,k,+td.dataset.lv)));});
   const d=clsDirty(id);const pub=$('[data-cg="pub"]',box),und=$('[data-cg="undo"]',box);if(pub)pub.disabled=!d;if(und)und.hidden=!d;}
 function skRefresh(card,k){const d=skDirty(k);card.classList.toggle('dirty',d);const pub=card.querySelector('[data-sa="pub"]'),und=card.querySelector('[data-sa="undo"]');if(pub)pub.disabled=!d;if(und)und.hidden=!d;
-  const id=CLS.sel;const all=$('[data-skall]');if(all&&id){const nd=((clsDef()[id]||{}).skills||[]).filter(skDirty).length;all.disabled=!nd;all.textContent='바뀐 스킬 모두 공개'+(nd?` (${nd})`:'');}}
+  const id=CLS.sel;if(id)liRefresh(id);const all=$('[data-skall]');if(all&&id){const nd=((clsDef()[id]||{}).skills||[]).filter(skDirty).length;all.disabled=!nd;all.textContent='바뀐 스킬 모두 공개'+(nd?` (${nd})`:'');}}
 function clsBind(){const box=$('#cl-box');if(!box)return;
-  $$('[data-clopen]',box).forEach(b=>b.onclick=()=>{CLS.sel=b.dataset.clopen;CLS.open.clear();clsDraw();window.scrollTo(0,0);});
+  const pick=id=>{CLS.sel=id;CLS.open.clear();clsDraw();const ed=$('.clg .ed',box);if(ed&&ed.getBoundingClientRect().top<0)ed.scrollIntoView({block:'start'});};
+  $$('[data-clopen]',box).forEach(b=>{b.onclick=()=>pick(b.dataset.clopen);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(b.dataset.clopen);}};});
+  const srch=$('#cl-search',box);if(srch)srch.oninput=()=>{CLS.q=srch.value;$$('.clg .li',box).forEach(li=>li.hidden=!clsMatch(li.dataset.clopen));};
   const back=$('[data-clback]',box);if(back)back.onclick=()=>{CLS.sel=null;clsDraw();window.scrollTo(0,0);};
   const id=CLS.sel;if(!id)return;
   $$('.cl-in',box).forEach(el=>el.oninput=()=>{const n=el.value===''?undefined:Number(el.value);(CLS.edit[id]=CLS.edit[id]||{})[el.dataset.k]=isFinite(n)?n:undefined;growthRefresh(id);});
