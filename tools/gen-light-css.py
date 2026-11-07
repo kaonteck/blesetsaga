@@ -296,6 +296,9 @@ def main():
 {SCOPE} .casino{{background:linear-gradient(160deg,#f7efd9,#fff 60%)!important;border-color:rgba(138,106,28,.4)!important}}
 {SCOPE} .vil-say.theft{{background:#fbecea}}
 {SCOPE} .vil-say.theft p{{color:#a3332b}}
+/* 배경 화면 이미지: 라이트도 다크와 같은 그림(패널은 라이트 색 그대로) */
+{SCOPE}{{background:#07080d url("../img/bg/smoke.jpg") center/cover no-repeat fixed}}
+{SCOPE} body{{background:transparent!important;background-image:none!important}}
 """
     open(OUT, 'w', encoding='utf-8').write('/* 자동 생성 파일 — 직접 고치지 말고 tools/gen-light-css.py 를 고친 뒤 다시 만드세요 */\n' + body + '\n' + tail)
     print('light.css', len(body.splitlines()), 'rules')
