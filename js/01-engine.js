@@ -237,12 +237,12 @@ const SKILL_DEF=JSON.parse(JSON.stringify(SKILLS));
 const SKILL_OV_F={name:'s',en:'s',desc:'s',img:'s',lv:'n',mp:'n',mpPct:'n',mult:'n',bonus:'n',reduce:'n',drain:'n',crit:'b',special:'b'};
 let SKILL_OV={};
 function applySkillCfg(rows){const n={};(rows||[]).forEach(r=>{if(!r||r.kind!=='skill'||!SKILL_DEF[r.id]||!r.data||typeof r.data!=='object')return;const d=r.data,o={};
-    for(const f in SKILL_OV_F){const t=SKILL_OV_F[f],v=d[f];if(v===undefined||v===null)continue;if(t==='s'&&typeof v==='string')o[f]=v.slice(0,f==='desc'?600:f==='img'?400:40);else if(t==='n'&&typeof v==='number'&&isFinite(v)&&v>=0)o[f]=v;else if(t==='b'&&typeof v==='boolean')o[f]=v;}
+    for(const f in SKILL_OV_F){const t=SKILL_OV_F[f],v=d[f];if(v===undefined||v===null)continue;if(t==='s'&&typeof v==='string'){o[f]=v.slice(0,f==='desc'?600:f==='img'?400:40);if(f==='name'||f==='en')o[f]=o[f].replace(/[<>"'`&]/g,'');}   /* 이름·영문 이름은 꺾쇠·따옴표 없이(화면 곳곳에 글자로 들어감) */else if(t==='n'&&typeof v==='number'&&isFinite(v)&&v>=0)o[f]=v;else if(t==='b'&&typeof v==='boolean')o[f]=v;}
     if(d.poison&&typeof d.poison==='object'){const pp={};['pct','turns'].forEach(k=>{if(typeof d.poison[k]==='number'&&isFinite(d.poison[k])&&d.poison[k]>=0)pp[k]=d.poison[k];});if(Object.keys(pp).length)o.poison=pp;}
     if(d.combo&&typeof d.combo.bonus==='number'&&isFinite(d.combo.bonus))o.comboBonus=d.combo.bonus;
     if(d.v&&typeof d.v==='object'){const vv={};for(const k in d.v)if(typeof d.v[k]==='number'&&isFinite(d.v[k])&&d.v[k]>=0)vv[k]=d.v[k];o.v=vv;}
-    if(Array.isArray(d.cond))o.cond=d.cond.filter(x=>typeof x==='string').map(x=>x.slice(0,200)).slice(0,6);
-    if(Array.isArray(d.fx))o.fx=d.fx.filter(x=>Array.isArray(x)&&typeof x[0]==='string'&&typeof x[1]==='string').map(x=>[x[0].replace(/[^a-z]/g,'').slice(0,8),x[1].slice(0,40)]).slice(0,6);
+    if(Array.isArray(d.cond))o.cond=d.cond.filter(x=>typeof x==='string').map(x=>x.slice(0,200).replace(/[<>]/g,'')).slice(0,6);
+    if(Array.isArray(d.fx))o.fx=d.fx.filter(x=>Array.isArray(x)&&typeof x[0]==='string'&&typeof x[1]==='string').map(x=>[x[0].replace(/[^a-z]/g,'').slice(0,8),x[1].slice(0,40).replace(/[<>]/g,'')]).slice(0,6);
     n[r.id]=o;});
   const ch=JSON.stringify(n)!==JSON.stringify(SKILL_OV);if(!ch)return false;SKILL_OV=n;
   for(const k in SKILL_DEF){const S0=JSON.parse(JSON.stringify(SKILL_DEF[k]));const s=SKILLS[k];for(const f of Object.keys(s))if(!(f in S0))delete s[f];Object.assign(s,S0);

@@ -130,7 +130,7 @@ function skillBadges(k,p,b){
   if(s.type==='passive')out.push('<span class="chip dim">패시브</span>');
   if(s.lv)out.push(`<span class="chip dim">LV${s.lv}</span>`);
   if(s.crit)out.push('<span class="chip dps">크리티컬 확률 2배</span>');
-  if(s.combo)out.push(`<span class="chip ${p&&b&&comboReady(p,k,b.turn)?'ok':'fx-dmg'}">${SKILLS[s.combo.from].name} 연계 +${s.combo.bonus}%</span>`);
+  if(s.combo)out.push(`<span class="chip ${p&&b&&comboReady(p,k,b.turn)?'ok':'fx-dmg'}">${esc(SKILLS[s.combo.from].name)} 연계 +${s.combo.bonus}%</span>`);
   (s.fx||SKILL_FX[k]||[]).forEach(([c,t])=>out.push(`<span class="chip fx-${esc(c)}">${s.fx?esc(t):t}</span>`));
   return out.join('');
 }
@@ -993,7 +993,7 @@ function actOpt(b,me,k,a,primary){
   const s=SKILLS[k];const err=checkAct(b,me,{kind:'skill',skill:k,target:s.target==='dead'?(b.players.find(x=>x.dead)||{}).id:me.id},hooks.hasItem,primary);
   const sel=a&&a.kind==='skill'&&a.skill===k;
   return `<button class="opt" data-act="pickact" data-kind="skill" data-skill="${k}" ${primary?'data-second="1"':''} aria-pressed="${!!sel}" ${err&&!(s.target==='ally'&&err==='대상이 유효하지 않음')?'disabled':''}>
-    <span>${s.name} <span class="faint" style="font-size:11px">${s.en}</span></span><span class="row" style="gap:3px">${skillBadges(k,me,b)}</span><small>${esc(s.desc)}</small>${err&&err!=='대상이 유효하지 않음'?`<small class="reason">${esc(err)}</small>`:''}</button>`;
+    <span>${esc(s.name)} <span class="faint" style="font-size:11px">${esc(s.en||'')}</span></span><span class="row" style="gap:3px">${skillBadges(k,me,b)}</span><small>${esc(s.desc)}</small>${err&&err!=='대상이 유효하지 않음'?`<small class="reason">${esc(err)}</small>`:''}</button>`;
 }
 function targetPick(b,a,second){
   const s=a&&a.kind==='skill'?SKILLS[a.skill]:null;
@@ -1024,8 +1024,8 @@ function actionPanel(b,me){
   const addons=sk.filter(k=>SKILLS[k].type==='addon');
   const isDice=a.kind==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].type==='dice';
   const addonHTML=tab==='attack'&&addons.length?`<div><div class="ph">함께 사용 · 특수</div><div class="row">${addons.map(k=>{const ad=SKILLS[k];const left=usesLeft(me,k);const ok=isDice&&left>0&&(!ad.with||ad.with.includes(a.skill));
-    const armed=a.addon===k||S.sel.addonArm===k;const ok2=left>0&&(!isDice||!ad.with||ad.with.includes(a.skill));return `<button class="btn btn-sm ${armed?'btn-primary':''}" data-act="pickaddon" data-skill="${k}" ${ok2?'':'disabled'} title="${esc(ad.desc)}">${ad.name}${armed?' ✓':''}</button>`;}).join('')}<span class="faint" style="font-size:12px;align-self:center">먼저 켜 두고 공격 스킬을 누르세요</span></div><p class="faint" style="font-size:12px;margin-top:6px">${addons.map(k=>`${SKILLS[k].name}: ${esc(SKILLS[k].desc)}`).join('<br>')}</p></div>`:'';
-  const passive=sk.filter(k=>SKILLS[k].type==='passive').map(k=>`<p class="faint" style="font-size:12px">패시브 · ${SKILLS[k].name}: ${esc(SKILLS[k].desc)}</p>`).join('');
+    const armed=a.addon===k||S.sel.addonArm===k;const ok2=left>0&&(!isDice||!ad.with||ad.with.includes(a.skill));return `<button class="btn btn-sm ${armed?'btn-primary':''}" data-act="pickaddon" data-skill="${k}" ${ok2?'':'disabled'} title="${esc(ad.desc)}">${ad.name}${armed?' ✓':''}</button>`;}).join('')}<span class="faint" style="font-size:12px;align-self:center">먼저 켜 두고 공격 스킬을 누르세요</span></div><p class="faint" style="font-size:12px;margin-top:6px">${addons.map(k=>`${esc(SKILLS[k].name)}: ${esc(SKILLS[k].desc)}`).join('<br>')}</p></div>`:'';
+  const passive=sk.filter(k=>SKILLS[k].type==='passive').map(k=>`<p class="faint" style="font-size:12px">패시브 · ${esc(SKILLS[k].name)}: ${esc(SKILLS[k].desc)}</p>`).join('');
   let second='';
   if(canDouble(me,b)){
     const a2=S.sel.act2;
@@ -1217,7 +1217,7 @@ function advPanel(){
     <div class="advs">${c.adv.map(k=>{const a=CLASSES[k];const news=a.skills.filter(x=>!c.skills.includes(x));return `<div class="adv ${pickd===k?'on':''}">
       <div class="row" style="gap:10px">${sigil(k,'sm')}<div><b style="color:var(--silver);font-family:var(--f-display);font-size:16px">★ ${a.name}</b> <span class="faint" style="font-size:12px">${a.en}</span></div></div>
       <p class="muted" style="font-size:12.5px">${a.desc}</p>
-      <p style="font-size:12.5px">새 스킬 · ${news.map(x=>SKILLS[x].name+(SKILLS[x].special?'(특수)':'')).join(', ')}</p>
+      <p style="font-size:12.5px">새 스킬 · ${news.map(x=>esc(SKILLS[x].name)+(SKILLS[x].special?'(특수)':'')).join(', ')}</p>
       <p class="num faint" style="font-size:12px">능력치 · ${statText(Object.fromEntries(Object.entries(a.bonus).map(([k2,v])=>[k2==='hp'?'maxHp':k2,v])))}</p>
       ${pickd===k?`<div class="row"><span class="reason" style="font-size:12.5px">${a.name}(으)로 전직합니다. 되돌릴 수 없습니다.</span><button class="btn btn-sm btn-primary" data-act="advconfirm" data-job="${k}">전직 확정</button><button class="btn btn-sm btn-ghost" data-act="advcancel">취소</button></div>`
       :`<button class="btn btn-sm" data-act="advpick" data-job="${k}" ${ok&&!busy?'':'disabled'}>${a.name}(으)로 전직</button>`}</div>`;}).join('')}</div>
@@ -1253,7 +1253,7 @@ function vLore(){
       <details class="skilllist"><summary>탐험 지역 <span class="faint">${WORLD.fields.length}곳</span></summary><div class="list">${WORLD.fields.map(([n,lv,d])=>`<div class="li" style="align-items:flex-start"><div class="t"><b>${n}</b> <span class="chip num dim">LV${lv}+</span><small>${d}</small></div></div>`).join('')}</div></details></div></section></div>`:`<div class="lore">
     <section><h3>클래스와 전직</h3><p>블레서는 다섯 기본 클래스 가운데 하나로 여정을 시작하고, LV${cfg().jobAdvanceLevel}에 ★ 상위 클래스로 전직한다. 전직하면 기존 스킬을 이어받고 새 스킬을 얻는다. [특수] 스킬은 레이드마다 사용 횟수가 정해져 있다.</p>
       <div class="tree">${Object.entries(CLASSES).filter(([,c])=>c.tier===1).map(([k,c])=>`<div class="tree-row"><div class="tree-base">${sigil(k,'sm')}<div><b>${c.name}</b><small>${c.en} · ${ROLE[c.role]} · ${c.range}</small></div></div><div class="tree-arrow" aria-hidden="true">→</div><div class="tree-adv">${c.adv.map(a=>`<span class="chip ${c.role}">★ ${CLASSES[a].name} <span class="faint">${CLASSES[a].en}</span></span>`).join('')}</div></div>`).join('')}</div></section>
-    <section><h3>스킬 목록</h3>${Object.entries(CLASSES).map(([k,c])=>`<details class="skilllist"><summary>${className(k)} <span class="faint">${c.en}</span></summary><div class="list">${c.skills.filter(x=>c.tier===1||!CLASSES[c.base].skills.includes(x)).map(x=>`<div class="li" style="align-items:flex-start"><div class="t"><b>${SKILLS[x].name}</b> <span class="faint" style="font-size:11.5px">${SKILLS[x].en}</span><small>${esc(SKILLS[x].desc)}</small><div class="row" style="gap:4px;margin-top:4px">${skillBadges(x)}</div></div></div>`).join('')}</div></details>`).join('')}</section>
+    <section><h3>스킬 목록</h3>${Object.entries(CLASSES).map(([k,c])=>`<details class="skilllist"><summary>${className(k)} <span class="faint">${c.en}</span></summary><div class="list">${c.skills.filter(x=>c.tier===1||!CLASSES[c.base].skills.includes(x)).map(x=>`<div class="li" style="align-items:flex-start"><div class="t"><b>${esc(SKILLS[x].name)}</b> <span class="faint" style="font-size:11.5px">${esc(SKILLS[x].en||'')}</span><small>${esc(SKILLS[x].desc)}</small><div class="row" style="gap:4px;margin-top:4px">${skillBadges(x)}</div></div></div>`).join('')}</div></details>`).join('')}</section>
   </div>`}</div></div>`;
 }
 
