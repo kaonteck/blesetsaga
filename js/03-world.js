@@ -520,7 +520,7 @@ function massPanel(){
     <li>매 턴 <b>전투</b>(공격 · 스킬) · <b>이동</b>(기본 3×3) · <b>대기</b> 중 하나를 고릅니다. 이동과 전투는 함께 할 수 없고, 아이템은 다른 행동과 함께 쓸 수 있습니다.</li>
     <li>사거리 안(3×3 · 5×5 클래스별)에 보스가 있어야 공격할 수 있습니다. 회복은 시전자 기준 5×5 칸 안의 아군에게만 닿습니다. 붉은 칸 예고를 보고 이동해서 피하세요.</li>
     <li>스킬은 MP를 쓰고, MP는 매 턴 최대치의 ${Math.round(MP_REGEN*100)}%씩 회복합니다.</li>
-    <li>보스의 단일 공격은 위협이 가장 높은 블레서를 노립니다(탱커는 대미지 위협 ×${TANK_THREAT}). '시선 집중'은 위협과 상관없이 직전 턴까지 누적 대미지 1위를 노립니다.</li>
+    <li>보스의 정면 기준은 시작 시에는 아래쪽, 이후 적개심이 가장 높은 블레서를 바라봅니다.</li>
     <li>모두 제출한 행동은 실시간으로 공개되고, 전원 제출 시 바로 판정합니다.</li></ul></div>`;
   const em=S.data.monsters.filter(m=>m.published&&mkind(m)==='event');
   const admin=isAdmin()?`<div class="panel"><h3>운영 · 만신전</h3><div class="list">${em.map(m=>`<div class="li"><div class="t"><b>${esc(m.name)}</b><small>LV${m.level}+ · 8인 기준 HP ${m.hp} · 공격력 ${m.atk}</small></div><button class="btn btn-sm" data-act="ev-spawn" data-id="${m.id}" ${S.mass?'disabled':''}>${S.mass&&S.mass.monsterId===m.id?'출현 중':`${C.gatherMinutes}분 출현`}</button></div>`).join('')||'<p class="empty">이벤트 몬스터가 없습니다. 운영 › 몬스터에서 분류를 event로 등록하세요.</p>'}</div>
