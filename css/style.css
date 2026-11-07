@@ -3754,3 +3754,13 @@ html{overflow-y:scroll}
 .chal-r{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .chal-s{font-size:13px;margin:0 0 8px;word-break:keep-all}
 .chal-o{font-size:13px;margin:6px 0 0}
+/* 서버 공동 목표 (07-goal) */
+.gq{margin-bottom:8px;padding:10px 12px;border:1px solid var(--rule);border-radius:12px;background:var(--slab)}
+.gq-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;margin-bottom:6px}
+.gq-n{font-weight:700;font-size:14px}
+.gq-d{font-size:12px;margin:2px 0 6px;color:var(--muted,#a9adb8);word-break:keep-all}
+.gq-bar{height:6px;margin:4px 0}
+.gq-s{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}
+.gq-r{font-size:11.5px;margin:6px 0 0;word-break:keep-all}
+.gq.done{border-color:var(--ok)}
+.gq.done .gq-bar i{background:var(--ok)}
